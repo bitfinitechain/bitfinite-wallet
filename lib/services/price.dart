@@ -159,7 +159,9 @@ class PriceAPI {
 
       for (final map in coinGeckoData) {
         final String coinName = map["name"] as String;
-        final coin = AppConfig.getCryptoCurrencyByPrettyName(coinName);
+        final coin = AppConfig.getCryptoCurrencyByPrettyName(
+          coinName == "Factor" ? "Fact0rn" : coinName,
+        );
 
         try {
           final price = Decimal.parse(map["current_price"].toString());

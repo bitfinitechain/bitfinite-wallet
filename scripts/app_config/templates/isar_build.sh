@@ -68,23 +68,6 @@ find_isar_library() {
     return 1
 }
 
-enable_isar_source_build() {
-    local isar_version="$1"
-    local git_ref="${isar_version#v}"
-
-    git_ref=$(printf '%s\n' "${git_ref}" | sed -e 's:[\/&]:\\&:g')
-
-    echo "Enabling Isar source build section in pubspec.yaml (ref: ${git_ref})"
-
-    dart "${APP_PROJECT_ROOT_DIR}/tool/process_pubspec_deps.dart" "${ACTUAL_PUBSPEC}" ISAR
-
-    if [[ "$(uname)" == 'Darwin' ]]; then
-        sed -i '' -E "/(isar_community|isar_community_flutter_libs|isar_community_generator)/,+3 s|(ref:).*|\1 ${git_ref}|" "${ACTUAL_PUBSPEC}"
-    else
-        sed -i -E "/(isar_community|isar_community_flutter_libs|isar_community_generator)/,+3 s|(ref:).*|\1 ${git_ref}|" "${ACTUAL_PUBSPEC}"
-    fi
-}
-
 build_isar_source() {
     echo "------------------------------------------------------------"
     echo "Building Isar database library from source (BUILD_ISAR_FROM_SOURCE=1)"

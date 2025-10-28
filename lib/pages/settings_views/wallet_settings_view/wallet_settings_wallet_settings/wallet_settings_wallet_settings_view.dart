@@ -22,8 +22,7 @@ import '../../../../utilities/logger.dart';
 import '../../../../utilities/text_styles.dart';
 import '../../../../wallets/isar/models/wallet_info.dart';
 import '../../../../wallets/isar/providers/wallet_info_provider.dart';
-import '../../../../wallets/wallet/intermediate/lib_monero_wallet.dart';
-import '../../../../wallets/wallet/intermediate/lib_salvium_wallet.dart';
+import '../../../../wallets/wallet/intermediate/cryptonote_wallet.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/multi_address_interface.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/mweb_interface.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/rbf_interface.dart';
@@ -510,9 +509,8 @@ class _WalletSettingsWalletSettingsViewState
                         ),
                       ),
                     ),
-                  if (wallet is LibMoneroWallet || wallet is LibSalviumWallet)
-                    const SizedBox(height: 8),
-                  if (wallet is LibMoneroWallet || wallet is LibSalviumWallet)
+                  if (wallet is CryptonoteWallet) const SizedBox(height: 8),
+                  if (wallet is CryptonoteWallet)
                     RoundedWhiteContainer(
                       padding: const EdgeInsets.all(0),
                       child: RawMaterialButton(
@@ -560,65 +558,59 @@ class _WalletSettingsWalletSettingsViewState
                         showDialog<void>(
                           barrierDismissible: true,
                           context: context,
-                          builder:
-                              (_) => StackDialog(
-                                title:
-                                    "Do you want to delete ${ref.read(pWalletName(widget.walletId))}?",
-                                leftButton: TextButton(
-                                  style: Theme.of(context)
-                                      .extension<StackColors>()!
-                                      .getSecondaryEnabledButtonStyle(context),
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                  child: Text(
-                                    "Cancel",
-                                    style: STextStyles.button(context).copyWith(
-                                      color:
-                                          Theme.of(context)
-                                              .extension<StackColors>()!
-                                              .accentColorDark,
-                                    ),
-                                  ),
-                                ),
-                                rightButton: TextButton(
-                                  style: Theme.of(context)
-                                      .extension<StackColors>()!
-                                      .getPrimaryEnabledButtonStyle(context),
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                    Navigator.push(
-                                      context,
-                                      RouteGenerator.getRoute(
-                                        shouldUseMaterialRoute:
-                                            RouteGenerator.useMaterialPageRoute,
-                                        builder:
-                                            (_) => LockscreenView(
-                                              routeOnSuccessArguments:
-                                                  widget.walletId,
-                                              showBackButton: true,
-                                              routeOnSuccess:
-                                                  DeleteWalletWarningView
-                                                      .routeName,
-                                              biometricsCancelButtonString:
-                                                  "CANCEL",
-                                              biometricsLocalizedReason:
-                                                  "Authenticate to delete wallet",
-                                              biometricsAuthenticationTitle:
-                                                  "Delete wallet",
-                                            ),
-                                        settings: const RouteSettings(
-                                          name: "/deleteWalletLockscreen",
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  child: Text(
-                                    "Delete",
-                                    style: STextStyles.button(context),
-                                  ),
+                          builder: (_) => StackDialog(
+                            title:
+                                "Do you want to delete ${ref.read(pWalletName(widget.walletId))}?",
+                            leftButton: TextButton(
+                              style: Theme.of(context)
+                                  .extension<StackColors>()!
+                                  .getSecondaryEnabledButtonStyle(context),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: Text(
+                                "Cancel",
+                                style: STextStyles.button(context).copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).extension<StackColors>()!.accentColorDark,
                                 ),
                               ),
+                            ),
+                            rightButton: TextButton(
+                              style: Theme.of(context)
+                                  .extension<StackColors>()!
+                                  .getPrimaryEnabledButtonStyle(context),
+                              onPressed: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  RouteGenerator.getRoute(
+                                    shouldUseMaterialRoute:
+                                        RouteGenerator.useMaterialPageRoute,
+                                    builder: (_) => LockscreenView(
+                                      routeOnSuccessArguments: widget.walletId,
+                                      showBackButton: true,
+                                      routeOnSuccess:
+                                          DeleteWalletWarningView.routeName,
+                                      biometricsCancelButtonString: "CANCEL",
+                                      biometricsLocalizedReason:
+                                          "Authenticate to delete wallet",
+                                      biometricsAuthenticationTitle:
+                                          "Delete wallet",
+                                    ),
+                                    settings: const RouteSettings(
+                                      name: "/deleteWalletLockscreen",
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                "Delete",
+                                style: STextStyles.button(context),
+                              ),
+                            ),
+                          ),
                         );
                       },
                       child: Padding(

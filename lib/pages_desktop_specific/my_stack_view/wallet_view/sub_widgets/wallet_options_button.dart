@@ -29,8 +29,7 @@ import '../../../../utilities/util.dart';
 import '../../../../wallets/crypto_currency/intermediate/frost_currency.dart';
 import '../../../../wallets/crypto_currency/intermediate/nano_currency.dart';
 import '../../../../wallets/isar/providers/wallet_info_provider.dart';
-import '../../../../wallets/wallet/intermediate/lib_monero_wallet.dart';
-import '../../../../wallets/wallet/intermediate/lib_salvium_wallet.dart';
+import '../../../../wallets/wallet/intermediate/cryptonote_wallet.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/extended_keys_interface.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/view_only_option_interface.dart';
 import '../../../addresses/desktop_wallet_addresses_view.dart';
@@ -63,23 +62,15 @@ enum _WalletOptions {
 }
 
 class WalletOptionsButton extends ConsumerWidget {
-  const WalletOptionsButton({
-    super.key,
-    required this.walletId,
-  });
+  const WalletOptionsButton({super.key, required this.walletId});
 
   final String walletId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return RawMaterialButton(
-      constraints: const BoxConstraints(
-        minHeight: 32,
-        minWidth: 32,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(1000),
-      ),
+      constraints: const BoxConstraints(minHeight: 32, minWidth: 32),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1000)),
       onPressed: () async {
         final func = await showDialog<_WalletOptions?>(
           context: context,
@@ -148,9 +139,10 @@ class WalletOptionsButton extends ConsumerWidget {
             case _WalletOptions.showXpub:
               final xpubData = await showLoading(
                 delay: const Duration(milliseconds: 800),
-                whileFuture: (ref.read(pWallets).getWallet(walletId)
-                        as ExtendedKeysInterface)
-                    .getXPubs(),
+                whileFuture:
+                    (ref.read(pWallets).getWallet(walletId)
+                            as ExtendedKeysInterface)
+                        .getXPubs(),
                 context: context,
                 message: "Loading xpubs",
                 rootNavigator: Util.isDesktop,
@@ -224,9 +216,8 @@ class WalletOptionsButton extends ConsumerWidget {
                 unawaited(
                   showDialog(
                     context: context,
-                    builder: (context) => EditRefreshHeightView(
-                      walletId: walletId,
-                    ),
+                    builder: (context) =>
+                        EditRefreshHeightView(walletId: walletId),
                   ),
                 );
               } else {
@@ -242,19 +233,16 @@ class WalletOptionsButton extends ConsumerWidget {
         }
       },
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: 19,
-          horizontal: 32,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 19, horizontal: 32),
         child: Row(
           children: [
             SvgPicture.asset(
               Assets.svg.ellipsis,
               width: 20,
               height: 20,
-              color: Theme.of(context)
-                  .extension<StackColors>()!
-                  .buttonTextSecondary,
+              color: Theme.of(
+                context,
+              ).extension<StackColors>()!.buttonTextSecondary,
             ),
           ],
         ),
@@ -297,7 +285,7 @@ class WalletOptionsPopupMenu extends ConsumerWidget {
     final bool canChangeRep = coin is NanoCurrency;
 
     final bool isFrost = coin is FrostCurrency;
-    final bool isMoneroWow = wallet is LibMoneroWallet || wallet is LibSalviumWallet;
+    final bool isCN = wallet is CryptonoteWallet;
 
     return Stack(
       children: [
@@ -339,23 +327,21 @@ class WalletOptionsPopupMenu extends ConsumerWidget {
                           Expanded(
                             child: Text(
                               _WalletOptions.addressList.prettyName,
-                              style: STextStyles.desktopTextExtraExtraSmall(
-                                context,
-                              ).copyWith(
-                                color: Theme.of(context)
-                                    .extension<StackColors>()!
-                                    .textDark,
-                              ),
+                              style:
+                                  STextStyles.desktopTextExtraExtraSmall(
+                                    context,
+                                  ).copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).extension<StackColors>()!.textDark,
+                                  ),
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  if (canChangeRep)
-                    const SizedBox(
-                      height: 8,
-                    ),
+                  if (canChangeRep) const SizedBox(height: 8),
                   if (canChangeRep)
                     TransparentButton(
                       onPressed: onChangeRepPressed,
@@ -376,23 +362,21 @@ class WalletOptionsPopupMenu extends ConsumerWidget {
                             Expanded(
                               child: Text(
                                 _WalletOptions.changeRepresentative.prettyName,
-                                style: STextStyles.desktopTextExtraExtraSmall(
-                                  context,
-                                ).copyWith(
-                                  color: Theme.of(context)
-                                      .extension<StackColors>()!
-                                      .textDark,
-                                ),
+                                style:
+                                    STextStyles.desktopTextExtraExtraSmall(
+                                      context,
+                                    ).copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).extension<StackColors>()!.textDark,
+                                    ),
                               ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                  if (isFrost)
-                    const SizedBox(
-                      height: 8,
-                    ),
+                  if (isFrost) const SizedBox(height: 8),
                   if (isFrost)
                     TransparentButton(
                       onPressed: onFrostMSWalletOptionsPressed,
@@ -413,24 +397,22 @@ class WalletOptionsPopupMenu extends ConsumerWidget {
                             Expanded(
                               child: Text(
                                 _WalletOptions.frostOptions.prettyName,
-                                style: STextStyles.desktopTextExtraExtraSmall(
-                                  context,
-                                ).copyWith(
-                                  color: Theme.of(context)
-                                      .extension<StackColors>()!
-                                      .textDark,
-                                ),
+                                style:
+                                    STextStyles.desktopTextExtraExtraSmall(
+                                      context,
+                                    ).copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).extension<StackColors>()!.textDark,
+                                    ),
                               ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                  if (isMoneroWow)
-                    const SizedBox(
-                      height: 8,
-                    ),
-                  if (isMoneroWow)
+                  if (isCN) const SizedBox(height: 8),
+                  if (isCN)
                     TransparentButton(
                       onPressed: onRefreshHeightPressed,
                       child: Padding(
@@ -450,23 +432,21 @@ class WalletOptionsPopupMenu extends ConsumerWidget {
                             Expanded(
                               child: Text(
                                 _WalletOptions.refreshFromHeight.prettyName,
-                                style: STextStyles.desktopTextExtraExtraSmall(
-                                  context,
-                                ).copyWith(
-                                  color: Theme.of(context)
-                                      .extension<StackColors>()!
-                                      .textDark,
-                                ),
+                                style:
+                                    STextStyles.desktopTextExtraExtraSmall(
+                                      context,
+                                    ).copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).extension<StackColors>()!.textDark,
+                                    ),
                               ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                  if (xpubEnabled)
-                    const SizedBox(
-                      height: 8,
-                    ),
+                  if (xpubEnabled) const SizedBox(height: 8),
                   if (xpubEnabled)
                     TransparentButton(
                       onPressed: onShowXpubPressed,
@@ -487,22 +467,21 @@ class WalletOptionsPopupMenu extends ConsumerWidget {
                             Expanded(
                               child: Text(
                                 _WalletOptions.showXpub.prettyName,
-                                style: STextStyles.desktopTextExtraExtraSmall(
-                                  context,
-                                ).copyWith(
-                                  color: Theme.of(context)
-                                      .extension<StackColors>()!
-                                      .textDark,
-                                ),
+                                style:
+                                    STextStyles.desktopTextExtraExtraSmall(
+                                      context,
+                                    ).copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).extension<StackColors>()!.textDark,
+                                    ),
                               ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                  const SizedBox(
-                    height: 8,
-                  ),
+                  const SizedBox(height: 8),
                   TransparentButton(
                     onPressed: onDeletePressed,
                     child: Padding(
@@ -522,13 +501,14 @@ class WalletOptionsPopupMenu extends ConsumerWidget {
                           Expanded(
                             child: Text(
                               _WalletOptions.deleteWallet.prettyName,
-                              style: STextStyles.desktopTextExtraExtraSmall(
-                                context,
-                              ).copyWith(
-                                color: Theme.of(context)
-                                    .extension<StackColors>()!
-                                    .textDark,
-                              ),
+                              style:
+                                  STextStyles.desktopTextExtraExtraSmall(
+                                    context,
+                                  ).copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).extension<StackColors>()!.textDark,
+                                  ),
                             ),
                           ),
                         ],
@@ -546,11 +526,7 @@ class WalletOptionsPopupMenu extends ConsumerWidget {
 }
 
 class TransparentButton extends StatelessWidget {
-  const TransparentButton({
-    super.key,
-    required this.child,
-    this.onPressed,
-  });
+  const TransparentButton({super.key, required this.child, this.onPressed});
 
   final Widget child;
   final VoidCallback? onPressed;
@@ -558,10 +534,7 @@ class TransparentButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RawMaterialButton(
-      constraints: const BoxConstraints(
-        minHeight: 32,
-        minWidth: 32,
-      ),
+      constraints: const BoxConstraints(minHeight: 32, minWidth: 32),
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(

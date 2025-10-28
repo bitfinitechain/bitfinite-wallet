@@ -28,6 +28,7 @@ dart "${APP_PROJECT_ROOT_DIR}/tool/process_pubspec_deps.dart" \
       MWC \
       MWEBD \
       XMR \
+      WOW \
       SAL \
       TOR \
       EPIC \
@@ -41,6 +42,7 @@ dart "${APP_PROJECT_ROOT_DIR}/tool/gen_interfaces.dart" \
       MWC \
       MWEBD \
       XMR \
+      WOW \
       SAL \
       TOR \
       EPIC \

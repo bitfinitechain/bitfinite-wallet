@@ -49,11 +49,13 @@ import '../../utilities/show_loading.dart';
 import '../../utilities/text_styles.dart';
 import '../../utilities/util.dart';
 import '../../wallets/crypto_currency/crypto_currency.dart';
+import '../../wallets/crypto_currency/intermediate/cryptonote_currency.dart';
 import '../../wallets/crypto_currency/intermediate/nano_currency.dart';
 import '../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../wallets/models/tx_data.dart';
 import '../../wallets/wallet/impl/firo_wallet.dart';
 import '../../wallets/wallet/impl/mimblewimblecoin_wallet.dart';
+import '../../wallets/wallet/intermediate/cryptonote_wallet.dart';
 import '../../wallets/wallet/wallet_mixin_interfaces/coin_control_interface.dart';
 import '../../wallets/wallet/wallet_mixin_interfaces/mweb_interface.dart';
 import '../../wallets/wallet/wallet_mixin_interfaces/paynym_interface.dart';
@@ -74,7 +76,6 @@ import '../../widgets/rounded_white_container.dart';
 import '../../widgets/stack_dialog.dart';
 import '../../widgets/stack_text_field.dart';
 import '../../widgets/textfield_icon_button.dart';
-import '../../wl_gen/interfaces/cs_monero_interface.dart';
 import '../address_book_views/address_book_view.dart';
 import '../coin_control/coin_control_view.dart';
 import 'confirm_transaction_view.dart';
@@ -559,17 +560,17 @@ class _SendViewState extends ConsumerState<SendView> {
     }
 
     Amount fee;
-    if (coin is Monero) {
+    if (coin is CryptonoteCurrency) {
       final int specialMoneroId;
       switch (ref.read(feeRateTypeMobileStateProvider.state).state) {
         case FeeRateType.fast:
-          specialMoneroId = csMonero.getTxPriorityHigh();
+          specialMoneroId = (wallet as CryptonoteWallet).getTxPriorityHigh();
           break;
         case FeeRateType.average:
-          specialMoneroId = csMonero.getTxPriorityMedium();
+          specialMoneroId = (wallet as CryptonoteWallet).getTxPriorityMedium();
           break;
         case FeeRateType.slow:
-          specialMoneroId = csMonero.getTxPriorityNormal();
+          specialMoneroId = (wallet as CryptonoteWallet).getTxPriorityNormal();
           break;
         default:
           throw ArgumentError("custom fee not available for monero");

@@ -48,6 +48,7 @@ import '../../../widgets/desktop/desktop_scaffold.dart';
 import '../../../widgets/stack_dialog.dart';
 import '../../../wl_gen/interfaces/cs_monero_interface.dart';
 import '../../../wl_gen/interfaces/cs_salvium_interface.dart';
+import '../../../wl_gen/interfaces/cs_wownero_interface.dart';
 import '../../home_view/home_view.dart';
 import '../add_token_view/edit_wallet_tokens_view.dart';
 import '../new_wallet_options/new_wallet_options_view.dart';
@@ -116,13 +117,11 @@ class _VerifyRecoveryPhraseViewState
       if (widget.wallet.cryptoCurrency is Monero) {
         height = csMonero.getHeightByDate(
           DateTime.now().subtract(const Duration(days: 7)),
-          csCoin: CsCoin.monero,
         );
       }
       if (widget.wallet.cryptoCurrency is Wownero) {
-        height = csMonero.getHeightByDate(
+        height = csWownero.getHeightByDate(
           DateTime.now().subtract(const Duration(days: 7)),
-          csCoin: CsCoin.wownero,
         );
       }
       if (widget.wallet.cryptoCurrency is Salvium) {

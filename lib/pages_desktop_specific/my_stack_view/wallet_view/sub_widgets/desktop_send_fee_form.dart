@@ -22,6 +22,7 @@ import '../../../../widgets/desktop/desktop_fee_dialog.dart';
 import '../../../../widgets/eth_fee_form.dart';
 import '../../../../widgets/fee_slider.dart';
 import '../../../../wl_gen/interfaces/cs_monero_interface.dart';
+import '../../../../wl_gen/interfaces/cs_wownero_interface.dart';
 
 class DesktopSendFeeForm extends ConsumerStatefulWidget {
   const DesktopSendFeeForm({
@@ -171,7 +172,9 @@ class _DesktopSendFeeFormState extends ConsumerState<DesktopSendFeeForm> {
                                       final fee = await wallet.estimateFeeFor(
                                         amount,
                                         BigInt.from(
-                                          csMonero.getTxPriorityMedium(),
+                                          coin is Monero
+                                              ? csMonero.getTxPriorityMedium()
+                                              : csWownero.getTxPriorityMedium(),
                                         ),
                                       );
                                       ref

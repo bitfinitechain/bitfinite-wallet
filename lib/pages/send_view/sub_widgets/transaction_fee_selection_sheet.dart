@@ -29,6 +29,7 @@ import '../../../wallets/wallet/impl/firo_wallet.dart';
 import '../../../wallets/wallet/wallet_mixin_interfaces/electrumx_interface.dart';
 import '../../../widgets/animated_text.dart';
 import '../../../wl_gen/interfaces/cs_monero_interface.dart';
+import '../../../wl_gen/interfaces/cs_wownero_interface.dart';
 
 final feeSheetSessionCacheProvider =
     ChangeNotifierProvider<FeeSheetSessionCache>((ref) {
@@ -88,10 +89,16 @@ class _TransactionFeeSelectionSheetState
           if (widget.isToken == false) {
             final wallet = ref.read(pWallets).getWallet(walletId);
 
-            if (coin is Monero || coin is Wownero) {
+            if (coin is Monero) {
               final fee = await wallet.estimateFeeFor(
                 amount,
                 BigInt.from(csMonero.getTxPriorityHigh()),
+              );
+              ref.read(feeSheetSessionCacheProvider).fast[amount] = fee;
+            } else if (coin is Wownero) {
+              final fee = await wallet.estimateFeeFor(
+                amount,
+                BigInt.from(csWownero.getTxPriorityHigh()),
               );
               ref.read(feeSheetSessionCacheProvider).fast[amount] = fee;
             } else if (coin is Firo) {
@@ -125,10 +132,16 @@ class _TransactionFeeSelectionSheetState
         if (ref.read(feeSheetSessionCacheProvider).average[amount] == null) {
           if (widget.isToken == false) {
             final wallet = ref.read(pWallets).getWallet(walletId);
-            if (coin is Monero || coin is Wownero) {
+            if (coin is Monero) {
               final fee = await wallet.estimateFeeFor(
                 amount,
                 BigInt.from(csMonero.getTxPriorityMedium()),
+              );
+              ref.read(feeSheetSessionCacheProvider).average[amount] = fee;
+            } else if (coin is Wownero) {
+              final fee = await wallet.estimateFeeFor(
+                amount,
+                BigInt.from(csWownero.getTxPriorityMedium()),
               );
               ref.read(feeSheetSessionCacheProvider).average[amount] = fee;
             } else if (coin is Firo) {
@@ -161,10 +174,16 @@ class _TransactionFeeSelectionSheetState
         if (ref.read(feeSheetSessionCacheProvider).slow[amount] == null) {
           if (widget.isToken == false) {
             final wallet = ref.read(pWallets).getWallet(walletId);
-            if (coin is Monero || coin is Wownero) {
+            if (coin is Monero) {
               final fee = await wallet.estimateFeeFor(
                 amount,
                 BigInt.from(csMonero.getTxPriorityNormal()),
+              );
+              ref.read(feeSheetSessionCacheProvider).slow[amount] = fee;
+            } else if (coin is Wownero) {
+              final fee = await wallet.estimateFeeFor(
+                amount,
+                BigInt.from(csWownero.getTxPriorityNormal()),
               );
               ref.read(feeSheetSessionCacheProvider).slow[amount] = fee;
             } else if (coin is Firo) {

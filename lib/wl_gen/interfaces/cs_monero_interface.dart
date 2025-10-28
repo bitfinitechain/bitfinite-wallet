@@ -13,7 +13,7 @@ abstract class CsMoneroInterface {
   int getTxPriorityMedium();
   int getTxPriorityNormal();
 
-  bool walletExists(String path, {required CsCoin csCoin});
+  bool walletExists(String path);
 
   Future<int> estimateFee(
     int rate,
@@ -23,7 +23,6 @@ abstract class CsMoneroInterface {
 
   Future<WrappedWallet> loadWallet(
     String walletId, {
-    required CsCoin csCoin,
     required String path,
     required String password,
   });
@@ -35,7 +34,6 @@ abstract class CsMoneroInterface {
   });
 
   Future<WrappedWallet> getCreatedWallet({
-    required CsCoin csCoin,
     required String path,
     required String password,
     required int wordCount,
@@ -44,7 +42,6 @@ abstract class CsMoneroInterface {
 
   Future<WrappedWallet> getRestoredWallet({
     required String walletId,
-    required CsCoin csCoin,
     required String path,
     required String password,
     required String mnemonic,
@@ -54,7 +51,6 @@ abstract class CsMoneroInterface {
 
   Future<WrappedWallet> getRestoredFromViewKeyWallet({
     required String walletId,
-    required CsCoin csCoin,
     required String path,
     required String password,
     required String address,
@@ -153,16 +149,13 @@ abstract class CsMoneroInterface {
   Future<void> thawOutput(WrappedWallet wallet, String keyImage);
 
   List<String> getMoneroWordList(String language);
-  List<String> getWowneroWordList(String language, int seedLength);
 
-  int getHeightByDate(DateTime date, {required CsCoin csCoin});
+  int getHeightByDate(DateTime date);
 
-  bool validateAddress(String address, int network, {required CsCoin csCoin});
+  bool validateAddress(String address, int network);
 
   String getSeed(WrappedWallet wallet);
 }
-
-enum CsCoin { monero, wownero }
 
 // forwarding class
 final class CsWalletListener {

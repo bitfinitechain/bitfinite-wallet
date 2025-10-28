@@ -61,13 +61,18 @@ dependencies:
 # %%END_ENABLE_TOR%%
 
 # %%ENABLE_XMR%%
-#  cs_monero: 1.1.1
-#  cs_monero_flutter_libs: 1.1.1
+#  cs_monero: 2.0.0
+#  cs_monero_flutter_libs: 2.0.0
 # %%END_ENABLE_XMR%%
+
+# %%ENABLE_WOW%%
+#  cs_wownero: 2.0.0
+#  cs_wownero_flutter_libs: 2.0.0
+# %%END_ENABLE_WOW%%
 
 # %%ENABLE_SAL%%
 #  cs_salvium: ^2.0.0
-#  cs_salvium_flutter_libs: ^2.0.0
+#  cs_salvium_flutter_libs: ^2.0.1
 # %%END_ENABLE_SAL%%
 
 # %%ENABLE_MWEBD%%

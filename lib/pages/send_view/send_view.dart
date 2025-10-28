@@ -75,6 +75,7 @@ import '../../widgets/stack_dialog.dart';
 import '../../widgets/stack_text_field.dart';
 import '../../widgets/textfield_icon_button.dart';
 import '../../wl_gen/interfaces/cs_monero_interface.dart';
+import '../../wl_gen/interfaces/cs_wownero_interface.dart';
 import '../address_book_views/address_book_view.dart';
 import '../coin_control/coin_control_view.dart';
 import 'confirm_transaction_view.dart';
@@ -570,6 +571,28 @@ class _SendViewState extends ConsumerState<SendView> {
           break;
         case FeeRateType.slow:
           specialMoneroId = csMonero.getTxPriorityNormal();
+          break;
+        default:
+          throw ArgumentError("custom fee not available for monero");
+      }
+
+      fee = await wallet.estimateFeeFor(amount, BigInt.from(specialMoneroId));
+      cachedFees[amount] = ref
+          .read(pAmountFormatter(coin))
+          .format(fee, withUnitName: true, indicatePrecisionLoss: false);
+
+      return cachedFees[amount]!;
+    } else if (coin is Wownero) {
+      final int specialMoneroId;
+      switch (ref.read(feeRateTypeMobileStateProvider.state).state) {
+        case FeeRateType.fast:
+          specialMoneroId = csWownero.getTxPriorityHigh();
+          break;
+        case FeeRateType.average:
+          specialMoneroId = csWownero.getTxPriorityMedium();
+          break;
+        case FeeRateType.slow:
+          specialMoneroId = csWownero.getTxPriorityNormal();
           break;
         default:
           throw ArgumentError("custom fee not available for monero");

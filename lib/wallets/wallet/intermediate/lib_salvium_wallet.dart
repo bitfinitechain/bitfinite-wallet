@@ -49,8 +49,6 @@ abstract class LibSalviumWallet<T extends CryptonoteCurrency>
   @override
   int get isarTransactionVersion => 2;
 
-  WrappedWallet? wallet;
-
   LibSalviumWallet(super.currency) {
     final bus = GlobalEventBus.instance;
 
@@ -131,8 +129,6 @@ abstract class LibSalviumWallet<T extends CryptonoteCurrency>
   bool _txRefreshLock = false;
   int _lastCheckedHeight = -1;
   int _txCount = 0;
-  int currentKnownChainHeight = 0;
-  double highestPercentCached = 0;
 
   Future<WrappedWallet> loadWallet({
     required String path,
@@ -166,6 +162,7 @@ abstract class LibSalviumWallet<T extends CryptonoteCurrency>
 
   bool walletExists(String path);
 
+  @override
   String getTxKeyFor({required String txid}) {
     if (wallet == null) {
       throw Exception("Cannot get tx key in uninitialized libSalviumWallet");
@@ -274,6 +271,7 @@ abstract class LibSalviumWallet<T extends CryptonoteCurrency>
     return newReceivingAddress;
   }
 
+  @override
   Future<CWKeyData?> getKeys() async {
     if (wallet == null) {
       return null;
@@ -298,6 +296,7 @@ abstract class LibSalviumWallet<T extends CryptonoteCurrency>
     }
   }
 
+  @override
   Future<(String, String)>
   hackToCreateNewViewOnlyWalletDataFromNewlyCreatedWalletThisFunctionShouldNotBeCalledUnlessYouKnowWhatYouAreDoing() async {
     final path = await pathForWallet(name: walletId);
@@ -1407,6 +1406,102 @@ abstract class LibSalviumWallet<T extends CryptonoteCurrency>
       );
       rethrow;
     }
+  }
+
+  @override
+  int getRefreshFromBlockHeight() => wallet == null
+      ? throw Exception(
+          "Cannot getRefreshFromBlockHeight when wallet is not open",
+        )
+      : csSalvium.getRefreshFromBlockHeight(wallet!);
+
+  @override
+  int getTxPriorityHigh() => csSalvium.getTxPriorityHigh();
+
+  @override
+  int getTxPriorityMedium() => csSalvium.getTxPriorityMedium();
+
+  @override
+  int getTxPriorityNormal() => csSalvium.getTxPriorityNormal();
+
+  @override
+  Future<void> internalCommitTx(CsPendingTransaction tx) {
+    if (wallet == null) {
+      throw Exception("Cannot internalCommitTx when wallet is not open");
+    }
+
+    return csSalvium.commitTx(wallet!, tx);
+  }
+
+  @override
+  Future<CsPendingTransaction> internalCreateTx({
+    required CsRecipient output,
+    required int priority,
+    required bool sweep,
+    List<StandardInput>? preferredInputs,
+    required int accountIndex,
+    required int minConfirms,
+    required int currentHeight,
+  }) {
+    if (wallet == null) {
+      throw Exception("Cannot internalCommitTx when wallet is not open");
+    }
+    return csSalvium.createTx(
+      wallet!,
+      output: output,
+      priority: priority,
+      sweep: sweep,
+      accountIndex: accountIndex,
+      minConfirms: minConfirms,
+      currentHeight: currentHeight,
+      preferredInputs: preferredInputs,
+    );
+  }
+
+  @override
+  String internalGetAddress({
+    required int accountIndex,
+    required int addressIndex,
+  }) {
+    if (wallet == null) {
+      throw Exception("Cannot internalCommitTx when wallet is not open");
+    }
+    return csSalvium.getAddress(
+      wallet!,
+      accountIndex: accountIndex,
+      addressIndex: addressIndex,
+    );
+  }
+
+  @override
+  Future<List<CsOutput>> internalGetOutputs({
+    bool refresh = false,
+    bool includeSpent = false,
+  }) {
+    if (wallet == null) {
+      throw Exception("Cannot internalCommitTx when wallet is not open");
+    }
+    return csSalvium.getOutputs(
+      wallet!,
+      refresh: refresh,
+      includeSpent: includeSpent,
+    );
+  }
+
+  @override
+  BigInt? internalGetUnlockedBalance({int accountIndex = 0}) {
+    if (wallet == null) {
+      throw Exception("Cannot internalCommitTx when wallet is not open");
+    }
+    return csSalvium.getUnlockedBalance(wallet!, accountIndex: accountIndex);
+  }
+
+  @override
+  void setRefreshFromBlockHeight(int newHeight) {
+    if (wallet == null) {
+      throw Exception("Cannot internalCommitTx when wallet is not open");
+    }
+    csSalvium.setRefreshFromBlockHeight(wallet!, newHeight);
   }
 
   // ============== View only ==================================================

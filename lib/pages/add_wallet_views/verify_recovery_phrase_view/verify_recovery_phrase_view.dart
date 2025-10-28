@@ -37,8 +37,7 @@ import '../../../wallets/wallet/impl/epiccash_wallet.dart';
 import '../../../wallets/wallet/impl/monero_wallet.dart';
 import '../../../wallets/wallet/impl/wownero_wallet.dart';
 import '../../../wallets/wallet/impl/xelis_wallet.dart';
-import '../../../wallets/wallet/intermediate/lib_monero_wallet.dart';
-import '../../../wallets/wallet/intermediate/lib_salvium_wallet.dart';
+import '../../../wallets/wallet/intermediate/cryptonote_wallet.dart';
 import '../../../wallets/wallet/wallet.dart';
 import '../../../wallets/wallet/wallet_mixin_interfaces/extended_keys_interface.dart';
 import '../../../wallets/wallet/wallet_mixin_interfaces/view_only_option_interface.dart';
@@ -112,8 +111,7 @@ class _VerifyRecoveryPhraseViewState
     final ViewOnlyWalletType viewOnlyWalletType;
     if (widget.wallet is ExtendedKeysInterface) {
       viewOnlyWalletType = ViewOnlyWalletType.xPub;
-    } else if (widget.wallet is LibMoneroWallet ||
-        widget.wallet is LibSalviumWallet) {
+    } else if (widget.wallet is CryptonoteWallet) {
       if (widget.wallet.cryptoCurrency is Monero) {
         height = csMonero.getHeightByDate(
           DateTime.now().subtract(const Duration(days: 7)),
@@ -174,23 +172,8 @@ class _VerifyRecoveryPhraseViewState
         walletId: voInfo.walletId,
         xPubs: [xPub],
       );
-    } else if (widget.wallet is LibMoneroWallet) {
-      final w = widget.wallet as LibMoneroWallet;
-
-      final info = await w
-          .hackToCreateNewViewOnlyWalletDataFromNewlyCreatedWalletThisFunctionShouldNotBeCalledUnlessYouKnowWhatYouAreDoing();
-      final address = info.$1;
-      final privateViewKey = info.$2;
-
-      await w.exit();
-
-      viewOnlyData = CryptonoteViewOnlyWalletData(
-        walletId: voInfo.walletId,
-        address: address,
-        privateViewKey: privateViewKey,
-      );
-    } else if (widget.wallet is LibSalviumWallet) {
-      final w = widget.wallet as LibSalviumWallet;
+    } else if (widget.wallet is CryptonoteWallet) {
+      final w = widget.wallet as CryptonoteWallet;
 
       final info = await w
           .hackToCreateNewViewOnlyWalletDataFromNewlyCreatedWalletThisFunctionShouldNotBeCalledUnlessYouKnowWhatYouAreDoing();

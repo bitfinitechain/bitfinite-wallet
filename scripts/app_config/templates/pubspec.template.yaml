@@ -67,7 +67,7 @@ dependencies:
 
 # %%ENABLE_WOW%%
 #  cs_wownero: 2.0.0
-#  cs_wownero_flutter_libs: 2.0.2
+#  cs_wownero_flutter_libs: 2.0.3
 # %%END_ENABLE_WOW%%
 
 # %%ENABLE_SAL%%

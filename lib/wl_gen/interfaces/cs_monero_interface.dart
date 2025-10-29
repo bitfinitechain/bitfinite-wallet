@@ -155,6 +155,8 @@ abstract class CsMoneroInterface {
   bool validateAddress(String address, int network);
 
   String getSeed(WrappedWallet wallet);
+
+  Future<void> close(WrappedWallet wallet, {bool save = false});
 }
 
 // forwarding class

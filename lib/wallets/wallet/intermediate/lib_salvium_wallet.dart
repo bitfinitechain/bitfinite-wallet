@@ -32,7 +32,8 @@ import '../../../utilities/amount/amount.dart';
 import '../../../utilities/enums/fee_rate_type_enum.dart';
 import '../../../utilities/logger.dart';
 import '../../../utilities/stack_file_system.dart';
-import '../../../wl_gen/interfaces/cs_monero_interface.dart';
+import '../../../wl_gen/interfaces/cs_monero_interface.dart'
+    show CsWalletListener, CsOutput, CsRecipient, CsPendingTransaction;
 import '../../../wl_gen/interfaces/cs_salvium_interface.dart';
 import '../../crypto_currency/intermediate/cryptonote_currency.dart';
 import '../../isar/models/wallet_info.dart';
@@ -349,10 +350,14 @@ abstract class LibSalviumWallet<T extends CryptonoteCurrency>
           key: Wallet.mnemonicPassphraseKey(walletId: walletId),
           value: "",
         );
+
+        this.wallet = wallet;
+        await updateNode();
+        await csSalvium.close(wallet, save: true);
+        this.wallet = null;
       } catch (e, s) {
         Logging.instance.f("", error: e, stackTrace: s);
       }
-      await updateNode();
     }
 
     return super.init();

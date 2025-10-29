@@ -505,6 +505,10 @@ class _CsWowneroInterfaceImpl extends CsWowneroInterface {
   @override
   String getSeed(WrappedWallet wallet) =>
       wallet.get<lib_wownero.Wallet>().getSeed();
+
+  @override
+  Future<void> close(WrappedWallet wallet, {bool save = false}) =>
+      wallet.get<lib_wownero.Wallet>().close(save: save);
 }
 
 //END_ON

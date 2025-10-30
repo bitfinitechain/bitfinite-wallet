@@ -7,7 +7,7 @@ project(place_holder LANGUAGES CXX)
 set(BINARY_NAME "place_holder")
 
 set(INCLUDE_EPIC_SO INCLUDE_EPIC_SO_FLAG)
-set(INCLUDE_MWC_SO INCLUDE_EPIC_SO_FLAG)
+set(INCLUDE_MWC_SO INCLUDE_MWC_SO_FLAG)
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.

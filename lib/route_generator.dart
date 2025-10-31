@@ -159,6 +159,7 @@ import 'pages/spark_names/sub_widgets/spark_name_details.dart';
 import 'pages/special/firo_rescan_recovery_error_dialog.dart';
 import 'pages/stack_privacy_calls.dart';
 import 'pages/token_view/my_tokens_view.dart';
+import 'pages/token_view/sol_token_view.dart';
 import 'pages/token_view/token_contract_details_view.dart';
 import 'pages/token_view/token_view.dart';
 import 'pages/wallet_view/transaction_views/all_transactions_view.dart';
@@ -2499,6 +2500,29 @@ class RouteGenerator {
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => TokenView(
               walletId: args.walletId,
+              popPrevious: args.popPrevious,
+            ),
+            settings: RouteSettings(name: settings.name),
+          );
+        }
+        return _routeError("${settings.name} invalid args: ${args.toString()}");
+
+      case SolTokenView.routeName:
+        if (args is ({String walletId, String tokenMint})) {
+          return getRoute(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => SolTokenView(
+              walletId: args.walletId,
+              tokenMint: args.tokenMint,
+            ),
+            settings: RouteSettings(name: settings.name),
+          );
+        } else if (args is ({String walletId, String tokenMint, bool popPrevious})) {
+          return getRoute(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => SolTokenView(
+              walletId: args.walletId,
+              tokenMint: args.tokenMint,
               popPrevious: args.popPrevious,
             ),
             settings: RouteSettings(name: settings.name),

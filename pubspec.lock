@@ -623,10 +623,10 @@ packages:
     dependency: "direct main"
     description:
       name: cs_wownero_flutter_libs
-      sha256: "68b6c682c6cce0915418aa6b01b137ef77652932f8b3fb1bc868bfd20d15c562"
+      sha256: ba1156d015a9f75c841f927ff2ce6565cd7cd37f15aaedd9aaf36703453a9884
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.0"
+    version: "2.0.3"
   cs_wownero_flutter_libs_android:
     dependency: transitive
     description:
@@ -663,18 +663,18 @@ packages:
     dependency: transitive
     description:
       name: cs_wownero_flutter_libs_ios
-      sha256: f80dd0164902565d4fd0058da5be446a3ea5eaee2ca8651289a35d7fc93f3ca4
+      sha256: "9ffd158469a0a45668d89ce56b90e846dd823ffd44ee6997b50b76129e6f613c"
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.0"
+    version: "1.3.0"
   cs_wownero_flutter_libs_linux:
     dependency: transitive
     description:
       name: cs_wownero_flutter_libs_linux
-      sha256: b60a700f0ef676405bfa67793fb7431f7d2ffbaccc1f6ad69001da0c2e0a07b0
+      sha256: "441c9a7b28e28434942709915e6a54ea2392b3261f90c116e03b27b02fce7492"
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.0"
+    version: "1.4.0"
   cs_wownero_flutter_libs_macos:
     dependency: transitive
     description:

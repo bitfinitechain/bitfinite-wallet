@@ -122,3 +122,6 @@ lib/wl_gen/generated/
 /linux/flutter/generated_plugins.cmake
 /windows/flutter/generated_plugins.cmake
 /macos/Flutter/GeneratedPluginRegistrant.swift
+
+/assets/windows/mwebd.exe
+/tool/build

@@ -50,6 +50,16 @@ dart "${APP_PROJECT_ROOT_DIR}/tool/gen_interfaces.dart" \
       XEL \
       FROST
 
+
+MWEBD_EXE_SHA256=""
+if  [[ "$1" == "windows" ]]; then
+  dart "${APP_PROJECT_ROOT_DIR}/tool/build_standalone_mwebd_windows.dart"
+  MWEBD_EXE_SHA256="$(sha256sum "${APP_PROJECT_ROOT_DIR}/assets/windows/mwebd.exe" | awk '{print $1}')"
+  dart "${APP_PROJECT_ROOT_DIR}/tool/process_pubspec_deps.dart" \
+        "${PUBSPEC_FILE}" MWEBDEXE
+fi
+
+
 export INCLUDE_EPIC_SO="ON"
 export INCLUDE_MWC_SO="ON"
 
@@ -72,6 +82,8 @@ const _emptyWalletsMessage =
 const _appDataDirName = "stackwallet";
 const _shortDescriptionText = "An open-source, multicoin wallet for everyone";
 const _commitHash = "$BUILT_COMMIT_HASH";
+
+const _mwebdExeHash = "$MWEBD_EXE_SHA256";
 
 const Set<AppFeature> _features = {
   AppFeature.themeSelection,

@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:mutex/mutex.dart';
 import 'package:mweb_client/mweb_client.dart';
 
+import '../utilities/dynamic_object.dart';
 import '../utilities/logger.dart';
 import '../utilities/prefs.dart';
 import '../utilities/stack_file_system.dart';
@@ -24,10 +25,7 @@ final class MwebdService {
     CryptoCurrencyNetwork.test4 => throw UnimplementedError(),
   };
 
-  final Map<
-    CryptoCurrencyNetwork,
-    ({OpaqueMwebdServer server, MwebClient client})
-  >
+  final Map<CryptoCurrencyNetwork, ({DynamicObject server, MwebClient client})>
   _map = {};
 
   late final StreamSubscription<TorConnectionStatusChangedEvent>
@@ -178,9 +176,9 @@ final class MwebdService {
   }
 
   /// Get server status. Returns null if no server was initialized.
-  Future<Status?> getServerStatus(CryptoCurrencyNetwork net) {
-    return _updateLock.protect(() {
-      return mwebdServerInterface.getServerStatus(_map[net]?.server);
+  Future<StatusResponse?> getServerStatus(CryptoCurrencyNetwork net) {
+    return _updateLock.protect(() async {
+      return _map[net]?.client.status(StatusRequest());
     });
   }
 

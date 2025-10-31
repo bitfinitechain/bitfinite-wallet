@@ -388,6 +388,10 @@ flutter:
     # default themes_testing
     - assets/default_themes/
 
+# %%ENABLE_MWEBDEXE%%
+#    - assets/windows/mwebd.exe
+# %%END_ENABLE_MWEBDEXE%%
+
 import_sorter:
   comments: false # Optional, defaults to true
   ignored_files: # Optional, defaults to []

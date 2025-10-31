@@ -16,6 +16,8 @@ abstract class AppConfig {
 
   static const emptyWalletsMessage = _emptyWalletsMessage;
 
+  static const windowsMwebdExeHash = _mwebdExeHash;
+
   static String get appDefaultDataDirName => _appDataDirName;
   static String get shortDescriptionText => _shortDescriptionText;
   static String get commitHash => _commitHash;

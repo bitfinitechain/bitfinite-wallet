@@ -1,12 +1,13 @@
 import '../../models/input.dart';
 import 'cs_monero_interface.dart';
+import 'cs_salvium_interface.dart' show WrappedWallet;
 
-export '../generated/cs_salvium_interface_impl.dart';
+export '../generated/cs_wownero_interface_impl.dart';
 
-abstract class CsSalviumInterface {
-  const CsSalviumInterface();
+abstract class CsWowneroInterface {
+  const CsWowneroInterface();
 
-  void setUseCsSalviumLoggerInternal(bool enable);
+  void setUseCsWowneroLoggerInternal(bool enable);
 
   // tx prio forwarding
   int getTxPriorityHigh();
@@ -25,7 +26,6 @@ abstract class CsSalviumInterface {
     String walletId, {
     required String path,
     required String password,
-    int network = 0,
   });
 
   String getAddress(
@@ -39,7 +39,6 @@ abstract class CsSalviumInterface {
     required String password,
     required int wordCount,
     required String seedOffset,
-    int network = 0,
   });
 
   Future<WrappedWallet> getRestoredWallet({
@@ -49,7 +48,6 @@ abstract class CsSalviumInterface {
     required String mnemonic,
     required String seedOffset,
     int height = 0,
-    int network = 0,
   });
 
   Future<WrappedWallet> getRestoredFromViewKeyWallet({
@@ -59,7 +57,6 @@ abstract class CsSalviumInterface {
     required String address,
     required String privateViewKey,
     int height = 0,
-    int network = 0,
   });
 
   String getTxKey(WrappedWallet wallet, String txid);
@@ -130,16 +127,6 @@ abstract class CsSalviumInterface {
     required int currentHeight,
   });
 
-  Future<CsPendingTransaction> createStakeTx(
-    WrappedWallet wallet, {
-    required CsRecipient output,
-    required int priority,
-    List<StandardInput>? preferredInputs,
-    required int accountIndex,
-    required int minConfirms,
-    required int currentHeight,
-  });
-
   Future<CsPendingTransaction> createTxMultiDest(
     WrappedWallet wallet, {
     required List<CsRecipient> outputs,
@@ -162,7 +149,7 @@ abstract class CsSalviumInterface {
   Future<void> freezeOutput(WrappedWallet wallet, String keyImage);
   Future<void> thawOutput(WrappedWallet wallet, String keyImage);
 
-  List<String> getSalviumWordList(String language);
+  List<String> getWowneroWordList(String language, int seedLength);
 
   int getHeightByDate(DateTime date);
 
@@ -171,13 +158,4 @@ abstract class CsSalviumInterface {
   String getSeed(WrappedWallet wallet);
 
   Future<void> close(WrappedWallet wallet, {bool save = false});
-}
-
-// lol...
-class WrappedWallet {
-  final Object _wallet;
-
-  const WrappedWallet(this._wallet);
-
-  T get<T>() => _wallet as T;
 }

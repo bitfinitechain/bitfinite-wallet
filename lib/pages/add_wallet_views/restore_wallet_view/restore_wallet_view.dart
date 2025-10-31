@@ -61,6 +61,7 @@ import '../../../widgets/table_view/table_view.dart';
 import '../../../widgets/table_view/table_view_cell.dart';
 import '../../../widgets/table_view/table_view_row.dart';
 import '../../../wl_gen/interfaces/cs_monero_interface.dart';
+import '../../../wl_gen/interfaces/cs_wownero_interface.dart';
 import '../../../wl_gen/interfaces/lib_xelis_interface.dart';
 import '../../home_view/home_view.dart';
 import '../add_token_view/edit_wallet_tokens_view.dart';
@@ -189,7 +190,7 @@ class _RestoreWalletViewState extends ConsumerState<RestoreWalletView> {
       }
     }
     if (widget.coin is Wownero) {
-      final wowneroWordList = csMonero.getWowneroWordList(
+      final wowneroWordList = csWownero.getWowneroWordList(
         "English",
         widget.seedWordsLength,
       );

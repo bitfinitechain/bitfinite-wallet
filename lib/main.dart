@@ -76,6 +76,7 @@ import 'wallets/isar/providers/all_wallets_info_provider.dart';
 import 'wallets/wallet/wallet_mixin_interfaces/spark_interface.dart';
 import 'widgets/crypto_notifications.dart';
 import 'wl_gen/interfaces/cs_monero_interface.dart';
+import 'wl_gen/interfaces/cs_wownero_interface.dart';
 import 'wl_gen/interfaces/lib_xelis_interface.dart';
 
 final openedFromSWBFileStringStateProvider = StateProvider<String?>(
@@ -161,9 +162,11 @@ void main(List<String> args) async {
 
   DB.instance.hive.registerAdapter(lib_monero_compat.WalletTypeAdapter());
 
-  if (AppConfig.coins.whereType<Monero>().isNotEmpty ||
-      AppConfig.coins.whereType<Wownero>().isNotEmpty) {
+  if (AppConfig.coins.whereType<Monero>().isNotEmpty) {
     csMonero.setUseCsMoneroLoggerInternal(kDebugMode);
+  }
+  if (AppConfig.coins.whereType<Wownero>().isNotEmpty) {
+    csWownero.setUseCsWowneroLoggerInternal(kDebugMode);
   }
 
   DB.instance.hive.init(

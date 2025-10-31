@@ -61,17 +61,22 @@ dependencies:
 # %%END_ENABLE_TOR%%
 
 # %%ENABLE_XMR%%
-#  cs_monero: 1.1.1
-#  cs_monero_flutter_libs: 1.1.1
+#  cs_monero: 2.0.0
+#  cs_monero_flutter_libs: 2.0.0
 # %%END_ENABLE_XMR%%
+
+# %%ENABLE_WOW%%
+#  cs_wownero: 2.0.0
+#  cs_wownero_flutter_libs: 2.0.3
+# %%END_ENABLE_WOW%%
 
 # %%ENABLE_SAL%%
 #  cs_salvium: ^2.0.0
-#  cs_salvium_flutter_libs: ^2.0.0
+#  cs_salvium_flutter_libs: ^2.0.1
 # %%END_ENABLE_SAL%%
 
 # %%ENABLE_MWEBD%%
-#  flutter_mwebd: ^0.0.1-pre.8
+#  flutter_mwebd: ^0.0.1-pre.10
 # %%END_ENABLE_MWEBD%%
 
   monero_rpc: ^2.0.0
@@ -317,6 +322,24 @@ dependency_overrides:
   analyzer: ^8.2.0
   pinenacl: ^0.6.0
   http: ^0.13.0
+
+# %%ENABLE_ISAR%%
+#  isar_community:
+#    git:
+#      url: https://github.com/isar-community/isar-community.git
+#      path: packages/isar_community
+#      ref: 39ea19ff035518aef4d0e776206d96a428f57789
+#  isar_community_flutter_libs:
+#    git:
+#      url: https://github.com/isar-community/isar-community.git
+#      path: packages/isar_community_flutter_libs
+#      ref: 39ea19ff035518aef4d0e776206d96a428f57789
+#  isar_community_generator:
+#    git:
+#      url: https://github.com/isar-community/isar-community.git
+#      path: packages/isar_community_generator
+#      ref: 39ea19ff035518aef4d0e776206d96a428f57789
+# %%END_ENABLE_ISAR%%
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -53,7 +53,7 @@ import '../../wallets/wallet/impl/bitcoin_frost_wallet.dart';
 import '../../wallets/wallet/impl/firo_wallet.dart';
 import '../../wallets/wallet/impl/mimblewimblecoin_wallet.dart';
 import '../../wallets/wallet/impl/namecoin_wallet.dart';
-import '../../wallets/wallet/intermediate/lib_monero_wallet.dart';
+import '../../wallets/wallet/intermediate/cryptonote_wallet.dart';
 import '../../wallets/wallet/intermediate/lib_salvium_wallet.dart';
 import '../../wallets/wallet/wallet_mixin_interfaces/cash_fusion_interface.dart';
 import '../../wallets/wallet/wallet_mixin_interfaces/coin_control_interface.dart';
@@ -1272,9 +1272,7 @@ class _WalletViewState extends ConsumerState<WalletView> {
                           );
                         },
                       ),
-                    if ((wallet is LibMoneroWallet ||
-                            wallet is LibSalviumWallet) &&
-                        !viewOnly)
+                    if ((wallet is CryptonoteWallet) && !viewOnly)
                       WalletNavigationBarItemData(
                         label: "Churn",
                         icon: const ChurnNavIcon(),

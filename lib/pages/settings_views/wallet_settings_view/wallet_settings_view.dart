@@ -18,9 +18,9 @@ import 'package:tuple/tuple.dart';
 import '../../../db/hive/db.dart';
 import '../../../db/sqlite/firo_cache.dart';
 import '../../../models/epicbox_config_model.dart';
-import '../../../models/mwcmqs_config_model.dart';
 import '../../../models/keys/key_data_interface.dart';
 import '../../../models/keys/view_only_wallet_data.dart';
+import '../../../models/mwcmqs_config_model.dart';
 import '../../../notifications/show_flush_bar.dart';
 import '../../../providers/global/wallets_provider.dart';
 import '../../../providers/ui/transaction_filter_provider.dart';
@@ -38,9 +38,8 @@ import '../../../wallets/crypto_currency/intermediate/frost_currency.dart';
 import '../../../wallets/crypto_currency/intermediate/nano_currency.dart';
 import '../../../wallets/wallet/impl/bitcoin_frost_wallet.dart';
 import '../../../wallets/wallet/impl/epiccash_wallet.dart';
-import '../../../wallets/wallet/intermediate/lib_monero_wallet.dart';
-import '../../../wallets/wallet/intermediate/lib_salvium_wallet.dart';
 import '../../../wallets/wallet/impl/mimblewimblecoin_wallet.dart';
+import '../../../wallets/wallet/intermediate/cryptonote_wallet.dart';
 import '../../../wallets/wallet/wallet_mixin_interfaces/extended_keys_interface.dart';
 import '../../../wallets/wallet/wallet_mixin_interfaces/mnemonic_interface.dart';
 import '../../../wallets/wallet/wallet_mixin_interfaces/view_only_option_interface.dart';
@@ -115,8 +114,9 @@ class _WalletSettingsViewState extends ConsumerState<WalletSettingsView> {
     _currentSyncStatus = widget.initialSyncStatus;
     // _currentNodeStatus = widget.initialNodeStatus;
 
-    eventBus =
-        widget.eventBus != null ? widget.eventBus! : GlobalEventBus.instance;
+    eventBus = widget.eventBus != null
+        ? widget.eventBus!
+        : GlobalEventBus.instance;
 
     _syncStatusSubscription = eventBus
         .on<WalletSyncStatusChangedEvent>()
@@ -296,12 +296,12 @@ class _WalletSettingsViewState extends ConsumerState<WalletSettingsView> {
                                                   keys: results[0]!,
                                                   prevGen:
                                                       results[2] == null ||
-                                                              results[3] == null
-                                                          ? null
-                                                          : (
-                                                            config: results[3]!,
-                                                            keys: results[2]!,
-                                                          ),
+                                                          results[3] == null
+                                                      ? null
+                                                      : (
+                                                          config: results[3]!,
+                                                          keys: results[2]!,
+                                                        ),
                                                 );
                                               }
                                             } else {
@@ -312,30 +312,26 @@ class _WalletSettingsViewState extends ConsumerState<WalletSettingsView> {
                                                         .isViewOnly) {
                                                   // TODO: is something needed here?
                                                 } else {
-                                                  mnemonic =
-                                                      await wallet
-                                                          .getMnemonicAsWords();
+                                                  mnemonic = await wallet
+                                                      .getMnemonicAsWords();
                                                 }
                                               }
                                             }
 
-                                          KeyDataInterface? keyData;
-                                          if (wallet
-                                                  is ViewOnlyOptionInterface &&
-                                              wallet.isViewOnly) {
-                                            keyData =
-                                                await wallet
-                                                    .getViewOnlyWalletData();
-                                          } else if (wallet
-                                              is ExtendedKeysInterface) {
-                                            keyData = await wallet.getXPrivs();
-                                          } else if (wallet
-                                              is LibMoneroWallet) {
-                                            keyData = await wallet.getKeys();
-                                          } else if (wallet
-                                          is LibSalviumWallet) {
-                                            keyData = await wallet.getKeys();
-                                          }
+                                            KeyDataInterface? keyData;
+                                            if (wallet
+                                                    is ViewOnlyOptionInterface &&
+                                                wallet.isViewOnly) {
+                                              keyData = await wallet
+                                                  .getViewOnlyWalletData();
+                                            } else if (wallet
+                                                is ExtendedKeysInterface) {
+                                              keyData = await wallet
+                                                  .getXPrivs();
+                                            } else if (wallet
+                                                is CryptonoteWallet) {
+                                              keyData = await wallet.getKeys();
+                                            }
 
                                             if (context.mounted) {
                                               if (keyData != null &&
@@ -348,26 +344,22 @@ class _WalletSettingsViewState extends ConsumerState<WalletSettingsView> {
                                                     shouldUseMaterialRoute:
                                                         RouteGenerator
                                                             .useMaterialPageRoute,
-                                                    builder:
-                                                        (_) => LockscreenView(
-                                                          routeOnSuccessArguments:
-                                                              (
-                                                                walletId:
-                                                                    walletId,
-                                                                keyData:
-                                                                    keyData,
-                                                              ),
-                                                          showBackButton: true,
-                                                          routeOnSuccess:
-                                                              MobileKeyDataView
-                                                                  .routeName,
-                                                          biometricsCancelButtonString:
-                                                              "CANCEL",
-                                                          biometricsLocalizedReason:
-                                                              "Authenticate to view recovery data",
-                                                          biometricsAuthenticationTitle:
-                                                              "View recovery data",
-                                                        ),
+                                                    builder: (_) => LockscreenView(
+                                                      routeOnSuccessArguments: (
+                                                        walletId: walletId,
+                                                        keyData: keyData,
+                                                      ),
+                                                      showBackButton: true,
+                                                      routeOnSuccess:
+                                                          MobileKeyDataView
+                                                              .routeName,
+                                                      biometricsCancelButtonString:
+                                                          "CANCEL",
+                                                      biometricsLocalizedReason:
+                                                          "Authenticate to view recovery data",
+                                                      biometricsAuthenticationTitle:
+                                                          "View recovery data",
+                                                    ),
                                                     settings: const RouteSettings(
                                                       name:
                                                           "/viewRecoveryDataLockscreen",
@@ -381,27 +373,26 @@ class _WalletSettingsViewState extends ConsumerState<WalletSettingsView> {
                                                     shouldUseMaterialRoute:
                                                         RouteGenerator
                                                             .useMaterialPageRoute,
-                                                    builder:
-                                                        (_) => LockscreenView(
-                                                          routeOnSuccessArguments: (
-                                                            walletId: walletId,
-                                                            mnemonic:
-                                                                mnemonic ?? [],
-                                                            frostWalletData:
-                                                                frostWalletData,
-                                                            keyData: keyData,
-                                                          ),
-                                                          showBackButton: true,
-                                                          routeOnSuccess:
-                                                              WalletBackupView
-                                                                  .routeName,
-                                                          biometricsCancelButtonString:
-                                                              "CANCEL",
-                                                          biometricsLocalizedReason:
-                                                              "Authenticate to view recovery phrase",
-                                                          biometricsAuthenticationTitle:
-                                                              "View recovery phrase",
-                                                        ),
+                                                    builder: (_) => LockscreenView(
+                                                      routeOnSuccessArguments: (
+                                                        walletId: walletId,
+                                                        mnemonic:
+                                                            mnemonic ?? [],
+                                                        frostWalletData:
+                                                            frostWalletData,
+                                                        keyData: keyData,
+                                                      ),
+                                                      showBackButton: true,
+                                                      routeOnSuccess:
+                                                          WalletBackupView
+                                                              .routeName,
+                                                      biometricsCancelButtonString:
+                                                          "CANCEL",
+                                                      biometricsLocalizedReason:
+                                                          "Authenticate to view recovery phrase",
+                                                      biometricsAuthenticationTitle:
+                                                          "View recovery phrase",
+                                                    ),
                                                     settings: const RouteSettings(
                                                       name:
                                                           "/viewRecoverPhraseLockscreen",
@@ -489,23 +480,20 @@ class _WalletSettingsViewState extends ConsumerState<WalletSettingsView> {
                                               useSafeArea: false,
                                               barrierDismissible: true,
                                               context: context,
-                                              builder:
-                                                  (_) => StackOkDialog(
-                                                    title:
-                                                        "Are you sure you want to clear "
-                                                        "${coin.prettyName} electrumx cache?",
-                                                    onOkPressed: (value) {
-                                                      result = value;
-                                                    },
-                                                    leftButton: SecondaryButton(
-                                                      label: "Cancel",
-                                                      onPressed: () {
-                                                        Navigator.of(
-                                                          context,
-                                                        ).pop();
-                                                      },
-                                                    ),
-                                                  ),
+                                              builder: (_) => StackOkDialog(
+                                                title:
+                                                    "Are you sure you want to clear "
+                                                    "${coin.prettyName} electrumx cache?",
+                                                onOkPressed: (value) {
+                                                  result = value;
+                                                },
+                                                leftButton: SecondaryButton(
+                                                  label: "Cancel",
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                ),
+                                              ),
                                             );
 
                                             if (result == "OK" &&
@@ -578,8 +566,11 @@ class _WalletSettingsViewState extends ConsumerState<WalletSettingsView> {
                                     //     .getWallet(walletId)
                                     //     .isActiveWallet = false;
                                     ref
-                                        .read(transactionFilterProvider.state)
-                                        .state = null;
+                                            .read(
+                                              transactionFilterProvider.state,
+                                            )
+                                            .state =
+                                        null;
 
                                     Navigator.of(context).popUntil(
                                       ModalRoute.withName(HomeView.routeName),
@@ -591,10 +582,9 @@ class _WalletSettingsViewState extends ConsumerState<WalletSettingsView> {
                                   child: Text(
                                     "Log out",
                                     style: STextStyles.button(context).copyWith(
-                                      color:
-                                          Theme.of(context)
-                                              .extension<StackColors>()!
-                                              .accentColorDark,
+                                      color: Theme.of(context)
+                                          .extension<StackColors>()!
+                                          .accentColorDark,
                                     ),
                                   ),
                                 );
@@ -666,8 +656,9 @@ class _EpiBoxInfoFormState extends ConsumerState<EpicBoxInfoForm> {
             enableSuggestions: Util.isDesktop ? false : true,
             controller: portController,
             decoration: const InputDecoration(hintText: "Port"),
-            keyboardType:
-                Util.isDesktop ? null : const TextInputType.numberWithOptions(),
+            keyboardType: Util.isDesktop
+                ? null
+                : const TextInputType.numberWithOptions(),
           ),
           const SizedBox(height: 8),
           TextButton(
@@ -696,8 +687,9 @@ class _EpiBoxInfoFormState extends ConsumerState<EpicBoxInfoForm> {
             child: Text(
               "Save",
               style: STextStyles.button(context).copyWith(
-                color:
-                    Theme.of(context).extension<StackColors>()!.accentColorDark,
+                color: Theme.of(
+                  context,
+                ).extension<StackColors>()!.accentColorDark,
               ),
             ),
           ),
@@ -708,10 +700,7 @@ class _EpiBoxInfoFormState extends ConsumerState<EpicBoxInfoForm> {
 }
 
 class MwcMqsInfoForm extends ConsumerStatefulWidget {
-  const MwcMqsInfoForm({
-    super.key,
-    required this.walletId,
-  });
+  const MwcMqsInfoForm({super.key, required this.walletId});
 
   final String walletId;
 
@@ -756,20 +745,17 @@ class _MwcmqsInfoFormState extends ConsumerState<MwcMqsInfoForm> {
             controller: hostController,
             decoration: const InputDecoration(hintText: "Host"),
           ),
-          const SizedBox(
-            height: 8,
-          ),
+          const SizedBox(height: 8),
           TextField(
             autocorrect: Util.isDesktop ? false : true,
             enableSuggestions: Util.isDesktop ? false : true,
             controller: portController,
             decoration: const InputDecoration(hintText: "Port"),
-            keyboardType:
-                Util.isDesktop ? null : const TextInputType.numberWithOptions(),
+            keyboardType: Util.isDesktop
+                ? null
+                : const TextInputType.numberWithOptions(),
           ),
-          const SizedBox(
-            height: 8,
-          ),
+          const SizedBox(height: 8),
           TextButton(
             onPressed: () async {
               try {
@@ -796,8 +782,9 @@ class _MwcmqsInfoFormState extends ConsumerState<MwcMqsInfoForm> {
             child: Text(
               "Save",
               style: STextStyles.button(context).copyWith(
-                color:
-                    Theme.of(context).extension<StackColors>()!.accentColorDark,
+                color: Theme.of(
+                  context,
+                ).extension<StackColors>()!.accentColorDark,
               ),
             ),
           ),

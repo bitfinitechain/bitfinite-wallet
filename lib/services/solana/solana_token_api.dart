@@ -255,7 +255,7 @@ class SolanaTokenAPI {
         value: TokenAccountInfo(
           address: tokenAccountAddress,
           owner: 'placeholder_owner',
-          mint: 'EPjFWaJUwYUoRwzwkH4H8gNB7zHW9tLT6NCKB8S4yh6h',
+          mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
           balance: BigInt.from(1000000000),
           decimals: 6,
           isNative: false,

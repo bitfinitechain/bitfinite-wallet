@@ -12,11 +12,11 @@ import '../models/isar/models/solana/spl_token.dart';
 abstract class DefaultSplTokens {
   static List<SplToken> list = [
     SplToken(
-      address: "EPjFWaJUwYUoRwzwkH4H8gNB7zHW9tLT6NCKB8S4yh6h",
+      address: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
       name: "USD Coin",
       symbol: "USDC",
       decimals: 6,
-      logoUri: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWaJUwYUoRwzwkH4H8gNB7zHW9tLT6NCKB8S4yh6h/logo.png",
+      logoUri: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png",
     ),
     SplToken(
       address: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenEst",

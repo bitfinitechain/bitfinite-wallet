@@ -16,19 +16,23 @@ import 'package:flutter_svg/svg.dart';
 import 'package:isar_community/isar.dart';
 
 import '../../../db/isar/main_db.dart';
+import '../../../models/isar/models/contract.dart';
 import '../../../models/isar/models/ethereum/eth_contract.dart';
 import '../../../notifications/show_flush_bar.dart';
 import '../../../pages_desktop_specific/desktop_home_view.dart';
 import '../../../providers/global/price_provider.dart';
+import '../../../providers/global/solana_token_api_provider.dart';
 import '../../../providers/global/wallets_provider.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/assets.dart';
 import '../../../utilities/constants.dart';
 import '../../../utilities/default_eth_tokens.dart';
+import '../../../utilities/default_spl_tokens.dart';
 import '../../../utilities/text_styles.dart';
 import '../../../utilities/util.dart';
 import '../../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../../wallets/wallet/impl/ethereum_wallet.dart';
+import '../../../wallets/wallet/impl/solana_wallet.dart';
 import '../../../widgets/background.dart';
 import '../../../widgets/conditional_parent.dart';
 import '../../../widgets/custom_buttons/app_bar_icon_button.dart';
@@ -102,10 +106,91 @@ class _EditWalletTokensViewState extends ConsumerState<EditWalletTokensView> {
             .map((e) => e.token.address)
             .toList();
 
-    final ethWallet =
-        ref.read(pWallets).getWallet(widget.walletId) as EthereumWallet;
+    final wallet = ref.read(pWallets).getWallet(widget.walletId);
 
-    await ethWallet.updateTokenContracts(selectedTokens);
+    // Handle Ethereum tokens.
+    if (wallet is EthereumWallet) {
+      await wallet.updateTokenContracts(selectedTokens);
+    }
+    // Handle Solana tokens.
+    else if (wallet is SolanaWallet) {
+      // Get WalletInfo and update Solana token mint addresses.
+      final walletInfo = wallet.info;
+      await walletInfo.updateSolanaTokenMintAddresses(
+        newMintAddresses: selectedTokens.toSet(),
+        isar: MainDB.instance.isar,
+      );
+
+      // Log selected tokens and verify ownership.
+      debugPrint('===== SOLANA TOKEN OWNERSHIP CHECK =====');
+      debugPrint('Wallet: ${walletInfo.name}');
+      debugPrint('Selected token mint addresses: $selectedTokens');
+
+      // Get wallet's receiving address for ownership checks.
+      try {
+        final receivingAddressObj = await wallet.getCurrentReceivingAddress();
+        if (receivingAddressObj == null) {
+          debugPrint('Error: Could not get wallet receiving address');
+          return;
+        }
+        final receivingAddress = receivingAddressObj.value;
+        debugPrint('Wallet address: $receivingAddress');
+        debugPrint('');
+
+        // Check ownership of each selected token.
+        for (final mintAddress in selectedTokens) {
+          // Find the token entity to get token details.
+          final tokenEntity = tokenEntities.firstWhere(
+            (e) => e.token.address == mintAddress,
+            orElse: () => AddTokenListElementData(
+              // Fallback contract with just the address
+              EthContract(
+                address: mintAddress,
+                name: 'Unknown Token',
+                symbol: mintAddress,
+                decimals: 0,
+                type: EthContractType.erc20,
+              ),
+            ),
+          );
+
+          final tokenName = tokenEntity.token.name;
+          final tokenSymbol = tokenEntity.token.symbol;
+
+          debugPrint('Token: $tokenName ($tokenSymbol)');
+          debugPrint('  Mint: $mintAddress');
+
+          // Check if wallet owns this token using the API.
+          try {
+            // Note: ownsToken() is currently a placeholder returning false.
+            // Once Solana RPC integration is complete, this will check real ownership.
+            final tokenApi = ref.read(solanaTokenApiProvider);
+            final ownershipResult = await tokenApi.ownsToken(
+              receivingAddress,
+              mintAddress,
+            );
+
+            if (ownershipResult.isSuccess) {
+              if (ownershipResult.value == true) {
+                debugPrint('OWNS token - token account found');
+              } else {
+                debugPrint('DOES NOT own token - no token account found');
+              }
+            } else {
+              debugPrint(
+                'Error checking ownership: ${ownershipResult.exception}',
+              );
+            }
+          } catch (e) {
+            debugPrint('Exception checking ownership: $e');
+          }
+        }
+
+        debugPrint('========================================');
+      } catch (e) {
+        debugPrint('Error getting wallet address: $e');
+      }
+    }
     if (mounted) {
       if (widget.contractsToMarkSelected == null) {
         Navigator.of(context).pop(42);
@@ -123,7 +208,7 @@ class _EditWalletTokensViewState extends ConsumerState<EditWalletTokensView> {
           unawaited(
             showFloatingFlushBar(
               type: FlushBarType.success,
-              message: "${ethWallet.info.name} tokens saved",
+              message: "${wallet.info.name} tokens saved",
               context: context,
             ),
           );
@@ -175,19 +260,29 @@ class _EditWalletTokensViewState extends ConsumerState<EditWalletTokensView> {
     _searchFieldController = TextEditingController();
     _searchFocusNode = FocusNode();
 
-    final contracts =
-        MainDB.instance.getEthContracts().sortByName().findAllSync();
+    final wallet = ref.read(pWallets).getWallet(widget.walletId);
 
-    if (contracts.isEmpty) {
-      contracts.addAll(DefaultTokens.list);
-      MainDB.instance
-          .putEthContracts(contracts)
-          .then(
-            (_) => ref.read(priceAnd24hChangeNotifierProvider).updatePrice(),
-          );
+    // Load appropriate tokens based on wallet type.
+    if (wallet is SolanaWallet) {
+      // Load Solana tokens (SPL tokens).
+      final splTokens = DefaultSplTokens.list;
+      tokenEntities.addAll(splTokens.map((e) => AddTokenListElementData(e)));
+    } else {
+      // Load Ethereum tokens (default behavior for Ethereum wallets).
+      final contracts =
+          MainDB.instance.getEthContracts().sortByName().findAllSync();
+
+      if (contracts.isEmpty) {
+        contracts.addAll(DefaultTokens.list);
+        MainDB.instance
+            .putEthContracts(contracts)
+            .then(
+              (_) => ref.read(priceAnd24hChangeNotifierProvider).updatePrice(),
+            );
+      }
+
+      tokenEntities.addAll(contracts.map((e) => AddTokenListElementData(e)));
     }
-
-    tokenEntities.addAll(contracts.map((e) => AddTokenListElementData(e)));
 
     final walletContracts = ref.read(pWalletTokenAddresses(widget.walletId));
 

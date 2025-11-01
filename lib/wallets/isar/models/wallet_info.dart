@@ -75,6 +75,17 @@ class WalletInfo implements IsarId {
     }
   }
 
+  @ignore
+  List<String> get solanaTokenMintAddresses {
+    if (otherData[WalletInfoKeys.solanaTokenMintAddresses] is List) {
+      return List<String>.from(
+        otherData[WalletInfoKeys.solanaTokenMintAddresses] as List,
+      );
+    } else {
+      return [];
+    }
+  }
+
   /// Special case for coins such as firo lelantus
   @ignore
   Balance get cachedBalanceSecondary {
@@ -396,6 +407,19 @@ class WalletInfo implements IsarId {
     );
   }
 
+  /// Update Solana token mint addresses and update the db.
+  Future<void> updateSolanaTokenMintAddresses({
+    required Set<String> newMintAddresses,
+    required Isar isar,
+  }) async {
+    await updateOtherData(
+      newEntries: {
+        WalletInfoKeys.solanaTokenMintAddresses: newMintAddresses.toList(),
+      },
+      isar: isar,
+    );
+  }
+
   Future<void> setMwebEnabled({
     required bool newValue,
     required Isar isar,
@@ -524,4 +548,5 @@ abstract class WalletInfoKeys {
   static const String mwebScanHeight = "mwebScanHeightKey";
   static const String firoSparkUsedTagsCacheResetVersion =
       "firoSparkUsedTagsCacheResetVersionKey";
+  static const String solanaTokenMintAddresses = "solanaTokenMintAddressesKey";
 }

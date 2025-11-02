@@ -7,6 +7,7 @@
  *
  */
 
+import 'package:solana/dto.dart';
 import 'package:solana/solana.dart';
 
 /// Exception for Solana token API errors.
@@ -143,14 +144,7 @@ class SolanaTokenAPI {
 
   /// Get token accounts owned by a wallet address for a specific mint.
   ///
-  /// Parameters:
-  ///   - ownerAddress: The wallet address to query
-  ///   - mint: (Optional) Filter by specific token mint address
-  ///
-  /// Returns a list of token account addresses.
-  /// 
-  /// Currently returns placeholder data for UI development.
-  /// TODO: Implement full RPC call with proper TokenAccountsFilter.
+  /// Returns a list of token account addresses owned by the wallet.
   Future<SolanaTokenApiResponse<List<String>>> getTokenAccountsByOwner(
     String ownerAddress, {
     String? mint,
@@ -158,17 +152,25 @@ class SolanaTokenAPI {
     try {
       _checkClient();
 
-      // TODO: Implement actual RPC call when solana package APIs are stable.
-      // For now, return placeholder token account address derived from owner and mint.
-      if (mint != null) {
-        // Placeholder: In production, derive Associated Token Account (ATA)
-        // using findAssociatedTokenAddress.
-        return SolanaTokenApiResponse<List<String>>(
-          value: ['TokenAccount_${ownerAddress}_$mint'],
-        );
-      }
+      const splTokenProgramId = 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA';
 
-      return SolanaTokenApiResponse<List<String>>(value: []);
+      final result = await _rpcClient!.getTokenAccountsByOwner(
+        ownerAddress,
+        // Create the appropriate filter: by mint if specified, or else all SPL tokens.
+        mint != null
+            ? TokenAccountsFilter.byMint(mint)
+            : TokenAccountsFilter.byProgramId(splTokenProgramId),
+        encoding: Encoding.jsonParsed,
+      );
+
+      // Extract token account addresses from the RPC response.
+      final accountAddresses = result.value
+          .map((account) => account.pubkey)
+          .toList();
+
+      return SolanaTokenApiResponse<List<String>>(
+        value: accountAddresses,
+      );
     } on Exception catch (e) {
       return SolanaTokenApiResponse<List<String>>(
         exception: SolanaTokenApiException(
@@ -289,13 +291,7 @@ class SolanaTokenAPI {
 
   /// Check if a wallet owns a token (has a token account for the given mint).
   ///
-  /// Parameters:
-  ///   - ownerAddress: The wallet address.
-  ///   - mint: The token mint address.
-  ///
   /// Returns true if the wallet has a token account for this mint, false otherwise.
-  /// NOTE: Currently returns placeholder data for UI development.
-  /// TODO: Implement actual RPC call to check token account ownership.
   Future<SolanaTokenApiResponse<bool>> ownsToken(
     String ownerAddress,
     String mint,
@@ -303,9 +299,16 @@ class SolanaTokenAPI {
     try {
       _checkClient();
 
-      // Return placeholder.
-      // TODO: Implement actual RPC call to getTokenAccountsByOwner with mint filter.
-      return SolanaTokenApiResponse<bool>(value: false);
+      // Get token accounts for this owner and mint.
+      final accounts = await getTokenAccountsByOwner(ownerAddress, mint: mint);
+
+      if (accounts.isError) {
+        return SolanaTokenApiResponse<bool>(exception: accounts.exception);
+      }
+
+      // If we got token accounts, the user owns this token.
+      final hasTokenAccount = accounts.value != null && (accounts.value as List).isNotEmpty;
+      return SolanaTokenApiResponse<bool>(value: hasTokenAccount);
     } on Exception catch (e) {
       return SolanaTokenApiResponse<bool>(
         exception: SolanaTokenApiException(

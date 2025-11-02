@@ -187,19 +187,115 @@ class SolanaTokenAPI {
   ///   - tokenAccountAddress: The token account address to query.
   ///
   /// Returns the balance as a BigInt (in smallest units).
-  /// NOTE: Currently returns placeholder data for UI development
-  /// TODO: Implement full RPC call when API is ready
   Future<SolanaTokenApiResponse<BigInt>> getTokenAccountBalance(
     String tokenAccountAddress,
   ) async {
     try {
       _checkClient();
 
-      // TODO: Query account info to get token amount when RPC APIs are stable
-      // For now return placeholder mock data
-      return SolanaTokenApiResponse<BigInt>(
-        value: BigInt.from(1000000),
+      // Query the token account with jsonParsed encoding to get token amount.
+      final response = await _rpcClient!.getAccountInfo(
+        tokenAccountAddress,
+        encoding: Encoding.jsonParsed,
       );
+
+      if (response.value == null) {
+        // Token account doesn't exist.
+        return SolanaTokenApiResponse<BigInt>(
+          value: BigInt.zero,
+        );
+      }
+
+      final accountData = response.value!;
+
+      // Extract token amount from parsed data.
+      try {
+        // Debug: Print the structure of accountData.
+        print('[SOLANA_TOKEN_API] accountData type: ${accountData.runtimeType}');
+        print('[SOLANA_TOKEN_API] accountData.data type: ${accountData.data.runtimeType}');
+        print('[SOLANA_TOKEN_API] accountData.data: ${accountData.data}');
+
+        // The solana package returns a ParsedAccountData which is a sealed class/union type.
+        // For SPL Token accounts, it contains SplTokenProgramAccountData.
+
+        final parsedData = accountData.data;
+
+        if (parsedData is ParsedAccountData) {
+          print('[SOLANA_TOKEN_API] ParsedAccountData detected');
+
+          try {
+            final extractedBalance = parsedData.when(
+              splToken: (spl) {
+                print('[SOLANA_TOKEN_API] Handling splToken variant');
+                print('[SOLANA_TOKEN_API] spl type: ${spl.runtimeType}');
+
+                return spl.when(
+                  account: (info, type, accountType) {
+                    print('[SOLANA_TOKEN_API] Handling account variant');
+                    print('[SOLANA_TOKEN_API] info type: ${info.runtimeType}');
+                    print('[SOLANA_TOKEN_API] info.tokenAmount: ${info.tokenAmount}');
+
+                    try {
+                      final tokenAmount = info.tokenAmount;
+                      print('[SOLANA_TOKEN_API] tokenAmount.amount: ${tokenAmount.amount}');
+                      print('[SOLANA_TOKEN_API] tokenAmount.decimals: ${tokenAmount.decimals}');
+
+                      final balanceBigInt = BigInt.parse(tokenAmount.amount);
+                      print('[SOLANA_TOKEN_API] Successfully extracted balance: $balanceBigInt');
+                      return balanceBigInt;
+                    } catch (e) {
+                      print('[SOLANA_TOKEN_API] Error extracting balance: $e');
+                      return null;
+                    }
+                  },
+                  mint: (info, type, accountType) {
+                    print('[SOLANA_TOKEN_API] Got mint variant (not expected for token account balance)');
+                    return null;
+                  },
+                  unknown: (type) {
+                    print('[SOLANA_TOKEN_API] Got unknown account variant');
+                    return null;
+                  },
+                );
+              },
+              stake: (_) {
+                print('[SOLANA_TOKEN_API] Got stake account type (not expected)');
+                return null;
+              },
+              token2022: (_) {
+                print('[SOLANA_TOKEN_API] Got token2022 account type (not expected)');
+                return null;
+              },
+              unsupported: (_) {
+                print('[SOLANA_TOKEN_API] Got unsupported account type');
+                return null;
+              },
+            );
+
+            if (extractedBalance != null && extractedBalance is BigInt) {
+              print('[SOLANA_TOKEN_API] Extracted balance: $extractedBalance');
+              return SolanaTokenApiResponse<BigInt>(
+                value: extractedBalance as BigInt,
+              );
+            }
+          } catch (e) {
+            print('[SOLANA_TOKEN_API] Error using when() method: $e');
+            print('[SOLANA_TOKEN_API] Stack trace: ${StackTrace.current}');
+          }
+        }
+
+        // If we can't extract from the Dart object, return zero.
+        print('[SOLANA_TOKEN_API] Returning zero balance');
+        return SolanaTokenApiResponse<BigInt>(
+          value: BigInt.zero,
+        );
+      } catch (e) {
+        // If parsing fails, return zero balance.
+        print('[SOLANA_TOKEN_API] Exception during parsing: $e');
+        return SolanaTokenApiResponse<BigInt>(
+          value: BigInt.zero,
+        );
+      }
     } on Exception catch (e) {
       return SolanaTokenApiResponse<BigInt>(
         exception: SolanaTokenApiException(

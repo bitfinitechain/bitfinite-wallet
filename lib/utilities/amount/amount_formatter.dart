@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/isar/models/ethereum/eth_contract.dart';
+import '../../models/isar/models/solana/spl_token.dart';
 import '../../providers/global/locale_provider.dart';
 import '../../providers/global/prefs_provider.dart';
 import 'amount.dart';
@@ -52,6 +53,7 @@ class AmountFormatter {
     Amount amount, {
     String? overrideUnit,
     EthContract? ethContract,
+    SplToken? splToken,
     bool withUnitName = true,
     bool indicatePrecisionLoss = true,
   }) {
@@ -64,6 +66,7 @@ class AmountFormatter {
       indicatePrecisionLoss: indicatePrecisionLoss,
       overrideUnit: overrideUnit,
       tokenContract: ethContract,
+      splToken: splToken,
     );
   }
 

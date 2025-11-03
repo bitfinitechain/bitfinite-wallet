@@ -7,6 +7,7 @@
  *
  */
 
+import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -16,36 +17,29 @@ import '../../themes/stack_colors.dart';
 import '../../utilities/assets.dart';
 import '../../utilities/constants.dart';
 import '../../utilities/text_styles.dart';
-import '../../wallets/isar/providers/solana/current_sol_token_wallet_provider.dart';
-import '../../wallets/isar/providers/solana/sol_token_balance_provider.dart';
 import '../../widgets/background.dart';
 import '../../widgets/custom_buttons/app_bar_icon_button.dart';
+import '../../widgets/custom_buttons/blue_text_button.dart';
 import '../../widgets/icon_widgets/sol_token_icon.dart';
+import 'sub_widgets/token_summary.dart';
+import 'sub_widgets/token_transaction_list_widget.dart';
 
-/// Solana SPL Token View
-///
-/// This view displays a Solana token with its balance, transaction history,
-/// and quick action buttons (Send, Receive, More).
-///
-/// Uses mock data for UI development. The backend API will be integrated later.
+/// [eventBus] should only be set during testing.
 class SolTokenView extends ConsumerStatefulWidget {
   const SolTokenView({
     super.key,
     required this.walletId,
     required this.tokenMint,
     this.popPrevious = false,
+    this.eventBus,
   });
 
   static const String routeName = "/sol_token";
 
-  /// The ID of the parent Solana wallet
   final String walletId;
-
-  /// The SPL token mint address
   final String tokenMint;
-
-  /// Whether to pop the previous view when closing
   final bool popPrevious;
+  final EventBus? eventBus;
 
   @override
   ConsumerState<SolTokenView> createState() => _SolTokenViewState();
@@ -56,6 +50,7 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
 
   @override
   void initState() {
+    // TODO: Integrate Solana token refresh status when available.
     initialSyncStatus = WalletSyncStatus.synced;
     super.initState();
   }
@@ -69,47 +64,19 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
   Widget build(BuildContext context) {
     debugPrint("BUILD: $runtimeType");
 
-    // Get the current token wallet from provider
-    final tokenWallet = ref.watch(pCurrentSolanaTokenWallet);
-
-    // Get the balance for this token
-    final balance = ref.watch(
-      pSolanaTokenBalance((
-        walletId: widget.walletId,
-        tokenMint: widget.tokenMint,
-      )),
-    );
-
-    // If no token wallet is set, show placeholder
-    if (tokenWallet == null) {
-      return Scaffold(
-        backgroundColor: Theme.of(context).extension<StackColors>()!.background,
-        body: SafeArea(
-          child: Center(
-            child: Text(
-              "Token not loaded",
-              style: STextStyles.pageTitleH1(context),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (didPop) return;
+    return WillPopScope(
+      onWillPop: () async {
         final nav = Navigator.of(context);
         if (widget.popPrevious) {
           nav.pop();
         }
         nav.pop();
+        return false;
       },
       child: Background(
         child: Scaffold(
-          backgroundColor: Theme.of(
-            context,
-          ).extension<StackColors>()!.background,
+          backgroundColor:
+              Theme.of(context).extension<StackColors>()!.background,
           appBar: AppBar(
             leading: AppBarBackButton(
               onPressed: () {
@@ -129,11 +96,14 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SolTokenIcon(mintAddress: widget.tokenMint, size: 24),
+                      SolTokenIcon(
+                        mintAddress: widget.tokenMint,
+                        size: 24,
+                      ),
                       const SizedBox(width: 10),
                       Flexible(
                         child: Text(
-                          tokenWallet.tokenName,
+                          "Token Name", // TODO: Replace with actual token name from SplToken.
                           style: STextStyles.navBarTitle(context),
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
@@ -152,15 +122,20 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
                   child: AppBarIconButton(
                     icon: SvgPicture.asset(
                       Assets.svg.verticalEllipsis,
-                      colorFilter: ColorFilter.mode(
-                        Theme.of(
-                          context,
-                        ).extension<StackColors>()!.topNavIconPrimary,
-                        BlendMode.srcIn,
-                      ),
+                      color:
+                          Theme.of(
+                            context,
+                          ).extension<StackColors>()!.topNavIconPrimary,
                     ),
                     onPressed: () {
-                      // TODO: Show context menu with more options.
+                      // TODO: Implement token details navigation for Solana.
+                      // Navigator.of(context).pushNamed(
+                      //   TokenContractDetailsView.routeName,
+                      //   arguments: Tuple2(
+                      //     widget.tokenMint,
+                      //     widget.walletId,
+                      //   ),
+                      // );
                     },
                   ),
                 ),
@@ -173,85 +148,14 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
               child: Column(
                 children: [
                   const SizedBox(height: 10),
-                  // Balance Display Section
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Balance",
-                              style: STextStyles.itemSubtitle(context).copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).extension<StackColors>()!.textDark3,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  "${balance.spendable.decimal.toStringAsFixed(tokenWallet.tokenDecimals)} ${tokenWallet.tokenSymbol}",
-                                  style: STextStyles.subtitle600(context),
-                                ),
-                                SolTokenIcon(
-                                  mintAddress: widget.tokenMint,
-                                  size: 32,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                    child: TokenSummary(
+                      walletId: widget.walletId,
+                      initialSyncStatus: initialSyncStatus,
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // Action Buttons.
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              // TODO: Navigate to send view
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Send not yet implemented"),
-                                ),
-                              );
-                            },
-                            icon: const Icon(Icons.send),
-                            label: const Text("Send"),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              // TODO: Navigate to receive view.
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Receive not yet implemented"),
-                                ),
-                              );
-                            },
-                            icon: const Icon(Icons.call_received),
-                            label: const Text("Receive"),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // Transaction History Section.
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
@@ -260,41 +164,59 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
                         Text(
                           "Transactions",
                           style: STextStyles.itemSubtitle(context).copyWith(
-                            color: Theme.of(
-                              context,
-                            ).extension<StackColors>()!.textDark3,
+                            color:
+                                Theme.of(
+                                  context,
+                                ).extension<StackColors>()!.textDark3,
                           ),
+                        ),
+                        CustomTextButton(
+                          text: "See all",
+                          onTap: () {
+                            // TODO: Navigate to all transactions for this token.
+                            // Navigator.of(context).pushNamed(
+                            //   AllTransactionsV2View.routeName,
+                            //   arguments: (
+                            //     walletId: widget.walletId,
+                            //     tokenMint: widget.tokenMint,
+                            //   ),
+                            // );
+                          },
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // Transaction List (placeholder).
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Theme.of(
-                            context,
-                          ).extension<StackColors>()!.popupBG,
-                          borderRadius: BorderRadius.circular(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(
+                            Constants.size.circularBorderRadius,
+                          ),
+                          bottom: Radius.circular(
+                            // TokenView.navBarHeight / 2.0,
                             Constants.size.circularBorderRadius,
                           ),
                         ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "No transactions yet",
-                              style: STextStyles.itemSubtitle(context),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.transparent,
+                            borderRadius: BorderRadius.circular(
+                              Constants.size.circularBorderRadius,
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              "Your token transactions will appear here",
-                              style: STextStyles.itemSubtitle12(context),
-                            ),
-                          ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                child: TokenTransactionsList(
+                                  walletId: widget.walletId,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

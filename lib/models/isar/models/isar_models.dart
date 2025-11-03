@@ -16,4 +16,5 @@ export 'blockchain_data/transaction.dart';
 export 'blockchain_data/utxo.dart';
 export 'ethereum/eth_contract.dart';
 export 'log.dart';
+export 'solana/spl_token.dart';
 export 'transaction_note.dart';

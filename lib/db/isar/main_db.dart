@@ -59,6 +59,7 @@ class MainDB {
         AddressSchema,
         AddressLabelSchema,
         EthContractSchema,
+        SplTokenSchema,
         TransactionBlockExplorerSchema,
         StackThemeSchema,
         ContactEntrySchema,
@@ -620,5 +621,27 @@ class MainDB {
   Future<void> putEthContracts(List<EthContract> contracts) =>
       isar.writeTxn(() async {
         await isar.ethContracts.putAll(contracts);
+      });
+
+  // ========== Solana =========================================================
+
+  // Solana (SPL) tokens.
+
+  QueryBuilder<SplToken, SplToken, QWhere> getSplTokens() =>
+      isar.splTokens.where();
+
+  Future<SplToken?> getSplToken(String tokenMint) =>
+      isar.splTokens.where().addressEqualTo(tokenMint).findFirst();
+
+  SplToken? getSplTokenSync(String tokenMint) =>
+      isar.splTokens.where().addressEqualTo(tokenMint).findFirstSync();
+
+  Future<int> putSplToken(SplToken token) => isar.writeTxn(() async {
+    return await isar.splTokens.put(token);
+  });
+
+  Future<void> putSplTokens(List<SplToken> tokens) =>
+      isar.writeTxn(() async {
+        await isar.splTokens.putAll(tokens);
       });
 }

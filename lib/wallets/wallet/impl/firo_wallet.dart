@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:decimal/decimal.dart';
 import 'package:isar_community/isar.dart';
@@ -81,17 +80,15 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
     final List<Address> allAddressesOld =
         await fetchAddressesForElectrumXScan();
 
-    final Set<String> receivingAddresses =
-        allAddressesOld
-            .where((e) => e.subType == AddressSubType.receiving)
-            .map((e) => convertAddressString(e.value))
-            .toSet();
+    final Set<String> receivingAddresses = allAddressesOld
+        .where((e) => e.subType == AddressSubType.receiving)
+        .map((e) => convertAddressString(e.value))
+        .toSet();
 
-    final Set<String> changeAddresses =
-        allAddressesOld
-            .where((e) => e.subType == AddressSubType.change)
-            .map((e) => convertAddressString(e.value))
-            .toSet();
+    final Set<String> changeAddresses = allAddressesOld
+        .where((e) => e.subType == AddressSubType.change)
+        .map((e) => convertAddressString(e.value))
+        .toSet();
 
     final allAddressesSet = {...receivingAddresses, ...changeAddresses};
 
@@ -99,23 +96,21 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
       allAddressesSet,
     );
 
-    final sparkCoins =
-        await mainDB.isar.sparkCoins
-            .where()
-            .walletIdEqualToAnyLTagHash(walletId)
-            .findAll();
+    final sparkCoins = await mainDB.isar.sparkCoins
+        .where()
+        .walletIdEqualToAnyLTagHash(walletId)
+        .findAll();
 
     final List<Map<String, dynamic>> allTransactions = [];
 
     // some lelantus transactions aren't fetched via wallet addresses so they
     // will never show as confirmed in the gui.
-    final unconfirmedTransactions =
-        await mainDB.isar.transactionV2s
-            .where()
-            .walletIdEqualTo(walletId)
-            .filter()
-            .heightIsNull()
-            .findAll();
+    final unconfirmedTransactions = await mainDB.isar.transactionV2s
+        .where()
+        .walletIdEqualTo(walletId)
+        .filter()
+        .heightIsNull()
+        .findAll();
     for (final tx in unconfirmedTransactions) {
       final txn = await electrumXCachedClient.getTransaction(
         txHash: tx.txid,
@@ -154,13 +149,12 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
     final currentHeight = await chainHeight;
 
     for (final txHash in allTxHashes) {
-      final storedTx =
-          await mainDB.isar.transactionV2s
-              .where()
-              .walletIdEqualTo(walletId)
-              .filter()
-              .txidEqualTo(txHash["tx_hash"] as String)
-              .findFirst();
+      final storedTx = await mainDB.isar.transactionV2s
+          .where()
+          .walletIdEqualTo(walletId)
+          .filter()
+          .txidEqualTo(txHash["tx_hash"] as String)
+          .findFirst();
 
       if (storedTx?.isConfirmed(
             currentHeight,
@@ -214,8 +208,9 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
       bool isSparkMint = false;
       final bool isSparkSpend = txData["type"] == 9 && txData["version"] == 3;
       final bool isMySpark = sparkTxids.contains(txData["txid"] as String);
-      final bool isMySpentSpark =
-          missing.where((e) => e.txid == txData["txid"]).isNotEmpty;
+      final bool isMySpentSpark = missing
+          .where((e) => e.txid == txData["txid"])
+          .isNotEmpty;
 
       final sparkCoinsInvolvedReceived = sparkCoins.where(
         (e) =>
@@ -298,19 +293,17 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
             if (output.addresses.isEmpty &&
                 output.scriptPubKeyHex.length >= 488) {
               // likely spark related
-              final opByte =
-                  output.scriptPubKeyHex
-                      .substring(0, 2)
-                      .toUint8ListFromHex
-                      .first;
+              final opByte = output.scriptPubKeyHex
+                  .substring(0, 2)
+                  .toUint8ListFromHex
+                  .first;
               if (opByte == OP_SPARKMINT || opByte == OP_SPARKSMINT) {
                 final serCoin = base64Encode(
                   output.scriptPubKeyHex.substring(2, 488).toUint8ListFromHex,
                 );
-                final coin =
-                    sparkCoinsInvolvedReceived
-                        .where((e) => e.serializedCoinB64!.startsWith(serCoin))
-                        .firstOrNull;
+                final coin = sparkCoinsInvolvedReceived
+                    .where((e) => e.serializedCoinB64!.startsWith(serCoin))
+                    .firstOrNull;
 
                 if (coin == null) {
                   // not ours
@@ -403,10 +396,9 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
             txid: txData["txid"] as String,
             network: cryptoCurrency.network,
           );
-          spentSparkCoins =
-              sparkCoinsInvolvedSpent
-                  .where((e) => tags.contains(e.lTagHash))
-                  .toList();
+          spentSparkCoins = sparkCoinsInvolvedSpent
+              .where((e) => tags.contains(e.lTagHash))
+              .toList();
         } else if (isSparkSpend) {
           parseAnonFees();
         } else if (isSparkMint) {
@@ -490,11 +482,10 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
             if (usedCoins.isNotEmpty) {
               input = input.copyWith(
                 addresses: usedCoins.map((e) => e.address).toList(),
-                valueStringSats:
-                    usedCoins
-                        .map((e) => e.value)
-                        .reduce((value, element) => value += element)
-                        .toString(),
+                valueStringSats: usedCoins
+                    .map((e) => e.value)
+                    .reduce((value, element) => value += element)
+                    .toString(),
                 walletOwns: true,
               );
               wasSentFromThisWallet = true;
@@ -505,11 +496,10 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
             spentSparkCoins.isNotEmpty) {
           input = input.copyWith(
             addresses: spentSparkCoins.map((e) => e.address).toList(),
-            valueStringSats:
-                spentSparkCoins
-                    .map((e) => e.value)
-                    .fold(BigInt.zero, (p, e) => p + e)
-                    .toString(),
+            valueStringSats: spentSparkCoins
+                .map((e) => e.value)
+                .fold(BigInt.zero, (p, e) => p + e)
+                .toString(),
             walletOwns: true,
           );
           wasSentFromThisWallet = true;
@@ -755,53 +745,10 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
           Future.wait(changeFutures),
         ]);
 
-        final receiveResults = futuresResult[0];
-        final changeResults = futuresResult[1];
-
-        final List<Address> addressesToStore = [];
-
-        int highestReceivingIndexWithHistory = 0;
-
-        for (final tuple in receiveResults) {
-          if (tuple.addresses.isEmpty) {
-            if (info.otherData[WalletInfoKeys.reuseAddress] != true) {
-              await checkReceivingAddressForTransactions();
-            }
-          } else {
-            highestReceivingIndexWithHistory = max(
-              tuple.index,
-              highestReceivingIndexWithHistory,
-            );
-            addressesToStore.addAll(tuple.addresses);
-          }
-        }
-
-        int highestChangeIndexWithHistory = 0;
-        // If restoring a wallet that never sent any funds with change, then set changeArray
-        // manually. If we didn't do this, it'd store an empty array.
-        for (final tuple in changeResults) {
-          if (tuple.addresses.isEmpty) {
-            await checkChangeAddressForTransactions();
-          } else {
-            highestChangeIndexWithHistory = max(
-              tuple.index,
-              highestChangeIndexWithHistory,
-            );
-            addressesToStore.addAll(tuple.addresses);
-          }
-        }
-
-        // remove extra addresses to help minimize risk of creating a large gap
-        addressesToStore.removeWhere(
-          (e) =>
-              e.subType == AddressSubType.change &&
-              e.derivationIndex > highestChangeIndexWithHistory,
-        );
-        addressesToStore.removeWhere(
-          (e) =>
-              e.subType == AddressSubType.receiving &&
-              e.derivationIndex > highestReceivingIndexWithHistory,
-        );
+        final List<Address> addressesToStore = processGapCheckResults([
+          ...futuresResult[0],
+          ...futuresResult[1],
+        ]);
 
         await mainDB.updateOrPutAddresses(addressesToStore);
 

@@ -1072,7 +1072,7 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
   ) async {
     final List<Address> addressArray = [];
     int gapCounter = 0;
-    int highestIndexWithHistory = 0;
+    int highestIndexWithHistory = -1;
 
     for (
       int index = 0;
@@ -1163,6 +1163,7 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
     final List<Address> addressArray = [];
     int gapCounter = 0;
     int index = 0;
+    int highestIndexWithHistory = -1;
 
     for (; gapCounter < cryptoCurrency.maxUnusedAddressGap; index++) {
       Logging.instance.d(
@@ -1212,10 +1213,11 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
         ),
       );
 
+      addressArray.add(address);
+
       // check and add appropriate addresses
       if (count > 0) {
-        // add address to array
-        addressArray.add(address);
+        highestIndexWithHistory = index;
         // reset counter
         gapCounter = 0;
         // add info to derivations
@@ -1225,7 +1227,7 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
       }
     }
 
-    return (addresses: addressArray, index: index);
+    return (addresses: addressArray, index: highestIndexWithHistory);
   }
 
   Future<List<Map<String, dynamic>>> fetchHistory(
@@ -1640,51 +1642,10 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
           Future.wait(changeFutures),
         ]);
 
-        final receiveResults = futuresResult[0];
-        final changeResults = futuresResult[1];
-
-        final List<Address> addressesToStore = [];
-
-        int highestReceivingIndexWithHistory = 0;
-
-        for (final tuple in receiveResults) {
-          if (tuple.addresses.isEmpty) {
-            await checkReceivingAddressForTransactions();
-          } else {
-            highestReceivingIndexWithHistory = max(
-              tuple.index,
-              highestReceivingIndexWithHistory,
-            );
-            addressesToStore.addAll(tuple.addresses);
-          }
-        }
-
-        int highestChangeIndexWithHistory = 0;
-        // If restoring a wallet that never sent any funds with change, then set changeArray
-        // manually. If we didn't do this, it'd store an empty array.
-        for (final tuple in changeResults) {
-          if (tuple.addresses.isEmpty) {
-            await checkChangeAddressForTransactions();
-          } else {
-            highestChangeIndexWithHistory = max(
-              tuple.index,
-              highestChangeIndexWithHistory,
-            );
-            addressesToStore.addAll(tuple.addresses);
-          }
-        }
-
-        // remove extra addresses to help minimize risk of creating a large gap
-        addressesToStore.removeWhere(
-          (e) =>
-              e.subType == AddressSubType.change &&
-              e.derivationIndex > highestChangeIndexWithHistory,
-        );
-        addressesToStore.removeWhere(
-          (e) =>
-              e.subType == AddressSubType.receiving &&
-              e.derivationIndex > highestReceivingIndexWithHistory,
-        );
+        final List<Address> addressesToStore = processGapCheckResults([
+          ...futuresResult[0],
+          ...futuresResult[1],
+        ]);
 
         await mainDB.updateOrPutAddresses(addressesToStore);
 
@@ -2177,6 +2138,24 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
     return address;
   }
 
+  List<Address> processGapCheckResults(
+    List<({int index, List<Address> addresses})> results,
+  ) {
+    final List<Address> result = [];
+    for (final tuple in results) {
+      if (tuple.addresses.isNotEmpty) {
+        int highestIndexWithHistory = -1;
+        highestIndexWithHistory = max(tuple.index, highestIndexWithHistory);
+
+        result.addAll(
+          tuple.addresses.where(
+            (e) => e.derivationIndex <= highestIndexWithHistory,
+          ),
+        );
+      }
+    }
+    return result;
+  }
   // ============== View only ==================================================
 
   @override
@@ -2277,48 +2256,8 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
             Future.wait(changeFutures),
           ]);
 
-          final receiveResults = futuresResult[0];
-          final changeResults = futuresResult[1];
-
-          int highestReceivingIndexWithHistory = 0;
-
-          for (final tuple in receiveResults) {
-            if (tuple.addresses.isEmpty) {
-              await checkReceivingAddressForTransactions();
-            } else {
-              highestReceivingIndexWithHistory = max(
-                tuple.index,
-                highestReceivingIndexWithHistory,
-              );
-              addressesToStore.addAll(tuple.addresses);
-            }
-          }
-
-          int highestChangeIndexWithHistory = 0;
-          // If restoring a wallet that never sent any funds with change, then set changeArray
-          // manually. If we didn't do this, it'd store an empty array.
-          for (final tuple in changeResults) {
-            if (tuple.addresses.isEmpty) {
-              await checkChangeAddressForTransactions();
-            } else {
-              highestChangeIndexWithHistory = max(
-                tuple.index,
-                highestChangeIndexWithHistory,
-              );
-              addressesToStore.addAll(tuple.addresses);
-            }
-          }
-
-          // remove extra addresses to help minimize risk of creating a large gap
-          addressesToStore.removeWhere(
-            (e) =>
-                e.subType == AddressSubType.change &&
-                e.derivationIndex > highestChangeIndexWithHistory,
-          );
-          addressesToStore.removeWhere(
-            (e) =>
-                e.subType == AddressSubType.receiving &&
-                e.derivationIndex > highestReceivingIndexWithHistory,
+          addressesToStore.addAll(
+            processGapCheckResults([...futuresResult[0], ...futuresResult[1]]),
           );
         } else {
           final clAddress = coinlib.Address.fromString(

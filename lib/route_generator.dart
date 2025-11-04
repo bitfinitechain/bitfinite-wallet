@@ -186,6 +186,7 @@ import 'pages_desktop_specific/desktop_exchange/desktop_exchange_view.dart';
 import 'pages_desktop_specific/desktop_home_view.dart';
 import 'pages_desktop_specific/mweb_utxos_view.dart';
 import 'pages_desktop_specific/my_stack_view/my_stack_view.dart';
+import 'pages_desktop_specific/my_stack_view/wallet_view/desktop_sol_token_view.dart';
 import 'pages_desktop_specific/my_stack_view/wallet_view/desktop_token_view.dart';
 import 'pages_desktop_specific/my_stack_view/wallet_view/desktop_wallet_view.dart';
 import 'pages_desktop_specific/my_stack_view/wallet_view/sub_widgets/delete_wallet_keys_popup.dart';
@@ -360,6 +361,19 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => DesktopTokenView(walletId: args),
+            settings: RouteSettings(name: settings.name),
+          );
+        }
+        return _routeError("${settings.name} invalid args: ${args.toString()}");
+
+      case DesktopSolTokenView.routeName:
+        if (args is ({String walletId, String tokenMint})) {
+          return getRoute(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => DesktopSolTokenView(
+              walletId: args.walletId,
+              tokenMint: args.tokenMint,
+            ),
             settings: RouteSettings(name: settings.name),
           );
         }

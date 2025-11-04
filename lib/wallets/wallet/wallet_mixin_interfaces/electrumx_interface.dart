@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -36,11 +37,12 @@ import 'cpfp_interface.dart';
 import 'mweb_interface.dart';
 import 'paynym_interface.dart';
 import 'rbf_interface.dart';
+import 'sign_verify_interface.dart';
 import 'view_only_option_interface.dart';
 
 mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
     on Bip39HDWallet<T>
-    implements ViewOnlyOptionInterface<T> {
+    implements ViewOnlyOptionInterface<T>, SignVerifyInterface {
   late ElectrumXClient electrumXClient;
   late CachedElectrumXClient electrumXCachedClient;
 
@@ -2033,6 +2035,57 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
     }
   }
 
+  @override
+  Future<String> signMessage(
+    final String message, {
+    required final Address address,
+  }) async {
+    if (isViewOnly) {
+      throw Exception("Cannot sign a message in a view only wallet");
+    }
+
+    final root = await getRootHDNode();
+    final keyPair = root.derivePath(address.derivationPath!.value);
+
+    final signed = coinlib.MessageSignature.sign(
+      key: keyPair.privateKey,
+      message: message,
+      prefix: _cleanEncodedPrefixLength(
+        cryptoCurrency.networkParams.messagePrefix,
+      ),
+    );
+
+    return base64Encode(signed.signature.compact);
+  }
+
+  @override
+  Future<bool> verifyMessage(
+    final String message, {
+    required final String address,
+    required final String signature,
+  }) async {
+    final signed = coinlib.MessageSignature.fromBase64(signature);
+
+    coinlib.Address clAddress;
+    try {
+      clAddress = coinlib.Address.fromString(
+        normalizeAddress(address),
+        cryptoCurrency.networkParams,
+      );
+    } catch (e, s) {
+      Logging.instance.i("$e\n$s");
+      return false;
+    }
+
+    return signed.verifyAddress(
+      address: clAddress,
+      message: message,
+      prefix: _cleanEncodedPrefixLength(
+        cryptoCurrency.networkParams.messagePrefix,
+      ),
+    );
+  }
+
   // ===========================================================================
   // ========== Interface functions ============================================
 
@@ -2053,6 +2106,22 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
 
   // ===========================================================================
   // ========== private helpers ================================================
+
+  String _cleanEncodedPrefixLength(String prefix) {
+    final messagePrefixBytes =
+        cryptoCurrency.networkParams.messagePrefix.toUint8ListFromUtf8;
+    // Check if prefix already has length encoded and remove as coinlib
+    // recalculates it. Really not ideal....
+    // TODO: clean up cryptoCurrency.networkParams.messagePrefix once its
+    // determined that every usage of messagePrefix does not expect the length
+    // prefixed.
+    final ignoreFirstByte =
+        messagePrefixBytes.first == messagePrefixBytes.length - 1;
+    return (ignoreFirstByte
+            ? messagePrefixBytes.sublist(1)
+            : messagePrefixBytes)
+        .toUtf8String;
+  }
 
   List<UTXO> _spendableUTXOs(List<UTXO> utxos) {
     return utxos

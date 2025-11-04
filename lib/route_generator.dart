@@ -152,6 +152,8 @@ import 'pages/settings_views/wallet_settings_view/wallet_settings_wallet_setting
 import 'pages/settings_views/wallet_settings_view/wallet_settings_wallet_settings/spark_info.dart';
 import 'pages/settings_views/wallet_settings_view/wallet_settings_wallet_settings/wallet_settings_wallet_settings_view.dart';
 import 'pages/settings_views/wallet_settings_view/wallet_settings_wallet_settings/xpub_view.dart';
+import 'pages/signing/signing_view.dart';
+import 'pages/signing/sub_widgets/address_list.dart';
 import 'pages/spark_names/buy_spark_name_view.dart';
 import 'pages/spark_names/confirm_spark_name_transaction_view.dart';
 import 'pages/spark_names/spark_names_home_view.dart';
@@ -422,6 +424,26 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => MonkeyView(walletId: args),
+            settings: RouteSettings(name: settings.name),
+          );
+        }
+        return _routeError("${settings.name} invalid args: ${args.toString()}");
+
+      case SigningView.routeName:
+        if (args is String) {
+          return getRoute(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => SigningView(walletId: args),
+            settings: RouteSettings(name: settings.name),
+          );
+        }
+        return _routeError("${settings.name} invalid args: ${args.toString()}");
+
+      case CompactAddressListView.routeName:
+        if (args is String) {
+          return getRoute<Address>(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => CompactAddressListView(walletId: args),
             settings: RouteSettings(name: settings.name),
           );
         }
@@ -2513,7 +2535,7 @@ class RouteGenerator {
     }
   }
 
-  static Route<dynamic> getRoute({
+  static Route<T> getRoute<T>({
     bool shouldUseMaterialRoute = useMaterialPageRoute,
     required Widget Function(BuildContext) builder,
     String? title,
@@ -2522,14 +2544,14 @@ class RouteGenerator {
     bool fullscreenDialog = false,
   }) {
     if (shouldUseMaterialRoute) {
-      return MaterialPageRoute(
+      return MaterialPageRoute<T>(
         builder: builder,
         settings: settings,
         maintainState: maintainState,
         fullscreenDialog: fullscreenDialog,
       );
     } else {
-      return CupertinoPageRoute(
+      return CupertinoPageRoute<T>(
         builder: builder,
         settings: settings,
         title: title,
@@ -2539,7 +2561,7 @@ class RouteGenerator {
     }
   }
 
-  static Route<dynamic> createSlideTransitionRoute(Widget viewToInsert) {
+  static Route<T> createSlideTransitionRoute<T>(Widget viewToInsert) {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => viewToInsert,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -2557,7 +2579,7 @@ class RouteGenerator {
     );
   }
 
-  static Route<dynamic> _routeError(String message) {
+  static Route<T> _routeError<T>(String message) {
     // Replace with robust ErrorView page
     final Widget errorView = Scaffold(
       appBar: AppBar(
@@ -2571,7 +2593,7 @@ class RouteGenerator {
       ),
     );
 
-    return getRoute(
+    return getRoute<T>(
       shouldUseMaterialRoute: useMaterialPageRoute,
       builder: (_) => errorView,
     );

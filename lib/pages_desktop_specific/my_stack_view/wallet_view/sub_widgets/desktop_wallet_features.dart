@@ -25,6 +25,7 @@ import '../../../../pages/namecoin_names/namecoin_names_home_view.dart';
 import '../../../../pages/paynym/paynym_claim_view.dart';
 import '../../../../pages/paynym/paynym_home_view.dart';
 import '../../../../pages/salvium_stake/salvium_create_stake_view.dart';
+import '../../../../pages/signing/signing_view.dart';
 import '../../../../pages/spark_names/spark_names_home_view.dart';
 import '../../../../providers/desktop/current_desktop_menu_item.dart';
 import '../../../../providers/global/paynym_api_provider.dart';
@@ -51,6 +52,7 @@ import '../../../../wallets/wallet/wallet_mixin_interfaces/mweb_interface.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/ordinals_interface.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/paynym_interface.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/rbf_interface.dart';
+import '../../../../wallets/wallet/wallet_mixin_interfaces/sign_verify_interface.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/spark_interface.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/view_only_option_interface.dart';
 import '../../../../widgets/custom_loading_overlay.dart';
@@ -88,6 +90,7 @@ enum WalletFeature {
   namecoinName("Domains", "Namecoin DNS"),
   sparkNames("Names", "Spark names"),
   salviumStaking("Staking", "Staking"),
+  sign("Sign/Verify", "Sign / Verify messages"),
 
   // special cases
   clearSparkCache("", ""),
@@ -417,6 +420,38 @@ class _DesktopWalletFeaturesState extends ConsumerState<DesktopWalletFeatures> {
     );
   }
 
+  Future<void> _onSignPressed() async {
+    await showDialog<void>(
+      context: context,
+      builder: (context) => DesktopDialog(
+        maxWidth: 580,
+        maxHeight: double.infinity,
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 32),
+                  child: Text(
+                    "Sign/Verify",
+                    style: STextStyles.desktopH3(context),
+                  ),
+                ),
+                const DesktopDialogCloseButton(),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: SigningView(walletId: widget.walletId),
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
+    );
+  }
+
   List<(WalletFeature, String, FutureOr<void> Function())> _getOptions(
     Wallet wallet,
     bool showExchange,
@@ -454,6 +489,9 @@ class _DesktopWalletFeaturesState extends ConsumerState<DesktopWalletFeatures> {
           Assets.svg.recycle,
           _onSalviumStakePressed,
         ),
+
+      if (wallet is SignVerifyInterface && !isViewOnly)
+        (WalletFeature.sign, Assets.svg.pencil, _onSignPressed),
 
       if (showCoinControl)
         (

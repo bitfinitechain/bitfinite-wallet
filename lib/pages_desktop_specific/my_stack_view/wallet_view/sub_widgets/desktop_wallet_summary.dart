@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../models/balance.dart';
+import '../../../../models/isar/models/ethereum/eth_contract.dart';
 import '../../../../pages/wallet_view/sub_widgets/wallet_refresh_button.dart';
 import '../../../../providers/providers.dart';
 import '../../../../providers/wallet/public_private_balance_state_provider.dart';
@@ -77,18 +78,24 @@ class _WDesktopWalletSummaryState extends ConsumerState<DesktopWalletSummary> {
       prefsChangeNotifierProvider.select((value) => value.currency),
     );
 
-    final tokenContract =
-        widget.isToken
-            ? ref.watch(
-              pCurrentTokenWallet.select((value) => value!.tokenContract),
-            )
-            : null;
+    // For Ethereum tokens, get the token contract; for Solana tokens, show placeholder.
+    dynamic tokenContract;
+    if (widget.isToken) {
+      try {
+        tokenContract = ref.watch(
+          pCurrentTokenWallet.select((value) => value!.tokenContract),
+        );
+      } catch (_) {
+        // Solana token or token wallet not yet loaded.
+        tokenContract = null;
+      }
+    }
 
     final price =
-        widget.isToken
+        widget.isToken && tokenContract != null
             ? ref.watch(
               priceAnd24hChangeNotifierProvider.select(
-                (value) => value.getTokenPrice(tokenContract!.address),
+                (value) => value.getTokenPrice((tokenContract as dynamic).address as String),
               ),
             )
             : ref.watch(
@@ -116,11 +123,11 @@ class _WDesktopWalletSummaryState extends ConsumerState<DesktopWalletSummary> {
       }
     } else {
       final Balance balance =
-          widget.isToken
+          widget.isToken && tokenContract != null
               ? ref.watch(
                 pTokenBalance((
                   walletId: walletId,
-                  contractAddress: tokenContract!.address,
+                  contractAddress: (tokenContract as dynamic).address as String,
                 )),
               )
               : ref.watch(pWalletBalance(walletId));
@@ -141,7 +148,7 @@ class _WDesktopWalletSummaryState extends ConsumerState<DesktopWalletSummary> {
                   child: SelectableText(
                     ref
                         .watch(pAmountFormatter(coin))
-                        .format(balanceToShow, ethContract: tokenContract),
+                        .format(balanceToShow, ethContract: tokenContract != null ? tokenContract as EthContract? : null),
                     style: STextStyles.desktopH3(context),
                   ),
                 ),
@@ -174,8 +181,8 @@ class _WDesktopWalletSummaryState extends ConsumerState<DesktopWalletSummary> {
               walletId: walletId,
               initialSyncStatus: widget.initialSyncStatus,
               tokenContractAddress:
-                  widget.isToken
-                      ? ref.watch(pCurrentTokenWallet)!.tokenContract.address
+                  widget.isToken && tokenContract != null
+                      ? (tokenContract as EthContract).address
                       : null,
             ),
 

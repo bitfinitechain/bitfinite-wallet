@@ -114,10 +114,9 @@ class WalletInfo implements IsarId {
   }
 
   @ignore
-  Map<String, dynamic> get otherData =>
-      otherDataJsonString == null
-          ? {}
-          : Map<String, dynamic>.from(jsonDecode(otherDataJsonString!) as Map);
+  Map<String, dynamic> get otherData => otherDataJsonString == null
+      ? {}
+      : Map<String, dynamic>.from(jsonDecode(otherDataJsonString!) as Map);
 
   @ignore
   bool get isViewOnly =>
@@ -142,6 +141,10 @@ class WalletInfo implements IsarId {
   @ignore
   bool get isMwebEnabled =>
       otherData[WalletInfoKeys.mwebEnabled] as bool? ?? false;
+
+  @ignore
+  bool get isLegacyAddressesEnabled =>
+      otherData[WalletInfoKeys.enableLegacyAddresses] as bool? ?? false;
 
   //============================================================================
   //=============    Updaters   ================================================
@@ -248,12 +251,11 @@ class WalletInfo implements IsarId {
     if (customIndexOverride != null) {
       index = customIndexOverride;
     } else if (flag) {
-      final highest =
-          await isar.walletInfo
-              .where()
-              .sortByFavouriteOrderIndexDesc()
-              .favouriteOrderIndexProperty()
-              .findFirst();
+      final highest = await isar.walletInfo
+          .where()
+          .sortByFavouriteOrderIndexDesc()
+          .favouriteOrderIndexProperty()
+          .findFirst();
       index = (highest ?? 0) + 1;
     } else {
       index = -1;
@@ -336,8 +338,10 @@ class WalletInfo implements IsarId {
 
   /// Can be dangerous. Don't use unless you know the consequences
   Future<void> setMnemonicVerified({required Isar isar}) async {
-    final meta =
-        await isar.walletInfoMeta.where().walletIdEqualTo(walletId).findFirst();
+    final meta = await isar.walletInfoMeta
+        .where()
+        .walletIdEqualTo(walletId)
+        .findFirst();
     if (meta == null) {
       await isar.writeTxn(() async {
         await isar.walletInfoMeta.put(
@@ -524,4 +528,5 @@ abstract class WalletInfoKeys {
   static const String mwebScanHeight = "mwebScanHeightKey";
   static const String firoSparkUsedTagsCacheResetVersion =
       "firoSparkUsedTagsCacheResetVersionKey";
+  static const String enableLegacyAddresses = "enableLegacyAddressesKey";
 }

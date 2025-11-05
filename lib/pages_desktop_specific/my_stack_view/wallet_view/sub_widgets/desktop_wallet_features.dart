@@ -40,6 +40,7 @@ import '../../../../utilities/logger.dart';
 import '../../../../utilities/text_styles.dart';
 import '../../../../wallets/crypto_currency/coins/banano.dart';
 import '../../../../wallets/crypto_currency/coins/firo.dart';
+import '../../../../wallets/wallet/impl/bitcoin_wallet.dart';
 import '../../../../wallets/wallet/impl/firo_wallet.dart';
 import '../../../../wallets/wallet/impl/namecoin_wallet.dart';
 import '../../../../wallets/wallet/intermediate/cryptonote_wallet.dart';
@@ -96,7 +97,8 @@ enum WalletFeature {
   clearSparkCache("", ""),
   rbf("", ""),
   reuseAddress("", ""),
-  enableMweb("", "");
+  enableMweb("", ""),
+  enableLegacyAddresses("", "");
 
   final String label;
   final String description;
@@ -581,6 +583,9 @@ class _DesktopWalletFeaturesState extends ConsumerState<DesktopWalletFeatures> {
         (WalletFeature.clearSparkCache, Assets.svg.key, () => ()),
 
       if (wallet is RbfInterface) (WalletFeature.rbf, Assets.svg.key, () => ()),
+
+      if (wallet is BitcoinWallet)
+        (WalletFeature.enableLegacyAddresses, Assets.svg.key, () => ()),
 
       if (canGen) (WalletFeature.reuseAddress, Assets.svg.key, () => ()),
 

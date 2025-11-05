@@ -112,12 +112,10 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
         if (mounted) {
           await showDialog<void>(
             context: context,
-            builder:
-                (context) => StackOkDialog(
-                  title: "Slatepack receive error",
-                  message:
-                      ex?.toString() ?? "Unexpected result without exception",
-                ),
+            builder: (context) => StackOkDialog(
+              title: "Slatepack receive error",
+              message: ex?.toString() ?? "Unexpected result without exception",
+            ),
           );
         }
         return;
@@ -127,27 +125,25 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
         final response =
             await showDialog<({String responseSlatepack, bool wasEncrypted})>(
               context: context,
-              builder:
-                  (context) => SDialog(
-                    child: MwcSlatepackImportDialog(
-                      walletId: widget.walletId,
-                      clipboard: widget.clipboard,
-                      rawSlatepack: result.raw,
-                      decoded: result.result,
-                      slatepackType: result.type,
-                    ),
-                  ),
+              builder: (context) => SDialog(
+                child: MwcSlatepackImportDialog(
+                  walletId: widget.walletId,
+                  clipboard: widget.clipboard,
+                  rawSlatepack: result.raw,
+                  decoded: result.result,
+                  slatepackType: result.type,
+                ),
+              ),
             );
 
         if (mounted && response != null) {
           await showDialog<void>(
             context: context,
             barrierDismissible: false,
-            builder:
-                (context) => SlatepackResponseDialog(
-                  responseSlatepack: response.responseSlatepack,
-                  wasEncrypted: response.wasEncrypted,
-                ),
+            builder: (context) => SlatepackResponseDialog(
+              responseSlatepack: response.responseSlatepack,
+              wasEncrypted: response.wasEncrypted,
+            ),
           );
         }
       }
@@ -300,6 +296,32 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
     }
   }
 
+  StreamSubscription<Address?> _sub(AddressType type) {
+    return ref
+        .read(mainDBProvider)
+        .isar
+        .addresses
+        .where()
+        .walletIdEqualTo(walletId)
+        .filter()
+        .typeEqualTo(type)
+        .and()
+        .subTypeEqualTo(AddressSubType.receiving)
+        .sortByDerivationIndexDesc()
+        .findFirst()
+        .asStream()
+        .listen((event) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              setState(() {
+                _addressMap[type] =
+                    event?.value ?? _addressMap[type] ?? "[No address yet]";
+              });
+            }
+          });
+        });
+  }
+
   @override
   void initState() {
     walletId = widget.walletId;
@@ -341,7 +363,9 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
       }
     }
 
-    if (_walletAddressTypes.length > 1 && wallet is BitcoinWallet) {
+    if (_walletAddressTypes.length > 1 &&
+        wallet is BitcoinWallet &&
+        !wallet.info.isLegacyAddressesEnabled) {
       _walletAddressTypes.removeWhere((e) => e == AddressType.p2pkh);
     }
 
@@ -351,30 +375,7 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
 
     if (_showMultiType) {
       for (final type in _walletAddressTypes) {
-        _addressSubMap[type] = ref
-            .read(mainDBProvider)
-            .isar
-            .addresses
-            .where()
-            .walletIdEqualTo(walletId)
-            .filter()
-            .typeEqualTo(type)
-            .and()
-            .not()
-            .subTypeEqualTo(AddressSubType.change)
-            .sortByDerivationIndexDesc()
-            .findFirst()
-            .asStream()
-            .listen((event) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (mounted) {
-                  setState(() {
-                    _addressMap[type] =
-                        event?.value ?? _addressMap[type] ?? "[No address yet]";
-                  });
-                }
-              });
-            });
+        _addressSubMap[type] = _sub(type);
       }
     }
 
@@ -399,42 +400,40 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
       if (prev?.isMwebEnabled != next.isMwebEnabled) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
+            const type = AddressType.mweb;
             setState(() {
               supportsMweb = next.isMwebEnabled;
 
-              if (supportsMweb &&
-                  !_walletAddressTypes.contains(AddressType.mweb)) {
-                _walletAddressTypes.insert(0, AddressType.mweb);
-                _addressSubMap[AddressType.mweb] = ref
-                    .read(mainDBProvider)
-                    .isar
-                    .addresses
-                    .where()
-                    .walletIdEqualTo(walletId)
-                    .filter()
-                    .typeEqualTo(AddressType.mweb)
-                    .and()
-                    .not()
-                    .subTypeEqualTo(AddressSubType.change)
-                    .sortByDerivationIndexDesc()
-                    .findFirst()
-                    .asStream()
-                    .listen((event) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (mounted) {
-                          setState(() {
-                            _addressMap[AddressType.mweb] =
-                                event?.value ??
-                                _addressMap[AddressType.mweb] ??
-                                "[No address yet]";
-                          });
-                        }
-                      });
-                    });
+              if (supportsMweb && !_walletAddressTypes.contains(type)) {
+                _walletAddressTypes.insert(0, type);
+
+                _addressSubMap[type] = _sub(type);
               } else {
-                _walletAddressTypes.remove(AddressType.mweb);
-                _addressSubMap[AddressType.mweb]?.cancel();
-                _addressSubMap.remove(AddressType.mweb);
+                _walletAddressTypes.remove(type);
+                _addressSubMap[type]?.cancel();
+                _addressSubMap.remove(type);
+              }
+
+              if (_currentIndex >= _walletAddressTypes.length) {
+                _currentIndex = _walletAddressTypes.length - 1;
+              }
+            });
+          }
+        });
+      }
+
+      if (prev?.isLegacyAddressesEnabled != next.isLegacyAddressesEnabled) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            const type = AddressType.p2pkh;
+            setState(() {
+              if (!_walletAddressTypes.contains(type)) {
+                _walletAddressTypes.insert(0, type);
+                _addressSubMap[type] = _sub(type);
+              } else {
+                _walletAddressTypes.remove(type);
+                _addressSubMap[type]?.cancel();
+                _addressSubMap.remove(type);
               }
 
               if (_currentIndex >= _walletAddressTypes.length) {
@@ -494,10 +493,9 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
                   color: Theme.of(context).extension<StackColors>()!.background,
                   icon: SvgPicture.asset(
                     Assets.svg.verticalEllipsis,
-                    color:
-                        Theme.of(
-                          context,
-                        ).extension<StackColors>()!.accentColorDark,
+                    color: Theme.of(
+                      context,
+                    ).extension<StackColors>()!.accentColorDark,
                     width: 20,
                     height: 20,
                   ),
@@ -514,10 +512,9 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
                               right: 10,
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color:
-                                      Theme.of(
-                                        context,
-                                      ).extension<StackColors>()!.popupBG,
+                                  color: Theme.of(
+                                    context,
+                                  ).extension<StackColors>()!.popupBG,
                                   borderRadius: BorderRadius.circular(
                                     Constants.size.circularBorderRadius,
                                   ),
@@ -580,100 +577,94 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
                   children: [
                     ConditionalParent(
                       condition: _showMultiType,
-                      builder:
-                          (child) => Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(
-                                "Address type",
-                                style: STextStyles.w500_14(context).copyWith(
-                                  color:
-                                      Theme.of(
-                                        context,
-                                      ).extension<StackColors>()!.infoItemLabel,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              DropdownButtonHideUnderline(
-                                child: DropdownButton2<int>(
-                                  value: _currentIndex,
-                                  items: [
-                                    for (
-                                      int i = 0;
-                                      i < _walletAddressTypes.length;
-                                      i++
-                                    )
-                                      DropdownMenuItem(
-                                        value: i,
-                                        child: Text(
-                                          _supportsSpark &&
-                                                  _walletAddressTypes[i] ==
-                                                      AddressType.p2pkh
-                                              ? "Transparent address"
-                                              : "${_walletAddressTypes[i].readableName} address",
-                                          style: STextStyles.w500_14(context),
-                                        ),
-                                      ),
-                                  ],
-                                  onChanged: (value) {
-                                    if (value != null &&
-                                        value != _currentIndex) {
-                                      setState(() {
-                                        _currentIndex = value;
-                                      });
-                                    }
-                                  },
-                                  isExpanded: true,
-                                  iconStyleData: IconStyleData(
-                                    icon: Padding(
-                                      padding: const EdgeInsets.only(right: 10),
-                                      child: SvgPicture.asset(
-                                        Assets.svg.chevronDown,
-                                        width: 12,
-                                        height: 6,
-                                        color:
-                                            Theme.of(context)
-                                                .extension<StackColors>()!
-                                                .textFieldActiveSearchIconRight,
-                                      ),
-                                    ),
-                                  ),
-                                  buttonStyleData: ButtonStyleData(
-                                    decoration: BoxDecoration(
-                                      color:
-                                          Theme.of(context)
-                                              .extension<StackColors>()!
-                                              .textFieldDefaultBG,
-                                      borderRadius: BorderRadius.circular(
-                                        Constants.size.circularBorderRadius,
-                                      ),
-                                    ),
-                                  ),
-                                  dropdownStyleData: DropdownStyleData(
-                                    offset: const Offset(0, -10),
-                                    elevation: 0,
-                                    decoration: BoxDecoration(
-                                      color:
-                                          Theme.of(context)
-                                              .extension<StackColors>()!
-                                              .textFieldDefaultBG,
-                                      borderRadius: BorderRadius.circular(
-                                        Constants.size.circularBorderRadius,
-                                      ),
-                                    ),
-                                  ),
-                                  menuItemStyleData: const MenuItemStyleData(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 8,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              child,
-                            ],
+                      builder: (child) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            "Address type",
+                            style: STextStyles.w500_14(context).copyWith(
+                              color: Theme.of(
+                                context,
+                              ).extension<StackColors>()!.infoItemLabel,
+                            ),
                           ),
+                          const SizedBox(height: 10),
+                          DropdownButtonHideUnderline(
+                            child: DropdownButton2<int>(
+                              value: _currentIndex,
+                              items: [
+                                for (
+                                  int i = 0;
+                                  i < _walletAddressTypes.length;
+                                  i++
+                                )
+                                  DropdownMenuItem(
+                                    value: i,
+                                    child: Text(
+                                      _supportsSpark &&
+                                              _walletAddressTypes[i] ==
+                                                  AddressType.p2pkh
+                                          ? "Transparent address"
+                                          : "${_walletAddressTypes[i].readableName} address",
+                                      style: STextStyles.w500_14(context),
+                                    ),
+                                  ),
+                              ],
+                              onChanged: (value) {
+                                if (value != null && value != _currentIndex) {
+                                  setState(() {
+                                    _currentIndex = value;
+                                  });
+                                }
+                              },
+                              isExpanded: true,
+                              iconStyleData: IconStyleData(
+                                icon: Padding(
+                                  padding: const EdgeInsets.only(right: 10),
+                                  child: SvgPicture.asset(
+                                    Assets.svg.chevronDown,
+                                    width: 12,
+                                    height: 6,
+                                    color: Theme.of(context)
+                                        .extension<StackColors>()!
+                                        .textFieldActiveSearchIconRight,
+                                  ),
+                                ),
+                              ),
+                              buttonStyleData: ButtonStyleData(
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .extension<StackColors>()!
+                                      .textFieldDefaultBG,
+                                  borderRadius: BorderRadius.circular(
+                                    Constants.size.circularBorderRadius,
+                                  ),
+                                ),
+                              ),
+                              dropdownStyleData: DropdownStyleData(
+                                offset: const Offset(0, -10),
+                                elevation: 0,
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .extension<StackColors>()!
+                                      .textFieldDefaultBG,
+                                  borderRadius: BorderRadius.circular(
+                                    Constants.size.circularBorderRadius,
+                                  ),
+                                ),
+                              ),
+                              menuItemStyleData: const MenuItemStyleData(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          child,
+                        ],
+                      ),
                       child: GestureDetector(
                         onTap: () {
                           HapticFeedback.lightImpact();
@@ -701,10 +692,9 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
                                         Assets.svg.copy,
                                         width: 10,
                                         height: 10,
-                                        color:
-                                            Theme.of(context)
-                                                .extension<StackColors>()!
-                                                .infoItemIcons,
+                                        color: Theme.of(context)
+                                            .extension<StackColors>()!
+                                            .infoItemIcons,
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
@@ -753,14 +743,14 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
                         label: "Generate new address",
                         onPressed:
                             supportsMweb &&
-                                    _walletAddressTypes[_currentIndex] ==
-                                        AddressType.mweb
-                                ? generateNewMwebAddress
-                                : _supportsSpark &&
-                                    _walletAddressTypes[_currentIndex] ==
-                                        AddressType.spark
-                                ? generateNewSparkAddress
-                                : generateNewAddress,
+                                _walletAddressTypes[_currentIndex] ==
+                                    AddressType.mweb
+                            ? generateNewMwebAddress
+                            : _supportsSpark &&
+                                  _walletAddressTypes[_currentIndex] ==
+                                      AddressType.spark
+                            ? generateNewSparkAddress
+                            : generateNewAddress,
                       ),
                     // MWC Slatepack import button.
                     if (coin is Mimblewimblecoin) ...[
@@ -794,11 +784,10 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
                                       RouteGenerator.getRoute(
                                         shouldUseMaterialRoute:
                                             RouteGenerator.useMaterialPageRoute,
-                                        builder:
-                                            (_) => GenerateUriQrCodeView(
-                                              coin: coin,
-                                              receivingAddress: address,
-                                            ),
+                                        builder: (_) => GenerateUriQrCodeView(
+                                          coin: coin,
+                                          receivingAddress: address,
+                                        ),
                                         settings: const RouteSettings(
                                           name: GenerateUriQrCodeView.routeName,
                                         ),

@@ -31,8 +31,8 @@ class IfNotAlreadyAsync<T> {
     if (!_locked) {
       _locked = true;
       try {
-        if (_function == null) {
-          await _function!();
+        if (_function != null) {
+          await _function();
         } else {
           await _functionWithArgs!(args);
         }

@@ -302,7 +302,7 @@ class _EditAutoBackupViewState extends ConsumerState<EditAutoBackupView> {
                       try {
                         await stackFileSystem.prepareStorage();
                         if (mounted) {
-                          final filePath = await stackFileSystem.openFile();
+                          final filePath = await stackFileSystem.pickDir();
 
                           if (mounted) {
                             setState(() {

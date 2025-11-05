@@ -321,7 +321,7 @@ class _CreateAutoBackup extends ConsumerState<CreateAutoBackup> {
                                     await stackFileSystem.prepareStorage();
                                     if (mounted) {
                                       final filePath = await stackFileSystem
-                                          .openFile();
+                                          .pickDir();
 
                                       if (mounted) {
                                         setState(() {

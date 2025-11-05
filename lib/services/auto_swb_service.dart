@@ -17,6 +17,7 @@ import 'package:tuple/tuple.dart';
 
 import '../pages/settings_views/global_settings_view/stack_backup_views/helpers/restore_create_backup.dart';
 import '../utilities/flutter_secure_storage_interface.dart';
+import '../utilities/fs.dart';
 import '../utilities/logger.dart';
 import '../utilities/prefs.dart';
 
@@ -91,7 +92,11 @@ class AutoSWBService extends ChangeNotifier {
         adkVersion,
       );
 
-      await File(fileToSave).writeAsString(content, flush: true);
+      await FS.writeStringToFile(
+        content,
+        autoBackupDirectoryPath,
+        fileToSave.split("/").last,
+      );
 
       Prefs.instance.lastAutoBackup = now;
 
@@ -121,6 +126,13 @@ class AutoSWBService extends ChangeNotifier {
 
   /// Trim the number of auto backup files based on age
   void trimBackups(String dirPath, int numberToKeep) {
+    if (Platform.isAndroid && dirPath.startsWith("content://")) {
+      Logging.instance.w(
+        "Android SAF lib doesn't provide a deletion API. Cannot trim/rotate out old backups",
+      );
+      return;
+    }
+
     final dir = Directory(dirPath);
     final List<Tuple2<DateTime, FileSystemEntity>> files = [];
 

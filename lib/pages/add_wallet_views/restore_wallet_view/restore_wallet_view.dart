@@ -622,7 +622,7 @@ class _RestoreWalletViewState extends ConsumerState<RestoreWalletView> {
     try {
       final qrResult = await ref.read(pBarcodeScanner).scan(context: context);
 
-      final results = AddressUtils.decodeQRSeedData(qrResult.rawContent);
+      final results = AddressUtils.decodeQRSeedData(qrResult.rawContent ?? "");
 
       if (results["mnemonic"] != null) {
         final list = (results["mnemonic"] as List)

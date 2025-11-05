@@ -290,9 +290,10 @@ class _SendViewState extends ConsumerState<SendView> {
       // );
 
       Logging.instance.d("qrResult content: ${qrResult.rawContent}");
+      if (qrResult.rawContent == null) return;
 
       final paymentData = AddressUtils.parsePaymentUri(
-        qrResult.rawContent,
+        qrResult.rawContent!,
         logging: Logging.instance,
       );
 
@@ -300,7 +301,7 @@ class _SendViewState extends ConsumerState<SendView> {
           paymentData.coin?.uriScheme == coin.uriScheme) {
         _applyUri(paymentData);
       } else {
-        _address = qrResult.rawContent.split("\n").first.trim();
+        _address = qrResult.rawContent!.split("\n").first.trim();
         sendToController.text = _address ?? "";
 
         _setValidAddressProviders(_address);

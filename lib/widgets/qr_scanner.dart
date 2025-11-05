@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
 
 import '../themes/stack_colors.dart';
+import '../utilities/if_not_already.dart';
 import '../utilities/text_styles.dart';
 import 'background.dart';
 import 'custom_buttons/app_bar_icon_button.dart';
@@ -23,10 +24,18 @@ class _QrScannerState extends State<QrScanner> {
 
   StreamSubscription<Barcode>? sub;
 
-  void _onScanned(String? data) {
-    if (data != null && mounted) {
-      Navigator.of(context).pop(data);
-    }
+  late final Future<void> Function(String?) _onScanned;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _onScanned = IfNotAlreadyAsync<String>.withArgs((data) async {
+      await sub?.cancel();
+      if (mounted) {
+        Navigator.of(context).pop(data);
+      }
+    }).execute;
   }
 
   // In order to get hot reload to work we need to pause the camera if the platform

@@ -82,7 +82,7 @@ class _VerifyMessageFormState extends ConsumerState<VerifyMessageForm> {
     messageController.text = ref.read(_pVerifyState).message;
     signatureController.text = ref.read(_pVerifyState).signature;
 
-    _verify = IfNotAlreadyAsync(() async {
+    _verify = IfNotAlreadyAsync<void>(() async {
       Exception? ex;
 
       final verified = await showLoading(

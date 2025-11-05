@@ -18,18 +18,24 @@ class IfNotAlready {
   }
 }
 
-class IfNotAlreadyAsync {
-  final Future<void> Function() _function;
+class IfNotAlreadyAsync<T> {
+  final Future<void> Function()? _function;
+  final Future<void> Function(T? args)? _functionWithArgs;
 
   bool _locked = false;
 
-  IfNotAlreadyAsync(this._function);
+  IfNotAlreadyAsync(this._function) : _functionWithArgs = null;
+  IfNotAlreadyAsync.withArgs(this._functionWithArgs) : _function = null;
 
-  Future<void> execute() async {
+  Future<void> execute([T? args]) async {
     if (!_locked) {
       _locked = true;
       try {
-        await _function();
+        if (_function == null) {
+          await _function!();
+        } else {
+          await _functionWithArgs!(args);
+        }
       } finally {
         _locked = false;
       }

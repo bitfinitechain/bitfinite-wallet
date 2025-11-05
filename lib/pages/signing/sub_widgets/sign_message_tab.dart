@@ -90,7 +90,7 @@ class _SignMessageFormState extends ConsumerState<SignMessageForm> {
 
     messageController.text = ref.read(_pSignState).message;
 
-    _chooseAddress = IfNotAlreadyAsync(() async {
+    _chooseAddress = IfNotAlreadyAsync<void>(() async {
       final Address? address;
 
       if (Util.isDesktop) {
@@ -166,7 +166,7 @@ class _SignMessageFormState extends ConsumerState<SignMessageForm> {
       }
     }).execute;
 
-    _sign = IfNotAlreadyAsync(() async {
+    _sign = IfNotAlreadyAsync<void>(() async {
       Exception? ex;
 
       final state = ref.read(_pSignState);

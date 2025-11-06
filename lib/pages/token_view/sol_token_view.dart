@@ -17,11 +17,13 @@ import '../../themes/stack_colors.dart';
 import '../../utilities/assets.dart';
 import '../../utilities/constants.dart';
 import '../../utilities/text_styles.dart';
+import '../../wallets/isar/providers/solana/current_sol_token_wallet_provider.dart';
+import '../../wallets/wallet/impl/sub_wallets/solana_token_wallet.dart';
 import '../../widgets/background.dart';
 import '../../widgets/custom_buttons/app_bar_icon_button.dart';
 import '../../widgets/custom_buttons/blue_text_button.dart';
 import '../../widgets/icon_widgets/sol_token_icon.dart';
-import 'sub_widgets/token_summary.dart';
+import 'sub_widgets/token_summary_sol.dart';
 import 'sub_widgets/token_transaction_list_widget.dart';
 
 /// [eventBus] should only be set during testing.
@@ -52,7 +54,35 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
   void initState() {
     // TODO: Integrate Solana token refresh status when available.
     initialSyncStatus = WalletSyncStatus.synced;
+
+    // Initialize the Solana token wallet provider with mock data.
+    // This sets up the pCurrentSolanaTokenWallet provider so that
+    // SolanaTokenSummary can access the token wallet information.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _initializeSolanaTokenWallet();
+      }
+    });
+
     super.initState();
+  }
+
+  /// Initialize the Solana token wallet for this token view.
+  ///
+  /// Creates a mock SolanaTokenWallet and sets it as the current token wallet
+  /// in the provider so that UI widgets can access it.
+  void _initializeSolanaTokenWallet() {
+    // Create a mock Solana token wallet with placeholder data
+    // In a real implementation, this would load actual token data from the Solana API
+    final solanaTokenWallet = SolanaTokenWallet(
+      tokenMint: widget.tokenMint,
+      tokenName: "Solana Token", // TODO: Load actual token name.
+      tokenSymbol: "SOL", // TODO: Load actual token symbol.
+      tokenDecimals: 6, // TODO: Load actual token decimals.
+    );
+
+    // Set the wallet in the provider so that it can be accessed by widgets.
+    ref.read(solanaTokenServiceStateProvider.state).state = solanaTokenWallet;
   }
 
   @override
@@ -150,8 +180,9 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
                   const SizedBox(height: 10),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: TokenSummary(
+                    child: SolanaTokenSummary(
                       walletId: widget.walletId,
+                      tokenMint: widget.tokenMint,
                       initialSyncStatus: initialSyncStatus,
                     ),
                   ),

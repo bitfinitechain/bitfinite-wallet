@@ -203,11 +203,15 @@ final class MwebdService {
         "${Platform.pathSeparator}logs"
         "${Platform.pathSeparator}debug.log";
 
+    final file = File(path);
+
+    if (await file.exists()) {
+      offset = await file.length();
+    }
+
     Future<void> poll() async {
       if (!controller.isClosed) {
-        final file = File(path);
-
-        if (!file.existsSync()) {
+        if (!(await file.exists())) {
           return;
         }
 

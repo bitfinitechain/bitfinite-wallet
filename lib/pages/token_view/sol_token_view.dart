@@ -24,7 +24,7 @@ import '../../widgets/custom_buttons/app_bar_icon_button.dart';
 import '../../widgets/custom_buttons/blue_text_button.dart';
 import '../../widgets/icon_widgets/sol_token_icon.dart';
 import 'sub_widgets/token_summary_sol.dart';
-import 'sub_widgets/token_transaction_list_widget.dart';
+import 'sub_widgets/token_transaction_list_widget_sol.dart';
 
 /// [eventBus] should only be set during testing.
 class SolTokenView extends ConsumerStatefulWidget {
@@ -242,7 +242,7 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               Expanded(
-                                child: TokenTransactionsList(
+                                child: SolanaTokenTransactionsList(
                                   walletId: widget.walletId,
                                 ),
                               ),

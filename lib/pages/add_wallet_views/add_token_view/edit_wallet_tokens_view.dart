@@ -163,24 +163,31 @@ class _EditWalletTokensViewState extends ConsumerState<EditWalletTokensView> {
 
           // Check if wallet owns this token using the API.
           try {
-            // Note: ownsToken() is currently a placeholder returning false.
-            // Once Solana RPC integration is complete, this will check real ownership.
+            // Initialize the RPC client for the SolanaTokenAPI.
             final tokenApi = SolanaTokenAPI();
-            final ownershipResult = await tokenApi.ownsToken(
-              receivingAddress,
-              mintAddress,
-            );
+            final rpcClient = wallet.getRpcClient();
 
-            if (ownershipResult.isSuccess) {
-              if (ownershipResult.value == true) {
-                debugPrint('OWNS token - token account found');
+            if (rpcClient != null) {
+              tokenApi.initializeRpcClient(rpcClient);
+
+              final ownershipResult = await tokenApi.ownsToken(
+                receivingAddress,
+                mintAddress,
+              );
+
+              if (ownershipResult.isSuccess) {
+                if (ownershipResult.value == true) {
+                  debugPrint('OWNS token - token account found');
+                } else {
+                  debugPrint('DOES NOT own token - no token account found');
+                }
               } else {
-                debugPrint('DOES NOT own token - no token account found');
+                debugPrint(
+                  'Error checking ownership: ${ownershipResult.exception}',
+                );
               }
             } else {
-              debugPrint(
-                'Error checking ownership: ${ownershipResult.exception}',
-              );
+              debugPrint('Warning: RPC client not initialized for wallet');
             }
           } catch (e) {
             debugPrint('Exception checking ownership: $e');

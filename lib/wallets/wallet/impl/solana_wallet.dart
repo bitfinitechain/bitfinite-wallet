@@ -35,6 +35,13 @@ class SolanaWallet extends Bip39Wallet<Solana> {
 
   RpcClient? _rpcClient; // The Solana RpcClient.
 
+  /// Get the RPC client for this wallet.
+  ///
+  /// This is used by services like SolanaTokenAPI that need to make RPC calls.
+  RpcClient? getRpcClient() {
+    return _rpcClient;
+  }
+
   Future<Ed25519HDKeyPair> _getKeyPair() async {
     return Ed25519HDKeyPair.fromMnemonic(
       await getMnemonic(),

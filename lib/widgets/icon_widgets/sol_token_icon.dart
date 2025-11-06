@@ -7,6 +7,8 @@
  *
  */
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -78,12 +80,8 @@ class _SolTokenIconState extends ConsumerState<SolTokenIcon> {
   @override
   Widget build(BuildContext context) {
     if (imageUrl == null || imageUrl!.isEmpty) {
-      // Fallback to generic Solana icon.
-      return SvgPicture.asset(
-        ref.watch(coinIconProvider(Solana(CryptoCurrencyNetwork.main))),
-        width: widget.size,
-        height: widget.size,
-      );
+      // Fallback to Solana coin icon from theme.
+      return _buildSolanaIcon();
     } else {
       // Display token icon from network.
       return SvgPicture.network(
@@ -91,13 +89,19 @@ class _SolTokenIconState extends ConsumerState<SolTokenIcon> {
         width: widget.size,
         height: widget.size,
         placeholderBuilder: (context) {
-          return SvgPicture.asset(
-            ref.watch(coinIconProvider(Solana(CryptoCurrencyNetwork.main))),
-            width: widget.size,
-            height: widget.size,
-          );
+          return _buildSolanaIcon();
         },
       );
     }
+  }
+
+  /// Build a Solana icon from the theme assets using file path, not asset bundle.
+  Widget _buildSolanaIcon() {
+    final assetPath = ref.watch(coinIconProvider(Solana(CryptoCurrencyNetwork.main)));
+    return SvgPicture.file(
+      File(assetPath),
+      width: widget.size,
+      height: widget.size,
+    );
   }
 }

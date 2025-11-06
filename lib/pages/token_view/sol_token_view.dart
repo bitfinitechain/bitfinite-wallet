@@ -16,6 +16,7 @@ import '../../services/event_bus/events/global/wallet_sync_status_changed_event.
 import '../../themes/stack_colors.dart';
 import '../../utilities/assets.dart';
 import '../../utilities/constants.dart';
+import '../../utilities/default_spl_tokens.dart';
 import '../../utilities/text_styles.dart';
 import '../../wallets/isar/providers/solana/current_sol_token_wallet_provider.dart';
 import '../../wallets/wallet/impl/sub_wallets/solana_token_wallet.dart';
@@ -69,19 +70,39 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
 
   /// Initialize the Solana token wallet for this token view.
   ///
-  /// Creates a mock SolanaTokenWallet and sets it as the current token wallet
-  /// in the provider so that UI widgets can access it.
+  /// Creates a SolanaTokenWallet with token data from DefaultSplTokens
+  /// and sets it as the current token wallet in the provider so that UI widgets can access it.
+  ///
+  /// If the token is not found in DefaultSplTokens, sets the token wallet to null
+  /// so the UI can display an error message.
+  ///
+  /// TODO: Implement token data lookup for tokens not on the default list.
   void _initializeSolanaTokenWallet() {
-    // Create a mock Solana token wallet with placeholder data
-    // In a real implementation, this would load actual token data from the Solana API
+    dynamic tokenInfo;
+    try {
+      tokenInfo = DefaultSplTokens.list.firstWhere(
+        (token) => token.address == widget.tokenMint,
+      );
+    } catch (e) {
+      // Token not found in DefaultSplTokens.
+      tokenInfo = null;
+    }
+
+    if (tokenInfo == null) {
+      ref.read(solanaTokenServiceStateProvider.state).state = null;
+      debugPrint(
+        'ERROR: Token not found in DefaultSplTokens: ${widget.tokenMint}',
+      );
+      return;
+    }
+
     final solanaTokenWallet = SolanaTokenWallet(
       tokenMint: widget.tokenMint,
-      tokenName: "Solana Token", // TODO: Load actual token name.
-      tokenSymbol: "SOL", // TODO: Load actual token symbol.
-      tokenDecimals: 6, // TODO: Load actual token decimals.
+      tokenName: "${tokenInfo.name}",
+      tokenSymbol: "${tokenInfo.symbol}",
+      tokenDecimals: tokenInfo.decimals as int,
     );
 
-    // Set the wallet in the provider so that it can be accessed by widgets.
     ref.read(solanaTokenServiceStateProvider.state).state = solanaTokenWallet;
   }
 
@@ -105,8 +126,9 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
       },
       child: Background(
         child: Scaffold(
-          backgroundColor:
-              Theme.of(context).extension<StackColors>()!.background,
+          backgroundColor: Theme.of(
+            context,
+          ).extension<StackColors>()!.background,
           appBar: AppBar(
             leading: AppBarBackButton(
               onPressed: () {
@@ -118,31 +140,34 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
               },
             ),
             centerTitle: true,
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Expanded(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SolTokenIcon(
-                        mintAddress: widget.tokenMint,
-                        size: 24,
+            title: Consumer(
+              builder: (context, ref, _) {
+                final tokenWallet = ref.watch(pCurrentSolanaTokenWallet);
+                final tokenName = tokenWallet?.tokenName ?? "Token";
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SolTokenIcon(mintAddress: widget.tokenMint, size: 24),
+                          const SizedBox(width: 10),
+                          Flexible(
+                            child: Text(
+                              tokenName,
+                              style: STextStyles.navBarTitle(context),
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 10),
-                      Flexible(
-                        child: Text(
-                          "Token Name", // TODO: Replace with actual token name from SplToken.
-                          style: STextStyles.navBarTitle(context),
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                    ),
+                  ],
+                );
+              },
             ),
             actions: [
               Padding(
@@ -152,10 +177,9 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
                   child: AppBarIconButton(
                     icon: SvgPicture.asset(
                       Assets.svg.verticalEllipsis,
-                      color:
-                          Theme.of(
-                            context,
-                          ).extension<StackColors>()!.topNavIconPrimary,
+                      color: Theme.of(
+                        context,
+                      ).extension<StackColors>()!.topNavIconPrimary,
                     ),
                     onPressed: () {
                       // TODO: Implement token details navigation for Solana.
@@ -195,10 +219,9 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
                         Text(
                           "Transactions",
                           style: STextStyles.itemSubtitle(context).copyWith(
-                            color:
-                                Theme.of(
-                                  context,
-                                ).extension<StackColors>()!.textDark3,
+                            color: Theme.of(
+                              context,
+                            ).extension<StackColors>()!.textDark3,
                           ),
                         ),
                         CustomTextButton(

@@ -28,6 +28,8 @@ import '../../../../wallets/crypto_currency/crypto_currency.dart'
     show CryptoCurrency;
 import '../../../../wallets/isar/providers/eth/current_token_wallet_provider.dart';
 import '../../../../wallets/isar/providers/eth/token_balance_provider.dart';
+import '../../../../wallets/isar/providers/solana/current_sol_token_wallet_provider.dart';
+import '../../../../wallets/isar/providers/solana/sol_token_balance_provider.dart';
 import '../../../../wallets/isar/providers/wallet_info_provider.dart';
 import 'desktop_balance_toggle_button.dart';
 
@@ -78,31 +80,50 @@ class _WDesktopWalletSummaryState extends ConsumerState<DesktopWalletSummary> {
       prefsChangeNotifierProvider.select((value) => value.currency),
     );
 
-    // For Ethereum tokens, get the token contract; for Solana tokens, show placeholder.
+    // For Ethereum tokens, get the token contract; for Solana tokens, get the token wallet.
     dynamic tokenContract;
+    dynamic solanaTokenWallet;
     if (widget.isToken) {
       try {
         tokenContract = ref.watch(
           pCurrentTokenWallet.select((value) => value!.tokenContract),
         );
       } catch (_) {
-        // Solana token or token wallet not yet loaded.
+        // Ethereum token not found, check for Solana.
         tokenContract = null;
+      }
+
+      // Check for Solana token wallet if Ethereum token not found.
+      if (tokenContract == null) {
+        try {
+          solanaTokenWallet = ref.watch(pCurrentSolanaTokenWallet);
+        } catch (_) {
+          solanaTokenWallet = null;
+        }
       }
     }
 
-    final price =
-        widget.isToken && tokenContract != null
-            ? ref.watch(
-              priceAnd24hChangeNotifierProvider.select(
-                (value) => value.getTokenPrice((tokenContract as dynamic).address as String),
+    final price = widget.isToken && tokenContract != null
+        ? ref.watch(
+            priceAnd24hChangeNotifierProvider.select(
+              (value) => value.getTokenPrice(
+                (tokenContract as dynamic).address as String,
               ),
-            )
-            : ref.watch(
-              priceAnd24hChangeNotifierProvider.select(
-                (value) => value.getPrice(coin),
+            ),
+          )
+        : widget.isToken && solanaTokenWallet != null
+        ? ref.watch(
+            priceAnd24hChangeNotifierProvider.select(
+              (value) => value.getTokenPrice(
+                "${(solanaTokenWallet as dynamic).tokenMint}",
               ),
-            );
+            ),
+          )
+        : ref.watch(
+            priceAnd24hChangeNotifierProvider.select(
+              (value) => value.getPrice(coin),
+            ),
+          );
 
     final _showAvailable =
         ref.watch(walletBalanceToggleStateProvider.state).state ==
@@ -122,15 +143,38 @@ class _WDesktopWalletSummaryState extends ConsumerState<DesktopWalletSummary> {
           break;
       }
     } else {
-      final Balance balance =
-          widget.isToken && tokenContract != null
-              ? ref.watch(
-                pTokenBalance((
-                  walletId: walletId,
-                  contractAddress: (tokenContract as dynamic).address as String,
-                )),
-              )
-              : ref.watch(pWalletBalance(walletId));
+      final Balance balance;
+      if (widget.isToken && tokenContract != null) {
+        // Ethereum token balance
+        balance = ref.watch(
+          pTokenBalance((
+            walletId: walletId,
+            contractAddress: (tokenContract as dynamic).address as String,
+          )),
+        );
+      } else if (widget.isToken && solanaTokenWallet != null) {
+        // Solana token balance - handle async value.
+        final balanceAsync = ref.watch(
+          pSolanaTokenBalance((
+            walletId: walletId,
+            tokenMint: (solanaTokenWallet as dynamic).tokenMint,
+            fractionDigits: (solanaTokenWallet as dynamic).tokenDecimals,
+          )),
+        );
+        // Extract the balance from AsyncValue, defaulting to zero if not loaded.
+        final decimals = (solanaTokenWallet as dynamic).tokenDecimals as int;
+        balance =
+            balanceAsync.whenData((b) => b).value ??
+            Balance(
+              total: Amount.zeroWith(fractionDigits: decimals),
+              spendable: Amount.zeroWith(fractionDigits: decimals),
+              blockedTotal: Amount.zeroWith(fractionDigits: decimals),
+              pendingSpendable: Amount.zeroWith(fractionDigits: decimals),
+            );
+      } else {
+        // Regular wallet balance.
+        balance = ref.watch(pWalletBalance(walletId));
+      }
 
       balanceToShow = _showAvailable ? balance.spendable : balance.total;
     }
@@ -146,9 +190,18 @@ class _WDesktopWalletSummaryState extends ConsumerState<DesktopWalletSummary> {
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   child: SelectableText(
-                    ref
-                        .watch(pAmountFormatter(coin))
-                        .format(balanceToShow, ethContract: tokenContract != null ? tokenContract as EthContract? : null),
+                    widget.isToken && solanaTokenWallet != null
+                        ? "${balanceToShow.decimal.toStringAsFixed(
+                            (solanaTokenWallet as dynamic).tokenDecimals as int,
+                          )} ${(solanaTokenWallet as dynamic).tokenSymbol}"
+                        : ref
+                            .watch(pAmountFormatter(coin))
+                            .format(
+                              balanceToShow,
+                              ethContract: tokenContract != null
+                                  ? tokenContract as EthContract?
+                                  : null,
+                            ),
                     style: STextStyles.desktopH3(context),
                   ),
                 ),
@@ -156,10 +209,9 @@ class _WDesktopWalletSummaryState extends ConsumerState<DesktopWalletSummary> {
                   SelectableText(
                     "${Amount.fromDecimal(price.value * balanceToShow.decimal, fractionDigits: 2).fiatString(locale: locale)} $baseCurrency",
                     style: STextStyles.desktopTextExtraSmall(context).copyWith(
-                      color:
-                          Theme.of(
-                            context,
-                          ).extension<StackColors>()!.textSubtitle1,
+                      color: Theme.of(
+                        context,
+                      ).extension<StackColors>()!.textSubtitle1,
                     ),
                   ),
                 // if (coin is Firo)
@@ -180,10 +232,9 @@ class _WDesktopWalletSummaryState extends ConsumerState<DesktopWalletSummary> {
             WalletRefreshButton(
               walletId: walletId,
               initialSyncStatus: widget.initialSyncStatus,
-              tokenContractAddress:
-                  widget.isToken && tokenContract != null
-                      ? (tokenContract as EthContract).address
-                      : null,
+              tokenContractAddress: widget.isToken && tokenContract != null
+                  ? (tokenContract as EthContract).address
+                  : null,
             ),
 
             const SizedBox(width: 8),

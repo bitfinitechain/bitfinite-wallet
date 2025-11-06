@@ -19,7 +19,6 @@ import '../../../providers/global/prefs_provider.dart';
 import '../../../services/event_bus/events/global/wallet_sync_status_changed_event.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/amount/amount.dart';
-import '../../../utilities/amount/amount_formatter.dart';
 import '../../../utilities/assets.dart';
 import '../../../utilities/constants.dart';
 import '../../../utilities/text_styles.dart';
@@ -69,8 +68,14 @@ class SolanaTokenSummary extends ConsumerWidget {
       );
     }
 
-    final balance = ref.watch(
-      pSolanaTokenBalance((walletId: walletId, tokenMint: tokenMint)),
+    final balanceAsync = ref.watch(
+      pSolanaTokenBalance(
+        (
+          walletId: walletId,
+          tokenMint: tokenMint,
+          fractionDigits: tokenWallet.tokenDecimals,
+        ),
+      ),
     );
 
     Decimal? price;
@@ -85,42 +90,138 @@ class SolanaTokenSummary extends ConsumerWidget {
         RoundedContainer(
           color: Theme.of(context).extension<StackColors>()!.tokenSummaryBG,
           padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+          child: balanceAsync.when(
+            data: (balance) {
+              return Column(
                 children: [
-                  SvgPicture.asset(
-                    Assets.svg.walletDesktop,
-                    color: Theme.of(
-                      context,
-                    ).extension<StackColors>()!.tokenSummaryTextSecondary,
-                    width: 12,
-                    height: 12,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SvgPicture.asset(
+                        Assets.svg.walletDesktop,
+                        color: Theme.of(
+                          context,
+                        ).extension<StackColors>()!.tokenSummaryTextSecondary,
+                        width: 12,
+                        height: 12,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        ref.watch(pWalletName(walletId)),
+                        style: STextStyles.w500_12(context).copyWith(
+                          color: Theme.of(
+                            context,
+                          ).extension<StackColors>()!.tokenSummaryTextSecondary,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 6),
-                  Text(
-                    ref.watch(pWalletName(walletId)),
-                    style: STextStyles.w500_12(context).copyWith(
-                      color: Theme.of(
-                        context,
-                      ).extension<StackColors>()!.tokenSummaryTextSecondary,
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        balance.total.decimal.toStringAsFixed(tokenWallet.tokenDecimals),
+                        style: STextStyles.pageTitleH1(context).copyWith(
+                          color: Theme.of(
+                            context,
+                          ).extension<StackColors>()!.tokenSummaryTextPrimary,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      CoinTickerTag(
+                        ticker: tokenWallet.tokenSymbol,
+                      ),
+                    ],
+                  ),
+                  if (price != null) const SizedBox(height: 6),
+                  if (price != null)
+                    Text(
+                      "${(balance.total.decimal * price).toAmount(fractionDigits: 2).fiatString(locale: ref.watch(localeServiceChangeNotifierProvider.select((value) => value.locale)))} ${ref.watch(prefsChangeNotifierProvider.select((value) => value.currency))}",
+                      style: STextStyles.subtitle500(context).copyWith(
+                        color: Theme.of(
+                          context,
+                        ).extension<StackColors>()!.tokenSummaryTextPrimary,
+                      ),
                     ),
+                  const SizedBox(height: 20),
+                  SolanaTokenWalletOptions(
+                    walletId: walletId,
+                    tokenMint: tokenMint,
                   ),
                 ],
-              ),
-              const SizedBox(height: 6),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              );
+            },
+            loading: () {
+              return Column(
                 children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SvgPicture.asset(
+                        Assets.svg.walletDesktop,
+                        color: Theme.of(
+                          context,
+                        ).extension<StackColors>()!.tokenSummaryTextSecondary,
+                        width: 12,
+                        height: 12,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        ref.watch(pWalletName(walletId)),
+                        style: STextStyles.w500_12(context).copyWith(
+                          color: Theme.of(
+                            context,
+                          ).extension<StackColors>()!.tokenSummaryTextSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
                   Text(
-                    ref
-                        .watch(
-                          pAmountFormatter(
-                            Solana(CryptoCurrencyNetwork.main),
-                          ),
-                        )
-                        .format(balance.total),
+                    "Loading balance...",
+                    style: STextStyles.pageTitleH1(context).copyWith(
+                      color: Theme.of(
+                        context,
+                      ).extension<StackColors>()!.tokenSummaryTextPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  SolanaTokenWalletOptions(
+                    walletId: walletId,
+                    tokenMint: tokenMint,
+                  ),
+                ],
+              );
+            },
+            error: (error, stackTrace) {
+              return Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SvgPicture.asset(
+                        Assets.svg.walletDesktop,
+                        color: Theme.of(
+                          context,
+                        ).extension<StackColors>()!.tokenSummaryTextSecondary,
+                        width: 12,
+                        height: 12,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        ref.watch(pWalletName(walletId)),
+                        style: STextStyles.w500_12(context).copyWith(
+                          color: Theme.of(
+                            context,
+                          ).extension<StackColors>()!.tokenSummaryTextSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    "0.00",
                     style: STextStyles.pageTitleH1(context).copyWith(
                       color: Theme.of(
                         context,
@@ -131,24 +232,14 @@ class SolanaTokenSummary extends ConsumerWidget {
                   CoinTickerTag(
                     ticker: tokenWallet.tokenSymbol,
                   ),
-                ],
-              ),
-              if (price != null) const SizedBox(height: 6),
-              if (price != null)
-                Text(
-                  "${(balance.total.decimal * price).toAmount(fractionDigits: 2).fiatString(locale: ref.watch(localeServiceChangeNotifierProvider.select((value) => value.locale)))} ${ref.watch(prefsChangeNotifierProvider.select((value) => value.currency))}",
-                  style: STextStyles.subtitle500(context).copyWith(
-                    color: Theme.of(
-                      context,
-                    ).extension<StackColors>()!.tokenSummaryTextPrimary,
+                  const SizedBox(height: 20),
+                  SolanaTokenWalletOptions(
+                    walletId: walletId,
+                    tokenMint: tokenMint,
                   ),
-                ),
-              const SizedBox(height: 20),
-              SolanaTokenWalletOptions(
-                walletId: walletId,
-                tokenMint: tokenMint,
-              ),
-            ],
+                ],
+              );
+            },
           ),
         ),
         Positioned(

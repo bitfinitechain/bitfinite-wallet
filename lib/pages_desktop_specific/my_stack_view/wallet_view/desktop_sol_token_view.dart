@@ -17,8 +17,11 @@ import '../../../providers/providers.dart';
 import '../../../services/event_bus/events/global/wallet_sync_status_changed_event.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/assets.dart';
+import '../../../utilities/default_spl_tokens.dart';
 import '../../../utilities/text_styles.dart';
+import '../../../wallets/isar/providers/solana/current_sol_token_wallet_provider.dart';
 import '../../../wallets/isar/providers/wallet_info_provider.dart';
+import '../../../wallets/wallet/impl/sub_wallets/solana_token_wallet.dart';
 import '../../../widgets/coin_ticker_tag.dart';
 import '../../../widgets/custom_buttons/blue_text_button.dart';
 import '../../../widgets/desktop/desktop_app_bar.dart';
@@ -56,9 +59,50 @@ class _DesktopTokenViewState extends ConsumerState<DesktopSolTokenView> {
 
   @override
   void initState() {
+    // Initialize the Solana token wallet.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeSolanaTokenWallet();
+    });
     // TODO: Integrate Solana token refresh status when available.
     initialSyncStatus = WalletSyncStatus.synced;
     super.initState();
+  }
+
+  /// Initialize the Solana token wallet.
+  ///
+  /// Creates a SolanaTokenWallet with token data from DefaultSplTokens
+  /// and sets it as the current token wallet in the provider so that UI widgets can access it.
+  ///
+  /// If the token is not found in DefaultSplTokens, sets the token wallet to null
+  /// so the UI can display an error message.
+  void _initializeSolanaTokenWallet() {
+    // Look up the actual token from DefaultSplTokens.
+    dynamic tokenInfo;
+    try {
+      tokenInfo = DefaultSplTokens.list.firstWhere(
+        (token) => token.address == widget.tokenMint,
+      );
+    } catch (e) {
+      // Token not found in DefaultSplTokens.
+      tokenInfo = null;
+    }
+
+    if (tokenInfo == null) {
+      ref.read(solanaTokenServiceStateProvider.state).state = null;
+      debugPrint(
+        'ERROR: Token not found in DefaultSplTokens: ${widget.tokenMint}',
+      );
+      return;
+    }
+
+    final solanaTokenWallet = SolanaTokenWallet(
+      tokenMint: widget.tokenMint,
+      tokenName: "${tokenInfo.name}",
+      tokenSymbol: "${tokenInfo.symbol}",
+      tokenDecimals: tokenInfo.decimals as int,
+    );
+
+    ref.read(solanaTokenServiceStateProvider.state).state = solanaTokenWallet;
   }
 
   @override
@@ -101,21 +145,21 @@ class _DesktopTokenViewState extends ConsumerState<DesktopSolTokenView> {
         ),
         center: Expanded(
           flex: 4,
-          child: Row(
-            children: [
-              SolTokenIcon(mintAddress: widget.tokenMint, size: 32),
-              const SizedBox(width: 12),
-              Text(
-                "Token Name", // TODO: Replace with actual token name from SplToken.
-                style: STextStyles.desktopH3(context),
-              ),
-              const SizedBox(width: 12),
-              CoinTickerTag(
-                ticker: ref.watch(
-                  pWalletCoin(widget.walletId).select((s) => s.ticker),
-                ),
-              ),
-            ],
+          child: Consumer(
+            builder: (context, ref, _) {
+              final tokenWallet = ref.watch(pCurrentSolanaTokenWallet);
+              final tokenName = tokenWallet?.tokenName ?? "Token";
+              final tokenSymbol = tokenWallet?.tokenSymbol ?? "SOL";
+              return Row(
+                children: [
+                  SolTokenIcon(mintAddress: widget.tokenMint, size: 32),
+                  const SizedBox(width: 12),
+                  Text(tokenName, style: STextStyles.desktopH3(context)),
+                  const SizedBox(width: 12),
+                  CoinTickerTag(ticker: tokenSymbol),
+                ],
+              );
+            },
           ),
         ),
         useSpacers: false,

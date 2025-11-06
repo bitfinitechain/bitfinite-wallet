@@ -17,6 +17,7 @@ import '../../../themes/stack_colors.dart';
 import '../../../utilities/constants.dart';
 import '../../../utilities/text_styles.dart';
 import '../../../utilities/util.dart';
+import '../../../wallets/isar/providers/solana/sol_token_balance_provider.dart';
 import '../../../widgets/icon_widgets/sol_token_icon.dart';
 import '../../../widgets/rounded_white_container.dart';
 import '../sol_token_view.dart';
@@ -88,6 +89,33 @@ class _SolTokenSelectItemState extends ConsumerState<SolTokenSelectItem> {
             Expanded(
               child: Consumer(
                 builder: (_, ref, __) {
+                  // Fetch the balance.
+                  final balanceAsync = ref.watch(
+                    pSolanaTokenBalance(
+                      (
+                        walletId: widget.walletId,
+                        tokenMint: widget.token.address,
+                        fractionDigits: widget.token.decimals,
+                      ),
+                    ),
+                  );
+
+                  // Format the balance.
+                  String balanceString = "0.00 ${widget.token.symbol}";
+                  balanceAsync.when(
+                    data: (balance) {
+                      // Format the amount with the token symbol.
+                      final decimalValue = balance.total.decimal.toStringAsFixed(widget.token.decimals);
+                      balanceString = "$decimalValue ${widget.token.symbol}";
+                    },
+                    loading: () {
+                      balanceString = "... ${widget.token.symbol}";
+                    },
+                    error: (error, stackTrace) {
+                      balanceString = "0.00 ${widget.token.symbol}";
+                    },
+                  );
+
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -109,7 +137,7 @@ class _SolTokenSelectItemState extends ConsumerState<SolTokenSelectItem> {
                           ),
                           const Spacer(),
                           Text(
-                            "0.00", // TODO [prio=high]: Replace with actual Solana token balance.
+                            balanceString,
                             style:
                                 isDesktop
                                     ? STextStyles.desktopTextExtraSmall(

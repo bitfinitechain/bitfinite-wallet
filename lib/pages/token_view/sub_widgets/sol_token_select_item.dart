@@ -80,8 +80,8 @@ class _SolTokenSelectItemState extends ConsumerState<SolTokenSelectItem> {
         onPressed: _onPressed,
         child: Row(
           children: [
-            const SolTokenIcon(
-              mintAddress: "TODO_TOKEN_MINT", // TODO [prio=high]: Replace with widget.token.address.
+            SolTokenIcon(
+              mintAddress: widget.token.address,
               size: 32,
             ),
             SizedBox(width: isDesktop ? 12 : 10),

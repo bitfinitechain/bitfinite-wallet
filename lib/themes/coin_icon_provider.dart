@@ -42,6 +42,8 @@ final coinIconProvider = Provider.family<String, CryptoCurrency>((ref, coin) {
         return assets.particl;
       case const (Ethereum):
         return assets.ethereum;
+      case const (Solana):
+        return assets.solana;
       default:
         return assets.stackIcon;
     }

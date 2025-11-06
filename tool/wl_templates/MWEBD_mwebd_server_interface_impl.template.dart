@@ -29,27 +29,37 @@ class _MwebdServerInterfaceImpl extends MwebdServerInterface {
 
   static const _kExe = "mwebd.exe";
 
-  Future<String> _prepareWindowsExeDirPath() async {
-    final dir = (await StackFileSystem.applicationMwebdDirectory(
-      "dummy",
-    )).parent.path;
-    final exe = File(join(dir, _kExe));
+  static String? _cachedWinExePath;
 
-    if (!(await exe.exists())) {
+  Future<String> _prepareWindowsExeDirPath() async {
+    if (_cachedWinExePath == null) {
+      final dir = (await StackFileSystem.applicationMwebdDirectory(
+        "dummy",
+      )).parent.path;
+
+      final exe = File(join(dir, _kExe));
+
+      if (await exe.exists()) {
+        await exe.delete();
+      }
+
       final bytes = await rootBundle.load("assets/windows/mwebd.exe");
       await exe.writeAsBytes(
         bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
         flush: true,
       );
+      _cachedWinExePath = exe.parent.path;
     }
 
-    final hash = await sha256.bind(exe.openRead()).first;
+    final hash = await sha256
+        .bind(File(join(_cachedWinExePath!, _kExe)).openRead())
+        .first;
     final hexHash = Uint8List.fromList(hash.bytes).toHex;
     if (AppConfig.windowsMwebdExeHash != hexHash) {
       throw Exception("Windows mwebd.exe sha256 has mismatch!!!");
     }
 
-    return exe.parent.path;
+    return _cachedWinExePath!;
   }
 
   @override

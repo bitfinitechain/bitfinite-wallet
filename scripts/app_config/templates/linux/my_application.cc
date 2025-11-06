@@ -43,7 +43,9 @@ static void my_application_activate(GApplication* application) {
     }
   }
 #endif
-  if (use_header_bar) {
+  const char* gtk_csd_env_var = getenv("GTK_CSD");
+  gboolean use_gtk_csd = !gtk_csd_env_var || strcmp(gtk_csd_env_var, "0") != 0;
+  if (use_header_bar && use_gtk_csd) {
     GtkHeaderBar* header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
     gtk_widget_show(GTK_WIDGET(header_bar));
     gtk_header_bar_set_title(header_bar, "PlaceHolderName");

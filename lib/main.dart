@@ -610,7 +610,8 @@ class _MaterialAppWithThemeState extends ConsumerState<MaterialAppWithTheme>
   @override
   Future<AppExitResponse> didRequestAppExit() async {
     debugPrint("didRequestAppExit called");
-    if (Platform.isMacOS) {
+    if (Platform.isMacOS || Platform.isWindows) {
+      // Monero will cause issues if in the middle of syncing.
       // On macOS, mwebd fails to shut down, hanging the app on close.
       //
       // Exiting is a hack fix for this issue.

@@ -1611,6 +1611,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.6"
+  mobile_app_privacy:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: "v0.0.3"
+      resolved-ref: a949b6e79aa2c97af9d339690067800a5c5eb89e
+      url: "https://github.com/cypherstack/mobile_app_privacy"
+    source: git
+    version: "0.0.3"
   mockingjay:
     dependency: "direct dev"
     description:
@@ -2673,5 +2682,5 @@ packages:
     source: hosted
     version: "0.2.4"
 sdks:
-  dart: ">=3.9.0 <4.0.0"
+  dart: ">=3.9.2 <4.0.0"
   flutter: ">=3.29.0 <4.0.0"

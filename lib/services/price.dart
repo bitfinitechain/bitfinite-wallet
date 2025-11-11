@@ -290,4 +290,96 @@ class PriceAPI {
       return tokenPrices;
     }
   }
+
+  /// Get prices and 24h change for Solana SPL tokens.
+  ///
+  /// Uses CoinGecko API to fetch prices for tokens by their Solana mint addresses.
+  /// Format: GET /api/v3/simple/token_price/solana?vs_currencies=usd&contract_addresses=mint1,mint2&include_24hr_change=true
+  Future<Map<String, ({Decimal value, double change24h})>>
+  getPricesAnd24hChangeForSolTokens({
+    required Set<String> contractAddresses,
+    required String baseCurrency,
+  }) async {
+    final Map<String, ({Decimal value, double change24h})> tokenPrices = {};
+
+    if (AppConfig.coins.whereType<Solana>().isEmpty ||
+        contractAddresses.isEmpty) {
+      return tokenPrices;
+    }
+
+    final externalCalls = Prefs.instance.externalCalls;
+    if ((!Util.isTestEnv && !externalCalls) ||
+        !(await Prefs.instance.isExternalCallsSet())) {
+      Logging.instance.i("User does not want to use external calls");
+      return tokenPrices;
+    }
+
+    try {
+      // Build comma-separated list of mint addresses.
+      final mintsParam = contractAddresses.join(',');
+      final uri = Uri.parse(
+        "https://api.coingecko.com/api/v3/simple/token_price/solana"
+        "?vs_currencies=${baseCurrency.toLowerCase()}"
+        "&contract_addresses=$mintsParam"
+        "&include_24hr_change=true",
+      );
+
+      final coinGeckoResponse = await client.get(
+        url: uri,
+        headers: {'Content-Type': 'application/json'},
+        proxyInfo: Prefs.instance.useTor
+            ? TorService.sharedInstance.getProxyInfo()
+            : null,
+      );
+
+      if (coinGeckoResponse.code == 200) {
+        try {
+          final coinGeckoData = jsonDecode(coinGeckoResponse.body) as Map;
+
+          for (final mint in contractAddresses) {
+            final map = coinGeckoData[mint.toLowerCase()] as Map?;
+            if (map != null) {
+              try {
+                final price = Decimal.parse(
+                  map[baseCurrency.toLowerCase()].toString(),
+                );
+                final change24h = double.parse(
+                  map["${baseCurrency.toLowerCase()}_24h_change"].toString(),
+                );
+
+                tokenPrices[mint.toLowerCase()] = (
+                  value: price,
+                  change24h: change24h,
+                );
+              } catch (e) {
+                // only log the error as we don't want to interrupt the rest of the loop
+                Logging.instance.w(
+                  "getPricesAnd24hChangeForSolTokens($baseCurrency,$mint): Failed to parse price data: $e",
+                );
+              }
+            }
+          }
+        } catch (e, s) {
+          // only log the error as we don't want to interrupt the rest of the loop
+          Logging.instance.w(
+            "getPricesAnd24hChangeForSolTokens($baseCurrency): Error parsing response: $e\n$s\nRESPONSE: ${coinGeckoResponse.body}",
+          );
+        }
+      } else {
+        Logging.instance.w(
+          "getPricesAnd24hChangeForSolTokens($baseCurrency): HTTP ${coinGeckoResponse.code}",
+        );
+      }
+
+      return tokenPrices;
+    } catch (e, s) {
+      Logging.instance.e(
+        "getPricesAnd24hChangeForSolTokens($baseCurrency,$contractAddresses): ",
+        error: e,
+        stackTrace: s,
+      );
+      // return previous cached values
+      return tokenPrices;
+    }
+  }
 }

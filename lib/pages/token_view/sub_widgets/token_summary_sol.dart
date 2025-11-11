@@ -15,6 +15,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../../providers/global/locale_provider.dart';
+import '../../../providers/global/price_provider.dart';
 import '../../../providers/global/prefs_provider.dart';
 import '../../../services/event_bus/events/global/wallet_sync_status_changed_event.dart';
 import '../../../themes/stack_colors.dart';
@@ -80,9 +81,12 @@ class SolanaTokenSummary extends ConsumerWidget {
 
     Decimal? price;
     if (ref.watch(prefsChangeNotifierProvider.select((s) => s.externalCalls))) {
-      // TODO: Implement price fetching for Solana tokens.
-      // For now, prices are not fetched for Solana tokens.
-      price = null;
+      // Get the token price from the price service.
+      price = ref.watch(
+        priceAnd24hChangeNotifierProvider.select(
+          (value) => value.getTokenPrice(tokenMint)?.value,
+        ),
+      );
     }
 
     return Stack(

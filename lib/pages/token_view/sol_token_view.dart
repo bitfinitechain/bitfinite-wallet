@@ -55,8 +55,11 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
 
   @override
   void initState() {
-    // TODO: Integrate Solana token refresh status when available.
-    initialSyncStatus = WalletSyncStatus.synced;
+    // Get the initial sync status from the Solana wallet's refresh mutex.
+    final solanaWallet = ref.read(pSolanaWallet(widget.walletId));
+    initialSyncStatus = solanaWallet?.refreshMutex.isLocked ?? false
+        ? WalletSyncStatus.syncing
+        : WalletSyncStatus.synced;
 
     // Initialize the Solana token wallet provider with mock data.
     // This sets up the pCurrentSolanaTokenWallet provider so that

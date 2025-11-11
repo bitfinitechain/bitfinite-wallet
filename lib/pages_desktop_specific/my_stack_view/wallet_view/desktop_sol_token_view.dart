@@ -65,8 +65,11 @@ class _DesktopTokenViewState extends ConsumerState<DesktopSolTokenView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeSolanaTokenWallet();
     });
-    // TODO: Integrate Solana token refresh status when available.
-    initialSyncStatus = WalletSyncStatus.synced;
+    // Get the initial sync status from the Solana wallet's refresh mutex.
+    final solanaWallet = ref.read(pSolanaWallet(widget.walletId));
+    initialSyncStatus = solanaWallet?.refreshMutex.isLocked ?? false
+        ? WalletSyncStatus.syncing
+        : WalletSyncStatus.synced;
     super.initState();
   }
 
@@ -192,14 +195,7 @@ class _DesktopTokenViewState extends ConsumerState<DesktopSolTokenView> {
                   DesktopWalletSummary(
                     walletId: widget.walletId,
                     isToken: true,
-                    initialSyncStatus:
-                        ref
-                            .watch(pWallets)
-                            .getWallet(widget.walletId)
-                            .refreshMutex
-                            .isLocked
-                        ? WalletSyncStatus.syncing
-                        : WalletSyncStatus.synced,
+                    initialSyncStatus: initialSyncStatus,
                   ),
                   const Spacer(),
                   DesktopWalletFeatures(walletId: widget.walletId),

@@ -9,12 +9,12 @@
 
 import 'dart:convert';
 
-import 'package:crypto/crypto.dart';
 import 'package:isar_community/isar.dart';
 import 'package:solana/dto.dart';
 import 'package:solana/solana.dart' hide Wallet;
 
 import '../../../../models/paymint/fee_object_model.dart';
+import '../../../../services/solana/solana_token_api.dart';
 import '../../../../utilities/amount/amount.dart';
 import '../../../../utilities/logger.dart';
 import '../../../crypto_currency/crypto_currency.dart';
@@ -58,10 +58,7 @@ class SolanaTokenWallet extends Wallet {
 
   @override
   FilterOperation? get transactionFilterOperation =>
-      FilterCondition.equalTo(
-        property: r"contractAddress",
-        value: tokenMint,
-      );
+      FilterCondition.equalTo(property: r"contractAddress", value: tokenMint);
 
   @override
   Future<void> init() async {
@@ -147,10 +144,12 @@ class SolanaTokenWallet extends Wallet {
       );
 
       // Build SPL token tx instruction.
-      final senderTokenAccountKey =
-          Ed25519HDPublicKey.fromBase58(senderTokenAccount);
-      final recipientTokenAccountKey =
-          Ed25519HDPublicKey.fromBase58(recipientTokenAccount);
+      final senderTokenAccountKey = Ed25519HDPublicKey.fromBase58(
+        senderTokenAccount,
+      );
+      final recipientTokenAccountKey = Ed25519HDPublicKey.fromBase58(
+        recipientTokenAccount,
+      );
 
       // Build the transfer instruction (validated later in confirmSend).
       // ignore: unused_local_variable
@@ -162,13 +161,15 @@ class SolanaTokenWallet extends Wallet {
       );
 
       // Estimate fee using RPC call.
-      final feeEstimate = await _getEstimatedTokenTransferFee(
-        senderTokenAccountKey: senderTokenAccountKey,
-        recipientTokenAccountKey: recipientTokenAccountKey,
-        ownerPublicKey: keyPair.publicKey,
-        amount: txData.amount!.raw.toInt(),
-        rpcClient: rpcClient,
-      ) ?? 5000;
+      final feeEstimate =
+          await _getEstimatedTokenTransferFee(
+            senderTokenAccountKey: senderTokenAccountKey,
+            recipientTokenAccountKey: recipientTokenAccountKey,
+            ownerPublicKey: keyPair.publicKey,
+            amount: txData.amount!.raw.toInt(),
+            rpcClient: rpcClient,
+          ) ??
+          5000;
 
       // Return prepared TxData.
       return txData.copyWith(
@@ -193,9 +194,7 @@ class SolanaTokenWallet extends Wallet {
     try {
       // Validate that prepareSend was called.
       if (txData.fee == null) {
-        throw Exception(
-          "Transaction not prepared. Call prepareSend() first.",
-        );
+        throw Exception("Transaction not prepared. Call prepareSend() first.");
       }
 
       if (txData.recipients == null || txData.recipients!.isEmpty) {
@@ -242,10 +241,12 @@ class SolanaTokenWallet extends Wallet {
       );
 
       // 5. Build SPL token tx instruction.
-      final senderTokenAccountKey =
-          Ed25519HDPublicKey.fromBase58(senderTokenAccount);
-      final recipientTokenAccountKey =
-          Ed25519HDPublicKey.fromBase58(recipientTokenAccount);
+      final senderTokenAccountKey = Ed25519HDPublicKey.fromBase58(
+        senderTokenAccount,
+      );
+      final recipientTokenAccountKey = Ed25519HDPublicKey.fromBase58(
+        recipientTokenAccount,
+      );
 
       final instruction = TokenInstruction.transfer(
         source: senderTokenAccountKey,
@@ -255,18 +256,15 @@ class SolanaTokenWallet extends Wallet {
       );
 
       // Create message.
-      final message = Message(
-        instructions: [instruction],
-      );
+      final message = Message(instructions: [instruction]);
 
       // Sign and broadcast tx.
-      final txid = await rpcClient.signAndSendTransaction(
-        message,
-        [keyPair],
-      );
+      final txid = await rpcClient.signAndSendTransaction(message, [keyPair]);
 
       if (txid.isEmpty) {
-        throw Exception("Failed to broadcast transaction: empty signature returned");
+        throw Exception(
+          "Failed to broadcast transaction: empty signature returned",
+        );
       }
 
       // Wait for confirmation.
@@ -312,7 +310,60 @@ class SolanaTokenWallet extends Wallet {
 
   @override
   Future<void> updateBalance() async {
-    // TODO: Fetch token balance from Solana RPC.
+    try {
+      final rpcClient = parentSolanaWallet.getRpcClient();
+      if (rpcClient == null) {
+        Logging.instance.w(
+          "$runtimeType updateBalance: RPC client not initialized",
+        );
+        return;
+      }
+
+      final keyPair = await parentSolanaWallet.getKeyPair();
+      final walletAddress = keyPair.address;
+
+      // Get sender's token account.
+      final senderTokenAccount = await _findTokenAccount(
+        ownerAddress: walletAddress,
+        mint: tokenMint,
+        rpcClient: rpcClient,
+      );
+
+      if (senderTokenAccount == null) {
+        Logging.instance.w(
+          "$runtimeType updateBalance: No token account found for mint $tokenMint",
+        );
+        return;
+      }
+
+      // Fetch the token balance.
+      final tokenApi = SolanaTokenAPI();
+      tokenApi.initializeRpcClient(rpcClient);
+
+      final balanceResponse = await tokenApi.getTokenAccountBalance(
+        senderTokenAccount,
+      );
+
+      if (balanceResponse.isError) {
+        Logging.instance.w(
+          "$runtimeType updateBalance failed: ${balanceResponse.exception}",
+        );
+        return;
+      }
+
+      if (balanceResponse.value != null) {
+        // Log the updated balance.
+        Logging.instance.i(
+          "$runtimeType updateBalance: New balance = ${balanceResponse.value} (${balanceResponse.value! / BigInt.from(10).pow(tokenDecimals)} ${tokenSymbol})",
+        );
+      }
+    } catch (e, s) {
+      Logging.instance.e(
+        "$runtimeType updateBalance error: ",
+        error: e,
+        stackTrace: s,
+      );
+    }
   }
 
   @override
@@ -349,8 +400,8 @@ class SolanaTokenWallet extends Wallet {
 
   @override
   Future<bool> pingCheck() async {
-    // TODO: Check Solana RPC connection.
-    return true;
+    // Delegate to parent SolanaWallet for RPC health check.
+    return parentSolanaWallet.pingCheck();
   }
 
   @override
@@ -384,9 +435,7 @@ class SolanaTokenWallet extends Wallet {
       // Return the first token account address
       return result.value.first.pubkey;
     } catch (e) {
-      Logging.instance.w(
-        "$runtimeType _findTokenAccount error: $e",
-      );
+      Logging.instance.w("$runtimeType _findTokenAccount error: $e");
       return null;
     }
   }
@@ -428,9 +477,7 @@ class SolanaTokenWallet extends Wallet {
           mint: mint,
         );
         final ataBase58 = ataAddress.toBase58();
-        Logging.instance.i(
-          "$runtimeType Derived ATA address: $ataBase58",
-        );
+        Logging.instance.i("$runtimeType Derived ATA address: $ataBase58");
         return ataBase58;
       } catch (derivationError) {
         Logging.instance.w(
@@ -474,9 +521,7 @@ class SolanaTokenWallet extends Wallet {
       // The actual ATA will be looked up via RPC in most cases
       return ownerPubkey;
     } catch (e) {
-      Logging.instance.w(
-        "$runtimeType _deriveAtaAddress error: $e",
-      );
+      Logging.instance.w("$runtimeType _deriveAtaAddress error: $e");
       rethrow;
     }
   }
@@ -507,9 +552,7 @@ class SolanaTokenWallet extends Wallet {
       );
 
       // Compile the message with the blockhash.
-      final compiledMessage = Message(
-        instructions: [instruction],
-      ).compile(
+      final compiledMessage = Message(instructions: [instruction]).compile(
         recentBlockhash: latestBlockhash.value.blockhash,
         feePayer: ownerPublicKey,
       );
@@ -527,9 +570,7 @@ class SolanaTokenWallet extends Wallet {
         return feeEstimate;
       }
 
-      Logging.instance.w(
-        "$runtimeType getFeeForMessage returned null",
-      );
+      Logging.instance.w("$runtimeType getFeeForMessage returned null");
       return null;
     } catch (e) {
       Logging.instance.w(
@@ -554,10 +595,9 @@ class SolanaTokenWallet extends Wallet {
 
     while (true) {
       try {
-        final status = await rpcClient.getSignatureStatuses(
-          [signature],
-          searchTransactionHistory: true,
-        );
+        final status = await rpcClient.getSignatureStatuses([
+          signature,
+        ], searchTransactionHistory: true);
 
         if (status.value.isNotEmpty) {
           final txStatus = status.value.first;

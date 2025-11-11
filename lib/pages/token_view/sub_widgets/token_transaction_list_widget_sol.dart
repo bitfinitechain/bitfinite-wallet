@@ -45,8 +45,8 @@ class _SolanaTransactionsListState extends ConsumerState<SolanaTokenTransactions
   bool _hasLoaded = false;
   List<TransactionV2> _transactions = [];
 
-  late final StreamSubscription<List<TransactionV2>> _subscription;
-  late final Query<TransactionV2> _query;
+  StreamSubscription<List<TransactionV2>>? _subscription;
+  Query<TransactionV2>? _query;
 
   BorderRadius get _borderRadiusFirst {
     return BorderRadius.only(
@@ -77,6 +77,14 @@ class _SolanaTransactionsListState extends ConsumerState<SolanaTokenTransactions
         .getWallet(widget.walletId)
         .cryptoCurrency
         .minConfirms;
+    super.initState();
+  }
+
+  /// Initialize the query and subscription when the wallet becomes available.
+  void _initializeQuery() {
+    if (_query != null) {
+      return; // Already initialized.
+    }
 
     // Get transaction filter from Solana token wallet if available.
     final solanaTokenWallet = ref.read(pCurrentSolanaTokenWallet);
@@ -102,7 +110,7 @@ class _SolanaTransactionsListState extends ConsumerState<SolanaTokenTransactions
       ],
     );
 
-    _subscription = _query.watch().listen((event) {
+    _subscription = _query!.watch().listen((event) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           setState(() {
@@ -111,12 +119,11 @@ class _SolanaTransactionsListState extends ConsumerState<SolanaTokenTransactions
         }
       });
     });
-    super.initState();
   }
 
   @override
   void dispose() {
-    _subscription.cancel();
+    _subscription?.cancel();
     super.dispose();
   }
 
@@ -125,8 +132,24 @@ class _SolanaTransactionsListState extends ConsumerState<SolanaTokenTransactions
     final wallet =
         ref.watch(pWallets.select((value) => value.getWallet(widget.walletId)));
 
+    // Ensure query is initialized when wallet becomes available.
+    _initializeQuery();
+
+    // If query hasn't been initialized yet, show loading.
+    if (_query == null) {
+      return Center(
+        child: Container(
+          color: Theme.of(context).extension<StackColors>()!.background,
+          child: const LoadingIndicator(
+            width: 100,
+            height: 100,
+          ),
+        ),
+      );
+    }
+
     return FutureBuilder(
-      future: _query.findAll(),
+      future: _query!.findAll(),
       builder: (fbContext, AsyncSnapshot<List<TransactionV2>> snapshot) {
         if (snapshot.connectionState == ConnectionState.done &&
             snapshot.hasData) {

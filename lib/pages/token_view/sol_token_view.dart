@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
+import '../../providers/providers.dart';
 import '../../services/event_bus/events/global/wallet_sync_status_changed_event.dart';
 import '../../themes/stack_colors.dart';
 import '../../utilities/assets.dart';
@@ -19,6 +20,7 @@ import '../../utilities/constants.dart';
 import '../../utilities/default_spl_tokens.dart';
 import '../../utilities/text_styles.dart';
 import '../../wallets/isar/providers/solana/current_sol_token_wallet_provider.dart';
+import '../../wallets/isar/providers/solana/solana_wallet_provider.dart';
 import '../../wallets/wallet/impl/sub_wallets/solana_token_wallet.dart';
 import '../../widgets/background.dart';
 import '../../widgets/custom_buttons/app_bar_icon_button.dart';
@@ -96,7 +98,19 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
       return;
     }
 
+    // Get the parent Solana wallet.
+    final parentWallet = ref.read(pSolanaWallet(widget.walletId));
+
+    if (parentWallet == null) {
+      ref.read(solanaTokenServiceStateProvider.state).state = null;
+      debugPrint(
+        'ERROR: Wallet is not a SolanaWallet: ${widget.walletId}',
+      );
+      return;
+    }
+
     final solanaTokenWallet = SolanaTokenWallet(
+      parentSolanaWallet: parentWallet,
       tokenMint: widget.tokenMint,
       tokenName: "${tokenInfo.name}",
       tokenSymbol: "${tokenInfo.symbol}",

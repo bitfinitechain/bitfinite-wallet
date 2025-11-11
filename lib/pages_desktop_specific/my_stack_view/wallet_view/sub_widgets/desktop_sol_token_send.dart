@@ -691,7 +691,17 @@ class _DesktopSolTokenSendState extends ConsumerState<DesktopSolTokenSend> {
   Widget build(BuildContext context) {
     debugPrint("BUILD: $runtimeType");
 
-    final tokenWallet = ref.watch(pCurrentSolanaTokenWallet)!;
+    final tokenWallet = ref.watch(pCurrentSolanaTokenWallet);
+
+    // If wallet is not initialized, show a placeholder.
+    if (tokenWallet == null) {
+      return Center(
+        child: Text(
+          "Loading token data...",
+          style: STextStyles.subtitle500(context),
+        ),
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

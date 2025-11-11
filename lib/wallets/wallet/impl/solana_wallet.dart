@@ -42,6 +42,13 @@ class SolanaWallet extends Bip39Wallet<Solana> {
     return _rpcClient;
   }
 
+  /// Get the keypair for this wallet.
+  ///
+  /// Used internally and by token wallets for signing transactions.
+  Future<Ed25519HDKeyPair> getKeyPair() async {
+    return _getKeyPair();
+  }
+
   Future<Ed25519HDKeyPair> _getKeyPair() async {
     return Ed25519HDKeyPair.fromMnemonic(
       await getMnemonic(),

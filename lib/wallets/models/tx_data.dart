@@ -66,6 +66,13 @@ class TxData {
   final web3dart.Transaction? web3dartTransaction;
   final int? nonce;
   final BigInt? chainId;
+
+  // Solana & Ethereum token-specific.
+  final String? tokenSymbol;
+  final String? tokenMint;
+  final int? tokenDecimals;
+  final String? solanaRecipientTokenAccount;
+
   // wownero and monero specific
   final CsPendingTransaction? pendingTransaction;
 
@@ -125,6 +132,10 @@ class TxData {
     this.web3dartTransaction,
     this.nonce,
     this.chainId,
+    this.tokenSymbol,
+    this.tokenMint,
+    this.tokenDecimals,
+    this.solanaRecipientTokenAccount,
     this.pendingTransaction,
     this.pendingSalviumTransaction,
     this.tezosOperationsList,
@@ -261,6 +272,10 @@ class TxData {
     web3dart.Transaction? web3dartTransaction,
     int? nonce,
     BigInt? chainId,
+    String? tokenSymbol,
+    String? tokenMint,
+    int? tokenDecimals,
+    String? solanaRecipientTokenAccount,
     CsPendingTransaction? pendingTransaction,
     CsPendingTransaction? pendingSalviumTransaction,
     int? jMintValue,
@@ -310,6 +325,11 @@ class TxData {
       web3dartTransaction: web3dartTransaction ?? this.web3dartTransaction,
       nonce: nonce ?? this.nonce,
       chainId: chainId ?? this.chainId,
+      tokenSymbol: tokenSymbol ?? this.tokenSymbol,
+      tokenMint: tokenMint ?? this.tokenMint,
+      tokenDecimals: tokenDecimals ?? this.tokenDecimals,
+      solanaRecipientTokenAccount:
+          solanaRecipientTokenAccount ?? this.solanaRecipientTokenAccount,
       pendingTransaction: pendingTransaction ?? this.pendingTransaction,
       pendingSalviumTransaction:
           pendingSalviumTransaction ?? this.pendingSalviumTransaction,

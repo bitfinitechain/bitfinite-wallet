@@ -161,10 +161,14 @@ class SolanaTokenWallet extends Wallet {
         amount: txData.amount!.raw.toInt(),
       );
 
-      // Estimate fee.
-      // For now, use a default fee estimate.
-      // TODO: Implement proper fee estimation using compiled message.
-      const feeEstimate = 5000;
+      // Estimate fee using RPC call.
+      final feeEstimate = await _getEstimatedTokenTransferFee(
+        senderTokenAccountKey: senderTokenAccountKey,
+        recipientTokenAccountKey: recipientTokenAccountKey,
+        ownerPublicKey: keyPair.publicKey,
+        amount: txData.amount!.raw.toInt(),
+        rpcClient: rpcClient,
+      ) ?? 5000;
 
       // Return prepared TxData.
       return txData.copyWith(
@@ -331,14 +335,16 @@ class SolanaTokenWallet extends Wallet {
 
   @override
   Future<Amount> estimateFeeFor(Amount amount, BigInt feeRate) async {
-    // Mock fee estimation: 5000 lamports for token transfer.
-    return Amount.zeroWith(fractionDigits: tokenDecimals);
+    // Delegate to parent SolanaWallet for fee estimation.
+    // For token transfers, the fee is the same as a regular SOL transfer.
+    return parentSolanaWallet.estimateFeeFor(amount, feeRate);
   }
 
   @override
   Future<FeeObject> get fees async {
-    // TODO: Return real Solana fee estimates.
-    throw UnimplementedError("fees not yet implemented");
+    // Delegate to parent SolanaWallet for fee information.
+    // For token transfers, the fees are the same as regular SOL transfers.
+    return parentSolanaWallet.fees;
   }
 
   @override
@@ -475,33 +481,61 @@ class SolanaTokenWallet extends Wallet {
     }
   }
 
-  /// Estimate the transaction fee by simulating it on-chain.
+  /// Estimate the fee for an SPL token transfer transaction.
   ///
-  /// Falls back to default fee (5000 lamports) if estimation fails.
-  /// Note: Currently unused but kept for future implementation of proper fee estimation.
-  // ignore: unused_element
-  Future<int> _estimateTransactionFee({
-    required List<int> messageBytes,
+  /// Builds a token transfer message with the given parameters and uses
+  /// the RPC `getFeeForMessage` call to get an accurate fee estimate.
+  ///
+  /// Returns the estimated fee in lamports, or null if estimation fails.
+  Future<int?> _getEstimatedTokenTransferFee({
+    required Ed25519HDPublicKey senderTokenAccountKey,
+    required Ed25519HDPublicKey recipientTokenAccountKey,
+    required Ed25519HDPublicKey ownerPublicKey,
+    required int amount,
     required RpcClient rpcClient,
   }) async {
     try {
+      // Get latest blockhash for message compilation.
+      final latestBlockhash = await rpcClient.getLatestBlockhash();
+
+      // Build the token transfer instruction.
+      final instruction = TokenInstruction.transfer(
+        source: senderTokenAccountKey,
+        destination: recipientTokenAccountKey,
+        owner: ownerPublicKey,
+        amount: amount,
+      );
+
+      // Compile the message with the blockhash.
+      final compiledMessage = Message(
+        instructions: [instruction],
+      ).compile(
+        recentBlockhash: latestBlockhash.value.blockhash,
+        feePayer: ownerPublicKey,
+      );
+
+      // Get the fee for this compiled message.
       final feeEstimate = await rpcClient.getFeeForMessage(
-        base64Encode(messageBytes),
+        base64Encode(compiledMessage.toByteArray().toList()),
         commitment: Commitment.confirmed,
       );
 
       if (feeEstimate != null) {
+        Logging.instance.i(
+          "$runtimeType Estimated token transfer fee: $feeEstimate lamports (from RPC)",
+        );
         return feeEstimate;
       }
 
-      // Fallback to default fee
-      return 5000;
+      Logging.instance.w(
+        "$runtimeType getFeeForMessage returned null",
+      );
+      return null;
     } catch (e) {
       Logging.instance.w(
-        "$runtimeType _estimateTransactionFee error: $e, using default fee",
+        "$runtimeType _getEstimatedTokenTransferFee error: $e",
       );
-      // Default fee: 5000 lamports
-      return 5000;
+      return null;
     }
   }
 

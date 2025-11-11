@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../../pages/send_view/sub_widgets/transaction_fee_selection_sheet.dart';
+import '../../../pages/token_view/sub_widgets/token_transaction_list_widget_sol.dart';
 import '../../../providers/providers.dart';
 import '../../../services/event_bus/events/global/wallet_sync_status_changed_event.dart';
 import '../../../themes/stack_colors.dart';
@@ -20,6 +21,7 @@ import '../../../utilities/assets.dart';
 import '../../../utilities/default_spl_tokens.dart';
 import '../../../utilities/text_styles.dart';
 import '../../../wallets/isar/providers/solana/current_sol_token_wallet_provider.dart';
+import '../../../wallets/isar/providers/solana/solana_wallet_provider.dart';
 import '../../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../../wallets/wallet/impl/sub_wallets/solana_token_wallet.dart';
 import '../../../widgets/coin_ticker_tag.dart';
@@ -95,7 +97,19 @@ class _DesktopTokenViewState extends ConsumerState<DesktopSolTokenView> {
       return;
     }
 
+    // Get the parent Solana wallet.
+    final parentWallet = ref.read(pSolanaWallet(widget.walletId));
+
+    if (parentWallet == null) {
+      ref.read(solanaTokenServiceStateProvider.state).state = null;
+      debugPrint(
+        'ERROR: Wallet is not a SolanaWallet: ${widget.walletId}',
+      );
+      return;
+    }
+
     final solanaTokenWallet = SolanaTokenWallet(
+      parentSolanaWallet: parentWallet,
       tokenMint: widget.tokenMint,
       tokenName: "${tokenInfo.name}",
       tokenSymbol: "${tokenInfo.symbol}",
@@ -252,11 +266,8 @@ class _DesktopTokenViewState extends ConsumerState<DesktopSolTokenView> {
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: Center(
-                      child: Text(
-                        "WIP", // TODO [prio=high]: Implement.
-                        style: STextStyles.itemSubtitle(context),
-                      ),
+                    child: SolanaTokenTransactionsList(
+                      walletId: widget.walletId,
                     ),
                   ),
                 ],

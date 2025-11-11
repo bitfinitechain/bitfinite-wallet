@@ -16,6 +16,7 @@ import '../../../../pages/finalize_view/finalize_view.dart';
 import '../../../../pages/send_view/frost_ms/frost_send_view.dart';
 import '../../../../pages/wallet_view/transaction_views/tx_v2/transaction_v2_list.dart';
 import '../../../../providers/global/wallets_provider.dart';
+import '../../../../utilities/clipboard_interface.dart';
 import '../../../../wallets/crypto_currency/crypto_currency.dart';
 import '../../../../wallets/wallet/impl/bitcoin_frost_wallet.dart';
 import '../../../../wallets/wallet/impl/solana_wallet.dart' show SolanaWallet;
@@ -27,6 +28,7 @@ import '../../../../widgets/rounded_white_container.dart';
 import '../../my_stack_view.dart';
 import 'desktop_receive.dart';
 import 'desktop_send.dart';
+import 'desktop_sol_token_send.dart';
 import 'desktop_token_send.dart';
 
 class MyWallet extends ConsumerStatefulWidget {
@@ -166,11 +168,9 @@ class _MyWalletState extends ConsumerState<MyWallet> {
                   : Padding(
                       padding: const EdgeInsets.all(20),
                       child: isSolana
-                          ? Center(
-                              child: Text(
-                                "WIP", // TODO [prio=high]: Implement.
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
+                          ? DesktopSolTokenSend(
+                              walletId: widget.walletId,
+                              clipboard: const ClipboardWrapper(),
                             )
                           : DesktopTokenSend(walletId: widget.walletId),
                     ),

@@ -21,23 +21,20 @@ import '../../../../models/send_view_auto_fill_data.dart';
 import '../../../../pages/send_view/confirm_transaction_view.dart';
 import '../../../../pages/send_view/sub_widgets/building_transaction_dialog.dart';
 import '../../../../providers/providers.dart';
-import '../../../../providers/ui/fee_rate_type_state_provider.dart';
 import '../../../../providers/ui/preview_tx_button_state_provider.dart';
-import '../../../../providers/wallet/desktop_fee_providers.dart';
 import '../../../../themes/stack_colors.dart';
 import '../../../../utilities/address_utils.dart';
 import '../../../../utilities/amount/amount.dart';
 import '../../../../utilities/amount/amount_formatter.dart';
 import '../../../../utilities/amount/amount_input_formatter.dart';
-import '../../../../utilities/amount/amount_unit.dart';
 import '../../../../utilities/clipboard_interface.dart';
 import '../../../../utilities/constants.dart';
 import '../../../../utilities/logger.dart';
 import '../../../../utilities/text_styles.dart';
 import '../../../../utilities/util.dart';
 import '../../../../wallets/crypto_currency/crypto_currency.dart';
-import '../../../../wallets/isar/providers/eth/current_token_wallet_provider.dart';
-import '../../../../wallets/isar/providers/eth/token_balance_provider.dart';
+import '../../../../wallets/isar/providers/solana/current_sol_token_wallet_provider.dart';
+import '../../../../wallets/isar/providers/solana/sol_token_balance_provider.dart';
 import '../../../../wallets/models/tx_data.dart';
 import '../../../../widgets/custom_buttons/blue_text_button.dart';
 import '../../../../widgets/desktop/desktop_dialog.dart';
@@ -45,7 +42,6 @@ import '../../../../widgets/desktop/desktop_dialog_close_button.dart';
 import '../../../../widgets/desktop/primary_button.dart';
 import '../../../../widgets/desktop/qr_code_scanner_dialog.dart';
 import '../../../../widgets/desktop/secondary_button.dart';
-import '../../../../widgets/eth_fee_form.dart';
 import '../../../../widgets/icon_widgets/addressbook_icon.dart';
 import '../../../../widgets/icon_widgets/clipboard_icon.dart';
 import '../../../../widgets/icon_widgets/x_icon.dart';
@@ -53,10 +49,9 @@ import '../../../../widgets/stack_text_field.dart';
 import '../../../../widgets/textfield_icon_button.dart';
 import '../../../desktop_home_view.dart';
 import 'address_book_address_chooser/address_book_address_chooser.dart';
-import 'desktop_send_fee_form.dart';
 
-class DesktopTokenSend extends ConsumerStatefulWidget {
-  const DesktopTokenSend({
+class DesktopSolTokenSend extends ConsumerStatefulWidget {
+  const DesktopSolTokenSend({
     super.key,
     required this.walletId,
     this.autoFillData,
@@ -71,10 +66,10 @@ class DesktopTokenSend extends ConsumerStatefulWidget {
   final PaynymAccountLite? accountLite;
 
   @override
-  ConsumerState<DesktopTokenSend> createState() => _DesktopTokenSendState();
+  ConsumerState<DesktopSolTokenSend> createState() => _DesktopSolTokenSendState();
 }
 
-class _DesktopTokenSendState extends ConsumerState<DesktopTokenSend> {
+class _DesktopSolTokenSendState extends ConsumerState<DesktopSolTokenSend> {
   late final String walletId;
   late final CryptoCurrency coin;
   late final ClipboardInterface clipboard;
@@ -89,7 +84,8 @@ class _DesktopTokenSendState extends ConsumerState<DesktopTokenSend> {
   final _addressFocusNode = FocusNode();
   final _cryptoFocus = FocusNode();
   final _baseFocus = FocusNode();
-  final _nonceFocusNode = FocusNode();
+  // Solana doesn't use nonces like Ethereum.
+  // final _nonceFocusNode = FocusNode();
 
   String? _note;
 
@@ -102,21 +98,32 @@ class _DesktopTokenSendState extends ConsumerState<DesktopTokenSend> {
   bool _cryptoAmountChangeLock = false;
   late VoidCallback onCryptoAmountChanged;
 
-  EthEIP1559Fee? ethFee;
-
   Future<void> previewSend() async {
-    final tokenWallet = ref.read(pCurrentTokenWallet)!;
+    final tokenWallet = ref.read(pCurrentSolanaTokenWallet)!;
 
     final Amount amount = _amountToSend!;
-    final Amount availableBalance =
-        ref
-            .read(
-              pTokenBalance((
-                walletId: walletId,
-                contractAddress: tokenWallet.tokenContract.address,
-              )),
-            )
-            .spendable;
+
+    // Get the current balance (already cached from UI display).
+    final balanceAsyncValue = ref.read(
+      pSolanaTokenBalance((
+        walletId: walletId,
+        tokenMint: tokenWallet.tokenMint,
+        fractionDigits: tokenWallet.tokenDecimals,
+      )),
+    );
+
+    late Amount availableBalance;
+    balanceAsyncValue.when(
+      data: (balance) {
+        availableBalance = balance.spendable;
+      },
+      error: (error, stackTrace) {
+        throw Exception('Failed to fetch balance: $error');
+      },
+      loading: () {
+        throw Exception('Balance is still loading');
+      },
+    );
 
     // confirm send all
     if (amount == availableBalance) {
@@ -229,6 +236,10 @@ class _DesktopTokenSendState extends ConsumerState<DesktopTokenSend> {
 
       TxData txData;
       Future<TxData> txDataFuture;
+      
+      final tokenSymbol = tokenWallet.tokenSymbol;
+      final tokenMint = tokenWallet.tokenMint;
+      final tokenDecimals = tokenWallet.tokenDecimals;
 
       txDataFuture = tokenWallet.prepareSend(
         txData: TxData(
@@ -241,9 +252,9 @@ class _DesktopTokenSendState extends ConsumerState<DesktopTokenSend> {
                   tokenWallet.cryptoCurrency.getAddressType(_address!)!,
             ),
           ],
-          feeRateType: ref.read(feeRateTypeDesktopStateProvider),
-          nonce: int.tryParse(nonceController.text),
-          ethEIP1559Fee: ethFee,
+          tokenSymbol: tokenSymbol,
+          tokenMint: tokenMint,
+          tokenDecimals: tokenDecimals,
         ),
       );
 
@@ -252,7 +263,12 @@ class _DesktopTokenSendState extends ConsumerState<DesktopTokenSend> {
       txData = results.first as TxData;
 
       if (!wasCancelled && mounted) {
-        txData = txData.copyWith(note: _note ?? "");
+        txData = txData.copyWith(
+          note: _note ?? "",
+          tokenSymbol: tokenSymbol,
+          tokenMint: tokenMint,
+          tokenDecimals: tokenDecimals,
+        );
 
         // pop building dialog
         Navigator.of(context, rootNavigator: true).pop();
@@ -346,7 +362,7 @@ class _DesktopTokenSendState extends ConsumerState<DesktopTokenSend> {
     sendToController.text = "";
     cryptoAmountController.text = "";
     baseAmountController.text = "";
-    nonceController.text = "";
+    // Note: Solana doesn't use nonces like Ethereum.
     _address = "";
     _addressToggleFlag = false;
     if (mounted) {
@@ -356,38 +372,55 @@ class _DesktopTokenSendState extends ConsumerState<DesktopTokenSend> {
 
   void _cryptoAmountChanged() async {
     if (!_cryptoAmountChangeLock) {
-      final cryptoAmount = ref
-          .read(pAmountFormatter(coin))
-          .tryParse(
-            cryptoAmountController.text,
-            ethContract: ref.read(pCurrentTokenWallet)!.tokenContract,
+      // Get the token's decimal places for proper amount parsing
+      final tokenDecimals =
+          ref.read(pCurrentSolanaTokenWallet)!.tokenDecimals;
+
+      if (cryptoAmountController.text.isNotEmpty &&
+          cryptoAmountController.text != "." &&
+          cryptoAmountController.text != ",") {
+        try {
+          // Parse the amount using the token's decimal places, not the coin's
+          final inputDecimal = Decimal.parse(
+            cryptoAmountController.text.replaceFirst(",", "."),
+          );
+          final cryptoAmount = Amount.fromDecimal(
+            inputDecimal,
+            fractionDigits: tokenDecimals,
           );
 
-      if (cryptoAmount != null) {
-        _amountToSend = cryptoAmount;
-        if (_cachedAmountToSend != null &&
-            _cachedAmountToSend == _amountToSend) {
-          return;
-        }
-        _cachedAmountToSend = _amountToSend;
+          // Only proceed if the parsed amount is valid
+          if (cryptoAmount.raw > BigInt.zero) {
+            _amountToSend = cryptoAmount;
+            if (_cachedAmountToSend != null &&
+                _cachedAmountToSend == _amountToSend) {
+              return;
+            }
+            _cachedAmountToSend = _amountToSend;
 
-        final price =
-            ref
+            final price = ref
                 .read(priceAnd24hChangeNotifierProvider)
                 .getTokenPrice(
-                  ref.read(pCurrentTokenWallet)!.tokenContract.address,
+                  ref.read(pCurrentSolanaTokenWallet)!.tokenMint,
                 )
                 ?.value;
 
-        if (price != null && price > Decimal.zero) {
-          final String fiatAmountString = Amount.fromDecimal(
-            _amountToSend!.decimal * price,
-            fractionDigits: 2,
-          ).fiatString(
-            locale: ref.read(localeServiceChangeNotifierProvider).locale,
-          );
+            if (price != null && price > Decimal.zero) {
+              final String fiatAmountString = Amount.fromDecimal(
+                _amountToSend!.decimal * price,
+                fractionDigits: 2,
+              ).fiatString(
+                locale: ref.read(localeServiceChangeNotifierProvider).locale,
+              );
 
-          baseAmountController.text = fiatAmountString;
+              baseAmountController.text = fiatAmountString;
+            }
+          }
+        } catch (e) {
+          // Probably an invalid decimal input.
+          _amountToSend = null;
+          _cachedAmountToSend = null;
+          baseAmountController.text = "";
         }
       } else {
         _amountToSend = null;
@@ -465,7 +498,7 @@ class _DesktopTokenSendState extends ConsumerState<DesktopTokenSend> {
         if (paymentData.amount != null) {
           final Amount amount = Decimal.parse(paymentData.amount!).toAmount(
             fractionDigits:
-                ref.read(pCurrentTokenWallet)!.tokenContract.decimals,
+                ref.read(pCurrentSolanaTokenWallet)!.tokenDecimals,
           );
           cryptoAmountController.text = ref
               .read(pAmountFormatter(coin))
@@ -520,7 +553,7 @@ class _DesktopTokenSendState extends ConsumerState<DesktopTokenSend> {
 
   void fiatTextFieldOnChanged(String baseAmountString) {
     final int tokenDecimals =
-        ref.read(pCurrentTokenWallet)!.tokenContract.decimals;
+        ref.read(pCurrentSolanaTokenWallet)!.tokenDecimals;
 
     if (baseAmountString.isNotEmpty &&
         baseAmountString != "." &&
@@ -536,7 +569,7 @@ class _DesktopTokenSendState extends ConsumerState<DesktopTokenSend> {
           ref
               .read(priceAnd24hChangeNotifierProvider)
               .getTokenPrice(
-                ref.read(pCurrentTokenWallet)!.tokenContract.address,
+                ref.read(pCurrentSolanaTokenWallet)!.tokenMint,
               )
               ?.value;
 
@@ -560,7 +593,6 @@ class _DesktopTokenSendState extends ConsumerState<DesktopTokenSend> {
           .format(
             _amountToSend!,
             withUnitName: false,
-            ethContract: ref.read(pCurrentTokenWallet)!.tokenContract,
           );
 
       _cryptoAmountChangeLock = true;
@@ -577,36 +609,50 @@ class _DesktopTokenSendState extends ConsumerState<DesktopTokenSend> {
   }
 
   Future<void> sendAllTapped() async {
-    cryptoAmountController.text = ref
-        .read(
-          pTokenBalance((
-            walletId: walletId,
-            contractAddress:
-                ref.read(pCurrentTokenWallet)!.tokenContract.address,
-          )),
-        )
-        .spendable
-        .decimal
-        .toStringAsFixed(ref.read(pCurrentTokenWallet)!.tokenContract.decimals);
+    final tokenWallet = ref.read(pCurrentSolanaTokenWallet)!;
+    final balanceAsyncValue = ref.read(
+      pSolanaTokenBalance((
+        walletId: walletId,
+        tokenMint: tokenWallet.tokenMint,
+        fractionDigits: tokenWallet.tokenDecimals,
+      )),
+    );
+
+    balanceAsyncValue.when(
+      data: (balance) {
+        cryptoAmountController.text = balance
+            .spendable
+            .decimal
+            .toStringAsFixed(tokenWallet.tokenDecimals);
+      },
+      error: (error, stackTrace) {
+        Logging.instance.e('Failed to fetch balance for send all: $error');
+      },
+      loading: () {
+        // Should not happen with read.
+      },
+    );
   }
 
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.refresh(tokenFeeSessionCacheProvider);
+      // ref.refresh(tokenFeeSessionCacheProvider); // Ethereum-specific
       ref.read(previewTokenTxButtonStateProvider.state).state = false;
     });
 
     // _calculateFeesFuture = calculateFees(0);
     _data = widget.autoFillData;
     walletId = widget.walletId;
-    coin = ref.read(pWallets).getWallet(walletId).info.coin;
+    final wallet = ref.read(pWallets).getWallet(walletId);
+    coin = wallet.info.coin;
     clipboard = widget.clipboard;
 
     sendToController = TextEditingController();
     cryptoAmountController = TextEditingController();
     baseAmountController = TextEditingController();
-    nonceController = TextEditingController();
+    // Solana doesn't use nonces like Ethereum.
+    // nonceController = TextEditingController();
     // feeController = TextEditingController();
 
     onCryptoAmountChanged = _cryptoAmountChanged;
@@ -621,30 +667,6 @@ class _DesktopTokenSendState extends ConsumerState<DesktopTokenSend> {
       _addressToggleFlag = true;
     }
 
-    _cryptoFocus.addListener(() {
-      if (!_cryptoFocus.hasFocus && !_baseFocus.hasFocus) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (_amountToSend == null) {
-            ref.refresh(sendAmountProvider);
-          } else {
-            ref.read(sendAmountProvider.state).state = _amountToSend!;
-          }
-        });
-      }
-    });
-
-    _baseFocus.addListener(() {
-      if (!_cryptoFocus.hasFocus && !_baseFocus.hasFocus) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (_amountToSend == null) {
-            ref.refresh(sendAmountProvider);
-          } else {
-            ref.read(sendAmountProvider.state).state = _amountToSend!;
-          }
-        });
-      }
-    });
-
     super.initState();
   }
 
@@ -655,13 +677,13 @@ class _DesktopTokenSendState extends ConsumerState<DesktopTokenSend> {
     sendToController.dispose();
     cryptoAmountController.dispose();
     baseAmountController.dispose();
-    nonceController.dispose();
+    // nonceController.dispose(); // Solana doesn't use nonces.
     // feeController.dispose();
 
     _addressFocusNode.dispose();
     _cryptoFocus.dispose();
     _baseFocus.dispose();
-    _nonceFocusNode.dispose();
+    // _nonceFocusNode.dispose(); // Solana doesn't use nonces.
     super.dispose();
   }
 
@@ -669,7 +691,7 @@ class _DesktopTokenSendState extends ConsumerState<DesktopTokenSend> {
   Widget build(BuildContext context) {
     debugPrint("BUILD: $runtimeType");
 
-    final tokenContract = ref.watch(pCurrentTokenWallet)!.tokenContract;
+    final tokenWallet = ref.watch(pCurrentSolanaTokenWallet)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -700,7 +722,7 @@ class _DesktopTokenSendState extends ConsumerState<DesktopTokenSend> {
               textAlign: TextAlign.left,
             ),
             CustomTextButton(
-              text: "Send all ${tokenContract.symbol}",
+              text: "Send all ${tokenWallet.tokenSymbol}",
               onTap: sendAllTapped,
             ),
           ],
@@ -725,7 +747,7 @@ class _DesktopTokenSendState extends ConsumerState<DesktopTokenSend> {
           textAlign: TextAlign.right,
           inputFormatters: [
             AmountInputFormatter(
-              decimals: tokenContract.decimals,
+              decimals: tokenWallet.tokenDecimals,
               unit: ref.watch(pAmountUnit(coin)),
               locale: ref.watch(
                 localeServiceChangeNotifierProvider.select(
@@ -762,7 +784,7 @@ class _DesktopTokenSendState extends ConsumerState<DesktopTokenSend> {
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Text(
-                  ref.watch(pAmountUnit(coin)).unitForContract(tokenContract),
+                  tokenWallet.tokenSymbol,
                   style: STextStyles.smallMed14(context).copyWith(
                     color:
                         Theme.of(
@@ -900,7 +922,7 @@ class _DesktopTokenSendState extends ConsumerState<DesktopTokenSend> {
               height: 1.8,
             ),
             decoration: standardInputDecoration(
-              "Enter ${tokenContract.symbol} address",
+              "Enter Solana address",
               _addressFocusNode,
               context,
               desktopMed: true,
@@ -1039,64 +1061,6 @@ class _DesktopTokenSendState extends ConsumerState<DesktopTokenSend> {
               );
             }
           },
-        ),
-        const SizedBox(height: 20),
-        DesktopSendFeeForm(
-          walletId: walletId,
-          isToken: true,
-          onCustomFeeSliderChanged: (value) => {},
-          onCustomFeeOptionChanged: (value) {
-            ethFee = null;
-          },
-          onCustomEip1559FeeOptionChanged: (value) => ethFee = value,
-        ),
-        const SizedBox(height: 20),
-        Text(
-          "Nonce",
-          style: STextStyles.desktopTextExtraSmall(context).copyWith(
-            color:
-                Theme.of(
-                  context,
-                ).extension<StackColors>()!.textFieldActiveSearchIconRight,
-          ),
-          textAlign: TextAlign.left,
-        ),
-        const SizedBox(height: 10),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(
-            Constants.size.circularBorderRadius,
-          ),
-          child: TextField(
-            minLines: 1,
-            maxLines: 1,
-            key: const Key("sendViewNonceFieldKey"),
-            controller: nonceController,
-            readOnly: false,
-            autocorrect: false,
-            enableSuggestions: false,
-            keyboardType: const TextInputType.numberWithOptions(),
-            focusNode: _nonceFocusNode,
-            style: STextStyles.desktopTextExtraSmall(context).copyWith(
-              color:
-                  Theme.of(
-                    context,
-                  ).extension<StackColors>()!.textFieldActiveText,
-              height: 1.8,
-            ),
-            decoration: standardInputDecoration(
-              "Leave empty to auto select nonce",
-              _nonceFocusNode,
-              context,
-              desktopMed: true,
-            ).copyWith(
-              contentPadding: const EdgeInsets.only(
-                left: 16,
-                top: 11,
-                bottom: 12,
-                right: 5,
-              ),
-            ),
-          ),
         ),
         const SizedBox(height: 36),
         PrimaryButton(

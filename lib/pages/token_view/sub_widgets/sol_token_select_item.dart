@@ -89,32 +89,19 @@ class _SolTokenSelectItemState extends ConsumerState<SolTokenSelectItem> {
             Expanded(
               child: Consumer(
                 builder: (_, ref, __) {
-                  // Fetch the balance.
-                  final balanceAsync = ref.watch(
+                  // Watch the balance from the database.
+                  final balance = ref.watch(
                     pSolanaTokenBalance(
                       (
                         walletId: widget.walletId,
                         tokenMint: widget.token.address,
-                        fractionDigits: widget.token.decimals,
                       ),
                     ),
                   );
 
                   // Format the balance.
-                  String balanceString = "0.00 ${widget.token.symbol}";
-                  balanceAsync.when(
-                    data: (balance) {
-                      // Format the amount with the token symbol.
-                      final decimalValue = balance.total.decimal.toStringAsFixed(widget.token.decimals);
-                      balanceString = "$decimalValue ${widget.token.symbol}";
-                    },
-                    loading: () {
-                      balanceString = "... ${widget.token.symbol}";
-                    },
-                    error: (error, stackTrace) {
-                      balanceString = "0.00 ${widget.token.symbol}";
-                    },
-                  );
+                  final decimalValue = balance.total.decimal.toStringAsFixed(widget.token.decimals);
+                  final balanceString = "$decimalValue ${widget.token.symbol}";
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,

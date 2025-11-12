@@ -153,24 +153,13 @@ class _WDesktopWalletSummaryState extends ConsumerState<DesktopWalletSummary> {
           )),
         );
       } else if (widget.isToken && solanaTokenWallet != null) {
-        // Solana token balance - handle async value.
-        final balanceAsync = ref.watch(
+        // Watch Solana token balance from db.
+        balance = ref.watch(
           pSolanaTokenBalance((
             walletId: walletId,
             tokenMint: (solanaTokenWallet as dynamic).tokenMint,
-            fractionDigits: (solanaTokenWallet as dynamic).tokenDecimals,
           )),
         );
-        // Extract the balance from AsyncValue, defaulting to zero if not loaded.
-        final decimals = (solanaTokenWallet as dynamic).tokenDecimals as int;
-        balance =
-            balanceAsync.whenData((b) => b).value ??
-            Balance(
-              total: Amount.zeroWith(fractionDigits: decimals),
-              spendable: Amount.zeroWith(fractionDigits: decimals),
-              blockedTotal: Amount.zeroWith(fractionDigits: decimals),
-              pendingSpendable: Amount.zeroWith(fractionDigits: decimals),
-            );
       } else {
         // Regular wallet balance.
         balance = ref.watch(pWalletBalance(walletId));

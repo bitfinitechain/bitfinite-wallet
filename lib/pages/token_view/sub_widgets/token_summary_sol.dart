@@ -69,12 +69,12 @@ class SolanaTokenSummary extends ConsumerWidget {
       );
     }
 
-    final balanceAsync = ref.watch(
+    // Watch the balance from the database provider.
+    final balance = ref.watch(
       pSolanaTokenBalance(
         (
           walletId: walletId,
           tokenMint: tokenMint,
-          fractionDigits: tokenWallet.tokenDecimals,
         ),
       ),
     );
@@ -94,138 +94,36 @@ class SolanaTokenSummary extends ConsumerWidget {
         RoundedContainer(
           color: Theme.of(context).extension<StackColors>()!.tokenSummaryBG,
           padding: const EdgeInsets.all(24),
-          child: balanceAsync.when(
-            data: (balance) {
-              return Column(
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SvgPicture.asset(
-                        Assets.svg.walletDesktop,
-                        color: Theme.of(
-                          context,
-                        ).extension<StackColors>()!.tokenSummaryTextSecondary,
-                        width: 12,
-                        height: 12,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        ref.watch(pWalletName(walletId)),
-                        style: STextStyles.w500_12(context).copyWith(
-                          color: Theme.of(
-                            context,
-                          ).extension<StackColors>()!.tokenSummaryTextSecondary,
-                        ),
-                      ),
-                    ],
+                  SvgPicture.asset(
+                    Assets.svg.walletDesktop,
+                    color: Theme.of(
+                      context,
+                    ).extension<StackColors>()!.tokenSummaryTextSecondary,
+                    width: 12,
+                    height: 12,
                   ),
-                  const SizedBox(height: 6),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        balance.total.decimal.toStringAsFixed(tokenWallet.tokenDecimals),
-                        style: STextStyles.pageTitleH1(context).copyWith(
-                          color: Theme.of(
-                            context,
-                          ).extension<StackColors>()!.tokenSummaryTextPrimary,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      CoinTickerTag(
-                        ticker: tokenWallet.tokenSymbol,
-                      ),
-                    ],
-                  ),
-                  if (price != null) const SizedBox(height: 6),
-                  if (price != null)
-                    Text(
-                      "${(balance.total.decimal * price).toAmount(fractionDigits: 2).fiatString(locale: ref.watch(localeServiceChangeNotifierProvider.select((value) => value.locale)))} ${ref.watch(prefsChangeNotifierProvider.select((value) => value.currency))}",
-                      style: STextStyles.subtitle500(context).copyWith(
-                        color: Theme.of(
-                          context,
-                        ).extension<StackColors>()!.tokenSummaryTextPrimary,
-                      ),
-                    ),
-                  const SizedBox(height: 20),
-                  SolanaTokenWalletOptions(
-                    walletId: walletId,
-                    tokenMint: tokenMint,
-                  ),
-                ],
-              );
-            },
-            loading: () {
-              return Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SvgPicture.asset(
-                        Assets.svg.walletDesktop,
-                        color: Theme.of(
-                          context,
-                        ).extension<StackColors>()!.tokenSummaryTextSecondary,
-                        width: 12,
-                        height: 12,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        ref.watch(pWalletName(walletId)),
-                        style: STextStyles.w500_12(context).copyWith(
-                          color: Theme.of(
-                            context,
-                          ).extension<StackColors>()!.tokenSummaryTextSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
+                  const SizedBox(width: 6),
                   Text(
-                    "Loading balance...",
-                    style: STextStyles.pageTitleH1(context).copyWith(
+                    ref.watch(pWalletName(walletId)),
+                    style: STextStyles.w500_12(context).copyWith(
                       color: Theme.of(
                         context,
-                      ).extension<StackColors>()!.tokenSummaryTextPrimary,
+                      ).extension<StackColors>()!.tokenSummaryTextSecondary,
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  SolanaTokenWalletOptions(
-                    walletId: walletId,
-                    tokenMint: tokenMint,
-                  ),
                 ],
-              );
-            },
-            error: (error, stackTrace) {
-              return Column(
+              ),
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SvgPicture.asset(
-                        Assets.svg.walletDesktop,
-                        color: Theme.of(
-                          context,
-                        ).extension<StackColors>()!.tokenSummaryTextSecondary,
-                        width: 12,
-                        height: 12,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        ref.watch(pWalletName(walletId)),
-                        style: STextStyles.w500_12(context).copyWith(
-                          color: Theme.of(
-                            context,
-                          ).extension<StackColors>()!.tokenSummaryTextSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
                   Text(
-                    "0.00",
+                    balance.total.decimal.toStringAsFixed(tokenWallet.tokenDecimals),
                     style: STextStyles.pageTitleH1(context).copyWith(
                       color: Theme.of(
                         context,
@@ -236,14 +134,24 @@ class SolanaTokenSummary extends ConsumerWidget {
                   CoinTickerTag(
                     ticker: tokenWallet.tokenSymbol,
                   ),
-                  const SizedBox(height: 20),
-                  SolanaTokenWalletOptions(
-                    walletId: walletId,
-                    tokenMint: tokenMint,
-                  ),
                 ],
-              );
-            },
+              ),
+              if (price != null) const SizedBox(height: 6),
+              if (price != null)
+                Text(
+                  "${(balance.total.decimal * price).toAmount(fractionDigits: 2).fiatString(locale: ref.watch(localeServiceChangeNotifierProvider.select((value) => value.locale)))} ${ref.watch(prefsChangeNotifierProvider.select((value) => value.currency))}",
+                  style: STextStyles.subtitle500(context).copyWith(
+                    color: Theme.of(
+                      context,
+                    ).extension<StackColors>()!.tokenSummaryTextPrimary,
+                  ),
+                ),
+              const SizedBox(height: 20),
+              SolanaTokenWalletOptions(
+                walletId: walletId,
+                tokenMint: tokenMint,
+              ),
+            ],
           ),
         ),
         Positioned(

@@ -13,6 +13,7 @@ import 'package:isar_community/isar.dart';
 import 'package:solana/dto.dart';
 import 'package:solana/solana.dart' hide Wallet;
 
+import '../../../../models/balance.dart';
 import '../../../../models/paymint/fee_object_model.dart';
 import '../../../../services/solana/solana_token_api.dart';
 import '../../../../utilities/amount/amount.dart';
@@ -356,6 +357,31 @@ class SolanaTokenWallet extends Wallet {
         Logging.instance.i(
           "$runtimeType updateBalance: New balance = ${balanceResponse.value} (${balanceResponse.value! / BigInt.from(10).pow(tokenDecimals)} ${tokenSymbol})",
         );
+
+        // TODO: Persist balance to SolanaTokenWalletInfo in Isar database.
+        // Once SolanaTokenWalletInfo is added to the Isar schema, follow the
+        // Ethereum pattern from eth_token_wallet.dart:316-330:
+        //
+        // final info = await mainDB.isar.solanaTokenWalletInfo
+        //     .where()
+        //     .walletIdTokenAddressEqualTo(walletId, tokenMint)
+        //     .findFirst();
+        //
+        // if (info != null) {
+        //   final balanceAmount = Amount(
+        //     rawValue: balanceResponse.value!,
+        //     fractionDigits: tokenDecimals,
+        //   );
+        //
+        //   final balance = Balance(
+        //     total: balanceAmount,
+        //     spendable: balanceAmount,
+        //     blockedTotal: Amount(rawValue: BigInt.zero, fractionDigits: tokenDecimals),
+        //     pendingSpendable: Amount(rawValue: BigInt.zero, fractionDigits: tokenDecimals),
+        //   );
+        //
+        //   await info.updateCachedBalance(balance, isar: mainDB.isar);
+        // }
       }
     } catch (e, s) {
       Logging.instance.e(

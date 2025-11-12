@@ -103,27 +103,15 @@ class _DesktopSolTokenSendState extends ConsumerState<DesktopSolTokenSend> {
 
     final Amount amount = _amountToSend!;
 
-    // Get the current balance (already cached from UI display).
-    final balanceAsyncValue = ref.read(
+    // Get the current balance from the database.
+    final balance = ref.read(
       pSolanaTokenBalance((
         walletId: walletId,
         tokenMint: tokenWallet.tokenMint,
-        fractionDigits: tokenWallet.tokenDecimals,
       )),
     );
 
-    late Amount availableBalance;
-    balanceAsyncValue.when(
-      data: (balance) {
-        availableBalance = balance.spendable;
-      },
-      error: (error, stackTrace) {
-        throw Exception('Failed to fetch balance: $error');
-      },
-      loading: () {
-        throw Exception('Balance is still loading');
-      },
-    );
+    final availableBalance = balance.spendable;
 
     // confirm send all
     if (amount == availableBalance) {
@@ -610,28 +598,17 @@ class _DesktopSolTokenSendState extends ConsumerState<DesktopSolTokenSend> {
 
   Future<void> sendAllTapped() async {
     final tokenWallet = ref.read(pCurrentSolanaTokenWallet)!;
-    final balanceAsyncValue = ref.read(
+    final balance = ref.read(
       pSolanaTokenBalance((
         walletId: walletId,
         tokenMint: tokenWallet.tokenMint,
-        fractionDigits: tokenWallet.tokenDecimals,
       )),
     );
 
-    balanceAsyncValue.when(
-      data: (balance) {
-        cryptoAmountController.text = balance
-            .spendable
-            .decimal
-            .toStringAsFixed(tokenWallet.tokenDecimals);
-      },
-      error: (error, stackTrace) {
-        Logging.instance.e('Failed to fetch balance for send all: $error');
-      },
-      loading: () {
-        // Should not happen with read.
-      },
-    );
+    cryptoAmountController.text = balance
+        .spendable
+        .decimal
+        .toStringAsFixed(tokenWallet.tokenDecimals);
   }
 
   @override

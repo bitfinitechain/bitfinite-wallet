@@ -13,12 +13,14 @@ import 'package:isar_community/isar.dart';
 import 'package:solana/dto.dart';
 import 'package:solana/solana.dart' hide Wallet;
 
+import '../../../../db/isar/main_db.dart';
 import '../../../../models/balance.dart';
 import '../../../../models/paymint/fee_object_model.dart';
 import '../../../../services/solana/solana_token_api.dart';
 import '../../../../utilities/amount/amount.dart';
 import '../../../../utilities/logger.dart';
 import '../../../crypto_currency/crypto_currency.dart';
+import '../../../isar/models/wallet_solana_token_info.dart';
 import '../../../models/tx_data.dart';
 import '../../wallet.dart';
 import '../solana_wallet.dart';
@@ -46,6 +48,15 @@ class SolanaTokenWallet extends Wallet {
   final String tokenName;
   final String tokenSymbol;
   final int tokenDecimals;
+
+  /// Override walletId to delegate to parent wallet
+  @override
+  String get walletId => parentSolanaWallet.walletId;
+
+  /// Override mainDB to delegate to parent wallet
+  /// (SolanaTokenWallet shares the same database as its parent)
+  @override
+  MainDB get mainDB => parentSolanaWallet.mainDB;
 
   // =========================================================================
   // Abstract method implementations
@@ -312,6 +323,10 @@ class SolanaTokenWallet extends Wallet {
   @override
   Future<void> updateBalance() async {
     try {
+      Logging.instance.i(
+        "$runtimeType updateBalance: Starting balance update for tokenMint=$tokenMint",
+      );
+
       final rpcClient = parentSolanaWallet.getRpcClient();
       if (rpcClient == null) {
         Logging.instance.w(
@@ -322,6 +337,10 @@ class SolanaTokenWallet extends Wallet {
 
       final keyPair = await parentSolanaWallet.getKeyPair();
       final walletAddress = keyPair.address;
+
+      Logging.instance.i(
+        "$runtimeType updateBalance: Wallet address = $walletAddress",
+      );
 
       // Get sender's token account.
       final senderTokenAccount = await _findTokenAccount(
@@ -336,6 +355,10 @@ class SolanaTokenWallet extends Wallet {
         );
         return;
       }
+
+      Logging.instance.i(
+        "$runtimeType updateBalance: Found token account = $senderTokenAccount",
+      );
 
       // Fetch the token balance.
       final tokenApi = SolanaTokenAPI();
@@ -358,30 +381,41 @@ class SolanaTokenWallet extends Wallet {
           "$runtimeType updateBalance: New balance = ${balanceResponse.value} (${balanceResponse.value! / BigInt.from(10).pow(tokenDecimals)} ${tokenSymbol})",
         );
 
-        // TODO: Persist balance to SolanaTokenWalletInfo in Isar database.
-        // Once SolanaTokenWalletInfo is added to the Isar schema, follow the
-        // Ethereum pattern from eth_token_wallet.dart:316-330:
-        //
-        // final info = await mainDB.isar.solanaTokenWalletInfo
-        //     .where()
-        //     .walletIdTokenAddressEqualTo(walletId, tokenMint)
-        //     .findFirst();
-        //
-        // if (info != null) {
-        //   final balanceAmount = Amount(
-        //     rawValue: balanceResponse.value!,
-        //     fractionDigits: tokenDecimals,
-        //   );
-        //
-        //   final balance = Balance(
-        //     total: balanceAmount,
-        //     spendable: balanceAmount,
-        //     blockedTotal: Amount(rawValue: BigInt.zero, fractionDigits: tokenDecimals),
-        //     pendingSpendable: Amount(rawValue: BigInt.zero, fractionDigits: tokenDecimals),
-        //   );
-        //
-        //   await info.updateCachedBalance(balance, isar: mainDB.isar);
-        // }
+        // Persist balance to WalletSolanaTokenInfo in Isar database.
+        Logging.instance.i(
+          "$runtimeType updateBalance: Looking up WalletSolanaTokenInfo for walletId=$walletId, tokenMint=$tokenMint",
+        );
+
+        final info = await mainDB.isar.walletSolanaTokenInfo
+            .where()
+            .walletIdTokenAddressEqualTo(walletId, tokenMint)
+            .findFirst();
+
+        if (info != null) {
+          Logging.instance.i(
+            "$runtimeType updateBalance: Found WalletSolanaTokenInfo with ID=${info.id}, updating cached balance",
+          );
+
+          final balanceAmount = Amount(
+            rawValue: balanceResponse.value!,
+            fractionDigits: tokenDecimals,
+          );
+
+          final balance = Balance(
+            total: balanceAmount,
+            spendable: balanceAmount,
+            blockedTotal: Amount(
+              rawValue: BigInt.zero,
+              fractionDigits: tokenDecimals,
+            ),
+            pendingSpendable: Amount(
+              rawValue: BigInt.zero,
+              fractionDigits: tokenDecimals,
+            ),
+          );
+
+          await info.updateCachedBalance(balance, isar: mainDB.isar);
+        }
       }
     } catch (e, s) {
       Logging.instance.e(
@@ -405,9 +439,13 @@ class SolanaTokenWallet extends Wallet {
 
   @override
   Future<void> refresh() async {
-    // Token wallets are temporary objects created for transactions.
-    // They don't need to refresh themselves. Refresh the parent wallet instead.
+    Logging.instance.i(
+      "$runtimeType refresh: Starting refresh for tokenMint=$tokenMint",
+    );
+    // Refresh both the parent wallet and token balance.
+    // This ensures the cached token balance in the database is updated.
     await parentSolanaWallet.refresh();
+    await updateBalance();
   }
 
   @override

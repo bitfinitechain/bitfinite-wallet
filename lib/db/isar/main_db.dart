@@ -70,6 +70,7 @@ class MainDB {
         WalletInfoMetaSchema,
         TokenWalletInfoSchema,
         FrostWalletInfoSchema,
+        WalletSolanaTokenInfoSchema,
       ],
       directory: (await StackFileSystem.applicationIsarDirectory()).path,
       // inspector: kDebugMode,

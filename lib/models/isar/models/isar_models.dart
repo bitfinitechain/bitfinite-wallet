@@ -18,3 +18,4 @@ export 'ethereum/eth_contract.dart';
 export 'log.dart';
 export 'solana/spl_token.dart';
 export 'transaction_note.dart';
+export '../../../wallets/isar/models/wallet_solana_token_info.dart';

@@ -31,7 +31,6 @@ import '../../../utilities/default_spl_tokens.dart';
 import '../../../utilities/text_styles.dart';
 import '../../../utilities/util.dart';
 import '../../../wallets/isar/providers/wallet_info_provider.dart';
-import '../../../wallets/isar/providers/solana/sol_wallet_token_addresses_provider.dart';
 import '../../../wallets/wallet/impl/ethereum_wallet.dart';
 import '../../../wallets/wallet/impl/solana_wallet.dart';
 import '../../../widgets/background.dart';
@@ -376,14 +375,8 @@ class _EditWalletTokensViewState extends ConsumerState<EditWalletTokensView> {
       tokenEntities.addAll(contracts.map((e) => AddTokenListElementData(e)));
     }
 
-    // Get the appropriate token addresses based on wallet type.
-    List<String> walletContracts = [];
-
-    if (wallet is SolanaWallet) {
-      walletContracts = ref.read(pSolanaWalletTokenAddresses(widget.walletId));
-    } else {
-      walletContracts = ref.read(pWalletTokenAddresses(widget.walletId));
-    }
+    // Get token addresses.
+    final walletContracts = ref.read(pWalletTokenAddresses(widget.walletId));
 
     final shouldMarkAsSelectedContracts = [
       ...walletContracts,

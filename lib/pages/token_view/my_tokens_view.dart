@@ -20,7 +20,6 @@ import '../../utilities/assets.dart';
 import '../../utilities/constants.dart';
 import '../../utilities/text_styles.dart';
 import '../../utilities/util.dart';
-import '../../wallets/isar/providers/solana/sol_wallet_token_addresses_provider.dart';
 import '../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../wallets/wallet/impl/solana_wallet.dart';
 import '../../widgets/background.dart';
@@ -224,21 +223,20 @@ class _MyTokensViewState extends ConsumerState<MyTokensView> {
             child: Builder(
               builder: (context) {
                 final wallet = ref.watch(pWallets).getWallet(widget.walletId);
+                final tokenAddresses = ref.watch(
+                  pWalletTokenAddresses(widget.walletId),
+                );
                 if (wallet is SolanaWallet) {
                   return SolanaTokensList(
                     walletId: widget.walletId,
                     searchTerm: _searchString,
-                    tokenMints: ref.watch(
-                      pSolanaWalletTokenAddresses(widget.walletId),
-                    ),
+                    tokenMints: tokenAddresses,
                   );
                 } else {
                   return MyTokensList(
                     walletId: widget.walletId,
                     searchTerm: _searchString,
-                    tokenContracts: ref.watch(
-                      pWalletTokenAddresses(widget.walletId),
-                    ),
+                    tokenContracts: tokenAddresses,
                   );
                 }
               },

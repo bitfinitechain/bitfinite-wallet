@@ -1236,9 +1236,6 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
       Logging.instance.i("Refreshing spark names for $walletId ${info.name}");
 
       final db = Drift.get(walletId);
-      final myNameStrings = await db.managers.sparkNames
-          .map((e) => e.name)
-          .get();
       final names = await electrumXClient.getSparkNames();
 
       // start update shared cache of all names
@@ -1299,11 +1296,8 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
         diversifier++;
       }
 
-      names.retainWhere(
-        (e) =>
-            myAddresses.contains(e.address) && !myNameStrings.contains(e.name),
-      );
-      Logging.instance.d("Found $names new spark names");
+      names.retainWhere((e) => myAddresses.contains(e.address));
+      Logging.instance.d("Found $names spark names");
 
       if (names.isNotEmpty) {
         final List<

@@ -43,10 +43,8 @@ import '../../../wallets/crypto_currency/crypto_currency.dart';
 import '../../../wallets/isar/models/wallet_info.dart';
 import '../../../wallets/wallet/impl/epiccash_wallet.dart';
 import '../../../wallets/wallet/impl/mimblewimblecoin_wallet.dart';
-import '../../../wallets/wallet/impl/monero_wallet.dart';
-import '../../../wallets/wallet/impl/salvium_wallet.dart';
-import '../../../wallets/wallet/impl/wownero_wallet.dart';
 import '../../../wallets/wallet/impl/xelis_wallet.dart';
+import '../../../wallets/wallet/intermediate/cryptonote_wallet.dart';
 import '../../../wallets/wallet/intermediate/external_wallet.dart';
 import '../../../wallets/wallet/supporting/epiccash_wallet_info_extension.dart';
 import '../../../wallets/wallet/supporting/mimblewimblecoin_wallet_info_extension.dart';
@@ -343,35 +341,26 @@ class _RestoreWalletViewState extends ConsumerState<RestoreWalletView> {
           );
 
           // TODO: extract interface with isRestore param
-          switch (wallet.runtimeType) {
-            case const (EpiccashWallet):
-              await (wallet as EpiccashWallet).init(isRestore: true);
+          switch (wallet) {
+            case EpiccashWallet():
+              await wallet.init(isRestore: true);
               break;
 
-            case const (MimblewimblecoinWallet):
-              await (wallet as MimblewimblecoinWallet).init(isRestore: true);
+            case MimblewimblecoinWallet():
+              await wallet.init(isRestore: true);
               break;
 
-            case const (MoneroWallet):
-              await (wallet as MoneroWallet).init(isRestore: true);
+            case CryptonoteWallet():
+              await wallet.init(isRestore: true);
               break;
 
-            case const (WowneroWallet):
-              await (wallet as WowneroWallet).init(isRestore: true);
-              break;
-
-            case const (SalviumWallet):
-              await (wallet as SalviumWallet).init(isRestore: true);
-              break;
-
-            case const (XelisWallet):
-              await (wallet as XelisWallet).init(isRestore: true);
+            case XelisWallet():
+              await wallet.init(isRestore: true);
               break;
 
             default:
               await wallet.init();
           }
-
           await wallet.recover(isRescan: false);
 
           if (wallet is ExternalWallet) {

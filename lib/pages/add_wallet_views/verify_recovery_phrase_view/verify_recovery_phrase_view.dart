@@ -34,8 +34,7 @@ import '../../../wallets/crypto_currency/crypto_currency.dart';
 import '../../../wallets/crypto_currency/intermediate/bip39_hd_currency.dart';
 import '../../../wallets/isar/models/wallet_info.dart';
 import '../../../wallets/wallet/impl/epiccash_wallet.dart';
-import '../../../wallets/wallet/impl/monero_wallet.dart';
-import '../../../wallets/wallet/impl/wownero_wallet.dart';
+import '../../../wallets/wallet/impl/mimblewimblecoin_wallet.dart';
 import '../../../wallets/wallet/impl/xelis_wallet.dart';
 import '../../../wallets/wallet/intermediate/cryptonote_wallet.dart';
 import '../../../wallets/wallet/wallet.dart';
@@ -204,21 +203,21 @@ class _VerifyRecoveryPhraseViewState
 
     try {
       // TODO: extract interface with isRestore param
-      switch (voWallet.runtimeType) {
-        case const (EpiccashWallet):
-          await (voWallet as EpiccashWallet).init(isRestore: true);
+      switch (voWallet) {
+        case EpiccashWallet():
+          await voWallet.init(isRestore: true);
           break;
 
-        case const (MoneroWallet):
-          await (voWallet as MoneroWallet).init(isRestore: true);
+        case MimblewimblecoinWallet():
+          await voWallet.init(isRestore: true);
           break;
 
-        case const (WowneroWallet):
-          await (voWallet as WowneroWallet).init(isRestore: true);
+        case CryptonoteWallet():
+          await voWallet.init(isRestore: true);
           break;
 
-        case const (XelisWallet):
-          await (voWallet as XelisWallet).init(isRestore: true);
+        case XelisWallet():
+          await voWallet.init(isRestore: true);
           break;
 
         default:

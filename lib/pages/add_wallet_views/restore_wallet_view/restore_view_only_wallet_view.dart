@@ -26,9 +26,8 @@ import '../../../wallets/crypto_currency/intermediate/cryptonote_currency.dart';
 import '../../../wallets/isar/models/wallet_info.dart';
 import '../../../wallets/wallet/impl/epiccash_wallet.dart';
 import '../../../wallets/wallet/impl/mimblewimblecoin_wallet.dart';
-import '../../../wallets/wallet/impl/monero_wallet.dart';
-import '../../../wallets/wallet/impl/wownero_wallet.dart';
 import '../../../wallets/wallet/impl/xelis_wallet.dart';
+import '../../../wallets/wallet/intermediate/cryptonote_wallet.dart';
 import '../../../wallets/wallet/wallet.dart';
 import '../../../wallets/wallet/wallet_mixin_interfaces/extended_keys_interface.dart';
 import '../../../widgets/custom_buttons/app_bar_icon_button.dart';
@@ -109,10 +108,9 @@ class _RestoreViewOnlyWalletViewState
 
     final ViewOnlyWalletType viewOnlyWalletType;
     if (widget.coin is Bip39HDCurrency) {
-      viewOnlyWalletType =
-          _addressOnly
-              ? ViewOnlyWalletType.addressOnly
-              : ViewOnlyWalletType.xPub;
+      viewOnlyWalletType = _addressOnly
+          ? ViewOnlyWalletType.addressOnly
+          : ViewOnlyWalletType.xPub;
     } else if (widget.coin is CryptonoteCurrency) {
       viewOnlyWalletType = ViewOnlyWalletType.cryptonote;
     } else {
@@ -216,25 +214,21 @@ class _RestoreViewOnlyWalletViewState
         );
 
         // TODO: extract interface with isRestore param
-        switch (wallet.runtimeType) {
-          case const (EpiccashWallet):
-            await (wallet as EpiccashWallet).init(isRestore: true);
-            break;
-          
-          case const (MimblewimblecoinWallet):
-            await (wallet as MimblewimblecoinWallet).init(isRestore: true);
+        switch (wallet) {
+          case EpiccashWallet():
+            await wallet.init(isRestore: true);
             break;
 
-          case const (MoneroWallet):
-            await (wallet as MoneroWallet).init(isRestore: true);
+          case MimblewimblecoinWallet():
+            await wallet.init(isRestore: true);
             break;
 
-          case const (WowneroWallet):
-            await (wallet as WowneroWallet).init(isRestore: true);
+          case CryptonoteWallet():
+            await wallet.init(isRestore: true);
             break;
 
-          case const (XelisWallet):
-            await (wallet as XelisWallet).init(isRestore: true);
+          case XelisWallet():
+            await wallet.init(isRestore: true);
             break;
 
           default:
@@ -316,10 +310,9 @@ class _RestoreViewOnlyWalletViewState
     viewKeyController = TextEditingController();
 
     if (widget.coin is Bip39HDCurrency) {
-      _currentDropDownValue =
-          (widget.coin as Bip39HDCurrency)
-              .supportedHardenedDerivationPaths
-              .last;
+      _currentDropDownValue = (widget.coin as Bip39HDCurrency)
+          .supportedHardenedDerivationPaths
+          .last;
     }
   }
 
@@ -338,28 +331,27 @@ class _RestoreViewOnlyWalletViewState
 
     return MasterScaffold(
       isDesktop: isDesktop,
-      appBar:
-          isDesktop
-              ? const DesktopAppBar(
-                isCompactHeight: false,
-                leading: AppBarBackButton(),
-                trailing: ExitToMyStackButton(),
-              )
-              : AppBar(
-                leading: AppBarBackButton(
-                  onPressed: () async {
-                    if (FocusScope.of(context).hasFocus) {
-                      FocusScope.of(context).unfocus();
-                      await Future<void>.delayed(
-                        const Duration(milliseconds: 50),
-                      );
-                    }
-                    if (context.mounted) {
-                      Navigator.of(context).pop();
-                    }
-                  },
-                ),
+      appBar: isDesktop
+          ? const DesktopAppBar(
+              isCompactHeight: false,
+              leading: AppBarBackButton(),
+              trailing: ExitToMyStackButton(),
+            )
+          : AppBar(
+              leading: AppBarBackButton(
+                onPressed: () async {
+                  if (FocusScope.of(context).hasFocus) {
+                    FocusScope.of(context).unfocus();
+                    await Future<void>.delayed(
+                      const Duration(milliseconds: 50),
+                    );
+                  }
+                  if (context.mounted) {
+                    Navigator.of(context).pop();
+                  }
+                },
               ),
+            ),
       body: Container(
         color: Theme.of(context).extension<StackColors>()!.background,
         child: LayoutBuilder(
@@ -384,10 +376,9 @@ class _RestoreViewOnlyWalletViewState
                         SizedBox(height: isDesktop ? 0 : 4),
                         Text(
                           "Enter view only details",
-                          style:
-                              isDesktop
-                                  ? STextStyles.desktopH2(context)
-                                  : STextStyles.pageTitleH1(context),
+                          style: isDesktop
+                              ? STextStyles.desktopH2(context)
+                              : STextStyles.pageTitleH1(context),
                         ),
                         if (isElectrumX) SizedBox(height: isDesktop ? 24 : 16),
                         if (isElectrumX)
@@ -398,14 +389,12 @@ class _RestoreViewOnlyWalletViewState
                               key: UniqueKey(),
                               onText: "Extended pub key",
                               offText: "Single address",
-                              onColor:
-                                  Theme.of(
-                                    context,
-                                  ).extension<StackColors>()!.popupBG,
-                              offColor:
-                                  Theme.of(context)
-                                      .extension<StackColors>()!
-                                      .textFieldDefaultBG,
+                              onColor: Theme.of(
+                                context,
+                              ).extension<StackColors>()!.popupBG,
+                              offColor: Theme.of(
+                                context,
+                              ).extension<StackColors>()!.textFieldDefaultBG,
                               isOn: _addressOnly,
                               onValueChanged: (value) {
                                 setState(() {
@@ -469,10 +458,9 @@ class _RestoreViewOnlyWalletViewState
                               isExpanded: true,
                               buttonStyleData: ButtonStyleData(
                                 decoration: BoxDecoration(
-                                  color:
-                                      Theme.of(context)
-                                          .extension<StackColors>()!
-                                          .textFieldDefaultBG,
+                                  color: Theme.of(context)
+                                      .extension<StackColors>()!
+                                      .textFieldDefaultBG,
                                   borderRadius: BorderRadius.circular(
                                     Constants.size.circularBorderRadius,
                                   ),
@@ -485,10 +473,9 @@ class _RestoreViewOnlyWalletViewState
                                     Assets.svg.chevronDown,
                                     width: 12,
                                     height: 6,
-                                    color:
-                                        Theme.of(context)
-                                            .extension<StackColors>()!
-                                            .textFieldActiveSearchIconRight,
+                                    color: Theme.of(context)
+                                        .extension<StackColors>()!
+                                        .textFieldActiveSearchIconRight,
                                   ),
                                 ),
                               ),
@@ -496,10 +483,9 @@ class _RestoreViewOnlyWalletViewState
                                 offset: const Offset(0, -10),
                                 elevation: 0,
                                 decoration: BoxDecoration(
-                                  color:
-                                      Theme.of(context)
-                                          .extension<StackColors>()!
-                                          .textFieldDefaultBG,
+                                  color: Theme.of(context)
+                                      .extension<StackColors>()!
+                                      .textFieldDefaultBG,
                                   borderRadius: BorderRadius.circular(
                                     Constants.size.circularBorderRadius,
                                   ),

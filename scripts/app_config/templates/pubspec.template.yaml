@@ -14,8 +14,8 @@ description: PLACEHOLDER
 version: PLACEHOLDER_V+PLACEHOLDER_B
 
 environment:
-  sdk: ">=3.9.0 <4.0.0"
-  flutter: ^3.29.0
+  sdk: ">=3.10.0 <4.0.0"
+  flutter: ^3.38.1
 
 dependencies:
   flutter:
@@ -149,7 +149,7 @@ dependencies:
 
   # UI/Component plugins
   flutter_native_splash: ^2.2.4
-  google_fonts: ^4.0.4
+  google_fonts: ^6.3.2
   url_launcher: ^6.0.5
   flutter_svg: ^2.0.7
   flutter_feather_icons: ^2.0.0+1

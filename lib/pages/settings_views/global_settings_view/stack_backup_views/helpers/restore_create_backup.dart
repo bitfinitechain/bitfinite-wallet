@@ -53,8 +53,6 @@ import '../../../../../wallets/isar/models/wallet_info.dart';
 import '../../../../../wallets/wallet/impl/bitcoin_frost_wallet.dart';
 import '../../../../../wallets/wallet/impl/epiccash_wallet.dart';
 import '../../../../../wallets/wallet/impl/mimblewimblecoin_wallet.dart';
-import '../../../../../wallets/wallet/impl/monero_wallet.dart';
-import '../../../../../wallets/wallet/impl/wownero_wallet.dart';
 import '../../../../../wallets/wallet/impl/xelis_wallet.dart';
 import '../../../../../wallets/wallet/intermediate/cryptonote_wallet.dart';
 import '../../../../../wallets/wallet/wallet.dart';
@@ -414,6 +412,7 @@ abstract class SWB {
       mnemonicPassphrase: mnemonicPassphrase,
     );
     Wallet? wallet;
+    bool didExit = false;
     try {
       String? serializedKeys;
       String? multisigConfig;
@@ -458,25 +457,21 @@ abstract class SWB {
         viewOnlyData: viewOnlyData,
       );
 
-      switch (wallet.runtimeType) {
-        case const (EpiccashWallet):
-          await (wallet as EpiccashWallet).init(isRestore: true);
+      switch (wallet) {
+        case EpiccashWallet():
+          await wallet.init(isRestore: true);
           break;
 
-        case const (MimblewimblecoinWallet):
-          await (wallet as MimblewimblecoinWallet).init(isRestore: true);
+        case MimblewimblecoinWallet():
+          await wallet.init(isRestore: true);
           break;
 
-        case const (MoneroWallet):
-          await (wallet as MoneroWallet).init(isRestore: true);
+        case CryptonoteWallet():
+          await wallet.init(isRestore: true);
           break;
 
-        case const (WowneroWallet):
-          await (wallet as WowneroWallet).init(isRestore: true);
-          break;
-
-        case const (XelisWallet):
-          await (wallet as XelisWallet).init(isRestore: true);
+        case XelisWallet():
+          await wallet.init(isRestore: true);
           break;
 
         default:
@@ -556,11 +551,14 @@ abstract class SWB {
 
       await restoringFuture;
 
+      final currentAddress = await wallet.getCurrentReceivingAddress();
+
+      await wallet.exit();
+      didExit = true;
+
       Logging.instance.i(
         "SWB restored: ${info.walletId} ${info.name} ${info.coin.prettyName}",
       );
-
-      final currentAddress = await wallet.getCurrentReceivingAddress();
       uiState?.update(
         walletId: info.walletId,
         restoringStatus: StackRestoringStatus.success,
@@ -571,7 +569,11 @@ abstract class SWB {
         mnemonicPassphrase: mnemonicPassphrase,
       );
     } catch (e, s) {
-      Logging.instance.i("", error: e, stackTrace: s);
+      Logging.instance.e(
+        "${wallet?.runtimeType} _asyncRestore failed",
+        error: e,
+        stackTrace: s,
+      );
       uiState?.update(
         walletId: info.walletId,
         restoringStatus: StackRestoringStatus.failed,
@@ -580,7 +582,9 @@ abstract class SWB {
       );
       return false;
     } finally {
-      await wallet?.exit();
+      if (!didExit) {
+        await wallet?.exit();
+      }
     }
     return true;
   }
@@ -1231,7 +1235,8 @@ abstract class SWB {
       TradeWalletLookup lookup = TradeWalletLookup.fromJson(json);
       // update walletIds
       final List<String> walletIds = lookup.walletIds
-          .map((e) => oldToNewWalletIdMap[e]!)
+          // fallback to e as that wallet may have been deleted in the past
+          .map((e) => oldToNewWalletIdMap[e] ?? e)
           .toList();
       lookup = lookup.copyWith(walletIds: walletIds);
 

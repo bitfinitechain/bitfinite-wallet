@@ -15,6 +15,10 @@ import 'package:solana/solana.dart' hide Wallet;
 
 import '../../../../db/isar/main_db.dart';
 import '../../../../models/balance.dart';
+import '../../../../models/isar/models/blockchain_data/transaction.dart';
+import '../../../../models/isar/models/blockchain_data/v2/input_v2.dart';
+import '../../../../models/isar/models/blockchain_data/v2/output_v2.dart';
+import '../../../../models/isar/models/blockchain_data/v2/transaction_v2.dart';
 import '../../../../models/paymint/fee_object_model.dart';
 import '../../../../services/solana/solana_token_api.dart';
 import '../../../../utilities/amount/amount.dart';
@@ -276,6 +280,74 @@ class SolanaTokenWallet extends Wallet {
       if (txid.isEmpty) {
         throw Exception(
           "Failed to broadcast transaction: empty signature returned",
+        );
+      }
+
+      // Create temporary transaction (pending = unconfirmed) and save to db.
+      try {
+        // Build inputs and outputs for the transaction record.
+        final inputs = [
+          InputV2.isarCantDoRequiredInDefaultConstructor(
+            scriptSigHex: null,
+            scriptSigAsm: null,
+            sequence: null,
+            outpoint: null,
+            addresses: [senderTokenAccount],
+            valueStringSats: txData.amount!.raw.toString(),
+            witness: null,
+            innerRedeemScriptAsm: null,
+            coinbase: null,
+            walletOwns: true,
+          ),
+        ];
+
+        final outputs = [
+          OutputV2.isarCantDoRequiredInDefaultConstructor(
+            scriptPubKeyHex: "00",
+            valueStringSats: txData.amount!.raw.toString(),
+            addresses: [recipientTokenAccount],
+            walletOwns: false, // We don't own recipient account.
+          ),
+        ];
+
+        // Determine if this is a self-transfer.
+        final isToSelf = senderTokenAccount == recipientTokenAccount;
+
+        // Create the temporary transaction record.
+        final tempTx = TransactionV2(
+          walletId: walletId,
+          blockHash: null, // CRITICAL: null indicates pending.
+          hash: txid,
+          txid: txid,
+          timestamp: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          height: null, // CRITICAL: null indicates pending.
+          inputs: List.unmodifiable(inputs),
+          outputs: List.unmodifiable(outputs),
+          version: -1,
+          type: isToSelf
+              ? TransactionType.sentToSelf
+              : TransactionType.outgoing,
+          subType: TransactionSubType.splToken,
+          otherData: jsonEncode({
+            "mint": tokenMint,
+            "senderTokenAccount": senderTokenAccount,
+            "recipientTokenAccount": recipientTokenAccount,
+            "isCancelled": false,
+            "overrideFee": txData.fee!.toJsonString(),
+          }),
+        );
+
+        // Persist immediately to database so UI shows transaction right away.
+        await mainDB.updateOrPutTransactionV2s([tempTx]);
+        Logging.instance.i(
+          "$runtimeType confirmSend: Persisted pending transaction $txid to database",
+        );
+      } catch (e, s) {
+        // Log persistence error but don't fail the send operation.
+        Logging.instance.w(
+          "$runtimeType confirmSend: Failed to persist pending transaction to database: ",
+          error: e,
+          stackTrace: s,
         );
       }
 

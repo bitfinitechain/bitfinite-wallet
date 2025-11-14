@@ -389,7 +389,169 @@ class SolanaTokenWallet extends Wallet {
 
   @override
   Future<void> updateTransactions() async {
-    // TODO: Fetch token transfer history from Solana RPC.
+    try {
+      final rpcClient = parentSolanaWallet.getRpcClient();
+      if (rpcClient == null) {
+        Logging.instance.w(
+          "$runtimeType updateTransactions: RPC client not initialized",
+        );
+        return;
+      }
+
+      final keyPair = await parentSolanaWallet.getKeyPair();
+      final walletAddress = keyPair.address;
+
+      // Find token account for this mint.
+      final senderTokenAccount = await _findTokenAccount(
+        ownerAddress: walletAddress,
+        mint: tokenMint,
+        rpcClient: rpcClient,
+      );
+
+      if (senderTokenAccount == null) {
+        return;
+      }
+
+      // Fetch recent transactions for this token account.
+      final txListIterable = await rpcClient.getTransactionsList(
+        Ed25519HDPublicKey.fromBase58(senderTokenAccount),
+        encoding: Encoding.jsonParsed,
+      );
+
+      final txList = txListIterable.toList();
+
+      if (txList.isEmpty) {
+        return;
+      }
+
+      final txns = <TransactionV2>[];
+      int skippedCount = 0;
+
+      for (int i = 0; i < txList.length; i++) {
+        final txDetails = txList[i];
+        try {
+          // Skip failed transactions or those without metadata.
+          if (txDetails.meta == null) {
+            skippedCount++;
+            continue;
+          }
+
+          // Cast transaction to ParsedTransaction if available.
+          if (txDetails.transaction is! ParsedTransaction) {
+            skippedCount++;
+            continue;
+          }
+          final parsedTx = txDetails.transaction as ParsedTransaction;
+
+          // Get the txid for this transaction
+          final txid = parsedTx.signatures.isNotEmpty
+              ? parsedTx.signatures[0]
+              : "unknown_txid_$i";
+
+          // Check if this transaction already exists in the database.
+          // If it does, preserve the overrideFee from the pending transaction.
+          dynamic existingOverrideFee;
+          try {
+            final allTxsForWallet = await mainDB.isar.transactionV2s
+                .where()
+                .walletIdEqualTo(walletId)
+                .findAll();
+            for (final tx in allTxsForWallet) {
+              if (tx.txid == txid) {
+                final existingOtherData = tx.otherData;
+                if (existingOtherData != null && existingOtherData.isNotEmpty) {
+                  try {
+                    final otherDataMap = jsonDecode(existingOtherData);
+                    if (otherDataMap is Map &&
+                        otherDataMap.containsKey('overrideFee')) {
+                      existingOverrideFee = otherDataMap['overrideFee'];
+                    }
+                  } catch (e) {
+                    // Ignore parsing errors.
+                  }
+                }
+                break;
+              }
+            }
+          } catch (e) {
+            // Ignore database query errors.
+          }
+
+          // Build otherData, preserving overrideFee if it existed.
+          final otherDataMap = <String, dynamic>{
+            "mint": tokenMint,
+            "senderTokenAccount": senderTokenAccount,
+            "recipientTokenAccount": senderTokenAccount,
+            "isCancelled": (txDetails.meta!.err != null),
+          };
+          if (existingOverrideFee != null) {
+            otherDataMap["overrideFee"] = existingOverrideFee;
+          }
+
+          // Create placeholder TransactionV2 object.
+          final txn = TransactionV2(
+            walletId: walletId,
+            blockHash: null,
+            hash: txid,
+            txid: txid,
+            timestamp:
+                txDetails.blockTime ??
+                DateTime.now().millisecondsSinceEpoch ~/ 1000,
+            height: txDetails.slot,
+            inputs: [
+              InputV2.isarCantDoRequiredInDefaultConstructor(
+                scriptSigHex: null,
+                scriptSigAsm: null,
+                sequence: null,
+                outpoint: null,
+                addresses: [senderTokenAccount],
+                valueStringSats: "0",
+                witness: null,
+                innerRedeemScriptAsm: null,
+                coinbase: null,
+                walletOwns: true,
+              ),
+            ],
+            outputs: [
+              OutputV2.isarCantDoRequiredInDefaultConstructor(
+                scriptPubKeyHex: "00",
+                valueStringSats: "0",
+                addresses: [senderTokenAccount],
+                walletOwns: false,
+              ),
+            ],
+            version: -1,
+            type: TransactionType.outgoing,
+            subType: TransactionSubType.splToken,
+            otherData: jsonEncode(otherDataMap),
+          );
+
+          txns.add(txn);
+        } catch (e, s) {
+          Logging.instance.w(
+            "$runtimeType updateTransactions: Failed to parse transaction at index $i",
+            error: e,
+            stackTrace: s,
+          );
+          skippedCount++;
+          continue;
+        }
+      }
+
+      // Persist all transactions if any were parsed.
+      if (txns.isNotEmpty) {
+        await mainDB.updateOrPutTransactionV2s(txns);
+        Logging.instance.i(
+          "$runtimeType updateTransactions: Synced ${txns.length} transactions (skipped $skippedCount)",
+        );
+      }
+    } catch (e, s) {
+      Logging.instance.e(
+        "$runtimeType updateTransactions FAILED: ",
+        error: e,
+        stackTrace: s,
+      );
+    }
   }
 
   @override
@@ -518,6 +680,7 @@ class SolanaTokenWallet extends Wallet {
     // This ensures the cached token balance in the database is updated.
     await parentSolanaWallet.refresh();
     await updateBalance();
+    await updateTransactions();
   }
 
   @override

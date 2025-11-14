@@ -13,6 +13,9 @@ import '../../../app_config.dart';
 import '../../../exceptions/wallet/node_tor_mismatch_config_exception.dart';
 import '../../../models/balance.dart';
 import '../../../models/isar/models/blockchain_data/transaction.dart' as isar;
+import '../../../models/isar/models/blockchain_data/v2/input_v2.dart';
+import '../../../models/isar/models/blockchain_data/v2/output_v2.dart';
+import '../../../models/isar/models/blockchain_data/v2/transaction_v2.dart';
 import '../../../models/isar/models/isar_models.dart';
 import '../../../models/node_model.dart';
 import '../../../models/paymint/fee_object_model.dart';
@@ -217,6 +220,52 @@ class SolanaWallet extends Bip39Wallet<Solana> {
       );
 
       final txid = await _rpcClient?.signAndSendTransaction(message, [keyPair]);
+
+      // Persist pending transaction immediately so UI shows "Sending" status.
+      if (txid != null) {
+        final senderAddress = keyPair.address;
+        final isToSelf = senderAddress == recipientAccount.address;
+
+        final tempTx = TransactionV2(
+          walletId: walletId,
+          blockHash: null, // CRITICAL: indicates pending.
+          hash: txid,
+          txid: txid,
+          timestamp: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          height: null, // CRITICAL: indicates pending.
+          inputs: [
+            InputV2.isarCantDoRequiredInDefaultConstructor(
+              scriptSigHex: null,
+              scriptSigAsm: null,
+              sequence: null,
+              outpoint: null,
+              addresses: [senderAddress],
+              valueStringSats: txData.amount!.raw.toString(),
+              witness: null,
+              innerRedeemScriptAsm: null,
+              coinbase: null,
+              walletOwns: true,
+            ),
+          ],
+          outputs: [
+            OutputV2.isarCantDoRequiredInDefaultConstructor(
+              scriptPubKeyHex: "00",
+              valueStringSats: txData.amount!.raw.toString(),
+              addresses: [recipientAccount.address],
+              walletOwns: isToSelf,
+            ),
+          ],
+          version: -1,
+          type: isToSelf ? isar.TransactionType.sentToSelf : isar.TransactionType.outgoing,
+          subType: isar.TransactionSubType.none,
+          otherData: jsonEncode({
+            "overrideFee": txData.fee!.toJsonString(),
+          }),
+        );
+
+        await mainDB.updateOrPutTransactionV2s([tempTx]);
+      }
+
       return txData.copyWith(txid: txid);
     } catch (e, s) {
       Logging.instance.e(
@@ -253,7 +302,7 @@ class SolanaWallet extends Bip39Wallet<Solana> {
 
     final fee = await _getEstimatedNetworkFee(
       Amount.fromDecimal(
-        Decimal.one, // 1 SOL
+        Decimal.one, // 1 SOL.
         fractionDigits: cryptoCurrency.fractionDigits,
       ),
     );
@@ -411,81 +460,157 @@ class SolanaWallet extends Bip39Wallet<Solana> {
         (await _getKeyPair()).publicKey,
         encoding: Encoding.jsonParsed,
       );
-      final txsList = List<Tuple2<isar.Transaction, Address>>.empty(
-        growable: true,
-      );
 
       final myAddress = (await getCurrentReceivingAddress())!;
 
-      // TODO [prio=low]: Revisit null assertion below.
-
-      for (final tx in transactionsList!) {
-        final senderAddress =
-            (tx.transaction as ParsedTransaction).message.accountKeys[0].pubkey;
-        var receiverAddress =
-            (tx.transaction as ParsedTransaction).message.accountKeys[1].pubkey;
-        var txType = isar.TransactionType.unknown;
-        final txAmount = Amount(
-          rawValue: BigInt.from(
-            tx.meta!.postBalances[1] - tx.meta!.preBalances[1],
-          ),
-          fractionDigits: cryptoCurrency.fractionDigits,
-        );
-
-        if ((senderAddress == myAddress.value) &&
-            (receiverAddress == "11111111111111111111111111111111")) {
-          // The account that is only 1's are System Program accounts which
-          // means there is no receiver except the sender,
-          // see: https://explorer.solana.com/address/11111111111111111111111111111111
-          txType = isar.TransactionType.sentToSelf;
-          receiverAddress = senderAddress;
-        } else if (senderAddress == myAddress.value) {
-          txType = isar.TransactionType.outgoing;
-        } else if (receiverAddress == myAddress.value) {
-          txType = isar.TransactionType.incoming;
-        }
-
-        final transaction = isar.Transaction(
-          walletId: walletId,
-          txid: (tx.transaction as ParsedTransaction).signatures[0],
-          timestamp: tx.blockTime!,
-          type: txType,
-          subType: isar.TransactionSubType.none,
-          amount: tx.meta!.postBalances[1] - tx.meta!.preBalances[1],
-          amountString: txAmount.toJsonString(),
-          fee: tx.meta!.fee,
-          height: tx.slot,
-          isCancelled: false,
-          isLelantus: false,
-          slateId: null,
-          otherData: null,
-          inputs: [],
-          outputs: [],
-          nonce: null,
-          numberOfMessages: 0,
-        );
-
-        final txAddress = Address(
-          walletId: walletId,
-          value: receiverAddress,
-          publicKey: List<int>.empty(),
-          derivationIndex: 0,
-          derivationPath: DerivationPath()..value = _addressDerivationPath,
-          type: AddressType.solana,
-          subType: txType == isar.TransactionType.outgoing
-              ? AddressSubType.unknown
-              : AddressSubType.receiving,
-        );
-
-        txsList.add(Tuple2(transaction, txAddress));
+      if (transactionsList == null) {
+        return;
       }
-      await mainDB.addNewTransactionData(txsList, walletId);
+
+      final txns = <TransactionV2>[];
+      int skippedCount = 0;
+
+      for (final tx in transactionsList) {
+        try {
+          // Skip transactions without metadata.
+          if (tx.meta == null) {
+            skippedCount++;
+            continue;
+          }
+
+          if (tx.transaction is! ParsedTransaction) {
+            skippedCount++;
+            continue;
+          }
+
+          final parsedTx = tx.transaction as ParsedTransaction;
+          final txid = parsedTx.signatures.isNotEmpty ? parsedTx.signatures[0] : null;
+          if (txid == null) {
+            skippedCount++;
+            continue;
+          }
+
+          // Determine transaction direction.
+          final senderAddress = parsedTx.message.accountKeys[0].pubkey;
+          var receiverAddress =
+              parsedTx.message.accountKeys.length > 1
+                  ? parsedTx.message.accountKeys[1].pubkey
+                  : senderAddress;
+          var txType = isar.TransactionType.unknown;
+
+          if ((senderAddress == myAddress.value) &&
+              (receiverAddress == "11111111111111111111111111111111")) {
+            // System Program account means sent to self.
+            txType = isar.TransactionType.sentToSelf;
+            receiverAddress = senderAddress;
+          } else if (senderAddress == myAddress.value) {
+            txType = isar.TransactionType.outgoing;
+          } else if (receiverAddress == myAddress.value) {
+            txType = isar.TransactionType.incoming;
+          }
+
+          // Calculate transfer amount.
+          final amount = BigInt.from(
+            tx.meta!.postBalances[1] - tx.meta!.preBalances[1],
+          );
+
+          // Check if this transaction already exists.
+          // If it does, preserve the overrideFee from the pending transaction.
+          dynamic existingOverrideFee;
+          try {
+            final allTxsForWallet = await mainDB.isar.transactionV2s
+                .where()
+                .walletIdEqualTo(walletId)
+                .findAll();
+            for (final existingTx in allTxsForWallet) {
+              if (existingTx.txid == txid) {
+                final existingOtherData = existingTx.otherData;
+                if (existingOtherData != null && existingOtherData.isNotEmpty) {
+                  try {
+                    final otherDataMap = jsonDecode(existingOtherData);
+                    if (otherDataMap is Map &&
+                        otherDataMap.containsKey('overrideFee')) {
+                      existingOverrideFee = otherDataMap['overrideFee'];
+                    }
+                  } catch (e) {
+                    // Ignore parsing errors.
+                  }
+                }
+                break;
+              }
+            }
+          } catch (e) {
+            // Ignore database query errors.
+          }
+
+          // Build otherData, preserving overrideFee if it existed.
+          final otherDataMap = <String, dynamic>{};
+          if (existingOverrideFee != null) {
+            otherDataMap["overrideFee"] = existingOverrideFee;
+          }
+
+          // Create TransactionV2 object.
+          final txn = TransactionV2(
+            walletId: walletId,
+            blockHash: null,
+            hash: txid,
+            txid: txid,
+            timestamp: tx.blockTime ?? DateTime.now().millisecondsSinceEpoch ~/ 1000,
+            height: tx.slot,
+            inputs: [
+              InputV2.isarCantDoRequiredInDefaultConstructor(
+                scriptSigHex: null,
+                scriptSigAsm: null,
+                sequence: null,
+                outpoint: null,
+                addresses: [senderAddress],
+                valueStringSats: amount.toString(),
+                witness: null,
+                innerRedeemScriptAsm: null,
+                coinbase: null,
+                walletOwns: senderAddress == myAddress.value,
+              ),
+            ],
+            outputs: [
+              OutputV2.isarCantDoRequiredInDefaultConstructor(
+                scriptPubKeyHex: "00",
+                valueStringSats: amount.toString(),
+                addresses: [receiverAddress],
+                walletOwns: receiverAddress == myAddress.value,
+              ),
+            ],
+            version: -1,
+            type: txType,
+            subType: isar.TransactionSubType.none,
+            otherData: otherDataMap.isNotEmpty ? jsonEncode(otherDataMap) : null,
+          );
+
+          txns.add(txn);
+        } catch (e, s) {
+          Logging.instance.w(
+            "$runtimeType updateTransactions: Failed to parse transaction",
+            error: e,
+            stackTrace: s,
+          );
+          skippedCount++;
+          continue;
+        }
+      }
+
+      // Persist all transactions if any were parsed.
+      if (txns.isNotEmpty) {
+        await mainDB.updateOrPutTransactionV2s(txns);
+        Logging.instance.i(
+          "$runtimeType updateTransactions: Synced ${txns.length} transactions (skipped $skippedCount)",
+        );
+      }
     } on NodeTorMismatchConfigException {
       rethrow;
     } catch (e, s) {
       Logging.instance.e(
-        "Error occurred in solana_wallet.dart while getting"
-        " transactions for solana: $e\n$s",
+        "$runtimeType updateTransactions failed: ",
+        error: e,
+        stackTrace: s,
       );
     }
   }

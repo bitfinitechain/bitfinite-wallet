@@ -861,6 +861,8 @@ class _RestoreWalletViewState extends ConsumerState<RestoreWalletView> {
                                             child: Column(
                                               children: [
                                                 TextFormField(
+                                                  enableIMEPersonalizedLearning:
+                                                      false,
                                                   obscureText: _hideSeedWords,
                                                   autocorrect: !isDesktop,
                                                   enableSuggestions: !isDesktop,
@@ -1007,6 +1009,8 @@ class _RestoreWalletViewState extends ConsumerState<RestoreWalletView> {
                                             child: Column(
                                               children: [
                                                 TextFormField(
+                                                  enableIMEPersonalizedLearning:
+                                                      false,
                                                   obscureText: _hideSeedWords,
                                                   autocorrect: !isDesktop,
                                                   enableSuggestions: !isDesktop,
@@ -1148,6 +1152,7 @@ class _RestoreWalletViewState extends ConsumerState<RestoreWalletView> {
                                     vertical: 4,
                                   ),
                                   child: TextFormField(
+                                    enableIMEPersonalizedLearning: false,
                                     obscureText: _hideSeedWords,
                                     autocorrect: !isDesktop,
                                     enableSuggestions: !isDesktop,

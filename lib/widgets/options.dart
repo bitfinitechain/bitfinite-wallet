@@ -22,7 +22,6 @@ class Options extends StatefulWidget {
     this.texts,
     this.onValueChanged,
     required this.selectedIndex,
-    this.controller,
     required this.onColor,
     required this.offColor,
     this.decoration,
@@ -32,7 +31,6 @@ class Options extends StatefulWidget {
   final List<String>? texts;
   final void Function(int)? onValueChanged;
   final int selectedIndex;
-  final DSBController? controller;
   final Color onColor;
   final Color offColor;
   final BoxDecoration? decoration;
@@ -45,7 +43,6 @@ class OptionsState extends State<Options> {
   late final BoxDecoration? decoration;
   late final Color onColor;
   late final Color offColor;
-  late final DSBController? controller;
 
   final bool isDesktop = Util.isDesktop;
 
@@ -62,14 +59,9 @@ class OptionsState extends State<Options> {
     onColor = widget.onColor;
     offColor = widget.offColor;
     decoration = widget.decoration;
-    controller = widget.controller;
     _selectedIndex = widget.selectedIndex;
     valueListener = ValueNotifier(_selectedIndex.toDouble());
 
-    widget.controller?.activate = () {
-      _selectedIndex = (_selectedIndex + 1) % (widget.texts?.length ?? 1);
-      valueListener.value = _selectedIndex.toDouble();
-    };
     super.initState();
   }
 
@@ -90,7 +82,10 @@ class OptionsState extends State<Options> {
         final localPosition = box.globalToLocal(details.globalPosition);
         final optionsCount = widget.texts?.length ?? 1;
         final optionWidth = box.size.width / optionsCount;
-        final tappedIndex = (localPosition.dx / optionWidth).floor().clamp(0, optionsCount - 1);
+        final tappedIndex = (localPosition.dx / optionWidth).floor().clamp(
+          0,
+          optionsCount - 1,
+        );
         if (_selectedIndex != tappedIndex) {
           _selectedIndex = tappedIndex;
           widget.onValueChanged?.call(_selectedIndex);
@@ -109,9 +104,7 @@ class OptionsState extends State<Options> {
                     duration: tapAnimationDuration,
                     height: constraint.maxHeight,
                     width: constraint.maxWidth,
-                    decoration: decoration?.copyWith(
-                      color: offColor,
-                    ),
+                    decoration: decoration?.copyWith(color: offColor),
                   );
                 },
               ),
@@ -121,9 +114,11 @@ class OptionsState extends State<Options> {
                     key: const Key("draggableSwitchButtonSwitch"),
                     onHorizontalDragStart: (_) => _isDragging = true,
                     onHorizontalDragUpdate: (details) {
-                      valueListener.value = (valueListener.value +
-                              details.delta.dx / (constraint.maxWidth / optionsCount))
-                          .clamp(0.0, optionsCount - 1.0);
+                      valueListener.value =
+                          (valueListener.value +
+                                  details.delta.dx /
+                                      (constraint.maxWidth / optionsCount))
+                              .clamp(0.0, optionsCount - 1.0);
                     },
                     onHorizontalDragEnd: (details) {
                       final int oldValue = _selectedIndex;
@@ -141,9 +136,7 @@ class OptionsState extends State<Options> {
                           duration: tapAnimationDuration,
                           height: constraint.maxHeight,
                           width: constraint.maxWidth / optionsCount,
-                          decoration: decoration?.copyWith(
-                            color: onColor,
-                          ),
+                          decoration: decoration?.copyWith(color: onColor),
                         );
                       },
                     ),
@@ -152,7 +145,9 @@ class OptionsState extends State<Options> {
                     animation: valueListener,
                     builder: (context, child) {
                       return AnimatedAlign(
-                        duration: _isDragging ? Duration.zero : tapAnimationDuration,
+                        duration: _isDragging
+                            ? Duration.zero
+                            : tapAnimationDuration,
                         alignment: Alignment(
                           (valueListener.value * 2 / (optionsCount - 1)) - 1,
                           0.5,
@@ -174,31 +169,31 @@ class OptionsState extends State<Options> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            if (widget.icons != null && widget.icons!.length > index)
+                            if (widget.icons != null &&
+                                widget.icons!.length > index)
                               SvgPicture.asset(
                                 widget.icons![index],
                                 width: 12,
                                 height: 14,
                                 color: isDesktop
                                     ? _selectedIndex != index
-                                        ? Theme.of(context)
-                                            .extension<StackColors>()!
-                                            .accentColorBlue
-                                        : Theme.of(context)
-                                            .extension<StackColors>()!
-                                            .buttonTextSecondary
+                                          ? Theme.of(context)
+                                                .extension<StackColors>()!
+                                                .accentColorBlue
+                                          : Theme.of(context)
+                                                .extension<StackColors>()!
+                                                .buttonTextSecondary
                                     : _selectedIndex != index
-                                        ? Theme.of(context)
-                                            .extension<StackColors>()!
-                                            .textDark
-                                        : Theme.of(context)
-                                            .extension<StackColors>()!
-                                            .textSubtitle1,
+                                    ? Theme.of(
+                                        context,
+                                      ).extension<StackColors>()!.textDark
+                                    : Theme.of(
+                                        context,
+                                      ).extension<StackColors>()!.textSubtitle1,
                               ),
-                            if (widget.icons != null && widget.icons!.length > index)
-                              const SizedBox(
-                                width: 5,
-                              ),
+                            if (widget.icons != null &&
+                                widget.icons!.length > index)
+                              const SizedBox(width: 5),
                             Flexible(
                               child: Text(
                                 widget.texts?[index] ?? "",
@@ -211,20 +206,20 @@ class OptionsState extends State<Options> {
                                       ).copyWith(
                                         color: _selectedIndex != index
                                             ? Theme.of(context)
-                                                .extension<StackColors>()!
-                                                .accentColorBlue
+                                                  .extension<StackColors>()!
+                                                  .accentColorBlue
                                             : Theme.of(context)
-                                                .extension<StackColors>()!
-                                                .buttonTextSecondary,
+                                                  .extension<StackColors>()!
+                                                  .buttonTextSecondary,
                                       )
                                     : STextStyles.smallMed12(context).copyWith(
                                         color: _selectedIndex != index
                                             ? Theme.of(context)
-                                                .extension<StackColors>()!
-                                                .textDark
+                                                  .extension<StackColors>()!
+                                                  .textDark
                                             : Theme.of(context)
-                                                .extension<StackColors>()!
-                                                .textSubtitle1,
+                                                  .extension<StackColors>()!
+                                                  .textSubtitle1,
                                       ),
                               ),
                             ),
@@ -241,9 +236,4 @@ class OptionsState extends State<Options> {
       ),
     );
   }
-}
-
-class DSBController {
-  VoidCallback? activate;
-  bool? isOn;
 }

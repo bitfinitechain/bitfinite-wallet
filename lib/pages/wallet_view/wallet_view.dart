@@ -432,7 +432,9 @@ class _WalletViewState extends ConsumerState<WalletView> {
     );
 
     final wallet = ref.read(pWallets).getWallet(walletId) as SparkInterface;
-    await wallet.init();
+    // this should not be needed here as its already called when entering a
+    // wallet
+    // await wallet.init();
     final sparkViewKeyHex = wallet.viewKeyHex;
 
     if (context.mounted) {

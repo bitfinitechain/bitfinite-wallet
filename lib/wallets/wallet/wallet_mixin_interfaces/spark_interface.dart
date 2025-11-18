@@ -109,7 +109,8 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
     on Bip39HDWallet<T>, ElectrumXInterface<T> {
   late Address _currentSparkAddress;
 
-  late String viewKeyHex;
+  String? _viewKeyHex;
+  String? get sparkViewKey => _viewKeyHex!;
 
   // Really we should just send change back to the same address.
   late Address sparkChangeAddress;
@@ -133,13 +134,20 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
   // private key data).
   int get sparkIndex => kDefaultSparkIndex;
 
-  Future<Address> generateSparkAddress(int diversifier) async {
-    final sparkAddress = await libSpark.getAddressFromFullViewKey(
-      fullViewKeyHex: viewKeyHex,
-      index: sparkIndex,
-      diversifier: diversifier,
-      isTestNet: isTestNet,
-    );
+  Future<Address> _generateSparkAddress(int diversifier) async {
+    if (isViewOnly && viewOnlyType != .spark) {
+      throw Exception(
+        "Cannot generate a spark address for a non spark view only firo wallet",
+      );
+    }
+
+    final sparkAddress =
+        await computeWithLibSparkLogging(_getAddressFromFullViewKey, (
+          fullViewKeyHex: _viewKeyHex!,
+          index: sparkIndex,
+          diversifier: diversifier,
+          isTestNet: isTestNet,
+        ));
 
     return Address(
       walletId: walletId,
@@ -165,7 +173,7 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
   }) async {
     return await computeWithLibSparkLogging(identifyCoinsStatic, (
       walletId_: walletId,
-      viewKeyHex_: viewKeyHex,
+      viewKeyHex_: _viewKeyHex!,
       isTestNet_: isTestNet,
       anonymitySetCoins: anonymitySetCoins,
       groupId: groupId,
@@ -267,6 +275,10 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
 
   @override
   Future<void> init() async {
+    if (isViewOnly && viewOnlyType != .spark) {
+      return super.init();
+    }
+
     try {
       final sparkUsedTagsResetVersion =
           info.otherData[WalletInfoKeys.firoSparkUsedTagsCacheResetVersion]
@@ -285,13 +297,16 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
       }
 
       if (isViewOnly) {
-        final walletData =
-            await getViewOnlyWalletData() as SparkViewOnlyWalletData;
-        viewKeyHex = walletData.viewKey;
+        final walletData = await getViewOnlyWalletData();
+        if (walletData is SparkViewOnlyWalletData) {
+          _viewKeyHex = walletData.viewKey;
+        } else {
+          // TODO anything needed here?
+        }
       } else {
         final root = await getRootHDNode();
         final privateKey = root.derivePath(sparkDerivationPath).privateKey.data;
-        viewKeyHex = libSpark.getFullViewKeyHexFromPrivateKeyData(
+        _viewKeyHex = libSpark.getFullViewKeyHexFromPrivateKeyData(
           privateKeyHex: privateKey.toHex,
           index: sparkIndex,
         );
@@ -299,8 +314,16 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
 
       Address? address = await getCurrentReceivingSparkAddress();
       if (address == null) {
-        address = await generateSparkAddress(1);
+        address = await _generateSparkAddress(1);
         await mainDB.putAddress(address);
+        if (isViewOnly &&
+            viewOnlyType == .spark &&
+            info.mainAddressType == .spark) {
+          await info.updateReceivingAddress(
+            newAddress: address.value,
+            isar: mainDB.isar,
+          );
+        }
       }
 
       if (address.derivationIndex == -1) {
@@ -308,7 +331,7 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
       }
 
       _currentSparkAddress = address;
-      sparkChangeAddress = await generateSparkAddress(libSpark.sparkChange);
+      sparkChangeAddress = await _generateSparkAddress(libSpark.sparkChange);
     } catch (e, s) {
       // do nothing, still allow user into wallet
       Logging.instance.e("$runtimeType init() failed", error: e, stackTrace: s);
@@ -349,13 +372,25 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
     }
   }
 
-  Future<Address> generateNextSparkAddress() async {
+  Future<Address> generateNextSparkAddress({required bool saveToDB}) async {
     int diversifier = _currentSparkAddress.derivationIndex + 1;
     if (diversifier == libSpark.sparkChange) {
       diversifier++; // ensure only receiving addresses are shown
     }
-    final newAddress = await generateSparkAddress(diversifier);
+    final newAddress = await _generateSparkAddress(diversifier);
     _currentSparkAddress = newAddress;
+    if (saveToDB) {
+      await mainDB.updateOrPutAddresses([newAddress]);
+      if (isViewOnly &&
+          viewOnlyType == .spark &&
+          info.mainAddressType == .spark) {
+        await info.updateReceivingAddress(
+          newAddress: newAddress.value,
+          isar: mainDB.isar,
+        );
+      }
+    }
+
     return newAddress;
   }
 
@@ -1300,10 +1335,6 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
     }
   }
 
-  Future<void> recoverViewOnlyWallet() async {
-    await recoverSparkWallet(latestSparkCoinId: 0);
-  }
-
   Future<void> refreshSparkNames() async {
     try {
       Logging.instance.i("Refreshing spark names for $walletId ${info.name}");
@@ -1342,7 +1373,7 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
         if (diversifier == libSpark.sparkChange) {
           diversifier++;
         }
-        final addressString = await generateSparkAddress(diversifier);
+        final addressString = await _generateSparkAddress(diversifier);
         myAddresses.add(addressString.value);
 
         diversifier++;
@@ -2450,3 +2481,12 @@ int _estSparkFeeComputeFunc(
 
   return est;
 }
+
+Future<String> _getAddressFromFullViewKey(
+  ({String fullViewKeyHex, int index, int diversifier, bool isTestNet}) args,
+) => libSpark.getAddressFromFullViewKey(
+  fullViewKeyHex: args.fullViewKeyHex,
+  index: args.index,
+  diversifier: args.diversifier,
+  isTestNet: args.isTestNet,
+);

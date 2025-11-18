@@ -13,12 +13,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 
+import '../../../../notifications/show_flush_bar.dart';
 import '../../../../themes/stack_colors.dart';
 import '../../../../utilities/assets.dart';
 import '../../../../utilities/clipboard_interface.dart';
-import '../../../../utilities/constants.dart';
 import '../../../../utilities/text_styles.dart';
 import '../../../../utilities/util.dart';
 import '../../../../widgets/background.dart';
@@ -27,10 +26,8 @@ import '../../../../widgets/custom_buttons/app_bar_icon_button.dart';
 import '../../../../widgets/desktop/desktop_dialog.dart';
 import '../../../../widgets/desktop/desktop_dialog_close_button.dart';
 import '../../../../widgets/desktop/primary_button.dart';
-import '../../../../widgets/detail_item.dart';
 import '../../../../widgets/qr.dart';
 import '../../../../widgets/rounded_white_container.dart';
-import '../../../../notifications/show_flush_bar.dart';
 
 class SparkViewKeyView extends ConsumerStatefulWidget {
   const SparkViewKeyView({
@@ -38,11 +35,13 @@ class SparkViewKeyView extends ConsumerStatefulWidget {
     required this.walletId,
     required this.sparkViewKeyHex,
     this.clipboardInterface = const ClipboardWrapper(),
+    this.showDesktopDialogTitle = true,
   });
 
   final String walletId;
   final String sparkViewKeyHex;
   final ClipboardInterface clipboardInterface;
+  final bool showDesktopDialogTitle;
 
   static const String routeName = "/spark_view_key";
 
@@ -75,7 +74,9 @@ class _SparkViewKeyViewState extends ConsumerState<SparkViewKeyView> {
       condition: !isDesktop,
       builder: (child) => Background(
         child: Scaffold(
-          backgroundColor: Theme.of(context).extension<StackColors>()!.background,
+          backgroundColor: Theme.of(
+            context,
+          ).extension<StackColors>()!.background,
           appBar: AppBar(
             leading: AppBarBackButton(
               onPressed: () async {
@@ -112,7 +113,7 @@ class _SparkViewKeyViewState extends ConsumerState<SparkViewKeyView> {
         ),
       ),
       child: ConditionalParent(
-        condition: isDesktop,
+        condition: isDesktop && widget.showDesktopDialogTitle,
         builder: (child) => DesktopDialog(
           maxWidth: 600,
           maxHeight: double.infinity,
@@ -130,7 +131,10 @@ class _SparkViewKeyViewState extends ConsumerState<SparkViewKeyView> {
                     ),
                   ),
                   DesktopDialogCloseButton(
-                    onPressedOverride: Navigator.of(context, rootNavigator: true).pop,
+                    onPressedOverride: Navigator.of(
+                      context,
+                      rootNavigator: true,
+                    ).pop,
                   ),
                 ],
               ),
@@ -150,12 +154,16 @@ class _SparkViewKeyViewState extends ConsumerState<SparkViewKeyView> {
             SizedBox(height: Util.isDesktop ? 12 : 16),
             QR(
               data: widget.sparkViewKeyHex,
-              size: Util.isDesktop ? 256 : MediaQuery.of(context).size.width / 1.5,
+              size: Util.isDesktop
+                  ? 256
+                  : MediaQuery.of(context).size.width / 1.5,
             ),
             SizedBox(height: Util.isDesktop ? 12 : 16),
             RoundedWhiteContainer(
               borderColor: Util.isDesktop
-                  ? Theme.of(context).extension<StackColors>()!.textFieldDefaultBG
+                  ? Theme.of(
+                      context,
+                    ).extension<StackColors>()!.textFieldDefaultBG
                   : null,
               child: SelectableText(
                 widget.sparkViewKeyHex,
@@ -168,7 +176,9 @@ class _SparkViewKeyViewState extends ConsumerState<SparkViewKeyView> {
               children: [
                 if (Util.isDesktop) const Spacer(),
                 if (Util.isDesktop) const SizedBox(width: 16),
-                Expanded(child: PrimaryButton(label: "Copy", onPressed: _copy)),
+                Expanded(
+                  child: PrimaryButton(label: "Copy", onPressed: _copy),
+                ),
               ],
             ),
           ],

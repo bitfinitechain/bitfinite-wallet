@@ -196,17 +196,19 @@ class _DesktopReceiveState extends ConsumerState<DesktopReceive> {
       final Address? address;
       if (wallet is Bip39HDWallet && wallet is! BCashInterface) {
         DerivePathType? type;
-        if (wallet.isViewOnly && wallet is ExtendedKeysInterface) {
-          final voData = await wallet.getViewOnlyWalletData();
+        if (wallet.isViewOnly &&
+            wallet is ExtendedKeysInterface &&
+            wallet.viewOnlyType != .spark) {
+          final voData =
+              await wallet.getViewOnlyWalletData()
+                  as ExtendedKeysViewOnlyWalletData;
           for (final t in wallet.cryptoCurrency.supportedDerivationPathTypes) {
             final testPath = wallet.cryptoCurrency.constructDerivePath(
               derivePathType: t,
               chain: 0,
               index: 0,
             );
-            if (voData is SparkViewOnlyWalletData) {
-              type = t;
-            } else if (testPath.startsWith((voData as ExtendedKeysViewOnlyWalletData).xPubs.first.path)) {
+            if (testPath.startsWith(voData.xPubs.first.path)) {
               type = t;
               break;
             }
@@ -270,10 +272,7 @@ class _DesktopReceiveState extends ConsumerState<DesktopReceive> {
         ),
       );
 
-      final address = await wallet.generateNextSparkAddress();
-      await ref.read(mainDBProvider).isar.writeTxn(() async {
-        await ref.read(mainDBProvider).isar.addresses.put(address);
-      });
+      final address = await wallet.generateNextSparkAddress(saveToDB: true);
 
       shouldPop = true;
 
@@ -353,10 +352,8 @@ class _DesktopReceiveState extends ConsumerState<DesktopReceive> {
 
     isMimblewimblecoin = wallet is MimblewimblecoinWallet;
 
-    if (wallet is ViewOnlyOptionInterface && wallet.isViewOnly && wallet.viewOnlyType == ViewOnlyWalletType.spark) {
+    if (wallet is ViewOnlyOptionInterface && wallet.isViewOnly) {
       showMultiType = false;
-    } else if (wallet is ViewOnlyOptionInterface && wallet.isViewOnly) {
-      showMultiType = supportsSpark;
     } else {
       showMultiType =
           supportsSpark ||
@@ -366,11 +363,7 @@ class _DesktopReceiveState extends ConsumerState<DesktopReceive> {
               wallet.supportedAddressTypes.length > 1);
     }
 
-    if (wallet is ViewOnlyOptionInterface && wallet.isViewOnly && wallet.viewOnlyType == ViewOnlyWalletType.spark) {
-      _walletAddressTypes.add(AddressType.spark);
-    } else {
-      _walletAddressTypes.add(wallet.info.mainAddressType);
-    }
+    _walletAddressTypes.add(wallet.info.mainAddressType);
 
     if (showMultiType) {
       if (supportsSpark) {

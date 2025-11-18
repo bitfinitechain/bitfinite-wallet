@@ -39,6 +39,7 @@ import '../../../wallets/wallet/impl/xelis_wallet.dart';
 import '../../../wallets/wallet/intermediate/cryptonote_wallet.dart';
 import '../../../wallets/wallet/wallet.dart';
 import '../../../wallets/wallet/wallet_mixin_interfaces/extended_keys_interface.dart';
+import '../../../wallets/wallet/wallet_mixin_interfaces/spark_interface.dart';
 import '../../../wallets/wallet/wallet_mixin_interfaces/view_only_option_interface.dart';
 import '../../../widgets/custom_buttons/app_bar_icon_button.dart';
 import '../../../widgets/desktop/desktop_app_bar.dart';
@@ -101,14 +102,16 @@ class _VerifyRecoveryPhraseViewState
     return result == "verified";
   }
 
-  Future<void> _convertToViewOnly() async {
+  Future<void> _convertToViewOnly(bool firoSpark) async {
     int height = 0;
     final Map<String, dynamic> otherDataJson = {
       WalletInfoKeys.isViewOnlyKey: true,
     };
 
     final ViewOnlyWalletType viewOnlyWalletType;
-    if (widget.wallet is ExtendedKeysInterface) {
+    if (firoSpark) {
+      viewOnlyWalletType = .spark;
+    } else if (widget.wallet is ExtendedKeysInterface) {
       viewOnlyWalletType = ViewOnlyWalletType.xPub;
     } else if (widget.wallet is CryptonoteWallet) {
       if (widget.wallet.cryptoCurrency is Monero) {
@@ -143,10 +146,18 @@ class _VerifyRecoveryPhraseViewState
       name: widget.wallet.info.name,
       restoreHeight: height,
       otherDataJsonString: jsonEncode(otherDataJson),
+      overrideAddressType: viewOnlyWalletType == .spark ? .spark : null,
     );
 
     final ViewOnlyWalletData viewOnlyData;
-    if (widget.wallet is ExtendedKeysInterface) {
+    if (viewOnlyWalletType == .spark) {
+      final sparkViewKey = (widget.wallet as SparkInterface).sparkViewKey;
+
+      viewOnlyData = SparkViewOnlyWalletData(
+        walletId: voInfo.walletId,
+        viewKey: sparkViewKey!,
+      );
+    } else if (widget.wallet is ExtendedKeysInterface) {
       final extendedKeyInfo = await (widget.wallet as ExtendedKeysInterface)
           .getXPubs();
       final testPath = (_coin as Bip39HDCurrency).constructDerivePath(
@@ -299,7 +310,9 @@ class _VerifyRecoveryPhraseViewState
         try {
           Exception? ex;
           await showLoading(
-            whileFuture: _convertToViewOnly(),
+            whileFuture: _convertToViewOnly(
+              ref.read(pNewWalletOptions)?.convertToViewOnlySpark == true,
+            ),
             context: context,
             message: "Converting to view only wallet",
             rootNavigator: Util.isDesktop,

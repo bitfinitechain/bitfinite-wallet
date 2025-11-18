@@ -468,12 +468,13 @@ class WalletInfo implements IsarId {
     int restoreHeight = 0,
     String? walletIdOverride,
     String? otherDataJsonString,
+    AddressType? overrideAddressType, // added hack for spark view only wallets
   }) {
     return WalletInfo(
       coinName: coin.identifier,
       walletId: walletIdOverride ?? const Uuid().v1(),
       name: name,
-      mainAddressType: coin.defaultAddressType,
+      mainAddressType: overrideAddressType ?? coin.defaultAddressType,
       restoreHeight: restoreHeight,
       otherDataJsonString: otherDataJsonString,
     );

@@ -108,6 +108,7 @@ class _RestoreViewOnlyWalletViewState
 
     ViewOnlyWalletType viewOnlyWalletType = _walletType;
     if (widget.coin is Bip39HDCurrency) {
+      // already set above
     } else if (widget.coin is CryptonoteCurrency) {
       viewOnlyWalletType = ViewOnlyWalletType.cryptonote;
     } else {
@@ -125,6 +126,7 @@ class _RestoreViewOnlyWalletViewState
         name: widget.walletName,
         restoreHeight: widget.restoreBlockHeight,
         otherDataJsonString: jsonEncode(otherDataJson),
+        overrideAddressType: viewOnlyWalletType == .spark ? .spark : null,
       );
 
       bool isRestoring = true;

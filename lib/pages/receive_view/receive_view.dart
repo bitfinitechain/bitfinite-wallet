@@ -178,17 +178,19 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
       final Address? address;
       if (wallet is Bip39HDWallet && wallet is! BCashInterface) {
         DerivePathType? type;
-        if (wallet.isViewOnly && wallet is ExtendedKeysInterface) {
-          final voData = await wallet.getViewOnlyWalletData();
+        if (wallet.isViewOnly &&
+            wallet is ExtendedKeysInterface &&
+            wallet.viewOnlyType != .spark) {
+          final voData =
+              await wallet.getViewOnlyWalletData()
+                  as ExtendedKeysViewOnlyWalletData;
           for (final t in wallet.cryptoCurrency.supportedDerivationPathTypes) {
             final testPath = wallet.cryptoCurrency.constructDerivePath(
               derivePathType: t,
               chain: 0,
               index: 0,
             );
-            if (voData is SparkViewOnlyWalletData) {
-              type = t;
-            } else if (testPath.startsWith((voData as ExtendedKeysViewOnlyWalletData).xPubs.first.path)) {
+            if (testPath.startsWith(voData.xPubs.first.path)) {
               type = t;
               break;
             }
@@ -255,10 +257,7 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
         ),
       );
 
-      final address = await wallet.generateNextSparkAddress();
-      await ref.read(mainDBProvider).isar.writeTxn(() async {
-        await ref.read(mainDBProvider).isar.addresses.put(address);
-      });
+      final address = await wallet.generateNextSparkAddress(saveToDB: true);
 
       shouldPop = true;
 
@@ -336,6 +335,9 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
 
     if (wallet is ViewOnlyOptionInterface && wallet.isViewOnly) {
       _showMultiType = false;
+      if (wallet.viewOnlyType == .spark) {
+        _walletAddressTypes.add(.spark);
+      }
     } else {
       _showMultiType =
           _supportsSpark ||
@@ -345,7 +347,9 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
               wallet.supportedAddressTypes.length > 1);
     }
 
-    _walletAddressTypes.add(wallet.info.mainAddressType);
+    if (_walletAddressTypes.isEmpty) {
+      _walletAddressTypes.add(wallet.info.mainAddressType);
+    }
 
     if (_showMultiType) {
       if (_supportsSpark) {

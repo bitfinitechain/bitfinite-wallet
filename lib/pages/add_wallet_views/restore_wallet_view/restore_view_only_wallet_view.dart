@@ -34,8 +34,8 @@ import '../../../widgets/custom_buttons/app_bar_icon_button.dart';
 import '../../../widgets/desktop/desktop_app_bar.dart';
 import '../../../widgets/desktop/desktop_scaffold.dart';
 import '../../../widgets/desktop/primary_button.dart';
-import '../../../widgets/stack_text_field.dart';
 import '../../../widgets/options.dart';
+import '../../../widgets/stack_text_field.dart';
 import '../../home_view/home_view.dart';
 import 'confirm_recovery_dialog.dart';
 import 'sub_widgets/restore_failed_dialog.dart';
@@ -402,18 +402,19 @@ class _RestoreViewOnlyWalletViewState
                                 "Single address",
                                 "Extended pub key",
                                 if (widget.coin is Firo)
-                                  isDesktop ? "Spark View Key" : "View Key"
+                                  isDesktop ? "Spark View Key" : "View Key",
                               ],
-                              onColor: Theme.of(context)
-                                  .extension<StackColors>()!
-                                  .popupBG,
-                              offColor: Theme.of(context)
-                                  .extension<StackColors>()!
-                                  .textFieldDefaultBG,
-                              selectedIndex: _walletType.index-1,
+                              onColor: Theme.of(
+                                context,
+                              ).extension<StackColors>()!.popupBG,
+                              offColor: Theme.of(
+                                context,
+                              ).extension<StackColors>()!.textFieldDefaultBG,
+                              selectedIndex: _walletType.index - 1,
                               onValueChanged: (value) {
                                 setState(() {
-                                  _walletType = ViewOnlyWalletType.values[value+1];
+                                  _walletType =
+                                      ViewOnlyWalletType.values[value + 1];
                                 });
                               },
                               decoration: BoxDecoration(
@@ -424,10 +425,9 @@ class _RestoreViewOnlyWalletViewState
                               ),
                             ),
                           ),
-                        SizedBox(
-                          height: isDesktop ? 24 : 16,
-                        ),
-                        if (!isElectrumX || _walletType == ViewOnlyWalletType.addressOnly)
+                        SizedBox(height: isDesktop ? 24 : 16),
+                        if (!isElectrumX ||
+                            _walletType == ViewOnlyWalletType.addressOnly)
                           FullTextField(
                             key: const Key("viewOnlyAddressRestoreFieldKey"),
                             label: "Address",
@@ -447,11 +447,9 @@ class _RestoreViewOnlyWalletViewState
                               }
                             },
                           ),
-                        if (!isElectrumX)
-                          SizedBox(
-                            height: isDesktop ? 16 : 12,
-                          ),
-                        if (isElectrumX && _walletType == ViewOnlyWalletType.xPub)
+                        if (!isElectrumX) SizedBox(height: isDesktop ? 16 : 12),
+                        if (isElectrumX &&
+                            _walletType == ViewOnlyWalletType.xPub)
                           DropdownButtonHideUnderline(
                             child: DropdownButton2<String>(
                               value: _currentDropDownValue,
@@ -519,11 +517,11 @@ class _RestoreViewOnlyWalletViewState
                               ),
                             ),
                           ),
-                        if (isElectrumX && _walletType == ViewOnlyWalletType.xPub)
-                          SizedBox(
-                            height: isDesktop ? 16 : 12,
-                          ),
-                        if (!isElectrumX || _walletType == ViewOnlyWalletType.xPub)
+                        if (isElectrumX &&
+                            _walletType == ViewOnlyWalletType.xPub)
+                          SizedBox(height: isDesktop ? 16 : 12),
+                        if (!isElectrumX ||
+                            _walletType == ViewOnlyWalletType.xPub)
                           FullTextField(
                             key: const Key("viewOnlyKeyRestoreFieldKey"),
                             label:
@@ -545,18 +543,18 @@ class _RestoreViewOnlyWalletViewState
                             },
                           ),
                         if (_walletType == ViewOnlyWalletType.spark)
-                          SizedBox(
-                            height: isDesktop ? 16 : 12,
-                          ),
+                          SizedBox(height: isDesktop ? 16 : 12),
                         if (_walletType == ViewOnlyWalletType.spark)
                           FullTextField(
-                            key: const Key("viewOnlySparkViewKeyRestoreFieldKey"),
+                            key: const Key(
+                              "viewOnlySparkViewKeyRestoreFieldKey",
+                            ),
                             label: "Spark View Key",
                             controller: sparkViewKeyController,
                             onChanged: (value) {
-                                setState(() {
-                                  _enableRestoreButton = value.isNotEmpty;
-                                });
+                              setState(() {
+                                _enableRestoreButton = value.isNotEmpty;
+                              });
                             },
                           ),
                         if (!isDesktop) const Spacer(),

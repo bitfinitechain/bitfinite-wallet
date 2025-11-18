@@ -147,7 +147,7 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
       derivationIndex: diversifier,
       derivationPath: DerivationPath()..value = sparkDerivationPath,
       type: AddressType.spark,
-      subType: AddressSubType.receiving,
+      subType: diversifier == libSpark.sparkChange ? .change : .receiving,
     );
   }
 
@@ -349,9 +349,11 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
   }
 
   Future<Address> generateNextSparkAddress() async {
-    final newAddress = await generateSparkAddress(
-      _currentSparkAddress.derivationIndex + 1,
-    );
+    int diversifier = _currentSparkAddress.derivationIndex + 1;
+    if (diversifier == libSpark.sparkChange) {
+      diversifier++; // ensure only receiving addresses are shown
+    }
+    final newAddress = await generateSparkAddress(diversifier);
     _currentSparkAddress = newAddress;
     return newAddress;
   }
@@ -1338,6 +1340,10 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
       final maxDiversifier = diversifier + lookAheadCount;
 
       while (diversifier < maxDiversifier) {
+        // change address check
+        if (diversifier == libSpark.sparkChange) {
+          diversifier++;
+        }
         final addressString = await generateSparkAddress(diversifier);
         myAddresses.add(addressString.value);
 

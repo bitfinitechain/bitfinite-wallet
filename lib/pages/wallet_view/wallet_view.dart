@@ -1104,8 +1104,6 @@ class _WalletViewState extends ConsumerState<WalletView> {
                         icon: const BuyNavIcon(),
                         onTap: () => _onBuyPressed(context),
                       ),
-                  ],
-                  moreItems: <WalletNavigationBarItemData>[
                     if (wallet is SparkInterface)
                       WalletNavigationBarItemData(
                         label: "Names",
@@ -1117,6 +1115,8 @@ class _WalletViewState extends ConsumerState<WalletView> {
                           );
                         },
                       ),
+                  ],
+                  moreItems: <WalletNavigationBarItemData>[
                     if (wallet is SparkInterface)
                       WalletNavigationBarItemData(
                         label: "Show Spark View Key",

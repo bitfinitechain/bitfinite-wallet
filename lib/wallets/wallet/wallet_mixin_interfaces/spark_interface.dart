@@ -2239,11 +2239,11 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
     final String destinationAddress;
     switch (cryptoCurrency.network) {
       case CryptoCurrencyNetwork.main:
-        destinationAddress = libSpark.stage3DevelopmentFundAddressMainNet;
+        destinationAddress = libSpark.stage3CommunityFundAddressMainNet;
         break;
 
       case CryptoCurrencyNetwork.test:
-        destinationAddress = libSpark.stage3DevelopmentFundAddressTestNet;
+        destinationAddress = libSpark.stage3CommunityFundAddressTestNet;
         break;
 
       default:

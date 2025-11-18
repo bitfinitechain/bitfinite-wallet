@@ -48,12 +48,12 @@ class _LibSparkInterfaceImpl extends LibSparkInterface {
   String get nameRegexString => kNameRegexString;
 
   @override
-  String get stage3DevelopmentFundAddressMainNet =>
-      kStage3DevelopmentFundAddressMainNet;
+  String get stage3CommunityFundAddressMainNet =>
+      kStage3CommunityFundAddressMainNet;
 
   @override
-  String get stage3DevelopmentFundAddressTestNet =>
-      kStage3DevelopmentFundAddressTestNet;
+  String get stage3CommunityFundAddressTestNet =>
+      kStage3DCommunityFundAddressTestNet;
 
   @override
   List<int> get standardSparkNamesFee =>

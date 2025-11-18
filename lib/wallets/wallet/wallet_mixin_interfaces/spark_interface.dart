@@ -112,8 +112,9 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
   String? _viewKeyHex;
   String? get sparkViewKey => _viewKeyHex!;
 
-  // Really we should just send change back to the same address.
-  late Address sparkChangeAddress;
+  Address? _sparkChangeAddress;
+
+  String? get sparkChangeAddress => _sparkChangeAddress?.value;
 
   bool get isTestNet {
     return cryptoCurrency.network.isTestNet;
@@ -331,7 +332,7 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
       }
 
       _currentSparkAddress = address;
-      sparkChangeAddress = await _generateSparkAddress(libSpark.sparkChange);
+      _sparkChangeAddress = await _generateSparkAddress(libSpark.sparkChange);
     } catch (e, s) {
       // do nothing, still allow user into wallet
       Logging.instance.e("$runtimeType init() failed", error: e, stackTrace: s);
@@ -654,7 +655,7 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
         ),
         memo: txData.sparkRecipients![i].memo,
         isChange:
-            sparkChangeAddress.value == txData.sparkRecipients![i].address,
+            _sparkChangeAddress!.value == txData.sparkRecipients![i].address,
       ));
     }
 

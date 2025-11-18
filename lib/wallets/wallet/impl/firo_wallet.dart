@@ -339,7 +339,7 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
           output = output.copyWith(walletOwns: true);
         } else if (isSparkMint && isMySpark) {
           wasReceivedInThisWallet = true;
-          if (output.addresses.contains(sparkChangeAddress.value)) {
+          if (output.addresses.contains(sparkChangeAddress)) {
             changeAmountReceivedInThisWallet += output.value;
           } else {
             amountReceivedInThisWallet += output.value;

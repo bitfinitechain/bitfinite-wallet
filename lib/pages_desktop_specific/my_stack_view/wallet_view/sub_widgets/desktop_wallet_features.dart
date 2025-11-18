@@ -462,6 +462,7 @@ class _DesktopWalletFeaturesState extends ConsumerState<DesktopWalletFeatures> {
   ) {
     final coin = wallet.info.coin;
     final isViewOnly = wallet is ViewOnlyOptionInterface && wallet.isViewOnly;
+    final isSparkViewOnly = isViewOnly && wallet.viewOnlyType == .spark;
 
     return [
       if (!isViewOnly &&
@@ -473,7 +474,7 @@ class _DesktopWalletFeaturesState extends ConsumerState<DesktopWalletFeatures> {
           _onAnonymizeAllPressed,
         ),
 
-      if (wallet is SparkInterface)
+      if (wallet is SparkInterface && !isViewOnly || isSparkViewOnly)
         (WalletFeature.sparkNames, Assets.svg.robotHead, _onSparkNamesPressed),
 
       if (!isViewOnly &&

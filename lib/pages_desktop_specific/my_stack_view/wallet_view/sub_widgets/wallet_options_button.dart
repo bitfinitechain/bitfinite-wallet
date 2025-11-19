@@ -14,11 +14,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
+import '../../../../pages/pinpad_views/pinpad_dialog.dart';
 import '../../../../pages/settings_views/wallet_settings_view/frost_ms/frost_ms_options_view.dart';
 import '../../../../pages/settings_views/wallet_settings_view/wallet_settings_wallet_settings/change_representative_view.dart';
 import '../../../../pages/settings_views/wallet_settings_view/wallet_settings_wallet_settings/edit_refresh_height_view.dart';
-import '../../../../pages/settings_views/wallet_settings_view/wallet_settings_wallet_settings/xpub_view.dart';
 import '../../../../pages/settings_views/wallet_settings_view/wallet_settings_wallet_settings/spark_view_key_view.dart';
+import '../../../../pages/settings_views/wallet_settings_view/wallet_settings_wallet_settings/xpub_view.dart';
 import '../../../../providers/global/wallets_provider.dart';
 import '../../../../route_generator.dart';
 import '../../../../themes/stack_colors.dart';
@@ -35,6 +36,7 @@ import '../../../../wallets/wallet/wallet_mixin_interfaces/extended_keys_interfa
 import '../../../../wallets/wallet/wallet_mixin_interfaces/spark_interface.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/view_only_option_interface.dart';
 import '../../../addresses/desktop_wallet_addresses_view.dart';
+import '../../../password/request_desktop_auth_dialog.dart';
 import 'desktop_delete_wallet_dialog.dart';
 
 enum _WalletOptions {
@@ -70,6 +72,28 @@ class WalletOptionsButton extends ConsumerWidget {
   const WalletOptionsButton({super.key, required this.walletId});
 
   final String walletId;
+
+  Future<void> _auth(
+    BuildContext context,
+    String message,
+    VoidCallback onAuth,
+  ) async {
+    final verified = await showDialog<String?>(
+      context: context,
+      builder: (context) => Util.isDesktop
+          ? RequestDesktopAuthDialog(title: message)
+          : PinpadDialog(
+              biometricsAuthenticationTitle: message,
+              biometricsLocalizedReason: "Authenticate to show view key",
+              biometricsCancelButtonString: "CANCEL",
+            ),
+      barrierDismissible: !Util.isDesktop,
+    );
+
+    if (verified == "verified success" && context.mounted) {
+      onAuth();
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -142,75 +166,80 @@ class WalletOptionsButton extends ConsumerWidget {
               }
               break;
             case _WalletOptions.showSparkKey:
-              final wallet = ref.read(pWallets).getWallet(walletId) as SparkInterface;
-              await wallet.init();
-              final sparkViewKeyHex = wallet.viewKeyHex;
+              await _auth(context, "Show Spark view key", () async {
+                final wallet =
+                    ref.read(pWallets).getWallet(walletId) as SparkInterface;
+                final sparkViewKeyHex = wallet.sparkViewKey!;
 
-              if (context.mounted) {
-                final result = await showDialog<bool?>(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (context) => Navigator(
-                    initialRoute: SparkViewKeyView.routeName,
-                    onGenerateRoute: RouteGenerator.generateRoute,
-                    onGenerateInitialRoutes: (_, __) {
-                      return [
-                        RouteGenerator.generateRoute(
-                          RouteSettings(
-                            name: SparkViewKeyView.routeName,
-                            arguments: (walletId, sparkViewKeyHex),
+                if (context.mounted) {
+                  final result = await showDialog<bool?>(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (context) => Navigator(
+                      initialRoute: SparkViewKeyView.routeName,
+                      onGenerateRoute: RouteGenerator.generateRoute,
+                      onGenerateInitialRoutes: (_, __) {
+                        return [
+                          RouteGenerator.generateRoute(
+                            RouteSettings(
+                              name: SparkViewKeyView.routeName,
+                              arguments: (walletId, sparkViewKeyHex),
+                            ),
                           ),
-                        ),
-                      ];
-                    },
-                  ),
-                );
+                        ];
+                      },
+                    ),
+                  );
 
-                if (result == true) {
-                  if (context.mounted) {
-                    Navigator.of(context).pop();
+                  if (result == true) {
+                    if (context.mounted) {
+                      Navigator.of(context).pop();
+                    }
                   }
                 }
-              }
+              });
+
               break;
             case _WalletOptions.showXpub:
-              final xpubData = await showLoading(
-                delay: const Duration(milliseconds: 800),
-                whileFuture:
-                    (ref.read(pWallets).getWallet(walletId)
-                            as ExtendedKeysInterface)
-                        .getXPubs(),
-                context: context,
-                message: "Loading xpubs",
-                rootNavigator: Util.isDesktop,
-              );
-
-              if (context.mounted) {
-                final result = await showDialog<bool?>(
+              await _auth(context, "Show xpub(s)", () async {
+                final xpubData = await showLoading(
+                  delay: const Duration(milliseconds: 800),
+                  whileFuture:
+                      (ref.read(pWallets).getWallet(walletId)
+                              as ExtendedKeysInterface)
+                          .getXPubs(),
                   context: context,
-                  barrierDismissible: false,
-                  builder: (context) => Navigator(
-                    initialRoute: XPubView.routeName,
-                    onGenerateRoute: RouteGenerator.generateRoute,
-                    onGenerateInitialRoutes: (_, __) {
-                      return [
-                        RouteGenerator.generateRoute(
-                          RouteSettings(
-                            name: XPubView.routeName,
-                            arguments: (walletId, xpubData),
-                          ),
-                        ),
-                      ];
-                    },
-                  ),
+                  message: "Loading xpubs",
+                  rootNavigator: Util.isDesktop,
                 );
 
-                if (result == true) {
-                  if (context.mounted) {
-                    Navigator.of(context).pop();
+                if (context.mounted) {
+                  final result = await showDialog<bool?>(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (context) => Navigator(
+                      initialRoute: XPubView.routeName,
+                      onGenerateRoute: RouteGenerator.generateRoute,
+                      onGenerateInitialRoutes: (_, __) {
+                        return [
+                          RouteGenerator.generateRoute(
+                            RouteSettings(
+                              name: XPubView.routeName,
+                              arguments: (walletId, xpubData),
+                            ),
+                          ),
+                        ];
+                      },
+                    ),
+                  );
+
+                  if (result == true) {
+                    if (context.mounted) {
+                      Navigator.of(context).pop();
+                    }
                   }
                 }
-              }
+              });
               break;
             case _WalletOptions.changeRepresentative:
               final result = await showDialog<bool?>(
@@ -315,16 +344,16 @@ class WalletOptionsPopupMenu extends ConsumerWidget {
     final wallet = ref.watch(pWallets).getWallet(walletId);
     bool xpubEnabled = wallet is ExtendedKeysInterface;
 
-    if (wallet is ViewOnlyOptionInterface && wallet.isViewOnly) {
-      xpubEnabled = false;
-    }
-
     final bool canChangeRep = coin is NanoCurrency;
 
     final bool isFrost = coin is FrostCurrency;
     final bool isCN = wallet is CryptonoteWallet;
-    final bool isSpark = wallet is SparkInterface;
+    bool isSpark = wallet is SparkInterface;
 
+    if (wallet is ViewOnlyOptionInterface && wallet.isViewOnly) {
+      xpubEnabled = false;
+      isSpark = false;
+    }
     return Stack(
       children: [
         Positioned(
@@ -519,10 +548,7 @@ class WalletOptionsPopupMenu extends ConsumerWidget {
                         ),
                       ),
                     ),
-                  if (isSpark)
-                    const SizedBox(
-                      height: 8,
-                    ),
+                  if (isSpark) const SizedBox(height: 8),
                   if (isSpark)
                     TransparentButton(
                       onPressed: () {
@@ -545,13 +571,14 @@ class WalletOptionsPopupMenu extends ConsumerWidget {
                             Expanded(
                               child: Text(
                                 _WalletOptions.showSparkKey.prettyName,
-                                style: STextStyles.desktopTextExtraExtraSmall(
-                                  context,
-                                ).copyWith(
-                                  color: Theme.of(context)
-                                      .extension<StackColors>()!
-                                      .textDark,
-                                ),
+                                style:
+                                    STextStyles.desktopTextExtraExtraSmall(
+                                      context,
+                                    ).copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).extension<StackColors>()!.textDark,
+                                    ),
                               ),
                             ),
                           ],

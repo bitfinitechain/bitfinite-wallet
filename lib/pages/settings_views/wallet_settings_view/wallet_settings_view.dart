@@ -30,6 +30,7 @@ import '../../../services/event_bus/events/global/wallet_sync_status_changed_eve
 import '../../../services/event_bus/global_event_bus.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/assets.dart';
+import '../../../utilities/if_not_already.dart';
 import '../../../utilities/show_loading.dart';
 import '../../../utilities/text_styles.dart';
 import '../../../utilities/util.dart';
@@ -42,6 +43,7 @@ import '../../../wallets/wallet/impl/mimblewimblecoin_wallet.dart';
 import '../../../wallets/wallet/intermediate/cryptonote_wallet.dart';
 import '../../../wallets/wallet/wallet_mixin_interfaces/extended_keys_interface.dart';
 import '../../../wallets/wallet/wallet_mixin_interfaces/mnemonic_interface.dart';
+import '../../../wallets/wallet/wallet_mixin_interfaces/spark_interface.dart';
 import '../../../wallets/wallet/wallet_mixin_interfaces/view_only_option_interface.dart';
 import '../../../widgets/background.dart';
 import '../../../widgets/custom_buttons/app_bar_icon_button.dart';
@@ -57,6 +59,7 @@ import 'frost_ms/frost_ms_options_view.dart';
 import 'wallet_backup_views/wallet_backup_view.dart';
 import 'wallet_network_settings_view/wallet_network_settings_view.dart';
 import 'wallet_settings_wallet_settings/change_representative_view.dart';
+import 'wallet_settings_wallet_settings/spark_view_key_view.dart';
 import 'wallet_settings_wallet_settings/wallet_settings_wallet_settings_view.dart';
 import 'wallet_settings_wallet_settings/xpub_view.dart';
 
@@ -88,6 +91,7 @@ class _WalletSettingsViewState extends ConsumerState<WalletSettingsView> {
   late final CryptoCurrency coin;
   late String xpub;
   late final bool xPubEnabled;
+  late final bool sparkViewKeyEnabled;
 
   late final EventBus eventBus;
 
@@ -97,6 +101,162 @@ class _WalletSettingsViewState extends ConsumerState<WalletSettingsView> {
   late StreamSubscription<dynamic> _syncStatusSubscription;
   // late StreamSubscription _nodeStatusSubscription;
 
+  late final VoidCallback _walletBackupPressed;
+  late final VoidCallback _walletXPubPressed;
+  late final VoidCallback _walletSparkViewKeyPressed;
+
+  Future<void> __walletSparkViewKeyPressedHelper() async {
+    final wallet = ref.read(pWallets).getWallet(walletId) as SparkInterface;
+    final sparkViewKeyHex = wallet.sparkViewKey!;
+
+    if (mounted) {
+      await Navigator.push(
+        context,
+        RouteGenerator.getRoute(
+          shouldUseMaterialRoute: RouteGenerator.useMaterialPageRoute,
+          builder: (_) => LockscreenView(
+            routeOnSuccessArguments: (walletId, sparkViewKeyHex),
+            showBackButton: true,
+            routeOnSuccess: SparkViewKeyView.routeName,
+            biometricsCancelButtonString: "CANCEL",
+            biometricsLocalizedReason: "Authenticate to view spark view key",
+            biometricsAuthenticationTitle: "View spark view key",
+          ),
+          settings: const RouteSettings(
+            name: "/viewSparkViewKeyDataLockscreen",
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _walletXPubHelper() async {
+    final xpubData = await showLoading(
+      delay: const Duration(milliseconds: 800),
+      whileFuture:
+          (ref.read(pWallets).getWallet(walletId) as ExtendedKeysInterface)
+              .getXPubs(),
+      context: context,
+      message: "Loading xpubs",
+      rootNavigator: Util.isDesktop,
+    );
+
+    if (mounted) {
+      await Navigator.push(
+        context,
+        RouteGenerator.getRoute(
+          shouldUseMaterialRoute: RouteGenerator.useMaterialPageRoute,
+          builder: (_) => LockscreenView(
+            routeOnSuccessArguments: (walletId, xpubData!),
+            showBackButton: true,
+            routeOnSuccess: XPubView.routeName,
+            biometricsCancelButtonString: "CANCEL",
+            biometricsLocalizedReason: "Authenticate to view xpub data",
+            biometricsAuthenticationTitle: "View xpub data",
+          ),
+          settings: const RouteSettings(name: "/viewXPubDataLockscreen"),
+        ),
+      );
+    }
+  }
+
+  Future<void> _walletBackupPressedHelper() async {
+    // TODO: [prio=med] take wallets that don't have a mnemonic into account
+
+    final wallet = ref.read(pWallets).getWallet(widget.walletId);
+
+    List<String>? mnemonic;
+    ({
+      String myName,
+      String config,
+      String keys,
+      ({String config, String keys})? prevGen,
+    })?
+    frostWalletData;
+    if (wallet is BitcoinFrostWallet) {
+      final futures = [
+        wallet.getSerializedKeys(),
+        wallet.getMultisigConfig(),
+        wallet.getSerializedKeysPrevGen(),
+        wallet.getMultisigConfigPrevGen(),
+      ];
+
+      final results = await Future.wait(futures);
+
+      if (results.length == 4) {
+        frostWalletData = (
+          myName: wallet.frostInfo.myName,
+          config: results[1]!,
+          keys: results[0]!,
+          prevGen: results[2] == null || results[3] == null
+              ? null
+              : (config: results[3]!, keys: results[2]!),
+        );
+      }
+    } else {
+      if (wallet is MnemonicInterface) {
+        if (wallet is ViewOnlyOptionInterface &&
+            (wallet as ViewOnlyOptionInterface).isViewOnly) {
+          // TODO: is something needed here?
+        } else {
+          mnemonic = await wallet.getMnemonicAsWords();
+        }
+      }
+    }
+
+    KeyDataInterface? keyData;
+    if (wallet is ViewOnlyOptionInterface && wallet.isViewOnly) {
+      keyData = await wallet.getViewOnlyWalletData();
+    } else if (wallet is ExtendedKeysInterface) {
+      keyData = await wallet.getXPrivs();
+    } else if (wallet is CryptonoteWallet) {
+      keyData = await wallet.getKeys();
+    }
+
+    if (mounted) {
+      if (keyData != null &&
+          wallet is ViewOnlyOptionInterface &&
+          wallet.isViewOnly) {
+        await Navigator.push(
+          context,
+          RouteGenerator.getRoute(
+            shouldUseMaterialRoute: RouteGenerator.useMaterialPageRoute,
+            builder: (_) => LockscreenView(
+              routeOnSuccessArguments: (walletId: walletId, keyData: keyData),
+              showBackButton: true,
+              routeOnSuccess: MobileKeyDataView.routeName,
+              biometricsCancelButtonString: "CANCEL",
+              biometricsLocalizedReason: "Authenticate to view recovery data",
+              biometricsAuthenticationTitle: "View recovery data",
+            ),
+            settings: const RouteSettings(name: "/viewRecoveryDataLockscreen"),
+          ),
+        );
+      } else {
+        await Navigator.push(
+          context,
+          RouteGenerator.getRoute(
+            shouldUseMaterialRoute: RouteGenerator.useMaterialPageRoute,
+            builder: (_) => LockscreenView(
+              routeOnSuccessArguments: (
+                walletId: walletId,
+                mnemonic: mnemonic ?? [],
+                frostWalletData: frostWalletData,
+                keyData: keyData,
+              ),
+              showBackButton: true,
+              routeOnSuccess: WalletBackupView.routeName,
+              biometricsCancelButtonString: "CANCEL",
+              biometricsLocalizedReason: "Authenticate to view recovery phrase",
+              biometricsAuthenticationTitle: "View recovery phrase",
+            ),
+            settings: const RouteSettings(name: "/viewRecoverPhraseLockscreen"),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   void initState() {
     walletId = widget.walletId;
@@ -105,8 +265,10 @@ class _WalletSettingsViewState extends ConsumerState<WalletSettingsView> {
     final wallet = ref.read(pWallets).getWallet(walletId);
     if (wallet is ViewOnlyOptionInterface && wallet.isViewOnly) {
       xPubEnabled = false;
+      sparkViewKeyEnabled = false;
     } else {
       xPubEnabled = wallet is ExtendedKeysInterface;
+      sparkViewKeyEnabled = wallet is SparkInterface;
     }
 
     xpub = "";
@@ -138,6 +300,14 @@ class _WalletSettingsViewState extends ConsumerState<WalletSettingsView> {
             });
           }
         });
+
+    _walletBackupPressed = IfNotAlreadyAsync<void>(
+      _walletBackupPressedHelper,
+    ).execute;
+    _walletXPubPressed = IfNotAlreadyAsync<void>(_walletXPubHelper).execute;
+    _walletSparkViewKeyPressed = IfNotAlreadyAsync<void>(
+      __walletSparkViewKeyPressedHelper,
+    ).execute;
 
     // _nodeStatusSubscription =
     //     eventBus.on<NodeConnectionStatusChangedEvent>().listen(
@@ -262,146 +432,7 @@ class _WalletSettingsViewState extends ConsumerState<WalletSettingsView> {
                                           iconAssetName: Assets.svg.lock,
                                           iconSize: 16,
                                           title: "Wallet backup",
-                                          onPressed: () async {
-                                            // TODO: [prio=med] take wallets that don't have a mnemonic into account
-
-                                            List<String>? mnemonic;
-                                            ({
-                                              String myName,
-                                              String config,
-                                              String keys,
-                                              ({String config, String keys})?
-                                              prevGen,
-                                            })?
-                                            frostWalletData;
-                                            if (wallet is BitcoinFrostWallet) {
-                                              final futures = [
-                                                wallet.getSerializedKeys(),
-                                                wallet.getMultisigConfig(),
-                                                wallet
-                                                    .getSerializedKeysPrevGen(),
-                                                wallet
-                                                    .getMultisigConfigPrevGen(),
-                                              ];
-
-                                              final results = await Future.wait(
-                                                futures,
-                                              );
-
-                                              if (results.length == 4) {
-                                                frostWalletData = (
-                                                  myName:
-                                                      wallet.frostInfo.myName,
-                                                  config: results[1]!,
-                                                  keys: results[0]!,
-                                                  prevGen:
-                                                      results[2] == null ||
-                                                          results[3] == null
-                                                      ? null
-                                                      : (
-                                                          config: results[3]!,
-                                                          keys: results[2]!,
-                                                        ),
-                                                );
-                                              }
-                                            } else {
-                                              if (wallet is MnemonicInterface) {
-                                                if (wallet
-                                                        is ViewOnlyOptionInterface &&
-                                                    (wallet as ViewOnlyOptionInterface)
-                                                        .isViewOnly) {
-                                                  // TODO: is something needed here?
-                                                } else {
-                                                  mnemonic = await wallet
-                                                      .getMnemonicAsWords();
-                                                }
-                                              }
-                                            }
-
-                                            KeyDataInterface? keyData;
-                                            if (wallet
-                                                    is ViewOnlyOptionInterface &&
-                                                wallet.isViewOnly) {
-                                              keyData = await wallet
-                                                  .getViewOnlyWalletData();
-                                            } else if (wallet
-                                                is ExtendedKeysInterface) {
-                                              keyData = await wallet
-                                                  .getXPrivs();
-                                            } else if (wallet
-                                                is CryptonoteWallet) {
-                                              keyData = await wallet.getKeys();
-                                            }
-
-                                            if (context.mounted) {
-                                              if (keyData != null &&
-                                                  wallet
-                                                      is ViewOnlyOptionInterface &&
-                                                  wallet.isViewOnly) {
-                                                await Navigator.push(
-                                                  context,
-                                                  RouteGenerator.getRoute(
-                                                    shouldUseMaterialRoute:
-                                                        RouteGenerator
-                                                            .useMaterialPageRoute,
-                                                    builder: (_) => LockscreenView(
-                                                      routeOnSuccessArguments: (
-                                                        walletId: walletId,
-                                                        keyData: keyData,
-                                                      ),
-                                                      showBackButton: true,
-                                                      routeOnSuccess:
-                                                          MobileKeyDataView
-                                                              .routeName,
-                                                      biometricsCancelButtonString:
-                                                          "CANCEL",
-                                                      biometricsLocalizedReason:
-                                                          "Authenticate to view recovery data",
-                                                      biometricsAuthenticationTitle:
-                                                          "View recovery data",
-                                                    ),
-                                                    settings: const RouteSettings(
-                                                      name:
-                                                          "/viewRecoveryDataLockscreen",
-                                                    ),
-                                                  ),
-                                                );
-                                              } else {
-                                                await Navigator.push(
-                                                  context,
-                                                  RouteGenerator.getRoute(
-                                                    shouldUseMaterialRoute:
-                                                        RouteGenerator
-                                                            .useMaterialPageRoute,
-                                                    builder: (_) => LockscreenView(
-                                                      routeOnSuccessArguments: (
-                                                        walletId: walletId,
-                                                        mnemonic:
-                                                            mnemonic ?? [],
-                                                        frostWalletData:
-                                                            frostWalletData,
-                                                        keyData: keyData,
-                                                      ),
-                                                      showBackButton: true,
-                                                      routeOnSuccess:
-                                                          WalletBackupView
-                                                              .routeName,
-                                                      biometricsCancelButtonString:
-                                                          "CANCEL",
-                                                      biometricsLocalizedReason:
-                                                          "Authenticate to view recovery phrase",
-                                                      biometricsAuthenticationTitle:
-                                                          "View recovery phrase",
-                                                    ),
-                                                    settings: const RouteSettings(
-                                                      name:
-                                                          "/viewRecoverPhraseLockscreen",
-                                                    ),
-                                                  ),
-                                                );
-                                              }
-                                            }
-                                          },
+                                          onPressed: _walletBackupPressed,
                                         );
                                       },
                                     ),
@@ -435,35 +466,19 @@ class _WalletSettingsViewState extends ConsumerState<WalletSettingsView> {
                                         return SettingsListButton(
                                           iconAssetName: Assets.svg.eye,
                                           title: "Wallet xPub",
-                                          onPressed: () async {
-                                            final xpubData = await showLoading(
-                                              delay: const Duration(
-                                                milliseconds: 800,
-                                              ),
-                                              whileFuture:
-                                                  (ref
-                                                              .read(pWallets)
-                                                              .getWallet(
-                                                                walletId,
-                                                              )
-                                                          as ExtendedKeysInterface)
-                                                      .getXPubs(),
-                                              context: context,
-                                              message: "Loading xpubs",
-                                              rootNavigator: Util.isDesktop,
-                                            );
-                                            if (context.mounted) {
-                                              await Navigator.of(
-                                                context,
-                                              ).pushNamed(
-                                                XPubView.routeName,
-                                                arguments: (
-                                                  widget.walletId,
-                                                  xpubData,
-                                                ),
-                                              );
-                                            }
-                                          },
+                                          onPressed: _walletXPubPressed,
+                                        );
+                                      },
+                                    ),
+                                  if (sparkViewKeyEnabled)
+                                    const SizedBox(height: 8),
+                                  if (sparkViewKeyEnabled)
+                                    Consumer(
+                                      builder: (_, ref, __) {
+                                        return SettingsListButton(
+                                          iconAssetName: Assets.svg.eye,
+                                          title: "Spark view key",
+                                          onPressed: _walletSparkViewKeyPressed,
                                         );
                                       },
                                     ),

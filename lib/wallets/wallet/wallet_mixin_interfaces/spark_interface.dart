@@ -17,6 +17,7 @@ import '../../../models/isar/models/blockchain_data/v2/input_v2.dart';
 import '../../../models/isar/models/blockchain_data/v2/output_v2.dart';
 import '../../../models/isar/models/blockchain_data/v2/transaction_v2.dart';
 import '../../../models/isar/models/isar_models.dart';
+import '../../../models/keys/view_only_wallet_data.dart';
 import '../../../services/event_bus/events/global/refresh_percent_changed_event.dart';
 import '../../../services/event_bus/global_event_bus.dart';
 import '../../../services/spark_names_service.dart';
@@ -108,10 +109,12 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
     on Bip39HDWallet<T>, ElectrumXInterface<T> {
   late Address _currentSparkAddress;
 
-  late String viewKeyHex;
+  String? _viewKeyHex;
+  String? get sparkViewKey => _viewKeyHex!;
 
-  // Really we should just send change back to the same address.
-  late Address sparkChangeAddress;
+  Address? _sparkChangeAddress;
+
+  String? get sparkChangeAddress => _sparkChangeAddress?.value;
 
   bool get isTestNet {
     return cryptoCurrency.network.isTestNet;
@@ -132,13 +135,20 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
   // private key data).
   int get sparkIndex => kDefaultSparkIndex;
 
-  Future<Address> generateSparkAddress(int diversifier) async {
-    final sparkAddress = await libSpark.getAddressFromFullViewKey(
-      fullViewKeyHex: viewKeyHex,
-      index: sparkIndex,
-      diversifier: diversifier,
-      isTestNet: isTestNet,
-    );
+  Future<Address> _generateSparkAddress(int diversifier) async {
+    if (isViewOnly && viewOnlyType != .spark) {
+      throw Exception(
+        "Cannot generate a spark address for a non spark view only firo wallet",
+      );
+    }
+
+    final sparkAddress =
+        await computeWithLibSparkLogging(_getAddressFromFullViewKey, (
+          fullViewKeyHex: _viewKeyHex!,
+          index: sparkIndex,
+          diversifier: diversifier,
+          isTestNet: isTestNet,
+        ));
 
     return Address(
       walletId: walletId,
@@ -164,7 +174,7 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
   }) async {
     return await computeWithLibSparkLogging(identifyCoinsStatic, (
       walletId_: walletId,
-      viewKeyHex_: viewKeyHex,
+      viewKeyHex_: _viewKeyHex!,
       isTestNet_: isTestNet,
       anonymitySetCoins: anonymitySetCoins,
       groupId: groupId,
@@ -266,6 +276,10 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
 
   @override
   Future<void> init() async {
+    if (isViewOnly && viewOnlyType != .spark) {
+      return super.init();
+    }
+
     try {
       final sparkUsedTagsResetVersion =
           info.otherData[WalletInfoKeys.firoSparkUsedTagsCacheResetVersion]
@@ -284,13 +298,16 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
       }
 
       if (isViewOnly) {
-        final walletData =
-            await getViewOnlyWalletData() as SparkViewOnlyWalletData;
-        viewKeyHex = walletData.viewKey;
+        final walletData = await getViewOnlyWalletData();
+        if (walletData is SparkViewOnlyWalletData) {
+          _viewKeyHex = walletData.viewKey;
+        } else {
+          // TODO anything needed here?
+        }
       } else {
         final root = await getRootHDNode();
         final privateKey = root.derivePath(sparkDerivationPath).privateKey.data;
-        viewKeyHex = libSpark.getFullViewKeyHexFromPrivateKeyData(
+        _viewKeyHex = libSpark.getFullViewKeyHexFromPrivateKeyData(
           privateKeyHex: privateKey.toHex,
           index: sparkIndex,
         );
@@ -298,8 +315,16 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
 
       Address? address = await getCurrentReceivingSparkAddress();
       if (address == null) {
-        address = await generateSparkAddress(1);
+        address = await _generateSparkAddress(1);
         await mainDB.putAddress(address);
+        if (isViewOnly &&
+            viewOnlyType == .spark &&
+            info.mainAddressType == .spark) {
+          await info.updateReceivingAddress(
+            newAddress: address.value,
+            isar: mainDB.isar,
+          );
+        }
       }
 
       if (address.derivationIndex == -1) {
@@ -307,7 +332,7 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
       }
 
       _currentSparkAddress = address;
-      sparkChangeAddress = await generateSparkAddress(libSpark.sparkChange);
+      _sparkChangeAddress = await _generateSparkAddress(libSpark.sparkChange);
     } catch (e, s) {
       // do nothing, still allow user into wallet
       Logging.instance.e("$runtimeType init() failed", error: e, stackTrace: s);
@@ -348,13 +373,25 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
     }
   }
 
-  Future<Address> generateNextSparkAddress() async {
+  Future<Address> generateNextSparkAddress({required bool saveToDB}) async {
     int diversifier = _currentSparkAddress.derivationIndex + 1;
     if (diversifier == libSpark.sparkChange) {
       diversifier++; // ensure only receiving addresses are shown
     }
-    final newAddress = await generateSparkAddress(diversifier);
+    final newAddress = await _generateSparkAddress(diversifier);
     _currentSparkAddress = newAddress;
+    if (saveToDB) {
+      await mainDB.updateOrPutAddresses([newAddress]);
+      if (isViewOnly &&
+          viewOnlyType == .spark &&
+          info.mainAddressType == .spark) {
+        await info.updateReceivingAddress(
+          newAddress: newAddress.value,
+          isar: mainDB.isar,
+        );
+      }
+    }
+
     return newAddress;
   }
 
@@ -618,7 +655,7 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
         ),
         memo: txData.sparkRecipients![i].memo,
         isChange:
-            sparkChangeAddress.value == txData.sparkRecipients![i].address,
+            _sparkChangeAddress!.value == txData.sparkRecipients![i].address,
       ));
     }
 
@@ -1299,18 +1336,11 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
     }
   }
 
-  Future<void> recoverViewOnlyWallet() async {
-    await recoverSparkWallet(latestSparkCoinId: 0);
-  }
-
   Future<void> refreshSparkNames() async {
     try {
       Logging.instance.i("Refreshing spark names for $walletId ${info.name}");
 
       final db = Drift.get(walletId);
-      final myNameStrings = await db.managers.sparkNames
-          .map((e) => e.name)
-          .get();
       final names = await electrumXClient.getSparkNames();
 
       // start update shared cache of all names
@@ -1344,17 +1374,14 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
         if (diversifier == libSpark.sparkChange) {
           diversifier++;
         }
-        final addressString = await generateSparkAddress(diversifier);
+        final addressString = await _generateSparkAddress(diversifier);
         myAddresses.add(addressString.value);
 
         diversifier++;
       }
 
-      names.retainWhere(
-        (e) =>
-            myAddresses.contains(e.address) && !myNameStrings.contains(e.name),
-      );
-      Logging.instance.d("Found $names new spark names");
+      names.retainWhere((e) => myAddresses.contains(e.address));
+      Logging.instance.d("Found $names spark names");
 
       if (names.isNotEmpty) {
         final List<
@@ -2244,11 +2271,11 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
     final String destinationAddress;
     switch (cryptoCurrency.network) {
       case CryptoCurrencyNetwork.main:
-        destinationAddress = libSpark.stage3DevelopmentFundAddressMainNet;
+        destinationAddress = libSpark.stage3CommunityFundAddressMainNet;
         break;
 
       case CryptoCurrencyNetwork.test:
-        destinationAddress = libSpark.stage3DevelopmentFundAddressTestNet;
+        destinationAddress = libSpark.stage3CommunityFundAddressTestNet;
         break;
 
       default:
@@ -2455,3 +2482,12 @@ int _estSparkFeeComputeFunc(
 
   return est;
 }
+
+Future<String> _getAddressFromFullViewKey(
+  ({String fullViewKeyHex, int index, int diversifier, bool isTestNet}) args,
+) => libSpark.getAddressFromFullViewKey(
+  fullViewKeyHex: args.fullViewKeyHex,
+  index: args.index,
+  diversifier: args.diversifier,
+  isTestNet: args.isTestNet,
+);

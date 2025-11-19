@@ -23,6 +23,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:keyboard_dismisser/keyboard_dismisser.dart';
 import 'package:logger/logger.dart';
+import 'package:mobile_app_privacy/mobile_app_privacy.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:window_size/window_size.dart';
 
@@ -328,6 +329,10 @@ class _MaterialAppWithThemeState extends ConsumerState<MaterialAppWithTheme>
     with WidgetsBindingObserver {
   static const platform = MethodChannel("STACK_WALLET_RESTORE");
 
+  final _mobileAppPrivacy = Platform.isAndroid || Platform.isIOS
+      ? MobileAppPrivacy()
+      : null;
+
   // late final Wallets _wallets;
   // late final Prefs _prefs;
   late final NotificationsService _notificationsService;
@@ -459,6 +464,11 @@ class _MaterialAppWithThemeState extends ConsumerState<MaterialAppWithTheme>
       });
     }
 
+    if (Platform.isAndroid &&
+        ref.read(prefsChangeNotifierProvider).disableScreenShots) {
+      unawaited(_mobileAppPrivacy?.setFlagSecure(true));
+    }
+
     String themeId;
     if (ref.read(prefsChangeNotifierProvider).enableSystemBrightness) {
       final brightness = WidgetsBinding.instance.window.platformBrightness;
@@ -554,7 +564,18 @@ class _MaterialAppWithThemeState extends ConsumerState<MaterialAppWithTheme>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     debugPrint("didChangeAppLifecycleState: ${state.name}");
-    if (state == AppLifecycleState.resumed) {}
+
+    if (state == AppLifecycleState.resumed) {
+      await _mobileAppPrivacy?.disableOverlay();
+    } else {
+      if (ref.read(prefsChangeNotifierProvider).privacyScreen) {
+        await _mobileAppPrivacy?.enableOverlay(
+          color: ref.read(themeProvider).popupBG, // only android, ios uses blur
+          blurInsteadOfColor: true, // ignored on android
+        );
+      }
+    }
+
     switch (state) {
       case AppLifecycleState.inactive:
         break;
@@ -610,7 +631,10 @@ class _MaterialAppWithThemeState extends ConsumerState<MaterialAppWithTheme>
   @override
   Future<AppExitResponse> didRequestAppExit() async {
     debugPrint("didRequestAppExit called");
-    if (Platform.isMacOS) {
+    if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
+      // Monero will cause app to stop responding if in the middle of doing
+      // things like a scan on the c++ side of things.
+
       // On macOS, mwebd fails to shut down, hanging the app on close.
       //
       // Exiting is a hack fix for this issue.
@@ -690,6 +714,13 @@ class _MaterialAppWithThemeState extends ConsumerState<MaterialAppWithTheme>
     //   Logging.instance.log("shouldShowLockscreenOnResumeStateProvider set to: $next",
     //       addToDebugMessagesDB: false);
     // });
+
+    if (Platform.isAndroid) {
+      ref.listen(
+        prefsChangeNotifierProvider.select((s) => s.disableScreenShots),
+        (_, next) => _mobileAppPrivacy?.setFlagSecure(next),
+      );
+    }
 
     final colorScheme = ref.watch(colorProvider.state).state;
 

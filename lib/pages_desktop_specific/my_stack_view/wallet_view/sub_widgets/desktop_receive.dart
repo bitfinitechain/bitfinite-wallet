@@ -196,17 +196,19 @@ class _DesktopReceiveState extends ConsumerState<DesktopReceive> {
       final Address? address;
       if (wallet is Bip39HDWallet && wallet is! BCashInterface) {
         DerivePathType? type;
-        if (wallet.isViewOnly && wallet is ExtendedKeysInterface) {
-          final voData = await wallet.getViewOnlyWalletData();
+        if (wallet.isViewOnly &&
+            wallet is ExtendedKeysInterface &&
+            wallet.viewOnlyType != .spark) {
+          final voData =
+              await wallet.getViewOnlyWalletData()
+                  as ExtendedKeysViewOnlyWalletData;
           for (final t in wallet.cryptoCurrency.supportedDerivationPathTypes) {
             final testPath = wallet.cryptoCurrency.constructDerivePath(
               derivePathType: t,
               chain: 0,
               index: 0,
             );
-            if (voData is SparkViewOnlyWalletData) {
-              type = t;
-            } else if (testPath.startsWith((voData as ExtendedKeysViewOnlyWalletData).xPubs.first.path)) {
+            if (testPath.startsWith(voData.xPubs.first.path)) {
               type = t;
               break;
             }
@@ -270,10 +272,7 @@ class _DesktopReceiveState extends ConsumerState<DesktopReceive> {
         ),
       );
 
-      final address = await wallet.generateNextSparkAddress();
-      await ref.read(mainDBProvider).isar.writeTxn(() async {
-        await ref.read(mainDBProvider).isar.addresses.put(address);
-      });
+      final address = await wallet.generateNextSparkAddress(saveToDB: true);
 
       shouldPop = true;
 
@@ -312,6 +311,32 @@ class _DesktopReceiveState extends ConsumerState<DesktopReceive> {
     }
   }
 
+  StreamSubscription<Address?> _sub(AddressType type) {
+    return ref
+        .read(mainDBProvider)
+        .isar
+        .addresses
+        .where()
+        .walletIdEqualTo(walletId)
+        .filter()
+        .typeEqualTo(type)
+        .and()
+        .subTypeEqualTo(AddressSubType.receiving)
+        .sortByDerivationIndexDesc()
+        .findFirst()
+        .asStream()
+        .listen((event) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              setState(() {
+                _addressMap[type] =
+                    event?.value ?? _addressMap[type] ?? "[No address yet]";
+              });
+            }
+          });
+        });
+  }
+
   @override
   void initState() {
     _receiveSlateController = TextEditingController();
@@ -327,10 +352,8 @@ class _DesktopReceiveState extends ConsumerState<DesktopReceive> {
 
     isMimblewimblecoin = wallet is MimblewimblecoinWallet;
 
-    if (wallet is ViewOnlyOptionInterface && wallet.isViewOnly && wallet.viewOnlyType == ViewOnlyWalletType.spark) {
+    if (wallet is ViewOnlyOptionInterface && wallet.isViewOnly) {
       showMultiType = false;
-    } else if (wallet is ViewOnlyOptionInterface && wallet.isViewOnly) {
-      showMultiType = supportsSpark;
     } else {
       showMultiType =
           supportsSpark ||
@@ -340,11 +363,7 @@ class _DesktopReceiveState extends ConsumerState<DesktopReceive> {
               wallet.supportedAddressTypes.length > 1);
     }
 
-    if (wallet is ViewOnlyOptionInterface && wallet.isViewOnly && wallet.viewOnlyType == ViewOnlyWalletType.spark) {
-      _walletAddressTypes.add(AddressType.spark);
-    } else {
-      _walletAddressTypes.add(wallet.info.mainAddressType);
-    }
+    _walletAddressTypes.add(wallet.info.mainAddressType);
 
     if (showMultiType) {
       if (supportsSpark) {
@@ -362,7 +381,9 @@ class _DesktopReceiveState extends ConsumerState<DesktopReceive> {
       }
     }
 
-    if (_walletAddressTypes.length > 1 && wallet is BitcoinWallet) {
+    if (_walletAddressTypes.length > 1 &&
+        wallet is BitcoinWallet &&
+        !wallet.info.isLegacyAddressesEnabled) {
       _walletAddressTypes.removeWhere((e) => e == AddressType.p2pkh);
     }
 
@@ -372,30 +393,7 @@ class _DesktopReceiveState extends ConsumerState<DesktopReceive> {
 
     if (showMultiType) {
       for (final type in _walletAddressTypes) {
-        _addressSubMap[type] = ref
-            .read(mainDBProvider)
-            .isar
-            .addresses
-            .where()
-            .walletIdEqualTo(walletId)
-            .filter()
-            .typeEqualTo(type)
-            .and()
-            .not()
-            .subTypeEqualTo(AddressSubType.change)
-            .sortByDerivationIndexDesc()
-            .findFirst()
-            .asStream()
-            .listen((event) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (mounted) {
-                  setState(() {
-                    _addressMap[type] =
-                        event?.value ?? _addressMap[type] ?? "[No address yet]";
-                  });
-                }
-              });
-            });
+        _addressSubMap[type] = _sub(type);
       }
     }
 
@@ -419,42 +417,39 @@ class _DesktopReceiveState extends ConsumerState<DesktopReceive> {
       if (prev?.isMwebEnabled != next.isMwebEnabled) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
+            const type = AddressType.mweb;
             setState(() {
               supportsMweb = next.isMwebEnabled;
 
-              if (supportsMweb &&
-                  !_walletAddressTypes.contains(AddressType.mweb)) {
-                _walletAddressTypes.insert(0, AddressType.mweb);
-                _addressSubMap[AddressType.mweb] = ref
-                    .read(mainDBProvider)
-                    .isar
-                    .addresses
-                    .where()
-                    .walletIdEqualTo(walletId)
-                    .filter()
-                    .typeEqualTo(AddressType.mweb)
-                    .and()
-                    .not()
-                    .subTypeEqualTo(AddressSubType.change)
-                    .sortByDerivationIndexDesc()
-                    .findFirst()
-                    .asStream()
-                    .listen((event) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (mounted) {
-                          setState(() {
-                            _addressMap[AddressType.mweb] =
-                                event?.value ??
-                                _addressMap[AddressType.mweb] ??
-                                "[No address yet]";
-                          });
-                        }
-                      });
-                    });
+              if (supportsMweb && !_walletAddressTypes.contains(type)) {
+                _walletAddressTypes.insert(0, type);
+                _addressSubMap[type] = _sub(type);
               } else {
-                _walletAddressTypes.remove(AddressType.mweb);
-                _addressSubMap[AddressType.mweb]?.cancel();
-                _addressSubMap.remove(AddressType.mweb);
+                _walletAddressTypes.remove(type);
+                _addressSubMap[type]?.cancel();
+                _addressSubMap.remove(type);
+              }
+
+              if (_currentIndex >= _walletAddressTypes.length) {
+                _currentIndex = _walletAddressTypes.length - 1;
+              }
+            });
+          }
+        });
+      }
+
+      if (prev?.isLegacyAddressesEnabled != next.isLegacyAddressesEnabled) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            const type = AddressType.p2pkh;
+            setState(() {
+              if (!_walletAddressTypes.contains(type)) {
+                _walletAddressTypes.insert(0, type);
+                _addressSubMap[type] = _sub(type);
+              } else {
+                _walletAddressTypes.remove(type);
+                _addressSubMap[type]?.cancel();
+                _addressSubMap.remove(type);
               }
 
               if (_currentIndex >= _walletAddressTypes.length) {

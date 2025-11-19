@@ -67,37 +67,38 @@ class WalletInfoRow extends ConsumerWidget {
                     const SizedBox(width: 12),
                     contract != null
                         ? Row(
-                          children: [
-                            Text(
-                              contract.name,
-                              style: STextStyles.desktopTextExtraSmall(
-                                context,
-                              ).copyWith(
-                                color:
-                                    Theme.of(
+                            children: [
+                              Text(
+                                contract.name,
+                                style:
+                                    STextStyles.desktopTextExtraSmall(
+                                      context,
+                                    ).copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).extension<StackColors>()!.textDark,
+                                    ),
+                              ),
+                              const SizedBox(width: 4),
+                              CoinTickerTag(
+                                ticker: ref.watch(
+                                  pWalletCoin(walletId).select((s) => s.ticker),
+                                ),
+                              ),
+                            ],
+                          )
+                        : Expanded(
+                            child: Text(
+                              wallet.info.name,
+                              overflow: TextOverflow.ellipsis,
+                              style: STextStyles.desktopTextExtraSmall(context)
+                                  .copyWith(
+                                    color: Theme.of(
                                       context,
                                     ).extension<StackColors>()!.textDark,
-                              ),
+                                  ),
                             ),
-                            const SizedBox(width: 4),
-                            CoinTickerTag(
-                              ticker: ref.watch(
-                                pWalletCoin(walletId).select((s) => s.ticker),
-                              ),
-                            ),
-                          ],
-                        )
-                        : Text(
-                          wallet.info.name,
-                          style: STextStyles.desktopTextExtraSmall(
-                            context,
-                          ).copyWith(
-                            color:
-                                Theme.of(
-                                  context,
-                                ).extension<StackColors>()!.textDark,
                           ),
-                        ),
                   ],
                 ),
               ),

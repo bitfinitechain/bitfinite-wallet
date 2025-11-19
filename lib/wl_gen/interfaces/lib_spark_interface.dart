@@ -14,8 +14,8 @@ abstract class LibSparkInterface {
   int get maxNameLength;
   int get maxAdditionalInfoLengthBytes;
   String get nameRegexString;
-  String get stage3DevelopmentFundAddressMainNet;
-  String get stage3DevelopmentFundAddressTestNet;
+  String get stage3CommunityFundAddressMainNet;
+  String get stage3CommunityFundAddressTestNet;
   List<int> get standardSparkNamesFee;
 
   void initSparkLogging(Level level);

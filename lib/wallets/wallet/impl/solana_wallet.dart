@@ -7,7 +7,6 @@ import 'package:isar_community/isar.dart';
 import 'package:socks5_proxy/socks_client.dart';
 import 'package:solana/dto.dart';
 import 'package:solana/solana.dart';
-import 'package:tuple/tuple.dart';
 
 import '../../../app_config.dart';
 import '../../../exceptions/wallet/node_tor_mismatch_config_exception.dart';
@@ -19,6 +18,8 @@ import '../../../models/isar/models/blockchain_data/v2/transaction_v2.dart';
 import '../../../models/isar/models/isar_models.dart';
 import '../../../models/node_model.dart';
 import '../../../models/paymint/fee_object_model.dart';
+import '../../../services/event_bus/events/global/updated_in_background_event.dart';
+import '../../../services/event_bus/global_event_bus.dart';
 import '../../../services/node_service.dart';
 import '../../../services/tor_service.dart';
 import '../../../utilities/amount/amount.dart';
@@ -256,11 +257,11 @@ class SolanaWallet extends Bip39Wallet<Solana> {
             ),
           ],
           version: -1,
-          type: isToSelf ? isar.TransactionType.sentToSelf : isar.TransactionType.outgoing,
+          type: isToSelf
+              ? isar.TransactionType.sentToSelf
+              : isar.TransactionType.outgoing,
           subType: isar.TransactionSubType.none,
-          otherData: jsonEncode({
-            "overrideFee": txData.fee!.toJsonString(),
-          }),
+          otherData: jsonEncode({"overrideFee": txData.fee!.toJsonString()}),
         );
 
         await mainDB.updateOrPutTransactionV2s([tempTx]);
@@ -484,7 +485,9 @@ class SolanaWallet extends Bip39Wallet<Solana> {
           }
 
           final parsedTx = tx.transaction as ParsedTransaction;
-          final txid = parsedTx.signatures.isNotEmpty ? parsedTx.signatures[0] : null;
+          final txid = parsedTx.signatures.isNotEmpty
+              ? parsedTx.signatures[0]
+              : null;
           if (txid == null) {
             skippedCount++;
             continue;
@@ -492,10 +495,9 @@ class SolanaWallet extends Bip39Wallet<Solana> {
 
           // Determine transaction direction.
           final senderAddress = parsedTx.message.accountKeys[0].pubkey;
-          var receiverAddress =
-              parsedTx.message.accountKeys.length > 1
-                  ? parsedTx.message.accountKeys[1].pubkey
-                  : senderAddress;
+          var receiverAddress = parsedTx.message.accountKeys.length > 1
+              ? parsedTx.message.accountKeys[1].pubkey
+              : senderAddress;
           var txType = isar.TransactionType.unknown;
 
           if ((senderAddress == myAddress.value) &&
@@ -555,7 +557,8 @@ class SolanaWallet extends Bip39Wallet<Solana> {
             blockHash: null,
             hash: txid,
             txid: txid,
-            timestamp: tx.blockTime ?? DateTime.now().millisecondsSinceEpoch ~/ 1000,
+            timestamp:
+                tx.blockTime ?? DateTime.now().millisecondsSinceEpoch ~/ 1000,
             height: tx.slot,
             inputs: [
               InputV2.isarCantDoRequiredInDefaultConstructor(
@@ -582,7 +585,9 @@ class SolanaWallet extends Bip39Wallet<Solana> {
             version: -1,
             type: txType,
             subType: isar.TransactionSubType.none,
-            otherData: otherDataMap.isNotEmpty ? jsonEncode(otherDataMap) : null,
+            otherData: otherDataMap.isNotEmpty
+                ? jsonEncode(otherDataMap)
+                : null,
           );
 
           txns.add(txn);
@@ -621,8 +626,22 @@ class SolanaWallet extends Bip39Wallet<Solana> {
     return false;
   }
 
+  /// Update the list of custom Solana token mint addresses for this wallet.
+  Future<void> updateSolanaTokens(Set<String> mintAddresses) async {
+    await info.updateSolanaCustomTokenMintAddresses(
+      newMintAddresses: mintAddresses,
+      isar: mainDB.isar,
+    );
+
+    GlobalEventBus.instance.fire(
+      UpdatedInBackgroundEvent(
+        "Solana custom tokens updated for: $walletId ${info.name}",
+        walletId,
+      ),
+    );
+  }
+
   /// Make sure the Solana RpcClient uses Tor if it's enabled.
-  ///
   void _checkClient() {
     final node = getCurrentNode();
 

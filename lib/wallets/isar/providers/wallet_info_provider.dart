@@ -101,7 +101,7 @@ final pWalletReceivingAddress = Provider.family<String, String>((
 /// Returns the appropriate token list based on the wallet's coin type.
 ///
 /// For Ethereum wallets: returns tokenContractAddresses.
-/// For Solana wallets: returns solanaTokenMintAddresses.
+/// For Solana wallets: returns solanaTokenMintAddresses + solanaCustomTokenMintAddresses combined.
 final pWalletTokenAddresses = Provider.family<List<String>, String>((
   ref,
   walletId,
@@ -109,7 +109,12 @@ final pWalletTokenAddresses = Provider.family<List<String>, String>((
   final walletInfo = ref.watch(pWalletInfo(walletId));
 
   if (walletInfo.coin.prettyName == 'Solana') {
-    return walletInfo.solanaTokenMintAddresses;
+    // Combine both default and custom token mint addresses.
+    final allTokens = <String>{
+      ...walletInfo.solanaTokenMintAddresses,
+      ...walletInfo.solanaCustomTokenMintAddresses,
+    };
+    return allTokens.toList();
   } else {
     return walletInfo.tokenContractAddresses;
   }

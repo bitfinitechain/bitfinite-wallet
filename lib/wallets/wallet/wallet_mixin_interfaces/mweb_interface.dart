@@ -369,8 +369,6 @@ mixin MwebInterface<T extends ElectrumXCurrencyInterface>
         .typeEqualTo(TransactionType.outgoing)
         .findAll();
 
-    Logging.instance.f(pending);
-
     final client = await _client;
     for (final tx in pending) {
       for (final input in tx.inputs) {

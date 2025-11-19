@@ -15,33 +15,26 @@ class SolanaTokenApiException implements Exception {
   final String message;
   final Exception? originalException;
 
-  SolanaTokenApiException(
-    this.message, {
-    this.originalException,
-  });
+  SolanaTokenApiException(this.message, {this.originalException});
 
   @override
   String toString() => 'SolanaTokenApiException: $message';
 }
 
 /// Response wrapper for Solana token API calls.
-/// 
+///
 /// Follows the pattern that the result is either value or exception
 class SolanaTokenApiResponse<T> {
   final T? value;
   final Exception? exception;
 
-  SolanaTokenApiResponse({
-    this.value,
-    this.exception,
-  });
+  SolanaTokenApiResponse({this.value, this.exception});
 
   bool get isSuccess => exception == null && value != null;
   bool get isError => exception != null;
 
   @override
-  String toString() =>
-      isSuccess ? 'Success($value)' : 'Error($exception)';
+  String toString() => isSuccess ? 'Success($value)' : 'Error($exception)';
 }
 
 /// Data class for token account information.
@@ -90,12 +83,16 @@ class TokenAccountInfo {
     final owner = info['owner'];
     final mint = info['mint'];
     final tokenAmount = info['tokenAmount'];
-    final amountStr = (tokenAmount is Map) ? (tokenAmount as Map<String, dynamic>)['amount'] : null;
-    final decimalsVal = (tokenAmount is Map) ? (tokenAmount as Map<String, dynamic>)['decimals'] : null;
+    final amountStr = (tokenAmount is Map)
+        ? (tokenAmount as Map<String, dynamic>)['amount']
+        : null;
+    final decimalsVal = (tokenAmount is Map)
+        ? (tokenAmount as Map<String, dynamic>)['decimals']
+        : null;
 
     final isNative = (parsed is Map)
         ? ((parsed as Map<String, dynamic>)['type'] == 'account' &&
-            (parsed as Map<String, dynamic>)['program'] == 'spl-token')
+              (parsed as Map<String, dynamic>)['program'] == 'spl-token')
         : false;
 
     return TokenAccountInfo(
@@ -103,7 +100,9 @@ class TokenAccountInfo {
       owner: owner is String ? owner : (owner?.toString() ?? ''),
       mint: mint is String ? mint : (mint?.toString() ?? ''),
       balance: BigInt.parse((amountStr?.toString() ?? '0')),
-      decimals: decimalsVal is int ? decimalsVal : (int.tryParse(decimalsVal?.toString() ?? '0') ?? 0),
+      decimals: decimalsVal is int
+          ? decimalsVal
+          : (int.tryParse(decimalsVal?.toString() ?? '0') ?? 0),
       isNative: isNative,
     );
   }
@@ -168,9 +167,7 @@ class SolanaTokenAPI {
           .map((account) => account.pubkey)
           .toList();
 
-      return SolanaTokenApiResponse<List<String>>(
-        value: accountAddresses,
-      );
+      return SolanaTokenApiResponse<List<String>>(value: accountAddresses);
     } on Exception catch (e) {
       return SolanaTokenApiResponse<List<String>>(
         exception: SolanaTokenApiException(
@@ -201,9 +198,7 @@ class SolanaTokenAPI {
 
       if (response.value == null) {
         // Token account doesn't exist.
-        return SolanaTokenApiResponse<BigInt>(
-          value: BigInt.zero,
-        );
+        return SolanaTokenApiResponse<BigInt>(value: BigInt.zero);
       }
 
       final accountData = response.value!;
@@ -211,8 +206,12 @@ class SolanaTokenAPI {
       // Extract token amount from parsed data.
       try {
         // Debug: Print the structure of accountData.
-        print('[SOLANA_TOKEN_API] accountData type: ${accountData.runtimeType}');
-        print('[SOLANA_TOKEN_API] accountData.data type: ${accountData.data.runtimeType}');
+        print(
+          '[SOLANA_TOKEN_API] accountData type: ${accountData.runtimeType}',
+        );
+        print(
+          '[SOLANA_TOKEN_API] accountData.data type: ${accountData.data.runtimeType}',
+        );
         print('[SOLANA_TOKEN_API] accountData.data: ${accountData.data}');
 
         // The solana package returns a ParsedAccountData which is a sealed class/union type.
@@ -233,15 +232,23 @@ class SolanaTokenAPI {
                   account: (info, type, accountType) {
                     print('[SOLANA_TOKEN_API] Handling account variant');
                     print('[SOLANA_TOKEN_API] info type: ${info.runtimeType}');
-                    print('[SOLANA_TOKEN_API] info.tokenAmount: ${info.tokenAmount}');
+                    print(
+                      '[SOLANA_TOKEN_API] info.tokenAmount: ${info.tokenAmount}',
+                    );
 
                     try {
                       final tokenAmount = info.tokenAmount;
-                      print('[SOLANA_TOKEN_API] tokenAmount.amount: ${tokenAmount.amount}');
-                      print('[SOLANA_TOKEN_API] tokenAmount.decimals: ${tokenAmount.decimals}');
+                      print(
+                        '[SOLANA_TOKEN_API] tokenAmount.amount: ${tokenAmount.amount}',
+                      );
+                      print(
+                        '[SOLANA_TOKEN_API] tokenAmount.decimals: ${tokenAmount.decimals}',
+                      );
 
                       final balanceBigInt = BigInt.parse(tokenAmount.amount);
-                      print('[SOLANA_TOKEN_API] Successfully extracted balance: $balanceBigInt');
+                      print(
+                        '[SOLANA_TOKEN_API] Successfully extracted balance: $balanceBigInt',
+                      );
                       return balanceBigInt;
                     } catch (e) {
                       print('[SOLANA_TOKEN_API] Error extracting balance: $e');
@@ -249,7 +256,9 @@ class SolanaTokenAPI {
                     }
                   },
                   mint: (info, type, accountType) {
-                    print('[SOLANA_TOKEN_API] Got mint variant (not expected for token account balance)');
+                    print(
+                      '[SOLANA_TOKEN_API] Got mint variant (not expected for token account balance)',
+                    );
                     return null;
                   },
                   unknown: (type) {
@@ -259,12 +268,55 @@ class SolanaTokenAPI {
                 );
               },
               stake: (_) {
-                print('[SOLANA_TOKEN_API] Got stake account type (not expected)');
+                print(
+                  '[SOLANA_TOKEN_API] Got stake account type (not expected)',
+                );
                 return null;
               },
-              token2022: (_) {
-                print('[SOLANA_TOKEN_API] Got token2022 account type (not expected)');
-                return null;
+              token2022: (token2022Data) {
+                print(
+                  '[SOLANA_TOKEN_API] Handling token2022 account type',
+                );
+                print('[SOLANA_TOKEN_API] token2022Data type: ${token2022Data.runtimeType}');
+
+                return token2022Data.when(
+                  account: (info, type, accountType) {
+                    print('[SOLANA_TOKEN_API] Handling token2022 account variant');
+                    print('[SOLANA_TOKEN_API] info type: ${info.runtimeType}');
+                    print(
+                      '[SOLANA_TOKEN_API] info.tokenAmount: ${info.tokenAmount}',
+                    );
+
+                    try {
+                      final tokenAmount = info.tokenAmount;
+                      print(
+                        '[SOLANA_TOKEN_API] tokenAmount.amount: ${tokenAmount.amount}',
+                      );
+                      print(
+                        '[SOLANA_TOKEN_API] tokenAmount.decimals: ${tokenAmount.decimals}',
+                      );
+
+                      final balanceBigInt = BigInt.parse(tokenAmount.amount);
+                      print(
+                        '[SOLANA_TOKEN_API] Successfully extracted token2022 balance: $balanceBigInt',
+                      );
+                      return balanceBigInt;
+                    } catch (e) {
+                      print('[SOLANA_TOKEN_API] Error extracting token2022 balance: $e');
+                      return null;
+                    }
+                  },
+                  mint: (info, type, accountType) {
+                    print(
+                      '[SOLANA_TOKEN_API] Got token2022 mint variant (not expected for token account balance)',
+                    );
+                    return null;
+                  },
+                  unknown: (type) {
+                    print('[SOLANA_TOKEN_API] Got unknown token2022 account variant');
+                    return null;
+                  },
+                );
               },
               unsupported: (_) {
                 print('[SOLANA_TOKEN_API] Got unsupported account type');
@@ -286,15 +338,11 @@ class SolanaTokenAPI {
 
         // If we can't extract from the Dart object, return zero.
         print('[SOLANA_TOKEN_API] Returning zero balance');
-        return SolanaTokenApiResponse<BigInt>(
-          value: BigInt.zero,
-        );
+        return SolanaTokenApiResponse<BigInt>(value: BigInt.zero);
       } catch (e) {
         // If parsing fails, return zero balance.
         print('[SOLANA_TOKEN_API] Exception during parsing: $e');
-        return SolanaTokenApiResponse<BigInt>(
-          value: BigInt.zero,
-        );
+        return SolanaTokenApiResponse<BigInt>(value: BigInt.zero);
       }
     } on Exception catch (e) {
       return SolanaTokenApiResponse<BigInt>(
@@ -312,14 +360,17 @@ class SolanaTokenAPI {
   ///   - mint: The token mint address.
   ///
   /// Returns the total supply as a BigInt.
-  /// NOTE: Currently returns placeholder data for UI development
-  /// TODO: Implement full RPC call when API is ready
+  /// 
+  /// NOTE: Currently returns placeholder data for UI placeholders.
+  /// 
+  /// TODO: Implement full RPC call when API is ready.
   Future<SolanaTokenApiResponse<BigInt>> getTokenSupply(String mint) async {
     try {
       _checkClient();
 
-      // TODO: Get the mint account info when RPC APIs are stable
-      // For now return placeholder mock data
+      // TODO: Get the mint account info when RPC APIs are stable.
+      // 
+      // For now return placeholder mock data.
       return SolanaTokenApiResponse<BigInt>(
         value: BigInt.parse('1000000000000000000'),
       );
@@ -339,15 +390,18 @@ class SolanaTokenAPI {
   ///   - tokenAccountAddress: The token account address.
   ///
   /// Returns detailed token account information.
+  ///
+  /// Currently returns placeholder data for UI placeholders.
   /// 
-  /// Currently returns placeholder data for UI development.
   /// TODO: Implement full RPC call when API is ready.
-  Future<SolanaTokenApiResponse<TokenAccountInfo>>
-      getTokenAccountInfo(String tokenAccountAddress) async {
+  Future<SolanaTokenApiResponse<TokenAccountInfo>> getTokenAccountInfo(
+    String tokenAccountAddress,
+  ) async {
     try {
       _checkClient();
 
       // Return placeholder data.
+      // 
       // TODO: Implement actual RPC call using proper client methods.
       return SolanaTokenApiResponse<TokenAccountInfo>(
         value: TokenAccountInfo(
@@ -376,12 +430,10 @@ class SolanaTokenAPI {
   ///   - mint: The token mint address.
   ///
   /// Returns the derived ATA address.
-  String findAssociatedTokenAddress(
-    String ownerAddress,
-    String mint,
-  ) {
+  String findAssociatedTokenAddress(String ownerAddress, String mint) {
     // Return a placeholder.
-    // TODO: Implement ATA derivation using Solana SDK.
+    //
+    // TODO: Implement ATA derivation using Solana package.
     return '';
   }
 
@@ -403,7 +455,8 @@ class SolanaTokenAPI {
       }
 
       // If we got token accounts, the user owns this token.
-      final hasTokenAccount = accounts.value != null && (accounts.value as List).isNotEmpty;
+      final hasTokenAccount =
+          accounts.value != null && (accounts.value as List).isNotEmpty;
       return SolanaTokenApiResponse<bool>(value: hasTokenAccount);
     } on Exception catch (e) {
       return SolanaTokenApiResponse<bool>(
@@ -414,4 +467,105 @@ class SolanaTokenAPI {
       );
     }
   }
+
+  /// Fetch SPL token metadata from Solana metadata program.
+  ///
+  /// The Solana Token Metadata program (metaqbxxUerdq28cj1RbAqWwTRiWLs6nshmbbuP3xqb)
+  /// stores token metadata at a PDA derived from the mint address.
+  ///
+  /// Returns: Map with name, symbol, decimals, and optional logo URI
+  /// Returns null if metadata cannot be found (user can enter custom details),
+  ///
+  /// Note: Full PDA derivation is not yet implemented in the solana package.
+  /// Currently returns null to allow users to manually enter token details.
+  Future<SolanaTokenApiResponse<Map<String, dynamic>?>>
+      fetchTokenMetadataByMint(
+    String mintAddress,
+  ) async {
+    try {
+      _checkClient();
+
+      // TODO: Implement proper metadata PDA derivation when solana package
+      // exposes findProgramAddress() utilities.
+      //
+      // The Solana Token Metadata program (metaqbxxUerdq28cj1RbAqWwTRiWLs6nshmbbuP3xqb)
+      // stores token metadata at a PDA derived from the mint address using:
+      // findProgramAddress(
+      //   ["metadata", metadataProgram, mintPubkey],
+      //   metadataProgram
+      // )
+      //
+      // Until then, return null to allow users to enter custom token details.
+
+      // Metadata PDA derivation not yet implemented
+      return SolanaTokenApiResponse<Map<String, dynamic>?>(
+        value: null,
+      );
+    } on Exception {
+      // On error, return null to allow user to manually enter token details
+      return SolanaTokenApiResponse<Map<String, dynamic>?>(
+        value: null,
+      );
+    }
+  }
+
+  /// Validate if a string is a valid Solana mint address.
+  ///
+  /// A valid Solana address must:
+  /// - Be base58 encoded
+  /// - Be between 40-50 characters long
+  /// - Represent a valid Ed25519 public key
+  ///
+  /// Returns: true if valid, false otherwise.
+  bool isValidSolanaMintAddress(String address) {
+    try {
+      // Check length (Solana addresses are ~44 chars in base58).
+      if (address.length < 40 || address.length > 50) return false;
+
+      // Try to parse as Ed25519 public key from base58.
+      Ed25519HDPublicKey.fromBase58(address);
+
+      // Valid if parsing succeeds.
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Derive the metadata PDA for a given mint address.
+  ///
+  /// This is a temporary implementation that queries known metadata endpoints.
+  /// In production, this should use solana package's findProgramAddress utilities.
+  ///
+  /// Returns: metadata PDA address or null if derivation fails
+  Future<String?> _deriveMetadataPda(String mintAddress) async {
+    try {
+      // Validate the mint address first
+      if (!isValidSolanaMintAddress(mintAddress)) {
+        return null;
+      }
+
+      // TODO: Implement proper PDA derivation using solana package's findProgramAddress
+      // This is a placeholder that would need to be updated when solana package
+      // exposes the necessary utilities
+      //
+      // For now, we return null to trigger fallback behavior
+      // In a real implementation, you would derive the PDA like:
+      // final seeds = [
+      //   'metadata'.codeUnits,
+      //   metadataProgram.toBytes(),
+      //   mint.toBytes(),
+      // ];
+      // final (pda, _) = Ed25519HDPublicKey.findProgramAddress(
+      //   seeds,
+      //   metadataProgram,
+      // );
+      // return pda.toBase58();
+
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
 }

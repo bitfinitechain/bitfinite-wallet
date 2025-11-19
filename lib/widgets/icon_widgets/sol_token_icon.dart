@@ -18,7 +18,9 @@ import '../../models/isar/exchange_cache/currency.dart';
 import '../../services/exchange/change_now/change_now_exchange.dart';
 import '../../services/exchange/exchange_data_loading_service.dart';
 import '../../themes/coin_icon_provider.dart';
+import '../../utilities/logger.dart';
 import '../../wallets/crypto_currency/crypto_currency.dart';
+import '../loading_indicator.dart';
 
 /// Token icon widget for Solana SPL tokens.
 ///
@@ -30,7 +32,6 @@ class SolTokenIcon extends ConsumerStatefulWidget {
   /// The SPL token mint address.
   final String mintAddress;
 
-  /// Size of the icon in pixels.
   final double size;
 
   @override
@@ -67,13 +68,8 @@ class _SolTokenIconState extends ConsumerState<SolTokenIcon> {
           }
         });
       }
-    } catch (e) {
-      // Silently fail - we'll use fallback icon.
-      if (mounted) {
-        setState(() {
-          imageUrl = null;
-        });
-      }
+    } catch (e, s) {
+      Logging.instance.e("", error: e, stackTrace: s);
     }
   }
 
@@ -81,27 +77,19 @@ class _SolTokenIconState extends ConsumerState<SolTokenIcon> {
   Widget build(BuildContext context) {
     if (imageUrl == null || imageUrl!.isEmpty) {
       // Fallback to Solana coin icon from theme.
-      return _buildSolanaIcon();
+      return SvgPicture.file(
+        File(ref.watch(coinIconProvider(Solana(.main)))),
+        width: widget.size,
+        height: widget.size,
+      );
     } else {
       // Display token icon from network.
       return SvgPicture.network(
         imageUrl!,
         width: widget.size,
         height: widget.size,
-        placeholderBuilder: (context) {
-          return _buildSolanaIcon();
-        },
+        placeholderBuilder: (_) => const LoadingIndicator(),
       );
     }
-  }
-
-  /// Build a Solana icon from the theme assets using file path, not asset bundle.
-  Widget _buildSolanaIcon() {
-    final assetPath = ref.watch(coinIconProvider(Solana(CryptoCurrencyNetwork.main)));
-    return SvgPicture.file(
-      File(assetPath),
-      width: widget.size,
-      height: widget.size,
-    );
   }
 }

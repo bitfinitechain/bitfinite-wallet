@@ -16,7 +16,8 @@ if [[ "${APP_BUILD_PLATFORM}" = 'windows' ]]; then
   cmd.exe /c flutter pub get
   WIN_PATH_VERSION=$(wslpath -w ${YAML_FILE})
   cmd.exe /c dart run flutter_launcher_icons -f "${WIN_PATH_VERSION}"
-  cmd.exe /c dart run flutter_native_splash:create
+  # not needed in windows
+#  cmd.exe /c dart run flutter_native_splash:create
 else
   flutter pub get
   dart run flutter_launcher_icons -f "${YAML_FILE}"

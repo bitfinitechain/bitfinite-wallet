@@ -21,6 +21,9 @@ if [[ "${APP_BUILD_PLATFORM}" = 'windows' ]]; then
 else
   flutter pub get
   dart run flutter_launcher_icons -f "${YAML_FILE}"
-  dart run flutter_native_splash:create
+
+  if [[ "${APP_BUILD_PLATFORM}" = 'ios' || "${APP_BUILD_PLATFORM}" = 'android' ]]; then
+    dart run flutter_native_splash:create
+  fi
 fi
 popd

@@ -159,9 +159,19 @@ class PriceAPI {
 
       for (final map in coinGeckoData) {
         final String coinName = map["name"] as String;
-        final coin = AppConfig.getCryptoCurrencyByPrettyName(
-          coinName == "Factor" ? "Fact0rn" : coinName,
-        );
+        late CryptoCurrency coin;
+        try {
+          coin = AppConfig.getCryptoCurrencyByPrettyName(
+            coinName == "Factor" ? "Fact0rn" : coinName,
+          );
+        } catch (e, s) {
+          Logging.instance.e(
+            "Failed to find matching app coin for $coinName. Moving on",
+            error: e,
+            stackTrace: s,
+          );
+          continue;
+        }
 
         try {
           final price = Decimal.parse(map["current_price"].toString());

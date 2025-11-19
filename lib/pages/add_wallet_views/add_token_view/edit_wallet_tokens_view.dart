@@ -118,27 +118,26 @@ class _EditWalletTokensViewState extends ConsumerState<EditWalletTokensView> {
       // Get WalletInfo and update Solana token mint addresses.
       final walletInfo = wallet.info;
 
-      // Combine default tokens with custom tokens.
-      final allSelectedTokens = selectedTokens.toSet();
-      // Add any existing custom tokens that should be preserved.
-      allSelectedTokens.addAll(walletInfo.solanaCustomTokenMintAddresses);
+      // Separate selected tokens into default and custom.
+      final defaultTokenMints = DefaultSplTokens.list.map((e) => e.address).toSet();
+      final selectedDefaultTokens = selectedTokens.where(
+        (mint) => defaultTokenMints.contains(mint),
+      ).toSet();
+      final selectedCustomTokens = selectedTokens.where(
+        (mint) => !defaultTokenMints.contains(mint),
+      ).toSet();
 
+      // Update default token mint addresses.
       await walletInfo.updateSolanaTokenMintAddresses(
-        newMintAddresses: selectedTokens.toSet(),
+        newMintAddresses: selectedDefaultTokens,
         isar: MainDB.instance.isar,
       );
 
-      // Update custom tokens if any.
-      final customTokens = allSelectedTokens.where(
-        (mint) => !selectedTokens.contains(mint),
-      ).toSet();
-
-      if (customTokens.isNotEmpty) {
-        await walletInfo.updateSolanaCustomTokenMintAddresses(
-          newMintAddresses: customTokens,
-          isar: MainDB.instance.isar,
-        );
-      }
+      // Update custom token mint addresses.
+      await walletInfo.updateSolanaCustomTokenMintAddresses(
+        newMintAddresses: selectedCustomTokens,
+        isar: MainDB.instance.isar,
+      );
 
       // Log selected tokens and verify ownership.
       debugPrint('===== SOLANA TOKEN OWNERSHIP CHECK =====');
@@ -304,7 +303,10 @@ class _EditWalletTokensViewState extends ConsumerState<EditWalletTokensView> {
     } else {
       final result = await Navigator.of(
         context,
-      ).pushNamed(AddCustomSolanaTokenView.routeName);
+      ).pushNamed(
+        AddCustomSolanaTokenView.routeName,
+        arguments: widget.walletId,
+      );
       token = result as SplToken?;
     }
 
@@ -347,9 +349,25 @@ class _EditWalletTokensViewState extends ConsumerState<EditWalletTokensView> {
 
     // Load appropriate tokens based on wallet type.
     if (wallet is SolanaWallet) {
-      // Load Solana tokens (SPL tokens).
-      final splTokens = DefaultSplTokens.list;
-      tokenEntities.addAll(splTokens.map((e) => AddTokenListElementData(e)));
+      // Load both default and custom Solana tokens.
+      final defaultSplTokens = DefaultSplTokens.list;
+      tokenEntities.addAll(defaultSplTokens.map((e) => AddTokenListElementData(e)));
+
+      // Load custom tokens from database
+      final customSplTokens = MainDB.instance.getSplTokens().findAllSync();
+
+      // Deduplicate: only add custom tokens that aren't already in defaults.
+      final seenAddresses = <String>{
+        ...defaultSplTokens.map((e) => e.address),
+        ...tokenEntities.map((e) => e.token.address),
+      };
+
+      for (final token in customSplTokens) {
+        if (!seenAddresses.contains(token.address)) {
+          tokenEntities.add(AddTokenListElementData(token));
+          seenAddresses.add(token.address);
+        }
+      }
     } else {
       // Load Ethereum tokens (default behavior for Ethereum wallets).
       final contracts = MainDB.instance

@@ -398,9 +398,10 @@ class RouteGenerator {
         );
 
       case AddCustomSolanaTokenView.routeName:
+        final walletId = args is String ? args : null;
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
-          builder: (_) => const AddCustomSolanaTokenView(),
+          builder: (_) => AddCustomSolanaTokenView(walletId: walletId),
           settings: RouteSettings(name: settings.name),
         );
 

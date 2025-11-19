@@ -1944,7 +1944,6 @@ class ThemeAssets implements IThemeAssets {
   late final String namecoin;
   late final String particl;
   late final String mimblewimblecoin;
-  late final String solana;
   late final String bitcoinImage;
   late final String bitcoincashImage;
   late final String dogecoinImage;
@@ -2012,7 +2011,6 @@ class ThemeAssets implements IThemeAssets {
       ..wownero = "$themeId/assets/${json["wownero"] as String}"
       ..namecoin = "$themeId/assets/${json["namecoin"] as String}"
       ..particl = "$themeId/assets/${json["particl"] as String}"
-      ..solana = "$themeId/assets/${json["solana"] as String}"
       ..bitcoinImage = "$themeId/assets/${json["bitcoin_image"] as String}"
       ..bitcoincashImage =
           "$themeId/assets/${json["bitcoincash_image"] as String}"

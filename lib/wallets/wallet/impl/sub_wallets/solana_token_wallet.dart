@@ -32,6 +32,9 @@ import '../solana_wallet.dart';
 /// Implements send functionality for Solana SPL tokens (like USDC, USDT, etc.)
 /// by delegating RPC calls and key management to the parent SolanaWallet.
 class SolanaTokenWallet extends Wallet {
+  @override
+  int get isarTransactionVersion => 2;
+
   /// Create a new Solana Token Wallet.
   ///
   /// Requires a parent SolanaWallet to provide RPC client and key management.

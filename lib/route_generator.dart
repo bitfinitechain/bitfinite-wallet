@@ -29,6 +29,7 @@ import 'models/keys/view_only_wallet_data.dart';
 import 'models/paynym/paynym_account_lite.dart';
 import 'models/send_view_auto_fill_data.dart';
 import 'pages/add_wallet_views/add_token_view/add_custom_token_view.dart';
+import 'pages/add_wallet_views/add_token_view/add_custom_solana_token_view.dart';
 import 'pages/add_wallet_views/add_token_view/edit_wallet_tokens_view.dart';
 import 'pages/add_wallet_views/add_wallet_view/add_wallet_view.dart';
 import 'pages/add_wallet_views/create_or_restore_wallet_view/create_or_restore_wallet_view.dart';
@@ -393,6 +394,13 @@ class RouteGenerator {
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const AddCustomTokenView(),
+          settings: RouteSettings(name: settings.name),
+        );
+
+      case AddCustomSolanaTokenView.routeName:
+        return getRoute(
+          shouldUseMaterialRoute: useMaterialPageRoute,
+          builder: (_) => const AddCustomSolanaTokenView(),
           settings: RouteSettings(name: settings.name),
         );
 

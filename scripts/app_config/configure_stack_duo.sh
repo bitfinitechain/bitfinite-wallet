@@ -59,6 +59,8 @@ const _appDataDirName = "stackduo";
 const _shortDescriptionText = "An open-source, multicoin wallet for everyone";
 const _commitHash = "$BUILT_COMMIT_HASH";
 
+const _mwebdExeHash = "";
+
 const Set<AppFeature> _features = {
   AppFeature.themeSelection,
   AppFeature.buy,

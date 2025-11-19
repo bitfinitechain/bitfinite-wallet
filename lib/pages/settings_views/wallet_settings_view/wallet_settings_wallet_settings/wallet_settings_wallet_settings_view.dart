@@ -22,6 +22,7 @@ import '../../../../utilities/logger.dart';
 import '../../../../utilities/text_styles.dart';
 import '../../../../wallets/isar/models/wallet_info.dart';
 import '../../../../wallets/isar/providers/wallet_info_provider.dart';
+import '../../../../wallets/wallet/impl/bitcoin_wallet.dart';
 import '../../../../wallets/wallet/intermediate/cryptonote_wallet.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/multi_address_interface.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/mweb_interface.dart';
@@ -84,6 +85,37 @@ class _WalletSettingsWalletSettingsViewState
     } finally {
       // ensure _switchDuressToggleLock is set to false no matter what.
       _switchDuressToggleLock = false;
+    }
+  }
+
+  bool _switchLegacyToggledLock = false; // Mutex.
+  Future<void> _switchLegacyToggled() async {
+    if (_switchLegacyToggledLock) {
+      return;
+    }
+    _switchLegacyToggledLock = true; // Lock mutex.
+
+    try {
+      // Toggle enableLegacyAddresses in wallet info.
+      await ref
+          .read(pWalletInfo(widget.walletId))
+          .updateOtherData(
+            newEntries: {
+              WalletInfoKeys.enableLegacyAddresses: !ref
+                  .read(pWalletInfo(widget.walletId))
+                  .isLegacyAddressesEnabled,
+            },
+            isar: ref.read(mainDBProvider).isar,
+          );
+    } catch (e, s) {
+      Logging.instance.f(
+        "Failed to update enableLegacyAddresses for wallet",
+        error: e,
+        stackTrace: s,
+      );
+    } finally {
+      // ensure _switchLegacyToggledLock is set to false no matter what
+      _switchLegacyToggledLock = false;
     }
   }
 
@@ -464,6 +496,56 @@ class _WalletSettingsWalletSettingsViewState
                                               ),
                                             )[WalletInfoKeys
                                                 .duressMarkedVisibleWalletKey]
+                                            as bool? ??
+                                        false,
+                                    onChanged: (_) => (),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (wallet is BitcoinWallet) const SizedBox(height: 8),
+                  if (wallet is BitcoinWallet)
+                    RoundedWhiteContainer(
+                      padding: const EdgeInsets.all(0),
+                      child: RawMaterialButton(
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            Constants.size.circularBorderRadius,
+                          ),
+                        ),
+                        onPressed: _switchLegacyToggled,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12.0,
+                            vertical: 20,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Enable legacy addresses",
+                                style: STextStyles.titleBold12(context),
+                                textAlign: TextAlign.left,
+                              ),
+                              SizedBox(
+                                height: 20,
+                                width: 40,
+                                child: IgnorePointer(
+                                  child: DraggableSwitch(
+                                    value:
+                                        ref.watch(
+                                              pWalletInfo(
+                                                widget.walletId,
+                                              ).select(
+                                                (value) => value.otherData,
+                                              ),
+                                            )[WalletInfoKeys
+                                                .enableLegacyAddresses]
                                             as bool? ??
                                         false,
                                     onChanged: (_) => (),

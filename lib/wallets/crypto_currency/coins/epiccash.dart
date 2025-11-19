@@ -70,11 +70,11 @@ class Epiccash extends Bip39Currency {
     switch (network) {
       case CryptoCurrencyNetwork.main:
         return NodeModel(
-          host: "http://epiccash.stackwallet.com",
+          host: "https://epic.stackwallet.com",
           port: 3413,
           name: DefaultNodes.defaultName,
           id: DefaultNodes.buildId(this),
-          useSSL: false,
+          useSSL: true,
           enabled: true,
           coinName: identifier,
           isFailover: true,

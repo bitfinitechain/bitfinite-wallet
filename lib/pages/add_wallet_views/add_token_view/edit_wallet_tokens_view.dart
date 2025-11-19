@@ -48,6 +48,7 @@ import '../../../widgets/stack_text_field.dart';
 import '../../../widgets/textfield_icon_button.dart';
 import '../../home_view/home_view.dart';
 import 'add_custom_token_view.dart';
+import 'add_custom_solana_token_view.dart';
 import 'sub_widgets/add_token_list.dart';
 import 'sub_widgets/add_token_list_element.dart';
 import 'sub_widgets/add_token_text.dart';
@@ -116,10 +117,28 @@ class _EditWalletTokensViewState extends ConsumerState<EditWalletTokensView> {
     else if (wallet is SolanaWallet) {
       // Get WalletInfo and update Solana token mint addresses.
       final walletInfo = wallet.info;
+
+      // Combine default tokens with custom tokens.
+      final allSelectedTokens = selectedTokens.toSet();
+      // Add any existing custom tokens that should be preserved.
+      allSelectedTokens.addAll(walletInfo.solanaCustomTokenMintAddresses);
+
       await walletInfo.updateSolanaTokenMintAddresses(
         newMintAddresses: selectedTokens.toSet(),
         isar: MainDB.instance.isar,
       );
+
+      // Update custom tokens if any.
+      final customTokens = allSelectedTokens.where(
+        (mint) => !selectedTokens.contains(mint),
+      ).toSet();
+
+      if (customTokens.isNotEmpty) {
+        await walletInfo.updateSolanaCustomTokenMintAddresses(
+          newMintAddresses: customTokens,
+          isar: MainDB.instance.isar,
+        );
+      }
 
       // Log selected tokens and verify ownership.
       debugPrint('===== SOLANA TOKEN OWNERSHIP CHECK =====');
@@ -143,7 +162,7 @@ class _EditWalletTokensViewState extends ConsumerState<EditWalletTokensView> {
           final tokenEntity = tokenEntities.firstWhere(
             (e) => e.token.address == mintAddress,
             orElse: () => AddTokenListElementData(
-              // Fallback contract with just the address
+              // Fallback contract with just the address.
               EthContract(
                 address: mintAddress,
                 name: 'Unknown Token',
@@ -228,83 +247,8 @@ class _EditWalletTokensViewState extends ConsumerState<EditWalletTokensView> {
     final wallet = ref.read(pWallets).getWallet(widget.walletId);
 
     if (wallet is SolanaWallet) {
-      // For Solana wallets, show available SPL tokens to add.
-      final availableTokens = DefaultSplTokens.list
-          .where((t) => !tokenEntities.any((e) => e.token.address == t.address))
-          .toList();
-
-      if (availableTokens.isEmpty) {
-        debugPrint("All available Solana tokens have been added");
-        return;
-      }
-
-      // Show a simple selection dialog for Solana tokens.
-      if (isDesktop) {
-        // For desktop, you could show a dialog with token list.
-        // For now, just add the first available token.
-        if (availableTokens.isNotEmpty) {
-          final token = availableTokens.first;
-          await MainDB.instance.putSplToken(token);
-          unawaited(ref.read(priceAnd24hChangeNotifierProvider).updatePrice());
-          if (mounted) {
-            setState(() {
-              tokenEntities.add(
-                AddTokenListElementData(token)..selected = true,
-              );
-              tokenEntities.sort((a, b) => a.token.name.compareTo(b.token.name));
-            });
-          }
-        }
-      } else {
-        // For mobile, show a simple bottom sheet.
-        if (mounted) {
-          final selected = await showModalBottomSheet<dynamic>(
-            context: context,
-            builder: (context) => Container(
-              color: Theme.of(context).extension<StackColors>()!.popupBG,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      "Select Token to Add",
-                      style: STextStyles.titleBold12(context),
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: availableTokens.length,
-                      itemBuilder: (context, index) {
-                        final token = availableTokens[index];
-                        return ListTile(
-                          title: Text(token.name),
-                          subtitle: Text(token.symbol),
-                          onTap: () => Navigator.pop(context, token),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-
-          if (selected != null) {
-            final token = selected as SplToken;
-            await MainDB.instance.putSplToken(token);
-            unawaited(ref.read(priceAnd24hChangeNotifierProvider).updatePrice());
-            if (mounted) {
-              setState(() {
-                tokenEntities.add(
-                  AddTokenListElementData(token)..selected = true,
-                );
-                tokenEntities.sort((a, b) => a.token.name.compareTo(b.token.name));
-              });
-            }
-          }
-        }
-      }
+      // For Solana wallets, navigate to custom token addition screen.
+      await _addCustomSolanaToken();
     } else {
       // Original Ethereum token handling.
       EthContract? contract;
@@ -340,6 +284,56 @@ class _EditWalletTokensViewState extends ConsumerState<EditWalletTokensView> {
             }
           });
         }
+      }
+    }
+  }
+
+  /// Navigate to add custom Solana token view and handle the result.
+  Future<void> _addCustomSolanaToken() async {
+    SplToken? token;
+
+    if (isDesktop) {
+      token = await showDialog(
+        context: context,
+        builder: (context) => DesktopDialog(
+          maxWidth: 580,
+          maxHeight: 500,
+          child: AddCustomSolanaTokenView(walletId: widget.walletId),
+        ),
+      );
+    } else {
+      final result = await Navigator.of(
+        context,
+      ).pushNamed(AddCustomSolanaTokenView.routeName);
+      token = result as SplToken?;
+    }
+
+    if (token != null) {
+      await MainDB.instance.putSplToken(token);
+
+      // Also add the custom token mint address to the wallet's custom token list.
+      final wallet = ref.read(pWallets).getWallet(widget.walletId);
+      if (wallet is SolanaWallet) {
+        final currentCustomTokens = wallet.info.solanaCustomTokenMintAddresses.toSet();
+        currentCustomTokens.add(token.address);
+        await wallet.info.updateSolanaCustomTokenMintAddresses(
+          newMintAddresses: currentCustomTokens,
+          isar: MainDB.instance.isar,
+        );
+      }
+
+      unawaited(ref.read(priceAnd24hChangeNotifierProvider).updatePrice());
+      if (mounted) {
+        setState(() {
+          if (tokenEntities
+              .where((e) => e.token.address == token!.address)
+              .isEmpty) {
+            tokenEntities.add(
+              AddTokenListElementData(token!)..selected = true,
+            );
+            tokenEntities.sort((a, b) => a.token.name.compareTo(b.token.name));
+          }
+        });
       }
     }
   }

@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
+import '../../../models/isar/models/isar_models.dart';
 import '../../../pages/send_view/sub_widgets/transaction_fee_selection_sheet.dart';
 import '../../../pages/token_view/sub_widgets/token_transaction_list_widget_sol.dart';
 import '../../../providers/db/main_db_provider.dart';
@@ -84,7 +85,7 @@ class _DesktopTokenViewState extends ConsumerState<DesktopSolTokenView> {
   /// so the UI can display an error message.
   void _initializeSolanaTokenWallet() {
     // First try to find in default tokens
-    dynamic tokenInfo;
+    SplToken? tokenInfo;
     try {
       tokenInfo = DefaultSplTokens.list.firstWhere(
         (token) => token.address == widget.tokenMint,
@@ -117,19 +118,11 @@ class _DesktopTokenViewState extends ConsumerState<DesktopSolTokenView> {
 
     if (parentWallet == null) {
       ref.read(solanaTokenServiceStateProvider.state).state = null;
-      debugPrint(
-        'ERROR: Wallet is not a SolanaWallet: ${widget.walletId}',
-      );
+      debugPrint('ERROR: Wallet is not a SolanaWallet: ${widget.walletId}');
       return;
     }
 
-    final solanaTokenWallet = SolanaTokenWallet(
-      parentSolanaWallet: parentWallet,
-      tokenMint: widget.tokenMint,
-      tokenName: "${tokenInfo.name}",
-      tokenSymbol: "${tokenInfo.symbol}",
-      tokenDecimals: tokenInfo.decimals as int,
-    );
+    final solanaTokenWallet = SolanaTokenWallet(parentWallet, tokenInfo);
 
     ref.read(solanaTokenServiceStateProvider.state).state = solanaTokenWallet;
 

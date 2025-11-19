@@ -23,7 +23,9 @@ import '../../../../utilities/amount/amount.dart';
 import '../../../../utilities/amount/amount_formatter.dart';
 import '../../../../utilities/enums/wallet_balance_toggle_state.dart';
 import '../../../../utilities/text_styles.dart';
+import '../../../../wallets/crypto_currency/coins/ethereum.dart';
 import '../../../../wallets/crypto_currency/coins/firo.dart';
+import '../../../../wallets/crypto_currency/coins/solana.dart';
 import '../../../../wallets/crypto_currency/crypto_currency.dart'
     show CryptoCurrency;
 import '../../../../wallets/isar/providers/eth/current_token_wallet_provider.dart';
@@ -31,6 +33,7 @@ import '../../../../wallets/isar/providers/eth/token_balance_provider.dart';
 import '../../../../wallets/isar/providers/solana/current_sol_token_wallet_provider.dart';
 import '../../../../wallets/isar/providers/solana/sol_token_balance_provider.dart';
 import '../../../../wallets/isar/providers/wallet_info_provider.dart';
+import '../../../../wallets/wallet/impl/sub_wallets/solana_token_wallet.dart';
 import 'desktop_balance_toggle_button.dart';
 
 class DesktopWalletSummary extends ConsumerStatefulWidget {
@@ -81,42 +84,43 @@ class _WDesktopWalletSummaryState extends ConsumerState<DesktopWalletSummary> {
     );
 
     // For Ethereum tokens, get the token contract; for Solana tokens, get the token wallet.
-    dynamic tokenContract;
-    dynamic solanaTokenWallet;
+    final EthContract? tokenContract;
+    final SolanaTokenWallet? solanaTokenWallet;
     if (widget.isToken) {
-      try {
-        tokenContract = ref.watch(
-          pCurrentTokenWallet.select((value) => value!.tokenContract),
-        );
-      } catch (_) {
-        // Ethereum token not found, check for Solana.
-        tokenContract = null;
-      }
-
-      // Check for Solana token wallet if Ethereum token not found.
-      if (tokenContract == null) {
-        try {
-          solanaTokenWallet = ref.watch(pCurrentSolanaTokenWallet);
-        } catch (_) {
+      switch (ref.watch(pWalletCoin(walletId))) {
+        case Ethereum():
+          tokenContract = ref.watch(
+            pCurrentTokenWallet.select((value) => value!.tokenContract),
+          );
           solanaTokenWallet = null;
-        }
+          break;
+
+        case Solana():
+          tokenContract = null;
+          // this cannot be null if coin is sol and isToken is true.
+          // if it is null, then there is a bug somewhere else.
+          solanaTokenWallet = ref.watch(pCurrentSolanaTokenWallet)!;
+          break;
+
+        default:
+          tokenContract = null;
+          solanaTokenWallet = null;
       }
+    } else {
+      tokenContract = null;
+      solanaTokenWallet = null;
     }
 
     final price = widget.isToken && tokenContract != null
         ? ref.watch(
             priceAnd24hChangeNotifierProvider.select(
-              (value) => value.getTokenPrice(
-                (tokenContract as dynamic).address as String,
-              ),
+              (value) => value.getTokenPrice(tokenContract!.address),
             ),
           )
         : widget.isToken && solanaTokenWallet != null
         ? ref.watch(
             priceAnd24hChangeNotifierProvider.select(
-              (value) => value.getTokenPrice(
-                "${(solanaTokenWallet as dynamic).tokenMint}",
-              ),
+              (value) => value.getTokenPrice(solanaTokenWallet!.tokenMint),
             ),
           )
         : ref.watch(
@@ -149,7 +153,7 @@ class _WDesktopWalletSummaryState extends ConsumerState<DesktopWalletSummary> {
         balance = ref.watch(
           pTokenBalance((
             walletId: walletId,
-            contractAddress: (tokenContract as dynamic).address as String,
+            contractAddress: tokenContract.address,
           )),
         );
       } else if (widget.isToken && solanaTokenWallet != null) {
@@ -157,7 +161,7 @@ class _WDesktopWalletSummaryState extends ConsumerState<DesktopWalletSummary> {
         balance = ref.watch(
           pSolanaTokenBalance((
             walletId: walletId,
-            tokenMint: (solanaTokenWallet as dynamic).tokenMint,
+            tokenMint: solanaTokenWallet.tokenMint,
           )),
         );
       } else {
@@ -179,18 +183,13 @@ class _WDesktopWalletSummaryState extends ConsumerState<DesktopWalletSummary> {
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   child: SelectableText(
-                    widget.isToken && solanaTokenWallet != null
-                        ? "${balanceToShow.decimal.toStringAsFixed(
-                            (solanaTokenWallet as dynamic).tokenDecimals as int,
-                          )} ${(solanaTokenWallet as dynamic).tokenSymbol}"
-                        : ref
-                            .watch(pAmountFormatter(coin))
-                            .format(
-                              balanceToShow,
-                              ethContract: tokenContract != null
-                                  ? tokenContract as EthContract?
-                                  : null,
-                            ),
+                    ref
+                        .watch(pAmountFormatter(coin))
+                        .format(
+                          balanceToShow,
+                          ethContract: tokenContract,
+                          splToken: solanaTokenWallet?.splToken,
+                        ),
                     style: STextStyles.desktopH3(context),
                   ),
                 ),
@@ -222,7 +221,7 @@ class _WDesktopWalletSummaryState extends ConsumerState<DesktopWalletSummary> {
               walletId: walletId,
               initialSyncStatus: widget.initialSyncStatus,
               tokenContractAddress: widget.isToken && tokenContract != null
-                  ? (tokenContract as EthContract).address
+                  ? tokenContract.address
                   : null,
             ),
 

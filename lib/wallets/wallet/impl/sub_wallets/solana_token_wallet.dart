@@ -15,16 +15,14 @@ import 'package:solana/solana.dart' hide Wallet;
 
 import '../../../../db/isar/main_db.dart';
 import '../../../../models/balance.dart';
-import '../../../../models/isar/models/blockchain_data/transaction.dart';
 import '../../../../models/isar/models/blockchain_data/v2/input_v2.dart';
 import '../../../../models/isar/models/blockchain_data/v2/output_v2.dart';
 import '../../../../models/isar/models/blockchain_data/v2/transaction_v2.dart';
+import '../../../../models/isar/models/isar_models.dart';
 import '../../../../models/paymint/fee_object_model.dart';
 import '../../../../services/solana/solana_token_api.dart';
 import '../../../../utilities/amount/amount.dart';
 import '../../../../utilities/logger.dart';
-import '../../../crypto_currency/crypto_currency.dart';
-import '../../../isar/models/wallet_solana_token_info.dart';
 import '../../../models/tx_data.dart';
 import '../../wallet.dart';
 import '../solana_wallet.dart';
@@ -37,21 +35,18 @@ class SolanaTokenWallet extends Wallet {
   /// Create a new Solana Token Wallet.
   ///
   /// Requires a parent SolanaWallet to provide RPC client and key management.
-  SolanaTokenWallet({
-    required this.parentSolanaWallet,
-    required this.tokenMint,
-    required this.tokenName,
-    required this.tokenSymbol,
-    required this.tokenDecimals,
-  }) : super(Solana(CryptoCurrencyNetwork.main)); // TODO: make testnet-capable.
+  SolanaTokenWallet(this.parentSolanaWallet, this.splToken)
+    : super(parentSolanaWallet.cryptoCurrency);
 
   /// Parent Solana wallet (provides RPC client and keypair access).
   final SolanaWallet parentSolanaWallet;
 
-  final String tokenMint;
-  final String tokenName;
-  final String tokenSymbol;
-  final int tokenDecimals;
+  final SplToken splToken;
+
+  String get tokenMint => splToken.address;
+  String get tokenName => splToken.name;
+  String get tokenSymbol => splToken.symbol;
+  int get tokenDecimals => splToken.decimals;
 
   /// Override walletId to delegate to parent wallet
   @override

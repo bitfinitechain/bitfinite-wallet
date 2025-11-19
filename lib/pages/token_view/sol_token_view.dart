@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
+import '../../models/isar/models/isar_models.dart';
 import '../../providers/db/main_db_provider.dart';
 import '../../providers/providers.dart';
 import '../../services/event_bus/events/global/wallet_sync_status_changed_event.dart';
@@ -63,7 +64,7 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
         : WalletSyncStatus.synced;
 
     // Initialize the Solana token wallet provider with mock data.
-    // 
+    //
     // This sets up the pCurrentSolanaTokenWallet provider so that
     // SolanaTokenSummary can access the token wallet information.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -76,15 +77,15 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
   }
 
   /// Initialize the Solana token wallet for this token view.
-  /// 
+  ///
   /// Creates a SolanaTokenWallet with token data from DefaultSplTokens or the database.
   /// First looks in DefaultSplTokens, then checks the database for custom tokens.
   /// Sets it as the current token wallet in the provider so that UI widgets can access it.
-  /// 
+  ///
   /// If the token is not found anywhere, sets the token wallet to null
   /// so the UI can display an error message.
   void _initializeSolanaTokenWallet() {
-    dynamic tokenInfo;
+    SplToken? tokenInfo;
 
     // First try to find in default tokens.
     try {
@@ -119,19 +120,11 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
 
     if (parentWallet == null) {
       ref.read(solanaTokenServiceStateProvider.state).state = null;
-      debugPrint(
-        'ERROR: Wallet is not a SolanaWallet: ${widget.walletId}',
-      );
+      debugPrint('ERROR: Wallet is not a SolanaWallet: ${widget.walletId}');
       return;
     }
 
-    final solanaTokenWallet = SolanaTokenWallet(
-      parentSolanaWallet: parentWallet,
-      tokenMint: widget.tokenMint,
-      tokenName: "${tokenInfo.name}",
-      tokenSymbol: "${tokenInfo.symbol}",
-      tokenDecimals: tokenInfo.decimals as int,
-    );
+    final solanaTokenWallet = SolanaTokenWallet(parentWallet, tokenInfo);
 
     ref.read(solanaTokenServiceStateProvider.state).state = solanaTokenWallet;
 

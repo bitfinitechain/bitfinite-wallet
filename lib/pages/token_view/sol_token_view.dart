@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
+import '../../providers/db/main_db_provider.dart';
 import '../../providers/providers.dart';
 import '../../services/event_bus/events/global/wallet_sync_status_changed_event.dart';
 import '../../themes/stack_colors.dart';
@@ -62,6 +63,7 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
         : WalletSyncStatus.synced;
 
     // Initialize the Solana token wallet provider with mock data.
+    // 
     // This sets up the pCurrentSolanaTokenWallet provider so that
     // SolanaTokenSummary can access the token wallet information.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -74,29 +76,40 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
   }
 
   /// Initialize the Solana token wallet for this token view.
-  ///
-  /// Creates a SolanaTokenWallet with token data from DefaultSplTokens
-  /// and sets it as the current token wallet in the provider so that UI widgets can access it.
-  ///
-  /// If the token is not found in DefaultSplTokens, sets the token wallet to null
+  /// 
+  /// Creates a SolanaTokenWallet with token data from DefaultSplTokens or the database.
+  /// First looks in DefaultSplTokens, then checks the database for custom tokens.
+  /// Sets it as the current token wallet in the provider so that UI widgets can access it.
+  /// 
+  /// If the token is not found anywhere, sets the token wallet to null
   /// so the UI can display an error message.
-  ///
-  /// TODO: Implement token data lookup for tokens not on the default list.
   void _initializeSolanaTokenWallet() {
     dynamic tokenInfo;
+
+    // First try to find in default tokens.
     try {
       tokenInfo = DefaultSplTokens.list.firstWhere(
         (token) => token.address == widget.tokenMint,
       );
     } catch (e) {
-      // Token not found in DefaultSplTokens.
+      // Token not found in DefaultSplTokens, try database for custom tokens.
       tokenInfo = null;
+    }
+
+    // If not found in defaults, try database for custom tokens.
+    if (tokenInfo == null) {
+      try {
+        final db = ref.read(mainDBProvider);
+        tokenInfo = db.getSplTokenSync(widget.tokenMint);
+      } catch (e) {
+        tokenInfo = null;
+      }
     }
 
     if (tokenInfo == null) {
       ref.read(solanaTokenServiceStateProvider.state).state = null;
       debugPrint(
-        'ERROR: Token not found in DefaultSplTokens: ${widget.tokenMint}',
+        'ERROR: Token not found in DefaultSplTokens or database: ${widget.tokenMint}',
       );
       return;
     }
@@ -121,6 +134,9 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
     );
 
     ref.read(solanaTokenServiceStateProvider.state).state = solanaTokenWallet;
+
+    // Fetch the token balance when the wallet is opened.
+    solanaTokenWallet.updateBalance();
   }
 
   @override

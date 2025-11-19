@@ -14,6 +14,7 @@ import 'package:flutter_svg/svg.dart';
 
 import '../../../pages/send_view/sub_widgets/transaction_fee_selection_sheet.dart';
 import '../../../pages/token_view/sub_widgets/token_transaction_list_widget_sol.dart';
+import '../../../providers/db/main_db_provider.dart';
 import '../../../providers/providers.dart';
 import '../../../services/event_bus/events/global/wallet_sync_status_changed_event.dart';
 import '../../../themes/stack_colors.dart';
@@ -75,27 +76,38 @@ class _DesktopTokenViewState extends ConsumerState<DesktopSolTokenView> {
 
   /// Initialize the Solana token wallet.
   ///
-  /// Creates a SolanaTokenWallet with token data from DefaultSplTokens
-  /// and sets it as the current token wallet in the provider so that UI widgets can access it.
+  /// Creates a SolanaTokenWallet with token data from DefaultSplTokens or the database.
+  /// First looks in DefaultSplTokens, then checks the database for custom tokens.
+  /// Sets it as the current token wallet in the provider so that UI widgets can access it.
   ///
-  /// If the token is not found in DefaultSplTokens, sets the token wallet to null
+  /// If the token is not found anywhere, sets the token wallet to null
   /// so the UI can display an error message.
   void _initializeSolanaTokenWallet() {
-    // Look up the actual token from DefaultSplTokens.
+    // First try to find in default tokens
     dynamic tokenInfo;
     try {
       tokenInfo = DefaultSplTokens.list.firstWhere(
         (token) => token.address == widget.tokenMint,
       );
     } catch (e) {
-      // Token not found in DefaultSplTokens.
+      // Token not found in DefaultSplTokens, try database for custom tokens
       tokenInfo = null;
+    }
+
+    // If not found in defaults, try database for custom tokens
+    if (tokenInfo == null) {
+      try {
+        final db = ref.read(mainDBProvider);
+        tokenInfo = db.getSplTokenSync(widget.tokenMint);
+      } catch (e) {
+        tokenInfo = null;
+      }
     }
 
     if (tokenInfo == null) {
       ref.read(solanaTokenServiceStateProvider.state).state = null;
       debugPrint(
-        'ERROR: Token not found in DefaultSplTokens: ${widget.tokenMint}',
+        'ERROR: Token not found in DefaultSplTokens or database: ${widget.tokenMint}',
       );
       return;
     }
@@ -120,6 +132,9 @@ class _DesktopTokenViewState extends ConsumerState<DesktopSolTokenView> {
     );
 
     ref.read(solanaTokenServiceStateProvider.state).state = solanaTokenWallet;
+
+    // Fetch the token balance when the wallet is opened
+    solanaTokenWallet.updateBalance();
   }
 
   @override

@@ -15,8 +15,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/isar/models/ethereum/eth_contract.dart';
 import '../models/isar/models/solana/spl_token.dart';
+import '../pages/token_view/sol_token_view.dart';
 import '../pages/token_view/token_view.dart';
 import '../pages/wallet_view/wallet_view.dart';
+import '../pages_desktop_specific/my_stack_view/wallet_view/desktop_sol_token_view.dart';
 import '../pages_desktop_specific/my_stack_view/wallet_view/desktop_token_view.dart';
 import '../pages_desktop_specific/my_stack_view/wallet_view/desktop_wallet_view.dart';
 import '../providers/db/main_db_provider.dart';
@@ -170,20 +172,22 @@ class SimpleWalletCard extends ConsumerWidget {
       );
       if (popPrevious) nav.pop();
 
-      if (desktopNavigatorState != null) {
-        unawaited(
-          desktopNavigatorState!.pushNamed(
-            DesktopWalletView.routeName,
-            arguments: walletId,
-          ),
-        );
-      } else {
-        unawaited(
-          nav.pushNamed(
-            WalletView.routeName,
-            arguments: walletId,
-          ),
-        );
+      if (contractAddress == null) {
+        if (desktopNavigatorState != null) {
+          unawaited(
+            desktopNavigatorState!.pushNamed(
+              DesktopWalletView.routeName,
+              arguments: walletId,
+            ),
+          );
+        } else {
+          unawaited(
+            nav.pushNamed(
+              WalletView.routeName,
+              arguments: walletId,
+            ),
+          );
+        }
       }
 
       if (contractAddress != null) {
@@ -220,13 +224,13 @@ class SimpleWalletCard extends ConsumerWidget {
 
           if (desktopNavigatorState != null) {
             await desktopNavigatorState!.pushNamed(
-              DesktopTokenView.routeName,
-              arguments: walletId,
+              DesktopSolTokenView.routeName,
+              arguments: (walletId: walletId, tokenMint: contractAddress!),
             );
           } else {
             await nav.pushNamed(
-              TokenView.routeName,
-              arguments: (walletId: walletId, popPrevious: !Util.isDesktop),
+              SolTokenView.routeName,
+              arguments: (walletId: walletId, tokenMint: contractAddress!),
             );
           }
         } else {

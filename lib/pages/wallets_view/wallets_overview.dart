@@ -8,6 +8,8 @@
  *
  */
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -15,7 +17,8 @@ import 'package:isar_community/isar.dart';
 
 import '../../app_config.dart';
 import '../../models/add_wallet_list_entity/sub_classes/coin_entity.dart';
-import '../../models/isar/models/ethereum/eth_contract.dart';
+import '../../models/isar/models/contract.dart';
+import '../../pages_desktop_specific/my_stack_view/dialogs/desktop_expanding_solana_wallet_card.dart';
 import '../../pages_desktop_specific/my_stack_view/dialogs/desktop_expanding_wallet_card.dart';
 import '../../providers/providers.dart';
 import '../../services/event_bus/events/wallet_added_event.dart';
@@ -23,6 +26,7 @@ import '../../services/event_bus/global_event_bus.dart';
 import '../../themes/stack_colors.dart';
 import '../../utilities/assets.dart';
 import '../../utilities/constants.dart';
+import '../../utilities/default_spl_tokens.dart';
 import '../../utilities/text_styles.dart';
 import '../../utilities/util.dart';
 import '../../wallets/crypto_currency/crypto_currency.dart';
@@ -59,7 +63,7 @@ class WalletsOverview extends ConsumerStatefulWidget {
   ConsumerState<WalletsOverview> createState() => _EthWalletsOverviewState();
 }
 
-typedef WalletListItemData = ({Wallet wallet, List<EthContract> contracts});
+typedef WalletListItemData = ({Wallet wallet, List<Contract> contracts});
 
 class _EthWalletsOverviewState extends ConsumerState<WalletsOverview> {
   final isDesktop = Util.isDesktop;
@@ -99,14 +103,12 @@ class _EthWalletsOverviewState extends ConsumerState<WalletsOverview> {
         term,
       );
 
-      final List<EthContract> contracts = [];
+      final List<Contract> contracts = [];
 
       for (final contract in entry.value.contracts) {
         if (_elementContains(contract.name, term)) {
           contracts.add(contract);
         } else if (_elementContains(contract.symbol, term)) {
-          contracts.add(contract);
-        } else if (_elementContains(contract.type.name, term)) {
           contracts.add(contract);
         } else if (_elementContains(contract.address, term)) {
           contracts.add(contract);
@@ -133,7 +135,7 @@ class _EthWalletsOverviewState extends ConsumerState<WalletsOverview> {
 
     if (widget.coin is Ethereum) {
       for (final data in walletsData) {
-        final List<EthContract> contracts = [];
+        final List<Contract> contracts = [];
         final contractAddresses = ref.read(
           pWalletTokenAddresses(data.walletId),
         );
@@ -147,6 +149,51 @@ class _EthWalletsOverviewState extends ConsumerState<WalletsOverview> {
           // add it to list if it exists in DB
           if (contract != null) {
             contracts.add(contract);
+          }
+        }
+
+        // add tuple to list
+        wallets[data.walletId] = (
+          wallet: ref.read(pWallets).getWallet(data.walletId),
+          contracts: contracts,
+        );
+      }
+    } else if (widget.coin is Solana) {
+      // Ensure default Solana tokens are loaded into database.
+      final dbProvider = ref.read(mainDBProvider);
+      for (final defaultToken in DefaultSplTokens.list) {
+        final existingToken = dbProvider.getSplTokenSync(defaultToken.address);
+        if (existingToken == null) {
+          // Token not in database, add it asynchronously.
+          unawaited(dbProvider.putSplToken(defaultToken));
+        }
+      }
+
+      for (final data in walletsData) {
+        final List<Contract> contracts = [];
+        final tokenMintAddresses = ref.read(
+          pWalletTokenAddresses(data.walletId),
+        );
+
+        // fetch each token
+        for (final tokenAddress in tokenMintAddresses) {
+          final token = dbProvider.getSplTokenSync(tokenAddress);
+
+          // add it to list if it exists in DB or in default tokens
+          if (token != null) {
+            contracts.add(token);
+          } else {
+            // Try to find in default tokens.
+            try {
+              final defaultToken = DefaultSplTokens.list.firstWhere(
+                (t) => t.address == tokenAddress,
+              );
+              contracts.add(defaultToken);
+            } catch (_) {
+              // Token not found anywhere.
+              //
+              // Might want to throw here or something.
+            }
           }
         }
 
@@ -319,13 +366,23 @@ class _EthWalletsOverviewState extends ConsumerState<WalletsOverview> {
 
                     if (wallet.cryptoCurrency.hasTokenSupport) {
                       if (isDesktop) {
-                        return DesktopExpandingWalletCard(
-                          key: Key(
-                            "${wallet.walletId}_${entry.contracts.map((e) => e.address).join()}",
-                          ),
-                          data: entry,
-                          navigatorState: widget.navigatorState!,
-                        );
+                        if (wallet.cryptoCurrency is Solana) {
+                          return DesktopExpandingSolanaWalletCard(
+                            key: Key(
+                              "${wallet.walletId}_${entry.contracts.map((e) => e.address).join()}",
+                            ),
+                            data: entry,
+                            navigatorState: widget.navigatorState!,
+                          );
+                        } else {
+                          return DesktopExpandingWalletCard(
+                            key: Key(
+                              "${wallet.walletId}_${entry.contracts.map((e) => e.address).join()}",
+                            ),
+                            data: entry,
+                            navigatorState: widget.navigatorState!,
+                          );
+                        }
                       } else {
                         return MasterWalletCard(
                           key: Key(wallet.walletId),

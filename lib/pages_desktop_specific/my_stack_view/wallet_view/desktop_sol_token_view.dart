@@ -11,9 +11,11 @@ import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:tuple/tuple.dart';
 
 import '../../../models/isar/models/isar_models.dart';
 import '../../../pages/send_view/sub_widgets/transaction_fee_selection_sheet.dart';
+import '../../../pages/token_view/solana_token_contract_details_view.dart';
 import '../../../pages/token_view/sub_widgets/token_transaction_list_widget_sol.dart';
 import '../../../providers/db/main_db_provider.dart';
 import '../../../providers/providers.dart';
@@ -175,14 +177,28 @@ class _DesktopTokenViewState extends ConsumerState<DesktopSolTokenView> {
               final tokenWallet = ref.watch(pCurrentSolanaTokenWallet);
               final tokenName = tokenWallet?.tokenName ?? "Token";
               final tokenSymbol = tokenWallet?.tokenSymbol ?? "SOL";
-              return Row(
-                children: [
-                  SolTokenIcon(mintAddress: widget.tokenMint, size: 32),
-                  const SizedBox(width: 12),
-                  Text(tokenName, style: STextStyles.desktopH3(context)),
-                  const SizedBox(width: 12),
-                  CoinTickerTag(ticker: tokenSymbol),
-                ],
+              return GestureDetector(
+                onTap: () {
+                  Navigator.of(context).pushNamed(
+                    SolanaTokenContractDetailsView.routeName,
+                    arguments: Tuple2(
+                      widget.tokenMint,
+                      widget.walletId,
+                    ),
+                  );
+                },
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: Row(
+                    children: [
+                      SolTokenIcon(mintAddress: widget.tokenMint, size: 32),
+                      const SizedBox(width: 12),
+                      Text(tokenName, style: STextStyles.desktopH3(context)),
+                      const SizedBox(width: 12),
+                      CoinTickerTag(ticker: tokenSymbol),
+                    ],
+                  ),
+                ),
               );
             },
           ),

@@ -94,10 +94,12 @@ import 'pages/receive_view/addresses/edit_address_label_view.dart';
 import 'pages/receive_view/addresses/wallet_addresses_view.dart';
 import 'pages/receive_view/generate_receiving_uri_qr_code_view.dart';
 import 'pages/receive_view/receive_view.dart';
+import 'pages/receive_view/sol_token_receive_view.dart';
 import 'pages/salvium_stake/salvium_create_stake_view.dart';
 import 'pages/send_view/confirm_transaction_view.dart';
 import 'pages/send_view/frost_ms/frost_send_view.dart';
 import 'pages/send_view/send_view.dart';
+import 'pages/send_view/sol_token_send_view.dart';
 import 'pages/send_view/token_send_view.dart';
 import 'pages/settings_views/global_settings_view/about_view.dart';
 import 'pages/settings_views/global_settings_view/advanced_views/advanced_settings_view.dart';
@@ -1808,6 +1810,32 @@ class RouteGenerator {
               walletId: args.item1,
               coin: args.item2,
               tokenContract: args.item3,
+            ),
+            settings: RouteSettings(name: settings.name),
+          );
+        }
+        return _routeError("${settings.name} invalid args: ${args.toString()}");
+
+      case SolTokenSendView.routeName:
+        if (args is (String, String)) {
+          return getRoute(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => SolTokenSendView(
+              walletId: args.$1,
+              tokenMint: args.$2,
+            ),
+            settings: RouteSettings(name: settings.name),
+          );
+        }
+        return _routeError("${settings.name} invalid args: ${args.toString()}");
+
+      case SolTokenReceiveView.routeName:
+        if (args is (String, String)) {
+          return getRoute(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => SolTokenReceiveView(
+              walletId: args.$1,
+              tokenMint: args.$2,
             ),
             settings: RouteSettings(name: settings.name),
           );

@@ -30,6 +30,8 @@ import '../../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../../widgets/coin_ticker_tag.dart';
 import '../../../widgets/conditional_parent.dart';
 import '../../../widgets/rounded_container.dart';
+import '../../receive_view/sol_token_receive_view.dart';
+import '../../send_view/sol_token_send_view.dart';
 import '../../wallet_view/sub_widgets/wallet_refresh_button.dart';
 
 /// Solana-specific token summary widget.
@@ -192,11 +194,10 @@ class SolanaTokenWalletOptions extends ConsumerWidget {
       children: [
         TokenOptionsButton(
           onPressed: () {
-            // TODO: Navigate to Solana token receive view.
-            // Navigator.of(context).pushNamed(
-            //   SolTokenReceiveView.routeName,
-            //   arguments: Tuple2(walletId, tokenMint),
-            // );
+            Navigator.of(context).pushNamed(
+              SolTokenReceiveView.routeName,
+              arguments: (walletId, tokenMint),
+            );
           },
           subLabel: "Receive",
           iconAssetPathSVG: Assets.svg.arrowDownLeft,
@@ -204,11 +205,10 @@ class SolanaTokenWalletOptions extends ConsumerWidget {
         const SizedBox(width: 16),
         TokenOptionsButton(
           onPressed: () {
-            // TODO: Navigate to Solana token send view.
-            // Navigator.of(context).pushNamed(
-            //   SolTokenSendView.routeName,
-            //   arguments: Tuple2(walletId, tokenMint),
-            // );
+            Navigator.of(context).pushNamed(
+              SolTokenSendView.routeName,
+              arguments: (walletId, tokenMint),
+            );
           },
           subLabel: "Send",
           iconAssetPathSVG: Assets.svg.arrowUpRight,

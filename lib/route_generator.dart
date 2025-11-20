@@ -165,6 +165,7 @@ import 'pages/special/firo_rescan_recovery_error_dialog.dart';
 import 'pages/stack_privacy_calls.dart';
 import 'pages/token_view/my_tokens_view.dart';
 import 'pages/token_view/sol_token_view.dart';
+import 'pages/token_view/solana_token_contract_details_view.dart';
 import 'pages/token_view/token_contract_details_view.dart';
 import 'pages/token_view/token_view.dart';
 import 'pages/wallet_view/transaction_views/all_transactions_view.dart';
@@ -426,6 +427,19 @@ class RouteGenerator {
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => TokenContractDetailsView(
               contractAddress: args.item1,
+              walletId: args.item2,
+            ),
+            settings: RouteSettings(name: settings.name),
+          );
+        }
+        return _routeError("${settings.name} invalid args: ${args.toString()}");
+
+      case SolanaTokenContractDetailsView.routeName:
+        if (args is Tuple2<String, String>) {
+          return getRoute(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => SolanaTokenContractDetailsView(
+              tokenMint: args.item1,
               walletId: args.item2,
             ),
             settings: RouteSettings(name: settings.name),

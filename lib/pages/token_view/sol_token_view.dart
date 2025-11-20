@@ -11,6 +11,7 @@ import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:tuple/tuple.dart';
 
 import '../../models/isar/models/isar_models.dart';
 import '../../providers/db/main_db_provider.dart';
@@ -28,6 +29,7 @@ import '../../widgets/background.dart';
 import '../../widgets/custom_buttons/app_bar_icon_button.dart';
 import '../../widgets/custom_buttons/blue_text_button.dart';
 import '../../widgets/icon_widgets/sol_token_icon.dart';
+import 'solana_token_contract_details_view.dart';
 import 'sub_widgets/token_summary_sol.dart';
 import 'sub_widgets/token_transaction_list_widget_sol.dart';
 
@@ -208,14 +210,13 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
                       ).extension<StackColors>()!.topNavIconPrimary,
                     ),
                     onPressed: () {
-                      // TODO: Implement token details navigation for Solana.
-                      // Navigator.of(context).pushNamed(
-                      //   TokenContractDetailsView.routeName,
-                      //   arguments: Tuple2(
-                      //     widget.tokenMint,
-                      //     widget.walletId,
-                      //   ),
-                      // );
+                      Navigator.of(context).pushNamed(
+                        SolanaTokenContractDetailsView.routeName,
+                        arguments: Tuple2(
+                          widget.tokenMint,
+                          widget.walletId,
+                        ),
+                      );
                     },
                   ),
                 ),

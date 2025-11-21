@@ -77,7 +77,9 @@ class SolanaTokenWallet extends Wallet {
   @override
   Future<void> init() async {
     await super.init();
-    // TODO: Initialize token account address derivation.
+
+    parentSolanaWallet.checkClient();
+
     await Future<void>.delayed(const Duration(milliseconds: 100));
   }
 

@@ -75,13 +75,13 @@ class SolanaWallet extends Bip39Wallet<Solana> {
   }
 
   Future<BigInt> _getCurrentBalanceInLamports() async {
-    _checkClient();
+    checkClient();
     final balance = await _rpcClient?.getBalance((await _getKeyPair()).address);
     return BigInt.from(balance!.value);
   }
 
   Future<BigInt?> _getEstimatedNetworkFee(Amount transferAmount) async {
-    _checkClient();
+    checkClient();
     final latestBlockhash = await _rpcClient?.getLatestBlockhash();
     final pubKey = (await _getKeyPair()).publicKey;
 
@@ -134,7 +134,7 @@ class SolanaWallet extends Bip39Wallet<Solana> {
   @override
   Future<TxData> prepareSend({required TxData txData}) async {
     try {
-      _checkClient();
+      checkClient();
 
       if (txData.recipients == null || txData.recipients!.length != 1) {
         throw Exception("$runtimeType prepareSend requires 1 recipient");
@@ -195,7 +195,7 @@ class SolanaWallet extends Bip39Wallet<Solana> {
   @override
   Future<TxData> confirmSend({required TxData txData}) async {
     try {
-      _checkClient();
+      checkClient();
 
       final keyPair = await _getKeyPair();
       final recipientAccount = txData.recipients!.first;
@@ -280,7 +280,7 @@ class SolanaWallet extends Bip39Wallet<Solana> {
 
   @override
   Future<Amount> estimateFeeFor(Amount amount, BigInt feeRate) async {
-    _checkClient();
+    checkClient();
 
     if (info.cachedBalance.spendable.raw == BigInt.zero) {
       return Amount(
@@ -292,12 +292,15 @@ class SolanaWallet extends Bip39Wallet<Solana> {
     // The feeRate parameter contains the total fee amount to use.
     // For Solana, this is already calculated based on priority tier.
     // Simply return it as the fee estimate.
-    return Amount(rawValue: feeRate, fractionDigits: cryptoCurrency.fractionDigits);
+    return Amount(
+      rawValue: feeRate,
+      fractionDigits: cryptoCurrency.fractionDigits,
+    );
   }
 
   @override
   Future<FeeObject> get fees async {
-    _checkClient();
+    checkClient();
 
     final baseFee = await _getEstimatedNetworkFee(
       Amount.fromDecimal(
@@ -348,7 +351,7 @@ class SolanaWallet extends Bip39Wallet<Solana> {
   Future<bool> pingCheck() async {
     String? health;
     try {
-      _checkClient();
+      checkClient();
       health = await _rpcClient?.getHealth();
       return health != null;
     } catch (e, s) {
@@ -387,7 +390,7 @@ class SolanaWallet extends Bip39Wallet<Solana> {
 
   @override
   Future<void> updateBalance() async {
-    _checkClient();
+    checkClient();
     try {
       final address = await getCurrentReceivingAddress();
 
@@ -437,7 +440,7 @@ class SolanaWallet extends Bip39Wallet<Solana> {
   @override
   Future<void> updateChainHeight() async {
     try {
-      _checkClient();
+      checkClient();
 
       final int blockHeight = await _rpcClient?.getSlot() ?? 0;
       // TODO [prio=low]: Revisit null condition.
@@ -478,7 +481,7 @@ class SolanaWallet extends Bip39Wallet<Solana> {
   @override
   Future<void> updateTransactions() async {
     try {
-      _checkClient();
+      checkClient();
 
       final transactionsList = await _rpcClient?.getTransactionsList(
         (await _getKeyPair()).publicKey,
@@ -665,7 +668,7 @@ class SolanaWallet extends Bip39Wallet<Solana> {
   }
 
   /// Make sure the Solana RpcClient uses Tor if it's enabled.
-  void _checkClient() {
+  void checkClient() {
     final node = getCurrentNode();
 
     final netOption = TorPlainNetworkOption.fromNodeData(

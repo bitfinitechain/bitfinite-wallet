@@ -532,6 +532,47 @@ class SolanaTokenAPI {
     }
   }
 
+  /// Detect which token program owns a mint address.
+  ///
+  /// Queries the RPC to get the mint account info and checks which program owns it.
+  /// This is needed to determine whether to use standard SPL Token instructions
+  /// or Token-2022 (Token Extensions) instructions for transfers.
+  ///
+  /// Returns: "spl" for standard SPL Token, "token2022" for Token Extensions, or null if detection fails.
+  Future<String?> getTokenProgramType(String mintAddress) async {
+    try {
+      _checkClient();
+
+      // Query the mint account to check its owner program.
+      final response = await _rpcClient!.getAccountInfo(
+        mintAddress,
+        encoding: Encoding.jsonParsed,
+      );
+
+      if (response.value == null) {
+        return null;
+      }
+
+      final owner = response.value!.owner;
+
+      // Check which program owns this mint.
+      // SPL Token: TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA
+      // Token-2022: TokenzQdBNbLvnVCrqtsvQQrXTVkDkAydS7d5xgqfnb
+      if (owner == 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA') {
+        return 'spl';
+      }
+      if (owner.startsWith('Token') && owner != 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA') {
+        print('[SOLANA_TOKEN_API] Detected Token-2022 variant: $owner');
+        return 'token2022';
+      }
+
+      return null;
+    } catch (e) {
+      print('[SOLANA_TOKEN_API] Error detecting token program: $e');
+      return null;
+    }
+  }
+
   /// Derive the metadata PDA for a given mint address.
   ///
   /// This is a temporary implementation that queries known metadata endpoints.

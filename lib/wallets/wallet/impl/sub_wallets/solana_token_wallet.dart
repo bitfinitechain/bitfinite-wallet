@@ -136,6 +136,21 @@ class SolanaTokenWallet extends Wallet {
         );
       }
 
+      // Validate sender token account exists and has proper data.
+      try {
+        final accountInfo = await rpcClient.getAccountInfo(
+          senderTokenAccount,
+          encoding: Encoding.jsonParsed,
+        );
+        if (accountInfo.value == null) {
+          throw Exception(
+            "Sender token account $senderTokenAccount not found on-chain",
+          );
+        }
+      } catch (e) {
+        throw Exception("Failed to validate sender token account: $e");
+      }
+
       // Get latest block hash (used internally by RPC client).
       await rpcClient.getLatestBlockhash();
 
@@ -154,10 +169,38 @@ class SolanaTokenWallet extends Wallet {
         );
       }
 
-      // Log the determined token account for debugging.
-      Logging.instance.i(
-        "$runtimeType prepareSend - recipient token account: $recipientTokenAccount",
-      );
+      try {
+        final recipientAccountInfo = await rpcClient.getAccountInfo(
+          recipientTokenAccount,
+          encoding: Encoding.jsonParsed,
+        );
+        if (recipientAccountInfo.value == null) {
+          throw Exception(
+            "Recipient token account $recipientTokenAccount does not exist on-chain. "
+            "The recipient must initialize their token account before receiving tokens. "
+            "You can ask the recipient to accept the token in their wallet app first.",
+          );
+        }
+
+        final accountData = recipientAccountInfo.value!;
+
+        // Verify account is owned by token program (not System Program).
+        if (accountData.owner == '11111111111111111111111111111111') {
+          throw Exception(
+            "Recipient token account $recipientTokenAccount is owned by the System Program, "
+            "not a token program. The account may not be a valid token account.",
+          );
+        }
+      } catch (e) {
+        if (e.toString().contains("does not exist") ||
+            e.toString().contains("not owned by")) {
+          rethrow; // Re-throw our validation errors.
+        }
+        throw Exception(
+          "Failed to validate recipient token account: $e. "
+          "Ensure the recipient has initialized their token account.",
+        );
+      }
 
       // Build SPL token tx instruction.
       final senderTokenAccountKey = Ed25519HDPublicKey.fromBase58(
@@ -166,17 +209,55 @@ class SolanaTokenWallet extends Wallet {
       final recipientTokenAccountKey = Ed25519HDPublicKey.fromBase58(
         recipientTokenAccount,
       );
+      final mintPubkey = Ed25519HDPublicKey.fromBase58(tokenMint);
 
-      // Build the transfer instruction (validated later in confirmSend).
+      // Query the actual token program owner (important for Token-2022 variants).
+      String tokenProgramId;
+      try {
+        final mintInfo = await rpcClient.getAccountInfo(
+          tokenMint,
+          encoding: Encoding.jsonParsed,
+        );
+        if (mintInfo.value != null) {
+          tokenProgramId = mintInfo.value!.owner;
+          Logging.instance.i(
+            "$runtimeType prepareSend: Token program owner = $tokenProgramId for mint $tokenMint",
+          );
+        } else {
+          // Fallback to SPL Token.
+          tokenProgramId = 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA';
+          Logging.instance.w(
+            "$runtimeType prepareSend: Could not query mint owner, using SPL Token",
+          );
+        }
+      } catch (e) {
+        // Fallback to SPL Token on error.
+        tokenProgramId = 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA';
+        Logging.instance.w(
+          "$runtimeType prepareSend: Error querying mint owner: $e, using SPL Token",
+        );
+      }
+
+      // Build the transfer instruction (will be rebuilt in confirmSend with updated blockhash).
+      // Determine which token program type to use based on the queried owner.
+      final TokenProgramType tokenProgram =
+          tokenProgramId != 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA'
+              && tokenProgramId.startsWith('Token')
+              ? TokenProgramType.token2022Program
+              : TokenProgramType.tokenProgram;
+
       // ignore: unused_local_variable
-      final instruction = TokenInstruction.transfer(
+      final instruction = TokenInstruction.transferChecked(
         source: senderTokenAccountKey,
         destination: recipientTokenAccountKey,
+        mint: mintPubkey,
         owner: keyPair.publicKey,
+        decimals: tokenDecimals,
         amount: txData.amount!.raw.toInt(),
+        tokenProgram: tokenProgram,
       );
 
-      // Estimate fee using RPC call.
+      // Estimate fee.
       final feeEstimate =
           await _getEstimatedTokenTransferFee(
             senderTokenAccountKey: senderTokenAccountKey,
@@ -237,8 +318,6 @@ class SolanaTokenWallet extends Wallet {
         throw Exception("Token account not found");
       }
 
-      // Get latest block hash (again, in case it expired).
-      // (RPC client handles blockhash internally)
       await rpcClient.getLatestBlockhash();
 
       // Reuse the recipient token account from prepareSend (already looked up once).
@@ -263,12 +342,54 @@ class SolanaTokenWallet extends Wallet {
       final recipientTokenAccountKey = Ed25519HDPublicKey.fromBase58(
         recipientTokenAccount,
       );
+      final mintPubkey = Ed25519HDPublicKey.fromBase58(tokenMint);
 
-      final instruction = TokenInstruction.transfer(
+      // Query the actual token program owner (important for Token-2022 variants).
+      String tokenProgramId;
+      try {
+        final mintInfo = await rpcClient.getAccountInfo(
+          tokenMint,
+          encoding: Encoding.jsonParsed,
+        );
+        if (mintInfo.value != null) {
+          tokenProgramId = mintInfo.value!.owner;
+          Logging.instance.i(
+            "$runtimeType confirmSend: Token program owner = $tokenProgramId for mint $tokenMint",
+          );
+        } else {
+          // Fallback to SPL Token.
+          tokenProgramId = 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA';
+          Logging.instance.w(
+            "$runtimeType confirmSend: Could not query mint owner, using SPL Token",
+          );
+        }
+      } catch (e) {
+        // Fallback to SPL Token on error.
+        tokenProgramId = 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA';
+        Logging.instance.w(
+          "$runtimeType confirmSend: Error querying mint owner: $e, using SPL Token",
+        );
+      }
+
+      // Build the TransferChecked instruction.
+      final TokenProgramType tokenProgram =
+          tokenProgramId != 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA'
+              && tokenProgramId.startsWith('Token') // Token-2022 variant.
+              ? TokenProgramType.token2022Program
+              : TokenProgramType.tokenProgram;
+
+      final instruction = TokenInstruction.transferChecked(
         source: senderTokenAccountKey,
         destination: recipientTokenAccountKey,
+        mint: mintPubkey,
         owner: keyPair.publicKey,
+        decimals: tokenDecimals,
         amount: txData.amount!.raw.toInt(),
+        tokenProgram: tokenProgram,
+      );
+
+      Logging.instance.i(
+        "$runtimeType confirmSend: Built TransferChecked instruction for token program $tokenProgramId",
       );
 
       // Create message.
@@ -728,11 +849,19 @@ class SolanaTokenWallet extends Wallet {
       );
 
       if (result.value.isEmpty) {
+        Logging.instance.w(
+          "$runtimeType _findTokenAccount: No token account found for "
+          "owner=$ownerAddress, mint=$mint",
+        );
         return null;
       }
 
-      // Return the first token account address
-      return result.value.first.pubkey;
+      final tokenAccountAddress = result.value.first.pubkey;
+      Logging.instance.i(
+        "$runtimeType _findTokenAccount: Found token account $tokenAccountAddress "
+        "for owner=$ownerAddress, mint=$mint",
+      );
+      return tokenAccountAddress;
     } catch (e) {
       Logging.instance.w("$runtimeType _findTokenAccount error: $e");
       return null;
@@ -771,13 +900,18 @@ class SolanaTokenWallet extends Wallet {
       );
 
       try {
-        final ataAddress = _deriveAtaAddress(
+        final ataAddress = await _deriveAtaAddress(
           ownerAddress: recipientAddress,
           mint: mint,
+          rpcClient: rpcClient,
         );
-        final ataBase58 = ataAddress.toBase58();
-        Logging.instance.i("$runtimeType Derived ATA address: $ataBase58");
-        return ataBase58;
+        if (ataAddress != null) {
+          Logging.instance.i("$runtimeType Derived ATA address: $ataAddress");
+          return ataAddress;
+        } else {
+          Logging.instance.w("$runtimeType ATA derivation returned null");
+          return null;
+        }
       } catch (derivationError) {
         Logging.instance.w(
           "$runtimeType Failed to derive ATA address: $derivationError",
@@ -794,38 +928,128 @@ class SolanaTokenWallet extends Wallet {
 
   /// Derive the Associated Token Account (ATA) address for a given owner and mint.
   ///
-  /// Returns the derived ATA address as an Ed25519HDPublicKey.
-  /// This implementation uses the standard Solana ATA derivation formula:
-  /// ATA = findProgramAddress([b"account", owner, tokenProgram, mint], associatedTokenProgram)
+  /// The ATA is computed using:
+  /// PDA = findProgramAddress(
+  ///   seeds = [b"account", owner_pubkey, token_program_id, mint_pubkey],
+  ///   program_id = AssociatedTokenProgram
+  /// )
   ///
-  /// NOTE: This is a simplified implementation. Proper implementation requires
-  /// the solana package to expose findProgramAddress utilities.
-  Ed25519HDPublicKey _deriveAtaAddress({
+  /// Returns the derived ATA address as a base58 string, or null if derivation fails.
+  Future<String?> _deriveAtaAddress({
     required String ownerAddress,
     required String mint,
-  }) {
+    required RpcClient rpcClient,
+  }) async {
     try {
+      // Parse public keys from base58.
       final ownerPubkey = Ed25519HDPublicKey.fromBase58(ownerAddress);
       final mintPubkey = Ed25519HDPublicKey.fromBase58(mint);
 
-      // For now, return a placeholder that the RPC lookup will either find
-      // or fail gracefully. In a production implementation, this should use
-      // proper Solana PDA derivation with findProgramAddress.
-      //
-      // The lookup in _findOrDeriveRecipientTokenAccount will try to find
-      // the actual token account first, and if not found, this derivation
-      // will be attempted (though it may not be correct without proper PDA logic).
+      // Detect which token program owns the mint by querying its owner directly.
+      // This is important because Token-2022 variants have different program IDs
+      // on different networks.
+      final tokenApi = SolanaTokenAPI();
+      tokenApi.initializeRpcClient(rpcClient);
 
-      // Return the owner pubkey as a fallback
-      // The actual ATA will be looked up via RPC in most cases
-      return ownerPubkey;
-    } catch (e) {
-      Logging.instance.w("$runtimeType _deriveAtaAddress error: $e");
-      rethrow;
+      String tokenProgramId;
+      try {
+        final mintInfo = await rpcClient.getAccountInfo(
+          mint,
+          encoding: Encoding.jsonParsed,
+        );
+        if (mintInfo.value != null) {
+          tokenProgramId = mintInfo.value!.owner;
+          Logging.instance.i(
+            "$runtimeType _deriveAtaAddress: Detected token program owner=$tokenProgramId "
+            "for mint=$mint",
+          );
+        } else {
+          // Fallback to SPL Token if we can't query.
+          tokenProgramId = 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA';
+          Logging.instance.w(
+            "$runtimeType _deriveAtaAddress: Could not query mint, using default SPL Token program",
+          );
+        }
+      } catch (e) {
+        // Fallback to SPL Token on error.
+        tokenProgramId = 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA';
+        Logging.instance.w(
+          "$runtimeType _deriveAtaAddress: Error querying mint owner: $e, using SPL Token",
+        );
+      }
+
+      final tokenProgramPubkey = Ed25519HDPublicKey.fromBase58(tokenProgramId);
+
+      // Associated Token Program ID (same for both SPL and Token-2022).
+      const associatedTokenProgramId =
+          'ATokenGPvbdGVqstVQmcLsNZAqeEjlCoquUSjfJ5c';
+      final associatedTokenProgramPubkey = Ed25519HDPublicKey.fromBase58(
+        associatedTokenProgramId,
+      );
+
+      // Build seeds for ATA PDA derivation.
+      // Seeds: ["account", owner, tokenProgram, mint]
+      final seeds = [
+        'account'.codeUnits,
+        ownerPubkey.toBase58().codeUnits,
+        tokenProgramPubkey.toBase58().codeUnits,
+        mintPubkey.toBase58().codeUnits,
+      ];
+
+      Logging.instance.i(
+        "$runtimeType _deriveAtaAddress: Building seeds for ATA derivation",
+      );
+
+      final ataAddress = await Ed25519HDPublicKey.findProgramAddress(
+        seeds: seeds,
+        programId: associatedTokenProgramPubkey,
+      );
+
+      final ataBase58 = ataAddress.toBase58();
+
+      Logging.instance.i(
+        "$runtimeType _deriveAtaAddress: Successfully derived ATA address "
+        "(owner=$ownerAddress, mint=$mint, program=$tokenProgramId) → "
+        "$ataBase58",
+      );
+
+      // Also verify the derived address actually exists on-chain
+      try {
+        final derivedAccountInfo = await rpcClient.getAccountInfo(
+          ataBase58,
+          encoding: Encoding.jsonParsed,
+        );
+        if (derivedAccountInfo.value == null) {
+          Logging.instance.w(
+            "$runtimeType _deriveAtaAddress: WARNING - Derived ATA address "
+            "$ataBase58 does not exist on-chain. Recipient must initialize "
+            "their token account first.",
+          );
+        } else {
+          Logging.instance.i(
+            "$runtimeType _deriveAtaAddress: Derived ATA exists on-chain - "
+            "owner=${derivedAccountInfo.value!.owner}, "
+            "lamports=${derivedAccountInfo.value!.lamports}",
+          );
+        }
+      } catch (e) {
+        Logging.instance.w(
+          "$runtimeType _deriveAtaAddress: Could not verify derived ATA exists: $e",
+        );
+      }
+
+      return ataBase58;
+    } catch (e, stackTrace) {
+      Logging.instance.w(
+        "$runtimeType _deriveAtaAddress error: $e",
+        error: e,
+        stackTrace: stackTrace,
+      );
+      return null;
     }
   }
 
-  /// Estimate the fee for an SPL token transfer transaction.
+  /// Estimate the fee for an token transfer transaction.
   ///
   /// Builds a token transfer message with the given parameters and uses
   /// the RPC `getFeeForMessage` call to get an accurate fee estimate.
@@ -842,12 +1066,37 @@ class SolanaTokenWallet extends Wallet {
       // Get latest blockhash for message compilation.
       final latestBlockhash = await rpcClient.getLatestBlockhash();
 
-      // Build the token transfer instruction.
-      final instruction = TokenInstruction.transfer(
+      final mintPubkey = Ed25519HDPublicKey.fromBase58(tokenMint);
+
+      // Query the actual token program owner (important for Token-2022 variants).
+      String tokenProgramId;
+      try {
+        final mintInfo = await rpcClient.getAccountInfo(
+          tokenMint,
+          encoding: Encoding.jsonParsed,
+        );
+        tokenProgramId = mintInfo.value?.owner ??
+            'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA';
+      } catch (e) {
+        tokenProgramId = 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA';
+      }
+
+      // Build the TransferChecked instruction.
+      // Determine which token program type to use based on the queried owner.
+      final TokenProgramType tokenProgram =
+          tokenProgramId != 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA'
+              && tokenProgramId.startsWith('Token')
+              ? TokenProgramType.token2022Program
+              : TokenProgramType.tokenProgram;
+
+      final instruction = TokenInstruction.transferChecked(
         source: senderTokenAccountKey,
         destination: recipientTokenAccountKey,
+        mint: mintPubkey,
         owner: ownerPublicKey,
+        decimals: tokenDecimals,
         amount: amount,
+        tokenProgram: tokenProgram,
       );
 
       // Compile the message with the blockhash.

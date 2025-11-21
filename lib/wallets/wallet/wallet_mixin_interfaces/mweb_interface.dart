@@ -185,8 +185,45 @@ mixin MwebInterface<T extends ElectrumXCurrencyInterface>
 
     Logging.instance.i("info.restoreHeight: ${info.restoreHeight}");
     Logging.instance.i(
-      "info.otherData[WalletInfoKeys.mwebScanHeight]: ${info.otherData[WalletInfoKeys.mwebScanHeight]}",
+      "info.otherData[WalletInfoKeys.mwebScanHeight]:"
+      " ${info.otherData[WalletInfoKeys.mwebScanHeight]}",
     );
+
+    // =========================================================================
+    final List<MwebUtxosCompanion> utxos = [];
+    final stream = await client.utxos(
+      UtxosRequest(
+        fromHeight: info.restoreHeight,
+        scanSecret: await _scanSecret,
+      ),
+    );
+    try {
+      await for (final utxo in stream.timeout(const Duration(seconds: 2))) {
+        final newUtxo = MwebUtxosCompanion(
+          outputId: Value(utxo.outputId),
+          address: Value(utxo.address),
+          value: Value(utxo.value.toInt()),
+          height: Value(utxo.height),
+          blockTime: Value(utxo.blockTime),
+          blocked: const Value(false),
+          used: const Value(false),
+        );
+        utxos.add(newUtxo);
+      }
+    } catch (_) {}
+
+    try {
+      await stream.cancel();
+    } catch (_) {}
+    final db = Drift.get(walletId);
+    await db.transaction(() async {
+      await db.delete(db.mwebUtxos).go();
+      for (final utxo in utxos) {
+        await db.into(db.mwebUtxos).insert(utxo);
+      }
+    });
+    // =========================================================================
+
     final fromHeight =
         info.otherData[WalletInfoKeys.mwebScanHeight] as int? ??
         info.restoreHeight;
@@ -196,7 +233,6 @@ mixin MwebInterface<T extends ElectrumXCurrencyInterface>
       scanSecret: await _scanSecret,
     );
 
-    final db = Drift.get(walletId);
     _mwebUtxoSubscription = (await client.utxos(request)).listen((utxo) async {
       Logging.instance.t(
         "Found UTXO in stream: Utxo("
@@ -322,7 +358,8 @@ mixin MwebInterface<T extends ElectrumXCurrencyInterface>
   Future<Address> generateNextMwebAddress({bool isChange = false}) async {
     if (!info.isMwebEnabled) {
       throw Exception(
-        "Tried calling generateNextMwebAddress with mweb disabled for $walletId ${info.name}",
+        "Tried calling generateNextMwebAddress with mweb "
+        "disabled for $walletId ${info.name}",
       );
     }
 
@@ -382,7 +419,8 @@ mixin MwebInterface<T extends ElectrumXCurrencyInterface>
               SpentRequest(outputId: [input.outpoint!.txid]),
             );
             if (response.outputId.contains(input.outpoint!.txid)) {
-              // dummy to show tx as confirmed. Need a better way to handle this as its kind of stupid, resulting in terrible UX
+              // dummy to show tx as confirmed. Need a better way to handle
+              // this as its kind of stupid, resulting in terrible UX
               final dummyHeight = await chainHeight;
 
               TransactionV2? transaction = await mainDB.isar.transactionV2s
@@ -480,7 +518,8 @@ mixin MwebInterface<T extends ElectrumXCurrencyInterface>
   Future<TxData> _confirmSendMweb({required TxData txData}) async {
     if (!info.isMwebEnabled) {
       throw Exception(
-        "Tried calling _confirmSendMweb with mweb disabled for $walletId ${info.name}",
+        "Tried calling _confirmSendMweb with mweb disabled for"
+        " $walletId ${info.name}",
       );
     }
 
@@ -533,7 +572,11 @@ mixin MwebInterface<T extends ElectrumXCurrencyInterface>
         final db = Drift.get(walletId);
         await db.transaction(() async {
           for (final used in usedMwebUtxos) {
-            await db.update(db.mwebUtxos).replace(used);
+            await db
+                .update(db.mwebUtxos)
+                .replace(
+                  used.copyWith(used: true),
+                ); // used should already be set to true here but...
           }
         });
       }
@@ -578,7 +621,8 @@ mixin MwebInterface<T extends ElectrumXCurrencyInterface>
   Future<void> anonymizeAllMweb() async {
     if (!info.isMwebEnabled) {
       Logging.instance.e(
-        "Tried calling anonymizeAllMweb with mweb disabled for $walletId ${info.name}",
+        "Tried calling anonymizeAllMweb with mweb disabled for"
+        " $walletId ${info.name}",
       );
       return;
     }
@@ -909,6 +953,9 @@ mixin MwebInterface<T extends ElectrumXCurrencyInterface>
     final preOutputSum = outputs.fold(BigInt.zero, (p, e) => p + e.amount.raw);
     final fee = sumOfUtxosValue - preOutputSum;
 
+    final feeRate =
+        txData.satsPerVByte ?? (txData.feeRateAmount!.toInt() / 1000).ceil();
+
     final client = await _client;
 
     final resp = await client.create(
@@ -916,7 +963,7 @@ mixin MwebInterface<T extends ElectrumXCurrencyInterface>
         rawTx: txData.raw!.toUint8ListFromHex,
         scanSecret: await _scanSecret,
         spendSecret: await _spendSecret,
-        feeRatePerKb: Int64(txData.feeRateAmount!.toInt()),
+        feeRatePerKb: Int64(feeRate * 1000),
         dryRun: true,
       ),
     );
@@ -948,14 +995,11 @@ mixin MwebInterface<T extends ElectrumXCurrencyInterface>
     BigInt feeIncrease = posOutputSum - expectedPegin;
 
     if (expectedPegin > BigInt.zero) {
-      feeIncrease +=
-          BigInt.from((txData.feeRateAmount! / BigInt.from(1000)).ceil()) *
-          BigInt.from(41);
+      feeIncrease += BigInt.from(feeRate * 41);
     }
 
-    // bandaid: add one to account for a rounding error that happens sometimes
     return Amount(
-      rawValue: fee + feeIncrease + BigInt.one,
+      rawValue: fee + feeIncrease,
       fractionDigits: cryptoCurrency.fractionDigits,
     );
   }

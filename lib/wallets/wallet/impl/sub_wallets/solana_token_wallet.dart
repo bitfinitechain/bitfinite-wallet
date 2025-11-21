@@ -666,7 +666,7 @@ class SolanaTokenWallet extends Wallet {
 
   @override
   Future<void> updateChainHeight() async {
-    // TODO: Get latest Solana block height.
+    await parentSolanaWallet.updateChainHeight();
   }
 
   @override

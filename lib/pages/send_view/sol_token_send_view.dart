@@ -560,7 +560,10 @@ class _SolTokenSendViewState extends ConsumerState<SolTokenSendView> {
   @override
   void initState() {
     ref.refresh(feeSheetSessionCacheProvider);
-    ref.read(feeRateTypeMobileStateProvider.state).state = FeeRateType.slow;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(feeRateTypeMobileStateProvider.state).state = FeeRateType.slow;
+    });
 
     _calculateFeesFuture = calculateFees();
     _data = widget.autoFillData;

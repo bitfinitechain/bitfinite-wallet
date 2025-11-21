@@ -27,21 +27,13 @@ import '../../../models/tx_data.dart';
 import '../../wallet.dart';
 import '../solana_wallet.dart';
 
-/// Solana Token Wallet for SPL token transfers.
-///
-/// Implements send functionality for Solana SPL tokens (like USDC, USDT, etc.)
-/// by delegating RPC calls and key management to the parent SolanaWallet.
 class SolanaTokenWallet extends Wallet {
   @override
   int get isarTransactionVersion => 2;
 
-  /// Create a new Solana Token Wallet.
-  ///
-  /// Requires a parent SolanaWallet to provide RPC client and key management.
   SolanaTokenWallet(this.parentSolanaWallet, this.splToken)
     : super(parentSolanaWallet.cryptoCurrency);
 
-  /// Parent Solana wallet (provides RPC client and keypair access).
   final SolanaWallet parentSolanaWallet;
 
   final SplToken splToken;
@@ -51,18 +43,11 @@ class SolanaTokenWallet extends Wallet {
   String get tokenSymbol => splToken.symbol;
   int get tokenDecimals => splToken.decimals;
 
-  /// Override walletId to delegate to parent wallet
   @override
   String get walletId => parentSolanaWallet.walletId;
 
-  /// Override mainDB to delegate to parent wallet
-  /// (SolanaTokenWallet shares the same database as its parent)
   @override
   MainDB get mainDB => parentSolanaWallet.mainDB;
-
-  // =========================================================================
-  // Abstract method implementations
-  // =========================================================================
 
   @override
   FilterOperation? get changeAddressFilterOperation => null;
@@ -86,7 +71,6 @@ class SolanaTokenWallet extends Wallet {
   @override
   Future<TxData> prepareSend({required TxData txData}) async {
     try {
-      // Input validation.
       if (txData.recipients == null || txData.recipients!.isEmpty) {
         throw ArgumentError("At least one recipient is required");
       }
@@ -106,14 +90,12 @@ class SolanaTokenWallet extends Wallet {
         throw ArgumentError("Recipient address cannot be empty");
       }
 
-      // Validate recipient is a valid base58 address.
       try {
         Ed25519HDPublicKey.fromBase58(recipientAddress);
       } catch (e) {
         throw ArgumentError("Invalid recipient address: $recipientAddress");
       }
 
-      // Get wallet state.
       final rpcClient = parentSolanaWallet.getRpcClient();
       if (rpcClient == null) {
         throw Exception("RPC client not initialized");
@@ -122,7 +104,6 @@ class SolanaTokenWallet extends Wallet {
       final keyPair = await parentSolanaWallet.getKeyPair();
       final walletAddress = keyPair.address;
 
-      // Get sender's token acct.
       final senderTokenAccount = await _findTokenAccount(
         ownerAddress: walletAddress,
         mint: tokenMint,
@@ -136,7 +117,6 @@ class SolanaTokenWallet extends Wallet {
         );
       }
 
-      // Validate sender token account exists and has proper data.
       try {
         final accountInfo = await rpcClient.getAccountInfo(
           senderTokenAccount,
@@ -151,10 +131,8 @@ class SolanaTokenWallet extends Wallet {
         throw Exception("Failed to validate sender token account: $e");
       }
 
-      // Get latest block hash (used internally by RPC client).
       await rpcClient.getLatestBlockhash();
 
-      // Get recipient's token account (or derive ATA if it doesn't exist).
       final recipientTokenAccount = await _findOrDeriveRecipientTokenAccount(
         recipientAddress: recipientAddress,
         mint: tokenMint,
@@ -194,7 +172,7 @@ class SolanaTokenWallet extends Wallet {
       } catch (e) {
         if (e.toString().contains("does not exist") ||
             e.toString().contains("not owned by")) {
-          rethrow; // Re-throw our validation errors.
+          rethrow;
         }
         throw Exception(
           "Failed to validate recipient token account: $e. "
@@ -202,7 +180,6 @@ class SolanaTokenWallet extends Wallet {
         );
       }
 
-      // Build SPL token tx instruction.
       final senderTokenAccountKey = Ed25519HDPublicKey.fromBase58(
         senderTokenAccount,
       );
@@ -211,7 +188,6 @@ class SolanaTokenWallet extends Wallet {
       );
       final mintPubkey = Ed25519HDPublicKey.fromBase58(tokenMint);
 
-      // Query the actual token program owner (important for Token-2022 variants).
       String tokenProgramId;
       try {
         final mintInfo = await rpcClient.getAccountInfo(
@@ -238,8 +214,6 @@ class SolanaTokenWallet extends Wallet {
         );
       }
 
-      // Build the transfer instruction (will be rebuilt in confirmSend with updated blockhash).
-      // Determine which token program type to use based on the queried owner.
       final TokenProgramType tokenProgram =
           tokenProgramId != 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA'
               && tokenProgramId.startsWith('Token')
@@ -257,7 +231,6 @@ class SolanaTokenWallet extends Wallet {
         tokenProgram: tokenProgram,
       );
 
-      // Estimate fee.
       final feeEstimate =
           await _getEstimatedTokenTransferFee(
             senderTokenAccountKey: senderTokenAccountKey,
@@ -268,11 +241,10 @@ class SolanaTokenWallet extends Wallet {
           ) ??
           5000;
 
-      // Return prepared TxData.
       return txData.copyWith(
         fee: Amount(
           rawValue: BigInt.from(feeEstimate),
-          fractionDigits: 9, // Solana uses 9 decimal places for lamports.
+          fractionDigits: 9,
         ),
         solanaRecipientTokenAccount: recipientTokenAccount,
       );
@@ -330,12 +302,7 @@ class SolanaTokenWallet extends Wallet {
         );
       }
 
-      // Log the token account for debugging.
-      Logging.instance.i(
-        "$runtimeType confirmSend - using recipient token account: $recipientTokenAccount",
-      );
-
-      // 5. Build SPL token tx instruction.
+      // Build SPL token tx instruction.
       final senderTokenAccountKey = Ed25519HDPublicKey.fromBase58(
         senderTokenAccount,
       );
@@ -386,10 +353,6 @@ class SolanaTokenWallet extends Wallet {
         decimals: tokenDecimals,
         amount: txData.amount!.raw.toInt(),
         tokenProgram: tokenProgram,
-      );
-
-      Logging.instance.i(
-        "$runtimeType confirmSend: Built TransferChecked instruction for token program $tokenProgramId",
       );
 
       // Create message.
@@ -678,26 +641,14 @@ class SolanaTokenWallet extends Wallet {
   @override
   Future<void> updateBalance() async {
     try {
-      Logging.instance.i(
-        "$runtimeType updateBalance: Starting balance update for tokenMint=$tokenMint",
-      );
-
       final rpcClient = parentSolanaWallet.getRpcClient();
       if (rpcClient == null) {
-        Logging.instance.w(
-          "$runtimeType updateBalance: RPC client not initialized",
-        );
         return;
       }
 
       final keyPair = await parentSolanaWallet.getKeyPair();
       final walletAddress = keyPair.address;
 
-      Logging.instance.i(
-        "$runtimeType updateBalance: Wallet address = $walletAddress",
-      );
-
-      // Get sender's token account.
       final senderTokenAccount = await _findTokenAccount(
         ownerAddress: walletAddress,
         mint: tokenMint,
@@ -705,17 +656,9 @@ class SolanaTokenWallet extends Wallet {
       );
 
       if (senderTokenAccount == null) {
-        Logging.instance.w(
-          "$runtimeType updateBalance: No token account found for mint $tokenMint",
-        );
         return;
       }
 
-      Logging.instance.i(
-        "$runtimeType updateBalance: Found token account = $senderTokenAccount",
-      );
-
-      // Fetch the token balance.
       final tokenApi = SolanaTokenAPI();
       tokenApi.initializeRpcClient(rpcClient);
 
@@ -731,26 +674,12 @@ class SolanaTokenWallet extends Wallet {
       }
 
       if (balanceResponse.value != null) {
-        // Log the updated balance.
-        Logging.instance.i(
-          "$runtimeType updateBalance: New balance = ${balanceResponse.value} (${balanceResponse.value! / BigInt.from(10).pow(tokenDecimals)} ${tokenSymbol})",
-        );
-
-        // Persist balance to WalletSolanaTokenInfo in Isar database.
-        Logging.instance.i(
-          "$runtimeType updateBalance: Looking up WalletSolanaTokenInfo for walletId=$walletId, tokenMint=$tokenMint",
-        );
-
         final info = await mainDB.isar.walletSolanaTokenInfo
             .where()
             .walletIdTokenAddressEqualTo(walletId, tokenMint)
             .findFirst();
 
         if (info != null) {
-          Logging.instance.i(
-            "$runtimeType updateBalance: Found WalletSolanaTokenInfo with ID=${info.id}, updating cached balance",
-          );
-
           final balanceAmount = Amount(
             rawValue: balanceResponse.value!,
             fractionDigits: tokenDecimals,
@@ -794,11 +723,6 @@ class SolanaTokenWallet extends Wallet {
 
   @override
   Future<void> refresh() async {
-    Logging.instance.i(
-      "$runtimeType refresh: Starting refresh for tokenMint=$tokenMint",
-    );
-    // Refresh both the parent wallet and token balance.
-    // This ensures the cached token balance in the database is updated.
     await parentSolanaWallet.refresh();
     await updateBalance();
     await updateTransactions();
@@ -806,36 +730,22 @@ class SolanaTokenWallet extends Wallet {
 
   @override
   Future<Amount> estimateFeeFor(Amount amount, BigInt feeRate) async {
-    // Delegate to parent SolanaWallet for fee estimation.
-    // For token transfers, the fee is the same as a regular SOL transfer.
     return parentSolanaWallet.estimateFeeFor(amount, feeRate);
   }
 
   @override
   Future<FeeObject> get fees async {
-    // Delegate to parent SolanaWallet for fee information.
-    // For token transfers, the fees are the same as regular SOL transfers.
     return parentSolanaWallet.fees;
   }
 
   @override
   Future<bool> pingCheck() async {
-    // Delegate to parent SolanaWallet for RPC health check.
     return parentSolanaWallet.pingCheck();
   }
 
   @override
-  Future<void> checkSaveInitialReceivingAddress() async {
-    // Token accounts are derived, not managed separately.
-  }
+  Future<void> checkSaveInitialReceivingAddress() async {}
 
-  // =========================================================================
-  // Helper methods
-  // =========================================================================
-
-  /// Find a token account for the given owner and mint.
-  ///
-  /// Returns the token account address if found, otherwise null.
   Future<String?> _findTokenAccount({
     required String ownerAddress,
     required String mint,
@@ -868,12 +778,6 @@ class SolanaTokenWallet extends Wallet {
     }
   }
 
-  /// Find or derive the recipient's token account for a given mint.
-  ///
-  /// This method first attempts to find an existing token account owned by the recipient.
-  /// If not found, it attempts to derive the ATA (Associated Token Account) address.
-  ///
-  /// Returns the token account address if found or derived, otherwise null.
   Future<String?> _findOrDeriveRecipientTokenAccount({
     required String recipientAddress,
     required String mint,
@@ -926,28 +830,15 @@ class SolanaTokenWallet extends Wallet {
     }
   }
 
-  /// Derive the Associated Token Account (ATA) address for a given owner and mint.
-  ///
-  /// The ATA is computed using:
-  /// PDA = findProgramAddress(
-  ///   seeds = [b"account", owner_pubkey, token_program_id, mint_pubkey],
-  ///   program_id = AssociatedTokenProgram
-  /// )
-  ///
-  /// Returns the derived ATA address as a base58 string, or null if derivation fails.
   Future<String?> _deriveAtaAddress({
     required String ownerAddress,
     required String mint,
     required RpcClient rpcClient,
   }) async {
     try {
-      // Parse public keys from base58.
       final ownerPubkey = Ed25519HDPublicKey.fromBase58(ownerAddress);
       final mintPubkey = Ed25519HDPublicKey.fromBase58(mint);
 
-      // Detect which token program owns the mint by querying its owner directly.
-      // This is important because Token-2022 variants have different program IDs
-      // on different networks.
       final tokenApi = SolanaTokenAPI();
       tokenApi.initializeRpcClient(rpcClient);
 
@@ -959,36 +850,21 @@ class SolanaTokenWallet extends Wallet {
         );
         if (mintInfo.value != null) {
           tokenProgramId = mintInfo.value!.owner;
-          Logging.instance.i(
-            "$runtimeType _deriveAtaAddress: Detected token program owner=$tokenProgramId "
-            "for mint=$mint",
-          );
         } else {
-          // Fallback to SPL Token if we can't query.
           tokenProgramId = 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA';
-          Logging.instance.w(
-            "$runtimeType _deriveAtaAddress: Could not query mint, using default SPL Token program",
-          );
         }
       } catch (e) {
-        // Fallback to SPL Token on error.
         tokenProgramId = 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA';
-        Logging.instance.w(
-          "$runtimeType _deriveAtaAddress: Error querying mint owner: $e, using SPL Token",
-        );
       }
 
       final tokenProgramPubkey = Ed25519HDPublicKey.fromBase58(tokenProgramId);
 
-      // Associated Token Program ID (same for both SPL and Token-2022).
       const associatedTokenProgramId =
           'ATokenGPvbdGVqstVQmcLsNZAqeEjlCoquUSjfJ5c';
       final associatedTokenProgramPubkey = Ed25519HDPublicKey.fromBase58(
         associatedTokenProgramId,
       );
 
-      // Build seeds for ATA PDA derivation.
-      // Seeds: ["account", owner, tokenProgram, mint]
       final seeds = [
         'account'.codeUnits,
         ownerPubkey.toBase58().codeUnits,
@@ -996,47 +872,12 @@ class SolanaTokenWallet extends Wallet {
         mintPubkey.toBase58().codeUnits,
       ];
 
-      Logging.instance.i(
-        "$runtimeType _deriveAtaAddress: Building seeds for ATA derivation",
-      );
-
       final ataAddress = await Ed25519HDPublicKey.findProgramAddress(
         seeds: seeds,
         programId: associatedTokenProgramPubkey,
       );
 
       final ataBase58 = ataAddress.toBase58();
-
-      Logging.instance.i(
-        "$runtimeType _deriveAtaAddress: Successfully derived ATA address "
-        "(owner=$ownerAddress, mint=$mint, program=$tokenProgramId) → "
-        "$ataBase58",
-      );
-
-      // Also verify the derived address actually exists on-chain
-      try {
-        final derivedAccountInfo = await rpcClient.getAccountInfo(
-          ataBase58,
-          encoding: Encoding.jsonParsed,
-        );
-        if (derivedAccountInfo.value == null) {
-          Logging.instance.w(
-            "$runtimeType _deriveAtaAddress: WARNING - Derived ATA address "
-            "$ataBase58 does not exist on-chain. Recipient must initialize "
-            "their token account first.",
-          );
-        } else {
-          Logging.instance.i(
-            "$runtimeType _deriveAtaAddress: Derived ATA exists on-chain - "
-            "owner=${derivedAccountInfo.value!.owner}, "
-            "lamports=${derivedAccountInfo.value!.lamports}",
-          );
-        }
-      } catch (e) {
-        Logging.instance.w(
-          "$runtimeType _deriveAtaAddress: Could not verify derived ATA exists: $e",
-        );
-      }
 
       return ataBase58;
     } catch (e, stackTrace) {
@@ -1049,12 +890,6 @@ class SolanaTokenWallet extends Wallet {
     }
   }
 
-  /// Estimate the fee for an token transfer transaction.
-  ///
-  /// Builds a token transfer message with the given parameters and uses
-  /// the RPC `getFeeForMessage` call to get an accurate fee estimate.
-  ///
-  /// Returns the estimated fee in lamports, or null if estimation fails.
   Future<int?> _getEstimatedTokenTransferFee({
     required Ed25519HDPublicKey senderTokenAccountKey,
     required Ed25519HDPublicKey recipientTokenAccountKey,
@@ -1128,12 +963,6 @@ class SolanaTokenWallet extends Wallet {
     }
   }
 
-  /// Wait for transaction confirmation on-chain.
-  ///
-  /// Polls the RPC node until the transaction reaches the desired commitment
-  /// level or until timeout is reached.
-  ///
-  /// Returns true if confirmed, false if timeout or error occurred.
   Future<bool> _waitForConfirmation({
     required String signature,
     required int maxWaitSeconds,

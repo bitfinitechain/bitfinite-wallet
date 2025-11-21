@@ -21,9 +21,7 @@ class SolanaTokenApiException implements Exception {
   String toString() => 'SolanaTokenApiException: $message';
 }
 
-/// Response wrapper for Solana token API calls.
-///
-/// Follows the pattern that the result is either value or exception
+/// Result wrapper for Solana token API calls.
 class SolanaTokenApiResponse<T> {
   final T? value;
   final Exception? exception;
@@ -127,8 +125,6 @@ class SolanaTokenAPI {
 
   RpcClient? _rpcClient;
 
-  /// Initialize with a configured RPC client.
-  /// This should be called with the same RPC client from SolanaWallet.
   void initializeRpcClient(RpcClient rpcClient) {
     _rpcClient = rpcClient;
   }
@@ -141,9 +137,6 @@ class SolanaTokenAPI {
     }
   }
 
-  /// Get token accounts owned by a wallet address for a specific mint.
-  ///
-  /// Returns a list of token account addresses owned by the wallet.
   Future<SolanaTokenApiResponse<List<String>>> getTokenAccountsByOwner(
     String ownerAddress, {
     String? mint,
@@ -155,14 +148,12 @@ class SolanaTokenAPI {
 
       final result = await _rpcClient!.getTokenAccountsByOwner(
         ownerAddress,
-        // Create the appropriate filter: by mint if specified, or else all SPL tokens.
         mint != null
             ? TokenAccountsFilter.byMint(mint)
             : TokenAccountsFilter.byProgramId(splTokenProgramId),
         encoding: Encoding.jsonParsed,
       );
 
-      // Extract token account addresses from the RPC response.
       final accountAddresses = result.value
           .map((account) => account.pubkey)
           .toList();
@@ -178,170 +169,73 @@ class SolanaTokenAPI {
     }
   }
 
-  /// Get the balance of a specific token account.
-  ///
-  /// Parameters:
-  ///   - tokenAccountAddress: The token account address to query.
-  ///
-  /// Returns the balance as a BigInt (in smallest units).
   Future<SolanaTokenApiResponse<BigInt>> getTokenAccountBalance(
     String tokenAccountAddress,
   ) async {
     try {
       _checkClient();
 
-      // Query the token account with jsonParsed encoding to get token amount.
       final response = await _rpcClient!.getAccountInfo(
         tokenAccountAddress,
         encoding: Encoding.jsonParsed,
       );
 
       if (response.value == null) {
-        // Token account doesn't exist.
         return SolanaTokenApiResponse<BigInt>(value: BigInt.zero);
       }
 
       final accountData = response.value!;
 
-      // Extract token amount from parsed data.
       try {
-        // Debug: Print the structure of accountData.
-        print(
-          '[SOLANA_TOKEN_API] accountData type: ${accountData.runtimeType}',
-        );
-        print(
-          '[SOLANA_TOKEN_API] accountData.data type: ${accountData.data.runtimeType}',
-        );
-        print('[SOLANA_TOKEN_API] accountData.data: ${accountData.data}');
-
-        // The solana package returns a ParsedAccountData which is a sealed class/union type.
-        // For SPL Token accounts, it contains SplTokenProgramAccountData.
-
         final parsedData = accountData.data;
 
         if (parsedData is ParsedAccountData) {
-          print('[SOLANA_TOKEN_API] ParsedAccountData detected');
-
           try {
             final extractedBalance = parsedData.when(
               splToken: (spl) {
-                print('[SOLANA_TOKEN_API] Handling splToken variant');
-                print('[SOLANA_TOKEN_API] spl type: ${spl.runtimeType}');
-
                 return spl.when(
                   account: (info, type, accountType) {
-                    print('[SOLANA_TOKEN_API] Handling account variant');
-                    print('[SOLANA_TOKEN_API] info type: ${info.runtimeType}');
-                    print(
-                      '[SOLANA_TOKEN_API] info.tokenAmount: ${info.tokenAmount}',
-                    );
-
                     try {
                       final tokenAmount = info.tokenAmount;
-                      print(
-                        '[SOLANA_TOKEN_API] tokenAmount.amount: ${tokenAmount.amount}',
-                      );
-                      print(
-                        '[SOLANA_TOKEN_API] tokenAmount.decimals: ${tokenAmount.decimals}',
-                      );
-
-                      final balanceBigInt = BigInt.parse(tokenAmount.amount);
-                      print(
-                        '[SOLANA_TOKEN_API] Successfully extracted balance: $balanceBigInt',
-                      );
-                      return balanceBigInt;
+                      return BigInt.parse(tokenAmount.amount);
                     } catch (e) {
-                      print('[SOLANA_TOKEN_API] Error extracting balance: $e');
                       return null;
                     }
                   },
-                  mint: (info, type, accountType) {
-                    print(
-                      '[SOLANA_TOKEN_API] Got mint variant (not expected for token account balance)',
-                    );
-                    return null;
-                  },
-                  unknown: (type) {
-                    print('[SOLANA_TOKEN_API] Got unknown account variant');
-                    return null;
-                  },
+                  mint: (info, type, accountType) => null,
+                  unknown: (type) => null,
                 );
               },
-              stake: (_) {
-                print(
-                  '[SOLANA_TOKEN_API] Got stake account type (not expected)',
-                );
-                return null;
-              },
+              stake: (_) => null,
               token2022: (token2022Data) {
-                print(
-                  '[SOLANA_TOKEN_API] Handling token2022 account type',
-                );
-                print('[SOLANA_TOKEN_API] token2022Data type: ${token2022Data.runtimeType}');
-
                 return token2022Data.when(
                   account: (info, type, accountType) {
-                    print('[SOLANA_TOKEN_API] Handling token2022 account variant');
-                    print('[SOLANA_TOKEN_API] info type: ${info.runtimeType}');
-                    print(
-                      '[SOLANA_TOKEN_API] info.tokenAmount: ${info.tokenAmount}',
-                    );
-
                     try {
                       final tokenAmount = info.tokenAmount;
-                      print(
-                        '[SOLANA_TOKEN_API] tokenAmount.amount: ${tokenAmount.amount}',
-                      );
-                      print(
-                        '[SOLANA_TOKEN_API] tokenAmount.decimals: ${tokenAmount.decimals}',
-                      );
-
-                      final balanceBigInt = BigInt.parse(tokenAmount.amount);
-                      print(
-                        '[SOLANA_TOKEN_API] Successfully extracted token2022 balance: $balanceBigInt',
-                      );
-                      return balanceBigInt;
+                      return BigInt.parse(tokenAmount.amount);
                     } catch (e) {
-                      print('[SOLANA_TOKEN_API] Error extracting token2022 balance: $e');
                       return null;
                     }
                   },
-                  mint: (info, type, accountType) {
-                    print(
-                      '[SOLANA_TOKEN_API] Got token2022 mint variant (not expected for token account balance)',
-                    );
-                    return null;
-                  },
-                  unknown: (type) {
-                    print('[SOLANA_TOKEN_API] Got unknown token2022 account variant');
-                    return null;
-                  },
+                  mint: (info, type, accountType) => null,
+                  unknown: (type) => null,
                 );
               },
-              unsupported: (_) {
-                print('[SOLANA_TOKEN_API] Got unsupported account type');
-                return null;
-              },
+              unsupported: (_) => null,
             );
 
             if (extractedBalance != null && extractedBalance is BigInt) {
-              print('[SOLANA_TOKEN_API] Extracted balance: $extractedBalance');
               return SolanaTokenApiResponse<BigInt>(
                 value: extractedBalance as BigInt,
               );
             }
           } catch (e) {
-            print('[SOLANA_TOKEN_API] Error using when() method: $e');
-            print('[SOLANA_TOKEN_API] Stack trace: ${StackTrace.current}');
+            // Ignore parsing errors.
           }
         }
 
-        // If we can't extract from the Dart object, return zero.
-        print('[SOLANA_TOKEN_API] Returning zero balance');
         return SolanaTokenApiResponse<BigInt>(value: BigInt.zero);
       } catch (e) {
-        // If parsing fails, return zero balance.
-        print('[SOLANA_TOKEN_API] Exception during parsing: $e');
         return SolanaTokenApiResponse<BigInt>(value: BigInt.zero);
       }
     } on Exception catch (e) {
@@ -354,23 +248,11 @@ class SolanaTokenAPI {
     }
   }
 
-  /// Get the total supply of a token.
-  ///
-  /// Parameters:
-  ///   - mint: The token mint address.
-  ///
-  /// Returns the total supply as a BigInt.
-  /// 
-  /// NOTE: Currently returns placeholder data for UI placeholders.
-  /// 
-  /// TODO: Implement full RPC call when API is ready.
+  // TODO: Implement full RPC call when API is ready.
   Future<SolanaTokenApiResponse<BigInt>> getTokenSupply(String mint) async {
     try {
       _checkClient();
-
       // TODO: Get the mint account info when RPC APIs are stable.
-      // 
-      // For now return placeholder mock data.
       return SolanaTokenApiResponse<BigInt>(
         value: BigInt.parse('1000000000000000000'),
       );
@@ -384,16 +266,7 @@ class SolanaTokenAPI {
     }
   }
 
-  /// Get token account information with balance and metadata.
-  ///
-  /// Parameters:
-  ///   - tokenAccountAddress: The token account address.
-  ///
-  /// Returns detailed token account information.
-  ///
-  /// Currently returns placeholder data for UI placeholders.
-  /// 
-  /// TODO: Implement full RPC call when API is ready.
+  // TODO: Implement full RPC call when API is ready.
   Future<SolanaTokenApiResponse<TokenAccountInfo>> getTokenAccountInfo(
     String tokenAccountAddress,
   ) async {
@@ -423,13 +296,6 @@ class SolanaTokenAPI {
     }
   }
 
-  /// Find the Associated Token Account (ATA) for a wallet and mint.
-  ///
-  /// Parameters:
-  ///   - ownerAddress: The wallet address.
-  ///   - mint: The token mint address.
-  ///
-  /// Returns the derived ATA address.
   String findAssociatedTokenAddress(String ownerAddress, String mint) {
     // Return a placeholder.
     //
@@ -437,9 +303,6 @@ class SolanaTokenAPI {
     return '';
   }
 
-  /// Check if a wallet owns a token (has a token account for the given mint).
-  ///
-  /// Returns true if the wallet has a token account for this mint, false otherwise.
   Future<SolanaTokenApiResponse<bool>> ownsToken(
     String ownerAddress,
     String mint,
@@ -468,16 +331,6 @@ class SolanaTokenAPI {
     }
   }
 
-  /// Fetch SPL token metadata from Solana metadata program.
-  ///
-  /// The Solana Token Metadata program (metaqbxxUerdq28cj1RbAqWwTRiWLs6nshmbbuP3xqb)
-  /// stores token metadata at a PDA derived from the mint address.
-  ///
-  /// Returns: Map with name, symbol, decimals, and optional logo URI
-  /// Returns null if metadata cannot be found (user can enter custom details),
-  ///
-  /// Note: Full PDA derivation is not yet implemented in the solana package.
-  /// Currently returns null to allow users to manually enter token details.
   Future<SolanaTokenApiResponse<Map<String, dynamic>?>>
       fetchTokenMetadataByMint(
     String mintAddress,

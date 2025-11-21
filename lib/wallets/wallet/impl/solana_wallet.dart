@@ -37,18 +37,12 @@ class SolanaWallet extends Bip39Wallet<Solana> {
 
   NodeModel? _solNode;
 
-  RpcClient? _rpcClient; // The Solana RpcClient.
+  RpcClient? _rpcClient;
 
-  /// Get the RPC client for this wallet.
-  ///
-  /// This is used by services like SolanaTokenAPI that need to make RPC calls.
   RpcClient? getRpcClient() {
     return _rpcClient;
   }
 
-  /// Get the keypair for this wallet.
-  ///
-  /// Used internally and by token wallets for signing transactions.
   Future<Ed25519HDKeyPair> getKeyPair() async {
     return _getKeyPair();
   }
@@ -648,11 +642,9 @@ class SolanaWallet extends Bip39Wallet<Solana> {
 
   @override
   Future<bool> updateUTXOs() async {
-    // No UTXOs in Solana
     return false;
   }
 
-  /// Update the list of custom Solana token mint addresses for this wallet.
   Future<void> updateSolanaTokens(Set<String> mintAddresses) async {
     await info.updateSolanaCustomTokenMintAddresses(
       newMintAddresses: mintAddresses,
@@ -667,7 +659,6 @@ class SolanaWallet extends Bip39Wallet<Solana> {
     );
   }
 
-  /// Make sure the Solana RpcClient uses Tor if it's enabled.
   void checkClient() {
     final node = getCurrentNode();
 

@@ -322,9 +322,7 @@ class _SolTokenSendViewState extends ConsumerState<SolTokenSendView> {
       return null;
     }
     if (address.isNotEmpty) {
-      // TODO: Implement Solana address validation.
-      // For now, perform basic length check (44 chars is typical for Solana addresses).
-      if (address.length < 32 || address.length > 44) {
+      if (!Solana(CryptoCurrencyNetwork.main).validateAddress(address)) {
         return "Invalid address";
       }
     }
@@ -332,12 +330,10 @@ class _SolTokenSendViewState extends ConsumerState<SolTokenSendView> {
   }
 
   void _updatePreviewButtonState(String? address, Amount? amount) {
-    // TODO: Implement Solana address validation.
     final isValidAddress =
         address != null &&
         address.isNotEmpty &&
-        address.length >= 32 &&
-        address.length <= 44;
+        Solana(CryptoCurrencyNetwork.main).validateAddress(address);
     ref.read(previewTokenTxButtonStateProvider.state).state =
         (isValidAddress && amount != null && amount > Amount.zero);
   }

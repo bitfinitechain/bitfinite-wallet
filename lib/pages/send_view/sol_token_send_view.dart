@@ -14,6 +14,7 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../models/isar/models/isar_models.dart';
 import '../../models/send_view_auto_fill_data.dart';
@@ -28,7 +29,9 @@ import '../../utilities/amount/amount_formatter.dart';
 import '../../utilities/amount/amount_input_formatter.dart';
 import '../../utilities/barcode_scanner_interface.dart';
 import '../../utilities/clipboard_interface.dart';
+import '../../utilities/assets.dart';
 import '../../utilities/constants.dart';
+import '../../utilities/enums/fee_rate_type_enum.dart';
 import '../../utilities/logger.dart';
 import '../../utilities/prefs.dart';
 import '../../utilities/text_styles.dart';
@@ -340,10 +343,45 @@ class _SolTokenSendViewState extends ConsumerState<SolTokenSendView> {
   }
 
   Future<String> calculateFees() async {
-    // TODO: Implement Solana fee calculation.
-    // For now, return a placeholder fee
-    cachedFees = "0.000005 SOL";
-    return cachedFees;
+    try {
+      final wallet = ref.read(pCurrentSolanaTokenWallet);
+      if (wallet == null) {
+        return "0.000005 SOL";
+      }
+
+      final feeObject = await wallet.fees;
+
+      late final BigInt feeRate;
+
+      switch (ref.read(feeRateTypeMobileStateProvider.state).state) {
+        case FeeRateType.fast:
+          feeRate = feeObject.fast;
+          break;
+        case FeeRateType.average:
+          feeRate = feeObject.medium;
+          break;
+        case FeeRateType.slow:
+          feeRate = feeObject.slow;
+          break;
+        default:
+          feeRate = BigInt.from(-1);
+      }
+
+      final Amount fee = await wallet.estimateFeeFor(Amount.zero, feeRate);
+      cachedFees = ref
+          .read(pAmountFormatter(Solana(CryptoCurrencyNetwork.main)))
+          .format(fee, withUnitName: true, indicatePrecisionLoss: false);
+
+      return cachedFees;
+    } catch (e, s) {
+      Logging.instance.w(
+        "Failed to calculate Solana token fees: ",
+        error: e,
+        stackTrace: s,
+      );
+      // Return minimum fee as fallback.
+      return "0.000005 SOL";
+    }
   }
 
   Future<void> _previewTransaction() async {
@@ -522,6 +560,7 @@ class _SolTokenSendViewState extends ConsumerState<SolTokenSendView> {
   @override
   void initState() {
     ref.refresh(feeSheetSessionCacheProvider);
+    ref.read(feeRateTypeMobileStateProvider.state).state = FeeRateType.slow;
 
     _calculateFeesFuture = calculateFees();
     _data = widget.autoFillData;
@@ -1114,38 +1153,100 @@ class _SolTokenSendViewState extends ConsumerState<SolTokenSendView> {
                                       ),
                                     ),
                                     onPressed: () {
-                                      // TODO: Implement fee selection for Solana.
+                                      showModalBottomSheet<dynamic>(
+                                        backgroundColor: Colors.transparent,
+                                        context: context,
+                                        shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.vertical(
+                                            top: Radius.circular(20),
+                                          ),
+                                        ),
+                                        builder: (_) =>
+                                            TransactionFeeSelectionSheet(
+                                              walletId: walletId,
+                                              isToken: true,
+                                              amount:
+                                                  (Decimal.tryParse(
+                                                            cryptoAmountController
+                                                                .text,
+                                                          ) ??
+                                                          Decimal.zero)
+                                                      .toAmount(
+                                                        fractionDigits:
+                                                            tokenWallet
+                                                                .tokenDecimals,
+                                                      ),
+                                              updateChosen: (String fee) {
+                                                setState(() {
+                                                  _calculateFeesFuture = Future(
+                                                    () => fee,
+                                                  );
+                                                });
+                                              },
+                                            ),
+                                      );
                                     },
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        FutureBuilder(
-                                          future: _calculateFeesFuture,
-                                          builder: (context, snapshot) {
-                                            if (snapshot.connectionState ==
-                                                    ConnectionState.done &&
-                                                snapshot.hasData) {
-                                              return Text(
-                                                "~${snapshot.data!}",
-                                                style: STextStyles.itemSubtitle(
-                                                  context,
-                                                ),
-                                              );
-                                            } else {
-                                              return AnimatedText(
-                                                stringsToLoopThrough: const [
-                                                  "Calculating",
-                                                  "Calculating.",
-                                                  "Calculating..",
-                                                  "Calculating...",
-                                                ],
-                                                style: STextStyles.itemSubtitle(
-                                                  context,
-                                                ),
-                                              );
-                                            }
-                                          },
+                                        Row(
+                                          children: [
+                                            Text(
+                                              ref
+                                                  .watch(
+                                                    feeRateTypeMobileStateProvider
+                                                        .state,
+                                                  )
+                                                  .state
+                                                  .prettyName,
+                                              style: STextStyles.itemSubtitle12(
+                                                context,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 10),
+                                            FutureBuilder(
+                                              future: _calculateFeesFuture,
+                                              builder: (context, snapshot) {
+                                                if (snapshot.connectionState ==
+                                                        ConnectionState.done &&
+                                                    snapshot.hasData) {
+                                                  return Text(
+                                                    "~${snapshot.data!}",
+                                                    style:
+                                                        STextStyles.itemSubtitle(
+                                                          context,
+                                                        ),
+                                                  );
+                                                } else {
+                                                  return AnimatedText(
+                                                    stringsToLoopThrough:
+                                                        const [
+                                                          "Calculating",
+                                                          "Calculating.",
+                                                          "Calculating..",
+                                                          "Calculating...",
+                                                        ],
+                                                    style:
+                                                        STextStyles.itemSubtitle(
+                                                          context,
+                                                        ),
+                                                  );
+                                                }
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                        SvgPicture.asset(
+                                          Assets.svg.chevronDown,
+                                          width: 8,
+                                          height: 4,
+                                          colorFilter: ColorFilter.mode(
+                                            Theme.of(context)
+                                                .extension<StackColors>()!
+                                                .textSubtitle2,
+                                            BlendMode.srcIn,
+                                          ),
                                         ),
                                       ],
                                     ),

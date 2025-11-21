@@ -77,6 +77,7 @@ class _DesktopSendFeeFormState extends ConsumerState<DesktopSendFeeForm> {
   Widget build(BuildContext context) {
     final canEditFees =
         isEth ||
+        cryptoCurrency is Solana ||
         (cryptoCurrency is ElectrumXCurrencyInterface &&
             !(((cryptoCurrency is Firo) &&
                 (ref.watch(publicPrivateBalanceStateProvider.state).state ==
@@ -211,7 +212,7 @@ class _DesktopSendFeeFormState extends ConsumerState<DesktopSendFeeForm> {
                                           .estimateFeeFor(amount, feeRate);
                                     }
                                   } else {
-                                    // TODO: Implement fee estimation for Solana tokens.
+                                    // Token fee estimation (works for ERC20 and SPL tokens).
                                     try {
                                       final tokenWallet = ref.read(
                                         pCurrentTokenWallet,
@@ -223,7 +224,7 @@ class _DesktopSendFeeFormState extends ConsumerState<DesktopSendFeeForm> {
                                               .average[amount] =
                                           fee;
                                     } catch (_) {
-                                      // Token wallet not available (Solana).
+                                      // Token wallet not available.
                                       debugPrint("Token fee estimation not available");
                                     }
                                   }

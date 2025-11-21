@@ -289,35 +289,58 @@ class SolanaWallet extends Bip39Wallet<Solana> {
       );
     }
 
-    final fee = await _getEstimatedNetworkFee(amount);
-    if (fee == null) {
-      throw Exception("Failed to get fees, please check your node connection.");
-    }
-
-    return Amount(rawValue: fee, fractionDigits: cryptoCurrency.fractionDigits);
+    // The feeRate parameter contains the total fee amount to use.
+    // For Solana, this is already calculated based on priority tier.
+    // Simply return it as the fee estimate.
+    return Amount(rawValue: feeRate, fractionDigits: cryptoCurrency.fractionDigits);
   }
 
   @override
   Future<FeeObject> get fees async {
     _checkClient();
 
-    final fee = await _getEstimatedNetworkFee(
+    final baseFee = await _getEstimatedNetworkFee(
       Amount.fromDecimal(
         Decimal.one, // 1 SOL.
         fractionDigits: cryptoCurrency.fractionDigits,
       ),
     );
-    if (fee == null) {
+    if (baseFee == null) {
       throw Exception("Failed to get fees, please check your node connection.");
     }
+
+    // Differentiate fees by tier using multipliers:
+    // Base fee is typically around 5000 lamports.
+    // Slow: minimum 5000 lamports.
+    // Average: base fee * 1.5 (but not less than slow).
+    // Fast: base fee * 2.0 (but not less than average).
+    // Ensure all fees stay within bounds: 5000-1000000 lamports.
+    const minFeeBig = 5000;
+    const maxFeeBig = 1000000;
+
+    // Calculate tier fees with multipliers.
+    final slowFee = baseFee; // Use base fee for slow.
+    final averageFee = (baseFee * BigInt.from(3)) ~/ BigInt.from(2); // 1.5x.
+    final fastFee = baseFee * BigInt.from(2); // 2.0x.
+
+    // Clamp all fees to the allowed range.
+    final _clamp = (BigInt value) {
+      if (value < BigInt.from(minFeeBig)) return BigInt.from(minFeeBig);
+      if (value > BigInt.from(maxFeeBig)) return BigInt.from(maxFeeBig);
+      return value;
+    };
+
+    final clampedSlow = _clamp(slowFee);
+    final clampedAverage = _clamp(averageFee);
+    final clampedFast = _clamp(fastFee);
 
     return FeeObject(
       numberOfBlocksFast: 1,
       numberOfBlocksAverage: 1,
       numberOfBlocksSlow: 1,
-      fast: fee,
-      medium: fee,
-      slow: fee,
+      fast: clampedFast,
+      medium: clampedAverage,
+      slow: clampedSlow,
     );
   }
 

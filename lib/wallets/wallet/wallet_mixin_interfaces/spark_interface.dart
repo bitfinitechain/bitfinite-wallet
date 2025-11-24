@@ -39,7 +39,8 @@ import 'electrumx_interface.dart';
 const kDefaultSparkIndex = 1;
 
 // TODO dart style constants. Maybe move to spark lib?
-const MAX_STANDARD_TX_WEIGHT = 400000;
+// https://github.com/firoorg/firo/pull/1457/files#diff-1fc0f6b5081e8ed5dfa8bf230744ad08cc6f4c1147e98552f1f424b0492fe9bdR28
+const MAX_NEW_TX_WEIGHT = 1000000;
 
 //https://github.com/firoorg/sparkmobile/blob/ef2e39aae18ecc49e0ddc63a3183e9764b96012e/include/spark.h#L16
 const SPARK_OUT_LIMIT_PER_TX = 16;
@@ -1734,7 +1735,7 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
         final dummyTx = dummyTxb.build();
         final nBytes = dummyTx.virtualSize();
 
-        if (dummyTx.weight() > MAX_STANDARD_TX_WEIGHT) {
+        if (dummyTx.weight() > MAX_NEW_TX_WEIGHT) {
           throw Exception("Transaction too large");
         }
 

@@ -336,7 +336,7 @@ class _AddCustomSolanaTokenViewState
                 Padding(
                   padding: const EdgeInsets.only(left: 32),
                   child: Text(
-                    "Add custom SPL token",
+                    "Add custom SOL token",
                     style: STextStyles.desktopH3(context),
                   ),
                 ),
@@ -360,7 +360,7 @@ class _AddCustomSolanaTokenViewState
           children: [
             if (!isDesktop)
               Text(
-                "Add custom SPL token",
+                "Add custom SOL token",
                 style: STextStyles.pageTitleH1(context),
               ),
             if (!isDesktop) const SizedBox(height: 16),

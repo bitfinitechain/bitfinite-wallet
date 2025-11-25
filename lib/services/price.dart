@@ -301,7 +301,7 @@ class PriceAPI {
     }
   }
 
-  /// Get prices and 24h change for Solana SPL tokens.
+  /// Get prices and 24h change for Solana SOL tokens.
   ///
   /// Uses CoinGecko API to fetch prices for tokens by their Solana mint addresses.
   /// Format: GET /api/v3/simple/token_price/solana?vs_currencies=usd&contract_addresses=mint1,mint2&include_24hr_change=true

@@ -212,7 +212,7 @@ class _DesktopSendFeeFormState extends ConsumerState<DesktopSendFeeForm> {
                                           .estimateFeeFor(amount, feeRate);
                                     }
                                   } else {
-                                    // Token fee estimation (works for ERC20 and SPL tokens).
+                                    // Token fee estimation (works for ERC20 and SOL tokens).
                                     try {
                                       final tokenWallet = ref.read(
                                         pCurrentTokenWallet,

@@ -626,7 +626,7 @@ class MainDB {
 
   // ========== Solana =========================================================
 
-  // Solana (SPL) tokens.
+  // Solana tokens.
 
   QueryBuilder<SplToken, SplToken, QWhere> getSplTokens() =>
       isar.splTokens.where();

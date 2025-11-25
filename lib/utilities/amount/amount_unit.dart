@@ -192,7 +192,7 @@ extension AmountUnitExt on AmountUnit {
       case AmountUnit.yocto:
       case AmountUnit.ronto:
       case AmountUnit.quecto:
-        // For SPL tokens, just use the symbol with the prefix if applicable.
+        // For SOL tokens, just use the symbol with the prefix if applicable.
         return token.symbol;
     }
   }

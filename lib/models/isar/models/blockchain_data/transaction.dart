@@ -261,5 +261,5 @@ enum TransactionSubType {
   sparkSpend, // firo specific
   ordinal,
   mweb,
-  splToken, // Solana token (SPL).
+  splToken, // Solana token.
 }

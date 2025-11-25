@@ -17,6 +17,7 @@ import 'app_config.dart';
 import 'db/drift/database.dart';
 import 'models/add_wallet_list_entity/add_wallet_list_entity.dart';
 import 'models/add_wallet_list_entity/sub_classes/eth_token_entity.dart';
+import 'models/add_wallet_list_entity/sub_classes/sol_token_entity.dart';
 import 'models/buy/response_objects/quote.dart';
 import 'models/exchange/incomplete_exchange.dart';
 import 'models/exchange/response_objects/trade.dart';
@@ -44,6 +45,7 @@ import 'pages/add_wallet_views/restore_wallet_view/restore_options_view/restore_
 import 'pages/add_wallet_views/restore_wallet_view/restore_view_only_wallet_view.dart';
 import 'pages/add_wallet_views/restore_wallet_view/restore_wallet_view.dart';
 import 'pages/add_wallet_views/select_wallet_for_token_view.dart';
+import 'pages/add_wallet_views/select_wallet_for_sol_token_view.dart';
 import 'pages/add_wallet_views/verify_recovery_phrase_view/verify_recovery_phrase_view.dart';
 import 'pages/address_book_views/address_book_view.dart';
 import 'pages/address_book_views/subviews/add_address_book_entry_view.dart';
@@ -391,6 +393,16 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => SelectWalletForTokenView(entity: args),
+            settings: RouteSettings(name: settings.name),
+          );
+        }
+        return _routeError("${settings.name} invalid args: ${args.toString()}");
+
+      case SelectWalletForSolTokenView.routeName:
+        if (args is SolTokenEntity) {
+          return getRoute(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => SelectWalletForSolTokenView(entity: args),
             settings: RouteSettings(name: settings.name),
           );
         }

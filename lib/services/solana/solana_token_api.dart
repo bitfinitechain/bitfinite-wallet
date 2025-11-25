@@ -408,58 +408,21 @@ class SolanaTokenAPI {
 
       final owner = response.value!.owner;
 
-      // Check which program owns this mint.
-      // SPL Token: TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA
-      // Token-2022: TokenzQdBNbLvnVCrqtsvQQrXTVkDkAydS7d5xgqfnb
+      // Rough check which program owns this mint.
+      //
+      // For now all we need to know ius if it's SPL or newer.
+      // TODO [prio=low]: Fix via program metadata parsing or similar.
       if (owner == 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA') {
         return 'spl';
+      } else {
+        if (owner.startsWith('Token')) {
+          return 'token2022';
+        }
       }
-      if (owner.startsWith('Token') && owner != 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA') {
-        print('[SOLANA_TOKEN_API] Detected Token-2022 variant: $owner');
-        return 'token2022';
-      }
-
-      return null;
-    } catch (e) {
-      print('[SOLANA_TOKEN_API] Error detecting token program: $e');
-      return null;
-    }
-  }
-
-  /// Derive the metadata PDA for a given mint address.
-  ///
-  /// This is a temporary implementation that queries known metadata endpoints.
-  /// In production, this should use solana package's findProgramAddress utilities.
-  ///
-  /// Returns: metadata PDA address or null if derivation fails
-  Future<String?> _deriveMetadataPda(String mintAddress) async {
-    try {
-      // Validate the mint address first
-      if (!isValidSolanaMintAddress(mintAddress)) {
-        return null;
-      }
-
-      // TODO: Implement proper PDA derivation using solana package's findProgramAddress
-      // This is a placeholder that would need to be updated when solana package
-      // exposes the necessary utilities
-      //
-      // For now, we return null to trigger fallback behavior
-      // In a real implementation, you would derive the PDA like:
-      // final seeds = [
-      //   'metadata'.codeUnits,
-      //   metadataProgram.toBytes(),
-      //   mint.toBytes(),
-      // ];
-      // final (pda, _) = Ed25519HDPublicKey.findProgramAddress(
-      //   seeds,
-      //   metadataProgram,
-      // );
-      // return pda.toBase58();
 
       return null;
     } catch (e) {
       return null;
     }
   }
-
 }

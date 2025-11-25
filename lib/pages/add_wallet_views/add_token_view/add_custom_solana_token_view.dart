@@ -30,10 +30,7 @@ import '../../../widgets/desktop/secondary_button.dart';
 import '../../../widgets/stack_dialog.dart';
 
 class AddCustomSolanaTokenView extends ConsumerStatefulWidget {
-  const AddCustomSolanaTokenView({
-    super.key,
-    this.walletId,
-  });
+  const AddCustomSolanaTokenView({super.key, this.walletId});
 
   static const routeName = "/addCustomSolanaToken";
 
@@ -71,7 +68,7 @@ class _AddCustomSolanaTokenViewState
 
     // Check if token is already in the wallet.
     if (widget.walletId != null) {
-      final walletInfo = ref.watch(pWalletInfo(widget.walletId!));
+      final walletInfo = ref.read(pWalletInfo(widget.walletId!));
       final allTokenMints = <String>{
         ...walletInfo.solanaTokenMintAddresses,
         ...walletInfo.solanaCustomTokenMintAddresses,
@@ -119,7 +116,8 @@ class _AddCustomSolanaTokenViewState
                           Expanded(
                             child: PrimaryButton(
                               label: "OK",
-                              onPressed: () => Navigator.of(dialogContext).pop(),
+                              onPressed: () =>
+                                  Navigator.of(dialogContext).pop(),
                             ),
                           ),
                         ],
@@ -149,10 +147,7 @@ class _AddCustomSolanaTokenViewState
               builder: (child) => DesktopDialog(
                 maxWidth: 500,
                 maxHeight: double.infinity,
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: child,
-                ),
+                child: Padding(padding: const EdgeInsets.all(32), child: child),
               ),
               child: ConditionalParent(
                 condition: !Util.isDesktop,
@@ -166,7 +161,8 @@ class _AddCustomSolanaTokenViewState
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      "Please enter a valid Solana SPL token mint address (base58 encoded, ~44 characters).",
+                      "Please enter a valid Solana SPL token mint address "
+                      "(base58 encoded, ~44 characters).",
                       style: STextStyles.smallMed14(context),
                     ),
                     const SizedBox(height: 20),
@@ -192,13 +188,19 @@ class _AddCustomSolanaTokenViewState
     }
 
     // Fetch token metadata.
-    debugPrint('[ADD_CUSTOM_SOLANA_TOKEN] Fetching metadata for mint: ${mintController.text.trim()}');
-    final response =
-        await tokenApi.fetchTokenMetadataByMint(mintController.text.trim());
+    debugPrint(
+      '[ADD_CUSTOM_SOLANA_TOKEN] Fetching metadata for'
+      ' mint: ${mintController.text.trim()}',
+    );
+    final response = await tokenApi.fetchTokenMetadataByMint(
+      mintController.text.trim(),
+    );
 
     if (!mounted) return;
 
-    debugPrint('[ADD_CUSTOM_SOLANA_TOKEN] Metadata response: ${response.value}');
+    debugPrint(
+      '[ADD_CUSTOM_SOLANA_TOKEN] Metadata response: ${response.value}',
+    );
 
     if (response.value != null && response.value!.isNotEmpty) {
       final metadata = response.value!;
@@ -206,7 +208,7 @@ class _AddCustomSolanaTokenViewState
         address: mintController.text.trim(),
         name: metadata['name'] as String? ?? 'Unknown Token',
         symbol: metadata['symbol'] as String? ?? '???',
-        decimals: metadata['decimals'] as int? ?? 6,
+        decimals: int.tryParse(metadata['decimals']?.toString() ?? "") ?? 6,
         logoUri: metadata['logoUri'] as String?,
       );
 
@@ -222,12 +224,15 @@ class _AddCustomSolanaTokenViewState
       debugPrint('[ADD_CUSTOM_SOLANA_TOKEN] Metadata found, fields populated');
     } else {
       // Token not found, allow user to manually enter details.
-      debugPrint('[ADD_CUSTOM_SOLANA_TOKEN] Metadata not found, enabling manual entry');
+      debugPrint(
+        '[ADD_CUSTOM_SOLANA_TOKEN] Metadata not found, enabling manual entry',
+      );
       nameController.text = "";
       symbolController.text = "";
       decimalsController.text = "";
 
-      // Enable fields for manual entry and allow user to create token with custom values.
+      // Enable fields for manual entry and allow user to create token with
+      // custom values.
       setState(() {
         enableSubFields = true;
         currentToken = SplToken(
@@ -241,7 +246,8 @@ class _AddCustomSolanaTokenViewState
         addTokenButtonEnabled = true;
       });
 
-      // Show dialog for manual entry & alert the user they need to enter details manually.
+      // Show dialog for manual entry & alert the user they need to enter
+      // details manually.
       if (mounted) {
         unawaited(
           showDialog<void>(
@@ -251,10 +257,7 @@ class _AddCustomSolanaTokenViewState
               builder: (child) => DesktopDialog(
                 maxWidth: 500,
                 maxHeight: double.infinity,
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: child,
-                ),
+                child: Padding(padding: const EdgeInsets.all(32), child: child),
               ),
               child: ConditionalParent(
                 condition: !Util.isDesktop,
@@ -268,7 +271,8 @@ class _AddCustomSolanaTokenViewState
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      "Could not fetch token metadata. Please enter the token details manually below.",
+                      "Could not fetch token metadata. Please enter the token"
+                      " details manually below.",
                       style: STextStyles.smallMed14(context),
                     ),
                     const SizedBox(height: 20),
@@ -371,10 +375,7 @@ class _AddCustomSolanaTokenViewState
               ),
             ),
             SizedBox(height: isDesktop ? 16 : 8),
-            PrimaryButton(
-              label: "Search",
-              onPressed: _searchTokenMetadata,
-            ),
+            PrimaryButton(label: "Search", onPressed: _searchTokenMetadata),
             SizedBox(height: isDesktop ? 16 : 8),
             TextField(
               enabled: enableSubFields,
@@ -497,7 +498,7 @@ class _AddCustomSolanaTokenViewState
                               : currentToken!.symbol,
                           decimals: decimalsController.text.isNotEmpty
                               ? int.tryParse(decimalsController.text) ??
-                                  currentToken!.decimals
+                                    currentToken!.decimals
                               : currentToken!.decimals,
                         );
                         Navigator.of(context).pop(finalToken);

@@ -8,6 +8,7 @@
  */
 
 import 'package:isar_community/isar.dart';
+
 import '../contract.dart';
 
 part 'spl_token.g.dart';
@@ -25,13 +26,17 @@ class SplToken extends Contract {
 
   Id id = Isar.autoIncrement;
 
+  @override
   @Index(unique: true, replace: true)
   late final String address; // Mint address.
 
+  @override
   late final String name;
 
+  @override
   late final String symbol;
 
+  @override
   late final int decimals;
 
   late final String? logoUri;
@@ -46,13 +51,12 @@ class SplToken extends Contract {
     int? decimals,
     String? logoUri,
     String? metadataAddress,
-  }) =>
-      SplToken(
-        address: address ?? this.address,
-        name: name ?? this.name,
-        symbol: symbol ?? this.symbol,
-        decimals: decimals ?? this.decimals,
-        logoUri: logoUri ?? this.logoUri,
-        metadataAddress: metadataAddress ?? this.metadataAddress,
-      )..id = id ?? this.id;
+  }) => SplToken(
+    address: address ?? this.address,
+    name: name ?? this.name,
+    symbol: symbol ?? this.symbol,
+    decimals: decimals ?? this.decimals,
+    logoUri: logoUri ?? this.logoUri,
+    metadataAddress: metadataAddress ?? this.metadataAddress,
+  )..id = id ?? this.id;
 }

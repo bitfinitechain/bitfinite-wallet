@@ -641,8 +641,7 @@ class MainDB {
     return await isar.splTokens.put(token);
   });
 
-  Future<void> putSplTokens(List<SplToken> tokens) =>
-      isar.writeTxn(() async {
-        await isar.splTokens.putAll(tokens);
-      });
+  Future<void> putSplTokens(List<SplToken> tokens) => isar.writeTxn(() async {
+    await isar.splTokens.putAll(tokens);
+  });
 }

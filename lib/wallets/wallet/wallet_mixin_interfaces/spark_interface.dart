@@ -499,13 +499,15 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
     // See SPARK_VALUE_SPEND_LIMIT_PER_TRANSACTION at https://github.com/firoorg/sparkmobile/blob/ef2e39aae18ecc49e0ddc63a3183e9764b96012e/include/spark.h#L17
     // and COIN https://github.com/firoorg/sparkmobile/blob/ef2e39aae18ecc49e0ddc63a3183e9764b96012e/bitcoin/amount.h#L17
     // Note that as MAX_MONEY is greater than this limit, we can ignore it.  See https://github.com/firoorg/sparkmobile/blob/ef2e39aae18ecc49e0ddc63a3183e9764b96012e/bitcoin/amount.h#L31
+    // NOTE: This was updated to 5x what is was before (previously 10k)
     if (transparentSumOut >
         Amount.fromDecimal(
-          Decimal.parse("10000"),
+          Decimal.parse("50000"),
           fractionDigits: cryptoCurrency.fractionDigits,
         )) {
       throw Exception(
-        "Spend to transparent address limit exceeded (10,000 Firo per transaction).",
+        "Spend to transparent address limit exceeded "
+        "(50,000 Firo per transaction).",
       );
     }
 

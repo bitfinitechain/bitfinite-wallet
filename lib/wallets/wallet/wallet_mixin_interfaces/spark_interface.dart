@@ -1994,6 +1994,9 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
       );
 
       if (nFeeRet.toInt() < data.vSize!) {
+        Logging.instance.w(
+          "Spark mint transaction failed: $nFeeRet is less than ${data.vSize}",
+        );
         throw Exception("fee is less than vSize");
       }
 

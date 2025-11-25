@@ -580,7 +580,8 @@ class _DesktopWalletFeaturesState extends ConsumerState<DesktopWalletFeatures> {
     final showMwebOption = wallet is MwebInterface && !wallet.isViewOnly;
 
     final extraOptions = [
-      if (wallet is SparkInterface && !isViewOnly)
+      if (wallet is SparkInterface &&
+          (!isViewOnly || (isViewOnly && wallet.viewOnlyType == .spark)))
         (WalletFeature.clearSparkCache, Assets.svg.key, () => ()),
 
       if (wallet is RbfInterface) (WalletFeature.rbf, Assets.svg.key, () => ()),

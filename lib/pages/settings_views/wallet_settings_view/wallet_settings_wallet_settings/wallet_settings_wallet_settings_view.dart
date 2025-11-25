@@ -134,7 +134,9 @@ class _WalletSettingsWalletSettingsViewState
             return StackDialog(
               title: "Warning!",
               message:
-                  "Reusing addresses reduces your privacy and security.  Are you sure you want to reuse addresses by default?",
+                  "Reusing addresses reduces your privacy and "
+                  "security.  Are you sure you want to reuse "
+                  "addresses by default?",
               leftButton: TextButton(
                 style: Theme.of(context)
                     .extension<StackColors>()!
@@ -187,8 +189,9 @@ class _WalletSettingsWalletSettingsViewState
             return StackDialog(
               title: "Notice",
               message:
-                  "Activating MWEB requires synchronizing on-chain MWEB related data. "
-                  "This currently requires about 800 MB of storage.",
+                  "Activating MWEB requires synchronizing on-chain MWEB "
+                  "related data. This currently requires about "
+                  "800 MB of storage.",
               leftButton: SecondaryButton(
                 onPressed: () {
                   Navigator.of(context).pop(false);
@@ -292,7 +295,6 @@ class _WalletSettingsWalletSettingsViewState
                   RoundedWhiteContainer(
                     padding: const EdgeInsets.all(0),
                     child: RawMaterialButton(
-                      // splashColor: Theme.of(context).extension<StackColors>()!.highlight,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(
                           Constants.size.circularBorderRadius,
@@ -362,7 +364,6 @@ class _WalletSettingsWalletSettingsViewState
                     RoundedWhiteContainer(
                       padding: const EdgeInsets.all(0),
                       child: RawMaterialButton(
-                        // splashColor: Theme.of(context).extension<StackColors>()!.highlight,
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(
@@ -412,7 +413,6 @@ class _WalletSettingsWalletSettingsViewState
                     RoundedWhiteContainer(
                       padding: const EdgeInsets.all(0),
                       child: RawMaterialButton(
-                        // splashColor: Theme.of(context).extension<StackColors>()!.highlight,
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(
@@ -628,7 +628,6 @@ class _WalletSettingsWalletSettingsViewState
                   RoundedWhiteContainer(
                     padding: const EdgeInsets.all(0),
                     child: RawMaterialButton(
-                      // splashColor: Theme.of(context).extension<StackColors>()!.highlight,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(
                           Constants.size.circularBorderRadius,
@@ -642,7 +641,8 @@ class _WalletSettingsWalletSettingsViewState
                           context: context,
                           builder: (_) => StackDialog(
                             title:
-                                "Do you want to delete ${ref.read(pWalletName(widget.walletId))}?",
+                                "Do you want to delete "
+                                "${ref.read(pWalletName(widget.walletId))}?",
                             leftButton: TextButton(
                               style: Theme.of(context)
                                   .extension<StackColors>()!

@@ -13,7 +13,6 @@ import 'package:isar_community/isar.dart';
 
 import '../../../models/isar/models/solana/spl_token.dart';
 import '../../../providers/db/main_db_provider.dart';
-import '../../../utilities/default_spl_tokens.dart';
 import '../../../utilities/util.dart';
 import 'sol_token_select_item.dart';
 
@@ -61,29 +60,10 @@ class SolanaTokensList extends StatelessWidget {
 
     return Consumer(
       builder: (_, ref, __) {
-        // Get all available SPL tokens: combine defaults with custom tokens from database.
+        // Get all available SOL tokens.
         final db = ref.watch(mainDBProvider);
 
-        // Query all SplTokens from the database (includes both defaults and custom tokens).
-        final allDatabaseTokens = db.getSplTokens().findAllSync();
-
-        // Combined token lists: prioritize database tokens, fall back to defaults.
-        final allTokens = <SplToken>[];
-        final seenAddresses = <String>{};
-
-        // Add all database tokens.
-        for (final token in allDatabaseTokens) {
-          allTokens.add(token);
-          seenAddresses.add(token.address);
-        }
-
-        // Add default tokens that aren't already in the database.
-        for (final defaultToken in DefaultSplTokens.list) {
-          if (!seenAddresses.contains(defaultToken.address)) {
-            allTokens.add(defaultToken);
-            seenAddresses.add(defaultToken.address);
-          }
-        }
+        final allTokens = db.getSplTokens().findAllSync();
 
         final tokens = _filter(searchTerm, allTokens);
 

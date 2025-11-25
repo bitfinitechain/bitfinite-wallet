@@ -29,7 +29,6 @@ import '../../../themes/stack_colors.dart';
 import '../../../utilities/assets.dart';
 import '../../../utilities/constants.dart';
 import '../../../utilities/default_eth_tokens.dart';
-import '../../../utilities/default_spl_tokens.dart';
 import '../../../utilities/text_styles.dart';
 import '../../../utilities/util.dart';
 import '../../../wallets/crypto_currency/crypto_currency.dart';
@@ -193,17 +192,8 @@ class _AddWalletViewState extends ConsumerState<AddWalletView> {
     }
 
     if (AppConfig.coins.whereType<Solana>().isNotEmpty) {
-      // Add default tokens.
-      final defaultTokenAddresses = DefaultSplTokens.list.map((e) => e.address).toSet();
-      solTokenEntities.addAll(DefaultSplTokens.list.map((e) => SolTokenEntity(e)));
-
-      // Add custom tokens from database.
-      final allDatabaseTokens = MainDB.instance.getSplTokens().findAllSync();
-      for (final token in allDatabaseTokens) {
-        if (!defaultTokenAddresses.contains(token.address)) {
-          solTokenEntities.add(SolTokenEntity(token));
-        }
-      }
+      final tokens = MainDB.instance.getSplTokens().findAllSync();
+      solTokenEntities.addAll(tokens.map((e) => SolTokenEntity(e)));
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {

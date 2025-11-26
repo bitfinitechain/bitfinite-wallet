@@ -29,6 +29,7 @@ import '../../../themes/stack_colors.dart';
 import '../../../utilities/assets.dart';
 import '../../../utilities/constants.dart';
 import '../../../utilities/default_eth_tokens.dart';
+import '../../../utilities/default_spl_tokens.dart';
 import '../../../utilities/text_styles.dart';
 import '../../../utilities/util.dart';
 import '../../../wallets/crypto_currency/crypto_currency.dart';
@@ -192,8 +193,22 @@ class _AddWalletViewState extends ConsumerState<AddWalletView> {
     }
 
     if (AppConfig.coins.whereType<Solana>().isNotEmpty) {
-      final tokens = MainDB.instance.getSplTokens().findAllSync();
-      solTokenEntities.addAll(tokens.map((e) => SolTokenEntity(e)));
+      final contracts = MainDB.instance
+          .getSplTokens()
+          .sortByName()
+          .findAllSync();
+
+      if (contracts.isEmpty) {
+        contracts.addAll(DefaultSplTokens.list);
+        MainDB.instance
+            .putSplTokens(contracts)
+            .then(
+              (value) =>
+                  ref.read(priceAnd24hChangeNotifierProvider).updatePrice(),
+            );
+      }
+
+      solTokenEntities.addAll(contracts.map((e) => SolTokenEntity(e)));
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {

@@ -316,7 +316,7 @@ class _EditWalletTokensViewState extends ConsumerState<EditWalletTokensView> {
       // Also add the custom token mint address to the wallet's custom token list.
       final wallet = ref.read(pWallets).getWallet(widget.walletId);
       if (wallet is SolanaWallet) {
-        final currentCustomTokens = wallet.info.solanaCustomTokenMintAddresses.toSet();
+        final currentCustomTokens = wallet.info.solanaCustomTokenMintAddresses;
         currentCustomTokens.add(token.address);
         await wallet.info.updateSolanaCustomTokenMintAddresses(
           newMintAddresses: currentCustomTokens,

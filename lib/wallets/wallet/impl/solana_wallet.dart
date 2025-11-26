@@ -645,7 +645,7 @@ class SolanaWallet extends Bip39Wallet<Solana> {
     return false;
   }
 
-  Future<void> updateSolanaTokens(Set<String> mintAddresses) async {
+  Future<void> updateSolanaTokens(List<String> mintAddresses) async {
     await info.updateSolanaCustomTokenMintAddresses(
       newMintAddresses: mintAddresses,
       isar: mainDB.isar,

@@ -437,7 +437,7 @@ class WalletInfo implements IsarId {
 
   /// Update custom Solana token mint addresses and update the db.
   Future<void> updateSolanaCustomTokenMintAddresses({
-    required Set<String> newMintAddresses,
+    required List<String> newMintAddresses,
     required Isar isar,
   }) async {
     await updateOtherData(

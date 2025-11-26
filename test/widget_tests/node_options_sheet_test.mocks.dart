@@ -29,7 +29,6 @@ import 'package:stackwallet/wallets/isar/models/wallet_info.dart' as _i11;
 import 'package:stackwallet/wallets/wallet/wallet.dart' as _i5;
 import 'package:stackwallet/wallets/wallet/wallet_mixin_interfaces/cash_fusion_interface.dart'
     as _i6;
-import 'package:tor_ffi_plugin/tor_ffi_plugin.dart' as _i22;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -446,6 +445,19 @@ class MockPrefs extends _i1.Mock implements _i12.Prefs {
           as ({bool enabled, int minutes}));
 
   @override
+  bool get privacyScreen =>
+      (super.noSuchMethod(Invocation.getter(#privacyScreen), returnValue: false)
+          as bool);
+
+  @override
+  bool get disableScreenShots =>
+      (super.noSuchMethod(
+            Invocation.getter(#disableScreenShots),
+            returnValue: false,
+          )
+          as bool);
+
+  @override
   set lastUnlockedTimeout(int? lastUnlockedTimeout) => super.noSuchMethod(
     Invocation.setter(#lastUnlockedTimeout, lastUnlockedTimeout),
     returnValueForMissingStub: null,
@@ -673,6 +685,18 @@ class MockPrefs extends _i1.Mock implements _i12.Prefs {
         Invocation.setter(#autoLockInfo, autoLockInfo),
         returnValueForMissingStub: null,
       );
+
+  @override
+  set privacyScreen(bool? privacyScreen) => super.noSuchMethod(
+    Invocation.setter(#privacyScreen, privacyScreen),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  set disableScreenShots(bool? disableScreenShots) => super.noSuchMethod(
+    Invocation.setter(#disableScreenShots, disableScreenShots),
+    returnValueForMissingStub: null,
+  );
 
   @override
   bool get hasListeners =>
@@ -1008,14 +1032,10 @@ class MockTorService extends _i1.Mock implements _i20.TorService {
           as ({_i8.InternetAddress host, int port}));
 
   @override
-  void init({required String? torDataDirPath, _i22.Tor? mockableOverride}) =>
-      super.noSuchMethod(
-        Invocation.method(#init, [], {
-          #torDataDirPath: torDataDirPath,
-          #mockableOverride: mockableOverride,
-        }),
-        returnValueForMissingStub: null,
-      );
+  void init({required String? torDataDirPath}) => super.noSuchMethod(
+    Invocation.method(#init, [], {#torDataDirPath: torDataDirPath}),
+    returnValueForMissingStub: null,
+  );
 
   @override
   _i10.Future<void> start() =>

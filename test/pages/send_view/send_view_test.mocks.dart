@@ -779,6 +779,19 @@ class MockPrefs extends _i1.Mock implements _i12.Prefs {
           as ({bool enabled, int minutes}));
 
   @override
+  bool get privacyScreen =>
+      (super.noSuchMethod(Invocation.getter(#privacyScreen), returnValue: false)
+          as bool);
+
+  @override
+  bool get disableScreenShots =>
+      (super.noSuchMethod(
+            Invocation.getter(#disableScreenShots),
+            returnValue: false,
+          )
+          as bool);
+
+  @override
   set lastUnlockedTimeout(int? lastUnlockedTimeout) => super.noSuchMethod(
     Invocation.setter(#lastUnlockedTimeout, lastUnlockedTimeout),
     returnValueForMissingStub: null,
@@ -1006,6 +1019,18 @@ class MockPrefs extends _i1.Mock implements _i12.Prefs {
         Invocation.setter(#autoLockInfo, autoLockInfo),
         returnValueForMissingStub: null,
       );
+
+  @override
+  set privacyScreen(bool? privacyScreen) => super.noSuchMethod(
+    Invocation.setter(#privacyScreen, privacyScreen),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  set disableScreenShots(bool? disableScreenShots) => super.noSuchMethod(
+    Invocation.setter(#disableScreenShots, disableScreenShots),
+    returnValueForMissingStub: null,
+  );
 
   @override
   bool get hasListeners =>

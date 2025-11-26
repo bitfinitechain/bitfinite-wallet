@@ -31,6 +31,8 @@ import '../../../utilities/show_loading.dart';
 import '../../../utilities/text_styles.dart';
 import '../../../utilities/util.dart';
 import '../../../wallets/crypto_currency/crypto_currency.dart';
+import '../../../wallets/crypto_currency/coins/ethereum.dart';
+import '../../../wallets/crypto_currency/coins/solana.dart';
 import '../../../wallets/crypto_currency/intermediate/bip39_hd_currency.dart';
 import '../../../wallets/isar/models/wallet_info.dart';
 import '../../../wallets/wallet/impl/epiccash_wallet.dart';
@@ -356,7 +358,7 @@ class _VerifyRecoveryPhraseViewState
             Navigator.of(
               context,
             ).popUntil(ModalRoute.withName(DesktopHomeView.routeName));
-            if (_coin is Ethereum) {
+            if (_coin is Ethereum || _coin is Solana) {
               unawaited(
                 Navigator.of(context).pushNamed(
                   EditWalletTokensView.routeName,
@@ -376,7 +378,7 @@ class _VerifyRecoveryPhraseViewState
                 context,
               ).pushNamedAndRemoveUntil(HomeView.routeName, (route) => false),
             );
-            if (_coin is Ethereum) {
+            if (_coin is Ethereum || _coin is Solana) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 ref
                     .read(pNavKey)

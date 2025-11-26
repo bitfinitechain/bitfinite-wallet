@@ -59,6 +59,7 @@ class MainDB {
         AddressSchema,
         AddressLabelSchema,
         EthContractSchema,
+        SolContractSchema,
         TransactionBlockExplorerSchema,
         StackThemeSchema,
         ContactEntrySchema,
@@ -69,6 +70,7 @@ class MainDB {
         WalletInfoMetaSchema,
         TokenWalletInfoSchema,
         FrostWalletInfoSchema,
+        WalletSolanaTokenInfoSchema,
       ],
       directory: (await StackFileSystem.applicationIsarDirectory()).path,
       // inspector: kDebugMode,
@@ -620,5 +622,27 @@ class MainDB {
   Future<void> putEthContracts(List<EthContract> contracts) =>
       isar.writeTxn(() async {
         await isar.ethContracts.putAll(contracts);
+      });
+
+  // ========== Solana =========================================================
+
+  // Solana tokens.
+
+  QueryBuilder<SolContract, SolContract, QWhere> getSolContracts() =>
+      isar.solContracts.where();
+
+  Future<SolContract?> getSolContract(String tokenMint) =>
+      isar.solContracts.where().addressEqualTo(tokenMint).findFirst();
+
+  SolContract? getSolContractSync(String tokenMint) =>
+      isar.solContracts.where().addressEqualTo(tokenMint).findFirstSync();
+
+  Future<int> putSolContract(SolContract token) => isar.writeTxn(() async {
+    return await isar.solContracts.put(token);
+  });
+
+  Future<void> putSolContracts(List<SolContract> tokens) =>
+      isar.writeTxn(() async {
+        await isar.solContracts.putAll(tokens);
       });
 }

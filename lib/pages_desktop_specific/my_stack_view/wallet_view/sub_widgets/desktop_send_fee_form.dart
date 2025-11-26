@@ -77,6 +77,7 @@ class _DesktopSendFeeFormState extends ConsumerState<DesktopSendFeeForm> {
   Widget build(BuildContext context) {
     final canEditFees =
         isEth ||
+        cryptoCurrency is Solana ||
         (cryptoCurrency is ElectrumXCurrencyInterface &&
             !(((cryptoCurrency is Firo) &&
                 (ref.watch(publicPrivateBalanceStateProvider.state).state ==
@@ -211,15 +212,21 @@ class _DesktopSendFeeFormState extends ConsumerState<DesktopSendFeeForm> {
                                           .estimateFeeFor(amount, feeRate);
                                     }
                                   } else {
-                                    final tokenWallet = ref.read(
-                                      pCurrentTokenWallet,
-                                    )!;
-                                    final fee = await tokenWallet
-                                        .estimateFeeFor(amount, feeRate);
-                                    ref
-                                            .read(tokenFeeSessionCacheProvider)
-                                            .average[amount] =
-                                        fee;
+                                    // Token fee estimation (works for ERC20 and SOL tokens).
+                                    try {
+                                      final tokenWallet = ref.read(
+                                        pCurrentTokenWallet,
+                                      )!;
+                                      final fee = await tokenWallet
+                                          .estimateFeeFor(amount, feeRate);
+                                      ref
+                                              .read(tokenFeeSessionCacheProvider)
+                                              .average[amount] =
+                                          fee;
+                                    } catch (_) {
+                                      // Token wallet not available.
+                                      debugPrint("Token fee estimation not available");
+                                    }
                                   }
                                 }
                                 return ref

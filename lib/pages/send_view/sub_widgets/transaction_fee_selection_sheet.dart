@@ -1,4 +1,4 @@
-/* 
+/*
  * This file is part of Stack Wallet.
  * 
  * Copyright (c) 2023 Cypher Stack
@@ -28,6 +28,7 @@ import '../../../wallets/isar/providers/eth/current_token_wallet_provider.dart';
 import '../../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../../wallets/wallet/impl/firo_wallet.dart';
 import '../../../wallets/wallet/intermediate/cryptonote_wallet.dart';
+import '../../../wallets/wallet/wallet.dart';
 import '../../../wallets/wallet/wallet_mixin_interfaces/electrumx_interface.dart';
 import '../../../widgets/animated_text.dart';
 
@@ -115,8 +116,13 @@ class _TransactionFeeSelectionSheetState
                   .estimateFeeFor(amount, feeRate);
             }
           } else {
-            final tokenWallet = ref.read(pCurrentTokenWallet)!;
-            final fee = await tokenWallet.estimateFeeFor(amount, feeRate);
+            final Wallet wallet;
+            if (coin is Ethereum) {
+              wallet = ref.read(pCurrentTokenWallet)!;
+            } else {
+              wallet = ref.read(pWallets).getWallet(walletId);
+            }
+            final fee = await wallet.estimateFeeFor(amount, feeRate);
             ref.read(feeSheetSessionCacheProvider).fast[amount] = fee;
           }
         }
@@ -151,8 +157,13 @@ class _TransactionFeeSelectionSheetState
                   await wallet.estimateFeeFor(amount, feeRate);
             }
           } else {
-            final tokenWallet = ref.read(pCurrentTokenWallet)!;
-            final fee = await tokenWallet.estimateFeeFor(amount, feeRate);
+            final Wallet wallet;
+            if (coin is Ethereum) {
+              wallet = ref.read(pCurrentTokenWallet)!;
+            } else {
+              wallet = ref.read(pWallets).getWallet(walletId);
+            }
+            final fee = await wallet.estimateFeeFor(amount, feeRate);
             ref.read(feeSheetSessionCacheProvider).average[amount] = fee;
           }
         }
@@ -187,8 +198,13 @@ class _TransactionFeeSelectionSheetState
                   .estimateFeeFor(amount, feeRate);
             }
           } else {
-            final tokenWallet = ref.read(pCurrentTokenWallet)!;
-            final fee = await tokenWallet.estimateFeeFor(amount, feeRate);
+            final Wallet wallet;
+            if (coin is Ethereum) {
+              wallet = ref.read(pCurrentTokenWallet)!;
+            } else {
+              wallet = ref.read(pWallets).getWallet(walletId);
+            }
+            final fee = await wallet.estimateFeeFor(amount, feeRate);
             ref.read(feeSheetSessionCacheProvider).slow[amount] = fee;
           }
         }
@@ -269,7 +285,9 @@ class _TransactionFeeSelectionSheetState
             const SizedBox(height: 36),
             FutureBuilder(
               future: widget.isToken
-                  ? ref.read(pCurrentTokenWallet)!.fees
+                  ? (coin is Ethereum
+                        ? ref.read(pCurrentTokenWallet)!.fees
+                        : wallet.fees)
                   : wallet.fees,
               builder: (context, AsyncSnapshot<FeeObject> snapshot) {
                 if (snapshot.connectionState == ConnectionState.done &&

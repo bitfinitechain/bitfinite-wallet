@@ -99,7 +99,7 @@ class _WDesktopWalletSummaryState extends ConsumerState<DesktopWalletSummary> {
           tokenContract = null;
           // this cannot be null if coin is sol and isToken is true.
           // if it is null, then there is a bug somewhere else.
-          solanaTokenWallet = ref.watch(pCurrentSolanaTokenWallet)!;
+          solanaTokenWallet = ref.watch(pCurrentSolanaTokenWallet);
           break;
 
         default:

@@ -8,8 +8,6 @@
  *
  */
 
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -26,7 +24,6 @@ import '../../services/event_bus/global_event_bus.dart';
 import '../../themes/stack_colors.dart';
 import '../../utilities/assets.dart';
 import '../../utilities/constants.dart';
-import '../../utilities/default_spl_tokens.dart';
 import '../../utilities/text_styles.dart';
 import '../../utilities/util.dart';
 import '../../wallets/crypto_currency/crypto_currency.dart';
@@ -159,16 +156,6 @@ class _EthWalletsOverviewState extends ConsumerState<WalletsOverview> {
         );
       }
     } else if (widget.coin is Solana) {
-      // Ensure default Solana tokens are loaded into database.
-      final dbProvider = ref.read(mainDBProvider);
-      for (final defaultToken in DefaultSplTokens.list) {
-        final existingToken = dbProvider.getSplTokenSync(defaultToken.address);
-        if (existingToken == null) {
-          // Token not in database, add it asynchronously.
-          unawaited(dbProvider.putSplToken(defaultToken));
-        }
-      }
-
       for (final data in walletsData) {
         final List<Contract> contracts = [];
         final tokenMintAddresses = ref.read(
@@ -177,23 +164,11 @@ class _EthWalletsOverviewState extends ConsumerState<WalletsOverview> {
 
         // fetch each token
         for (final tokenAddress in tokenMintAddresses) {
-          final token = dbProvider.getSplTokenSync(tokenAddress);
+          final token = ref.read(mainDBProvider).getSplTokenSync(tokenAddress);
 
-          // add it to list if it exists in DB or in default tokens
+          // add it to list if it exists in DB
           if (token != null) {
             contracts.add(token);
-          } else {
-            // Try to find in default tokens.
-            try {
-              final defaultToken = DefaultSplTokens.list.firstWhere(
-                (t) => t.address == tokenAddress,
-              );
-              contracts.add(defaultToken);
-            } catch (_) {
-              // Token not found anywhere.
-              //
-              // Might want to throw here or something.
-            }
           }
         }
 

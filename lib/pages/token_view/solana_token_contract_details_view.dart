@@ -14,7 +14,6 @@ import 'package:isar_community/isar.dart';
 import '../../db/isar/main_db.dart';
 import '../../models/isar/models/isar_models.dart';
 import '../../themes/stack_colors.dart';
-import '../../utilities/default_spl_tokens.dart';
 import '../../utilities/text_styles.dart';
 import '../../utilities/util.dart';
 import '../../widgets/background.dart';
@@ -48,32 +47,10 @@ class _SolanaTokenContractDetailsViewState
 
   @override
   void initState() {
-    // Try to find the token in the database first.
-    final dbToken = MainDB.instance.isar.splTokens
+    token = MainDB.instance.isar.splTokens
         .where()
         .addressEqualTo(widget.tokenMint)
-        .findFirstSync();
-
-    if (dbToken != null) {
-      token = dbToken;
-    } else {
-      // If not in database, try to find it in default tokens.
-      try {
-        token = DefaultSplTokens.list.firstWhere(
-          (t) => t.address == widget.tokenMint,
-        );
-      } catch (e) {
-        // Token not found, create a placeholder.
-        //
-        // Might want to just throw here instead.
-        token = SplToken(
-          address: widget.tokenMint,
-          name: 'Unknown Token',
-          symbol: 'UNKNOWN',
-          decimals: 0,
-        );
-      }
-    }
+        .findFirstSync()!;
 
     super.initState();
   }

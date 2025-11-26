@@ -40,6 +40,8 @@ import '../../../utilities/logger.dart';
 import '../../../utilities/text_styles.dart';
 import '../../../utilities/util.dart';
 import '../../../wallets/crypto_currency/crypto_currency.dart';
+import '../../../wallets/crypto_currency/coins/ethereum.dart';
+import '../../../wallets/crypto_currency/coins/solana.dart';
 import '../../../wallets/isar/models/wallet_info.dart';
 import '../../../wallets/wallet/impl/epiccash_wallet.dart';
 import '../../../wallets/wallet/impl/mimblewimblecoin_wallet.dart';
@@ -412,7 +414,7 @@ class _RestoreWalletViewState extends ConsumerState<RestoreWalletView> {
                       (route) => false,
                     ),
                   );
-                  if (info.coin is Ethereum) {
+                  if (info.coin is Ethereum || info.coin is Solana) {
                     unawaited(
                       Navigator.of(context).pushNamed(
                         EditWalletTokensView.routeName,

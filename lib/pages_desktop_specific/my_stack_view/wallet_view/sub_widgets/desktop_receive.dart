@@ -622,7 +622,9 @@ class _DesktopReceiveState extends ConsumerState<DesktopReceive> {
                         Row(
                           children: [
                             Text(
-                              "Your ${widget.contractAddress == null ? coin.ticker : ref.watch(pCurrentTokenWallet.select((value) => value!.tokenContract.symbol))} address",
+                              // "Your ${widget.contractAddress == null ? coin.ticker : ref.watch(pCurrentTokenWallet.select((value) => value!.tokenContract.symbol))} address",
+                              // TODO [prio=high]: Make the above work for Sol tokens instead of the placeholder below.
+                              "Your ${widget.contractAddress == null ? coin.ticker : "token"} address",
                               style: STextStyles.itemSubtitle(context),
                             ),
                             const Spacer(),

@@ -43,11 +43,11 @@ class _SolanaTokenContractDetailsViewState
     extends ConsumerState<SolanaTokenContractDetailsView> {
   final isDesktop = Util.isDesktop;
 
-  late SplToken token;
+  late SolContract token;
 
   @override
   void initState() {
-    token = MainDB.instance.isar.splTokens
+    token = MainDB.instance.isar.solContracts
         .where()
         .addressEqualTo(widget.tokenMint)
         .findFirstSync()!;

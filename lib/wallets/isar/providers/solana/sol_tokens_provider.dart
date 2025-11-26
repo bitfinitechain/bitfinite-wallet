@@ -11,7 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Provides a list of Solana token mint addresses for a specific wallet.
 ///
-/// This provider returns the list of Solana SPL token mint addresses
+/// This provider returns the list of Solana token mint addresses
 /// that the wallet has selected. Token details are not currently persisted
 /// in the database - only the mint addresses are stored in WalletInfo's otherData.
 ///

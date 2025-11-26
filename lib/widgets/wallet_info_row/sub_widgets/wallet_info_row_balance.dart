@@ -12,7 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../db/isar/main_db.dart';
 import '../../../models/isar/models/ethereum/eth_contract.dart';
-import '../../../models/isar/models/solana/spl_token.dart';
+import '../../../models/isar/models/solana/sol_contract.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/amount/amount.dart';
 import '../../../utilities/amount/amount_formatter.dart';
@@ -39,7 +39,7 @@ class WalletInfoRowBalance extends ConsumerWidget {
 
     final Amount totalBalance;
     EthContract? contract;
-    SplToken? splToken;
+    SolContract? splToken;
 
     if (contractAddress == null) {
       totalBalance = info.cachedBalance.total +
@@ -51,7 +51,7 @@ class WalletInfoRowBalance extends ConsumerWidget {
     } else {
       // Check if it's a Solana wallet.
       if (info.coin is Solana) {
-        splToken = MainDB.instance.getSplTokenSync(contractAddress!);
+        splToken = MainDB.instance.getSolContractSync(contractAddress!);
         if (splToken != null) {
           final solanaTokenInfo = ref
               .watch(

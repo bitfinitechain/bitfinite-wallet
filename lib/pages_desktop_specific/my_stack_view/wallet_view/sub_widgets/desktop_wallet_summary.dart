@@ -188,7 +188,7 @@ class _WDesktopWalletSummaryState extends ConsumerState<DesktopWalletSummary> {
                         .format(
                           balanceToShow,
                           ethContract: tokenContract,
-                          splToken: solanaTokenWallet?.splToken,
+                          solContract: solanaTokenWallet?.solContract,
                         ),
                     style: STextStyles.desktopH3(context),
                   ),

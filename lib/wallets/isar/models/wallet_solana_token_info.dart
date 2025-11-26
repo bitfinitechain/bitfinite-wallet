@@ -41,8 +41,8 @@ class WalletSolanaTokenInfo implements IsarId {
     this.cachedBalanceJsonString,
   });
 
-  SplToken getToken(Isar isar) =>
-      isar.splTokens.where().addressEqualTo(tokenAddress).findFirstSync()!;
+  SolContract getToken(Isar isar) =>
+      isar.solContracts.where().addressEqualTo(tokenAddress).findFirstSync()!;
 
   // Token balance cache.
   Balance getCachedBalance() {

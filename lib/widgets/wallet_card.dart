@@ -14,7 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/isar/models/ethereum/eth_contract.dart';
-import '../models/isar/models/solana/spl_token.dart';
+import '../models/isar/models/solana/sol_contract.dart';
 import '../pages/token_view/sol_token_view.dart';
 import '../pages/token_view/token_view.dart';
 import '../pages/wallet_view/wallet_view.dart';
@@ -102,7 +102,7 @@ class SimpleWalletCard extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     Wallet wallet,
-    SplToken token,
+    SolContract token,
   ) async {
     final old = ref.read(solanaTokenServiceStateProvider);
     // exit previous if there is one
@@ -193,7 +193,9 @@ class SimpleWalletCard extends ConsumerWidget {
       if (contractAddress != null) {
         if (wallet.cryptoCurrency is Solana) {
           // Handle Solana token.
-          final token = ref.read(mainDBProvider).getSplTokenSync(contractAddress!);
+          final token = ref
+              .read(mainDBProvider)
+              .getSolContractSync(contractAddress!);
 
           if (token == null) {
             Logging.instance.e(

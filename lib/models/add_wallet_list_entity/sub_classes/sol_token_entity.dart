@@ -7,14 +7,14 @@
  *
  */
 
-import '../add_wallet_list_entity.dart';
-import '../../isar/models/solana/spl_token.dart';
 import '../../../wallets/crypto_currency/crypto_currency.dart';
+import '../../isar/models/solana/sol_contract.dart';
+import '../add_wallet_list_entity.dart';
 
 class SolTokenEntity extends AddWalletListEntity {
   SolTokenEntity(this.token);
 
-  final SplToken token;
+  final SolContract token;
 
   @override
   CryptoCurrency get cryptoCurrency => Solana(CryptoCurrencyNetwork.main);

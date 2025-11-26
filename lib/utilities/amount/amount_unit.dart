@@ -12,7 +12,7 @@ import 'dart:math' as math;
 
 import 'package:decimal/decimal.dart';
 import '../../models/isar/models/ethereum/eth_contract.dart';
-import '../../models/isar/models/solana/spl_token.dart';
+import '../../models/isar/models/solana/sol_contract.dart';
 import 'amount.dart';
 import '../util.dart';
 import '../../wallets/crypto_currency/crypto_currency.dart';
@@ -176,7 +176,7 @@ extension AmountUnitExt on AmountUnit {
     }
   }
 
-  String unitForSplToken(SplToken token) {
+  String unitForSplToken(SolContract token) {
     switch (this) {
       case AmountUnit.normal:
         return token.symbol;
@@ -253,7 +253,7 @@ extension AmountUnitExt on AmountUnit {
     bool indicatePrecisionLoss = true,
     String? overrideUnit,
     EthContract? tokenContract,
-    SplToken? splToken,
+    SolContract? splToken,
   }) {
     assert(maxDecimalPlaces >= 0);
 

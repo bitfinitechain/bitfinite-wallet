@@ -26,7 +26,7 @@ class PriceService extends ChangeNotifier {
       (await MainDB.instance.getEthContracts().addressProperty().findAll())
           .toSet();
   Future<Set<String>> get solTokenContractAddressesToCheck async =>
-      (await MainDB.instance.getSplTokens().addressProperty().findAll())
+      (await MainDB.instance.getSolContracts().addressProperty().findAll())
           .toSet();
   final Duration updateInterval = const Duration(seconds: 60);
 

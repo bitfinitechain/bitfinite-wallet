@@ -22,14 +22,14 @@ import '../../../models/add_wallet_list_entity/sub_classes/coin_entity.dart';
 import '../../../models/add_wallet_list_entity/sub_classes/eth_token_entity.dart';
 import '../../../models/add_wallet_list_entity/sub_classes/sol_token_entity.dart';
 import '../../../models/isar/models/ethereum/eth_contract.dart';
-import '../../../models/isar/models/solana/spl_token.dart';
+import '../../../models/isar/models/solana/sol_contract.dart';
 import '../../../pages_desktop_specific/my_stack_view/exit_to_my_stack_button.dart';
 import '../../../providers/providers.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/assets.dart';
 import '../../../utilities/constants.dart';
 import '../../../utilities/default_eth_tokens.dart';
-import '../../../utilities/default_spl_tokens.dart';
+import '../../../utilities/default_sol_tokens.dart';
 import '../../../utilities/text_styles.dart';
 import '../../../utilities/util.dart';
 import '../../../wallets/crypto_currency/crypto_currency.dart';
@@ -43,8 +43,8 @@ import '../../../widgets/icon_widgets/x_icon.dart';
 import '../../../widgets/rounded_white_container.dart';
 import '../../../widgets/stack_text_field.dart';
 import '../../../widgets/textfield_icon_button.dart';
-import '../add_token_view/add_custom_token_view.dart';
 import '../add_token_view/add_custom_solana_token_view.dart';
+import '../add_token_view/add_custom_token_view.dart';
 import '../add_token_view/sub_widgets/add_custom_token_selector.dart';
 import 'sub_widgets/add_wallet_text.dart';
 import 'sub_widgets/expanding_sub_list_item.dart';
@@ -133,7 +133,7 @@ class _AddWalletViewState extends ConsumerState<AddWalletView> {
   }
 
   Future<void> _addSolToken() async {
-    SplToken? token;
+    SolContract? token;
     if (isDesktop) {
       token = await showDialog(
         context: context,
@@ -151,7 +151,7 @@ class _AddWalletViewState extends ConsumerState<AddWalletView> {
     }
 
     if (token != null) {
-      await MainDB.instance.putSplToken(token);
+      await MainDB.instance.putSolContract(token);
       if (mounted) {
         setState(() {
           if (solTokenEntities
@@ -194,14 +194,14 @@ class _AddWalletViewState extends ConsumerState<AddWalletView> {
 
     if (AppConfig.coins.whereType<Solana>().isNotEmpty) {
       final contracts = MainDB.instance
-          .getSplTokens()
+          .getSolContracts()
           .sortByName()
           .findAllSync();
 
       if (contracts.isEmpty) {
-        contracts.addAll(DefaultSplTokens.list);
+        contracts.addAll(DefaultSolTokens.list);
         MainDB.instance
-            .putSplTokens(contracts)
+            .putSolContracts(contracts)
             .then(
               (value) =>
                   ref.read(priceAnd24hChangeNotifierProvider).updatePrice(),

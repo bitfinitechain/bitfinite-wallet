@@ -17,7 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
-import '../../models/isar/models/solana/spl_token.dart';
+import '../../models/isar/models/solana/sol_contract.dart';
 import '../../models/isar/models/transaction_note.dart';
 import '../../notifications/show_flush_bar.dart';
 import '../../pages_desktop_specific/coin_control/desktop_coin_control_use_dialog.dart';
@@ -631,8 +631,8 @@ class _ConfirmTransactionViewState
                                           .watch(pCurrentTokenWallet)!
                                           .tokenContract
                                     : null,
-                                splToken: widget.isTokenTx && wallet is SolanaWallet
-                                    ? SplToken(
+                                solContract: widget.isTokenTx && wallet is SolanaWallet
+                                    ? SolContract(
                                         address: widget.txData.tokenMint ?? "unknown",
                                         name: widget.txData.tokenSymbol ?? "Token",
                                         symbol: widget.txData.tokenSymbol ?? "TOKEN",
@@ -886,8 +886,8 @@ class _ConfirmTransactionViewState
                                                       )!
                                                       .tokenContract
                                                 : null,
-                                            splToken: widget.isTokenTx && wallet is SolanaWallet
-                                                ? SplToken(
+                                            solContract: widget.isTokenTx && wallet is SolanaWallet
+                                                ? SolContract(
                                                     address: widget.txData.tokenMint ?? "unknown",
                                                     name: widget.txData.tokenSymbol ?? "Token",
                                                     symbol: widget.txData.tokenSymbol ?? "TOKEN",

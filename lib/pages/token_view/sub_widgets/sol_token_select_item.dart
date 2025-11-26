@@ -12,7 +12,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../models/isar/models/solana/spl_token.dart';
+import '../../../models/isar/models/solana/sol_contract.dart';
 import '../../../pages_desktop_specific/my_stack_view/wallet_view/desktop_sol_token_view.dart';
 import '../../../providers/providers.dart';
 import '../../../themes/stack_colors.dart';
@@ -38,7 +38,7 @@ class SolTokenSelectItem extends ConsumerStatefulWidget {
   });
 
   final String walletId;
-  final SplToken token;
+  final SolContract token;
 
   @override
   ConsumerState<SolTokenSelectItem> createState() => _SolTokenSelectItemState();

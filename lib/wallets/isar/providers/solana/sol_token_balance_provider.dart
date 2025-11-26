@@ -39,13 +39,13 @@ final _wstwiProvider = ChangeNotifierProvider.family<
     );
 
     // Create initial entry if not found.
-    final splToken =
-        isar.splTokens.getByAddressSync(data.tokenMint);
+    final solContract =
+        isar.solContracts.getByAddressSync(data.tokenMint);
 
     initial = WalletSolanaTokenInfo(
       walletId: data.walletId,
       tokenAddress: data.tokenMint,
-      tokenFractionDigits: splToken?.decimals ?? 6,
+      tokenFractionDigits: solContract?.decimals ?? 6,
     );
 
     isar.writeTxnSync(() => isar.walletSolanaTokenInfo.putSync(initial!));

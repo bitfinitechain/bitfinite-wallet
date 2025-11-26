@@ -11,11 +11,11 @@ import 'package:isar_community/isar.dart';
 
 import '../contract.dart';
 
-part 'spl_token.g.dart';
+part 'sol_contract.g.dart';
 
 @collection
-class SplToken extends Contract {
-  SplToken({
+class SolContract extends Contract {
+  SolContract({
     required this.address,
     required this.name,
     required this.symbol,
@@ -43,7 +43,7 @@ class SplToken extends Contract {
 
   late final String? metadataAddress;
 
-  SplToken copyWith({
+  SolContract copyWith({
     Id? id,
     String? address,
     String? name,
@@ -51,7 +51,7 @@ class SplToken extends Contract {
     int? decimals,
     String? logoUri,
     String? metadataAddress,
-  }) => SplToken(
+  }) => SolContract(
     address: address ?? this.address,
     name: name ?? this.name,
     symbol: symbol ?? this.symbol,

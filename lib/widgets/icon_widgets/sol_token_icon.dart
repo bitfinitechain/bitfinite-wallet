@@ -22,14 +22,14 @@ import '../../utilities/logger.dart';
 import '../../wallets/crypto_currency/crypto_currency.dart';
 import '../loading_indicator.dart';
 
-/// Token icon widget for Solana SPL tokens.
+/// Token icon widget for Solana tokens.
 ///
 /// Displays the token icon by attempting to fetch from exchange data service.
 /// Falls back to generic Solana token icon if no icon is found.
 class SolTokenIcon extends ConsumerStatefulWidget {
   const SolTokenIcon({super.key, required this.mintAddress, this.size = 22});
 
-  /// The SPL token mint address.
+  /// The SOL token mint address.
   final String mintAddress;
 
   final double size;

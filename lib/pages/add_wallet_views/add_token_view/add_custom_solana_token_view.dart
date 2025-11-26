@@ -14,7 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../models/isar/models/solana/spl_token.dart';
+import '../../../models/isar/models/solana/sol_contract.dart';
 import '../../../services/solana/solana_token_api.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/text_styles.dart';
@@ -53,7 +53,7 @@ class _AddCustomSolanaTokenViewState
   bool enableSubFields = false;
   bool addTokenButtonEnabled = false;
 
-  SplToken? currentToken;
+  SolContract? currentToken;
 
   Future<void> _searchTokenMetadata() async {
     debugPrint('[ADD_CUSTOM_SOLANA_TOKEN] Search button pressed');
@@ -161,7 +161,7 @@ class _AddCustomSolanaTokenViewState
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      "Please enter a valid Solana SPL token mint address "
+                      "Please enter a valid Solana token mint address "
                       "(base58 encoded, ~44 characters).",
                       style: STextStyles.smallMed14(context),
                     ),
@@ -204,7 +204,7 @@ class _AddCustomSolanaTokenViewState
 
     if (response.value != null && response.value!.isNotEmpty) {
       final metadata = response.value!;
-      currentToken = SplToken(
+      currentToken = SolContract(
         address: mintController.text.trim(),
         name: metadata['name'] as String? ?? 'Unknown Token',
         symbol: metadata['symbol'] as String? ?? '???',
@@ -235,7 +235,7 @@ class _AddCustomSolanaTokenViewState
       // custom values.
       setState(() {
         enableSubFields = true;
-        currentToken = SplToken(
+        currentToken = SolContract(
           address: mintController.text.trim(),
           name: '',
           symbol: '',
@@ -370,7 +370,7 @@ class _AddCustomSolanaTokenViewState
               controller: mintController,
               style: STextStyles.field(context),
               decoration: InputDecoration(
-                hintText: "SPL token mint address",
+                hintText: "SOL token mint address",
                 hintStyle: STextStyles.fieldLabel(context),
               ),
             ),

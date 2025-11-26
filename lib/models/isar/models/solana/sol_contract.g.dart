@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'spl_token.dart';
+part of 'sol_contract.dart';
 
 // **************************************************************************
 // IsarCollectionGenerator
@@ -9,13 +9,13 @@ part of 'spl_token.dart';
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
 
-extension GetSplTokenCollection on Isar {
-  IsarCollection<SplToken> get splTokens => this.collection();
+extension GetSolContractCollection on Isar {
+  IsarCollection<SolContract> get solContracts => this.collection();
 }
 
-const SplTokenSchema = CollectionSchema(
-  name: r'SplToken',
-  id: 8546297717864199659,
+const SolContractSchema = CollectionSchema(
+  name: r'SolContract',
+  id: 1474803837279318906,
   properties: {
     r'address': PropertySchema(id: 0, name: r'address', type: IsarType.string),
     r'decimals': PropertySchema(id: 1, name: r'decimals', type: IsarType.long),
@@ -29,10 +29,10 @@ const SplTokenSchema = CollectionSchema(
     r'symbol': PropertySchema(id: 5, name: r'symbol', type: IsarType.string),
   },
 
-  estimateSize: _splTokenEstimateSize,
-  serialize: _splTokenSerialize,
-  deserialize: _splTokenDeserialize,
-  deserializeProp: _splTokenDeserializeProp,
+  estimateSize: _solContractEstimateSize,
+  serialize: _solContractSerialize,
+  deserialize: _solContractDeserialize,
+  deserializeProp: _solContractDeserializeProp,
   idName: r'id',
   indexes: {
     r'address': IndexSchema(
@@ -52,14 +52,14 @@ const SplTokenSchema = CollectionSchema(
   links: {},
   embeddedSchemas: {},
 
-  getId: _splTokenGetId,
-  getLinks: _splTokenGetLinks,
-  attach: _splTokenAttach,
+  getId: _solContractGetId,
+  getLinks: _solContractGetLinks,
+  attach: _solContractAttach,
   version: '3.3.0-dev.2',
 );
 
-int _splTokenEstimateSize(
-  SplToken object,
+int _solContractEstimateSize(
+  SolContract object,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
@@ -82,8 +82,8 @@ int _splTokenEstimateSize(
   return bytesCount;
 }
 
-void _splTokenSerialize(
-  SplToken object,
+void _solContractSerialize(
+  SolContract object,
   IsarWriter writer,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
@@ -96,13 +96,13 @@ void _splTokenSerialize(
   writer.writeString(offsets[5], object.symbol);
 }
 
-SplToken _splTokenDeserialize(
+SolContract _solContractDeserialize(
   Id id,
   IsarReader reader,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = SplToken(
+  final object = SolContract(
     address: reader.readString(offsets[0]),
     decimals: reader.readLong(offsets[1]),
     logoUri: reader.readStringOrNull(offsets[2]),
@@ -114,7 +114,7 @@ SplToken _splTokenDeserialize(
   return object;
 }
 
-P _splTokenDeserializeProp<P>(
+P _solContractDeserializeProp<P>(
   IsarReader reader,
   int propertyId,
   int offset,
@@ -138,24 +138,28 @@ P _splTokenDeserializeProp<P>(
   }
 }
 
-Id _splTokenGetId(SplToken object) {
+Id _solContractGetId(SolContract object) {
   return object.id;
 }
 
-List<IsarLinkBase<dynamic>> _splTokenGetLinks(SplToken object) {
+List<IsarLinkBase<dynamic>> _solContractGetLinks(SolContract object) {
   return [];
 }
 
-void _splTokenAttach(IsarCollection<dynamic> col, Id id, SplToken object) {
+void _solContractAttach(
+  IsarCollection<dynamic> col,
+  Id id,
+  SolContract object,
+) {
   object.id = id;
 }
 
-extension SplTokenByIndex on IsarCollection<SplToken> {
-  Future<SplToken?> getByAddress(String address) {
+extension SolContractByIndex on IsarCollection<SolContract> {
+  Future<SolContract?> getByAddress(String address) {
     return getByIndex(r'address', [address]);
   }
 
-  SplToken? getByAddressSync(String address) {
+  SolContract? getByAddressSync(String address) {
     return getByIndexSync(r'address', [address]);
   }
 
@@ -167,12 +171,12 @@ extension SplTokenByIndex on IsarCollection<SplToken> {
     return deleteByIndexSync(r'address', [address]);
   }
 
-  Future<List<SplToken?>> getAllByAddress(List<String> addressValues) {
+  Future<List<SolContract?>> getAllByAddress(List<String> addressValues) {
     final values = addressValues.map((e) => [e]).toList();
     return getAllByIndex(r'address', values);
   }
 
-  List<SplToken?> getAllByAddressSync(List<String> addressValues) {
+  List<SolContract?> getAllByAddressSync(List<String> addressValues) {
     final values = addressValues.map((e) => [e]).toList();
     return getAllByIndexSync(r'address', values);
   }
@@ -187,42 +191,46 @@ extension SplTokenByIndex on IsarCollection<SplToken> {
     return deleteAllByIndexSync(r'address', values);
   }
 
-  Future<Id> putByAddress(SplToken object) {
+  Future<Id> putByAddress(SolContract object) {
     return putByIndex(r'address', object);
   }
 
-  Id putByAddressSync(SplToken object, {bool saveLinks = true}) {
+  Id putByAddressSync(SolContract object, {bool saveLinks = true}) {
     return putByIndexSync(r'address', object, saveLinks: saveLinks);
   }
 
-  Future<List<Id>> putAllByAddress(List<SplToken> objects) {
+  Future<List<Id>> putAllByAddress(List<SolContract> objects) {
     return putAllByIndex(r'address', objects);
   }
 
   List<Id> putAllByAddressSync(
-    List<SplToken> objects, {
+    List<SolContract> objects, {
     bool saveLinks = true,
   }) {
     return putAllByIndexSync(r'address', objects, saveLinks: saveLinks);
   }
 }
 
-extension SplTokenQueryWhereSort on QueryBuilder<SplToken, SplToken, QWhere> {
-  QueryBuilder<SplToken, SplToken, QAfterWhere> anyId() {
+extension SolContractQueryWhereSort
+    on QueryBuilder<SolContract, SolContract, QWhere> {
+  QueryBuilder<SolContract, SolContract, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
 }
 
-extension SplTokenQueryWhere on QueryBuilder<SplToken, SplToken, QWhereClause> {
-  QueryBuilder<SplToken, SplToken, QAfterWhereClause> idEqualTo(Id id) {
+extension SolContractQueryWhere
+    on QueryBuilder<SolContract, SolContract, QWhereClause> {
+  QueryBuilder<SolContract, SolContract, QAfterWhereClause> idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterWhereClause> idNotEqualTo(Id id) {
+  QueryBuilder<SolContract, SolContract, QAfterWhereClause> idNotEqualTo(
+    Id id,
+  ) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -244,7 +252,7 @@ extension SplTokenQueryWhere on QueryBuilder<SplToken, SplToken, QWhereClause> {
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterWhereClause> idGreaterThan(
+  QueryBuilder<SolContract, SolContract, QAfterWhereClause> idGreaterThan(
     Id id, {
     bool include = false,
   }) {
@@ -255,7 +263,7 @@ extension SplTokenQueryWhere on QueryBuilder<SplToken, SplToken, QWhereClause> {
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterWhereClause> idLessThan(
+  QueryBuilder<SolContract, SolContract, QAfterWhereClause> idLessThan(
     Id id, {
     bool include = false,
   }) {
@@ -266,7 +274,7 @@ extension SplTokenQueryWhere on QueryBuilder<SplToken, SplToken, QWhereClause> {
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterWhereClause> idBetween(
+  QueryBuilder<SolContract, SolContract, QAfterWhereClause> idBetween(
     Id lowerId,
     Id upperId, {
     bool includeLower = true,
@@ -284,7 +292,7 @@ extension SplTokenQueryWhere on QueryBuilder<SplToken, SplToken, QWhereClause> {
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterWhereClause> addressEqualTo(
+  QueryBuilder<SolContract, SolContract, QAfterWhereClause> addressEqualTo(
     String address,
   ) {
     return QueryBuilder.apply(this, (query) {
@@ -294,7 +302,7 @@ extension SplTokenQueryWhere on QueryBuilder<SplToken, SplToken, QWhereClause> {
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterWhereClause> addressNotEqualTo(
+  QueryBuilder<SolContract, SolContract, QAfterWhereClause> addressNotEqualTo(
     String address,
   ) {
     return QueryBuilder.apply(this, (query) {
@@ -339,9 +347,9 @@ extension SplTokenQueryWhere on QueryBuilder<SplToken, SplToken, QWhereClause> {
   }
 }
 
-extension SplTokenQueryFilter
-    on QueryBuilder<SplToken, SplToken, QFilterCondition> {
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> addressEqualTo(
+extension SolContractQueryFilter
+    on QueryBuilder<SolContract, SolContract, QFilterCondition> {
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> addressEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -356,7 +364,8 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> addressGreaterThan(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
+  addressGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -373,7 +382,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> addressLessThan(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> addressLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -390,7 +399,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> addressBetween(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> addressBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -411,10 +420,8 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> addressStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
+  addressStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.startsWith(
@@ -426,7 +433,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> addressEndsWith(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> addressEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -441,7 +448,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> addressContains(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> addressContains(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -456,7 +463,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> addressMatches(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> addressMatches(
     String pattern, {
     bool caseSensitive = true,
   }) {
@@ -471,7 +478,8 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> addressIsEmpty() {
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
+  addressIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.equalTo(property: r'address', value: ''),
@@ -479,7 +487,8 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> addressIsNotEmpty() {
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
+  addressIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(property: r'address', value: ''),
@@ -487,7 +496,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> decimalsEqualTo(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> decimalsEqualTo(
     int value,
   ) {
     return QueryBuilder.apply(this, (query) {
@@ -497,10 +506,8 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> decimalsGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
+  decimalsGreaterThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(
@@ -512,10 +519,8 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> decimalsLessThan(
-    int value, {
-    bool include = false,
-  }) {
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
+  decimalsLessThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.lessThan(
@@ -527,7 +532,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> decimalsBetween(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> decimalsBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -546,7 +551,9 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> idEqualTo(Id value) {
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> idEqualTo(
+    Id value,
+  ) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.equalTo(property: r'id', value: value),
@@ -554,7 +561,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> idGreaterThan(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> idGreaterThan(
     Id value, {
     bool include = false,
   }) {
@@ -569,7 +576,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> idLessThan(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> idLessThan(
     Id value, {
     bool include = false,
   }) {
@@ -584,7 +591,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> idBetween(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> idBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
@@ -603,7 +610,8 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> logoUriIsNull() {
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
+  logoUriIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const FilterCondition.isNull(property: r'logoUri'),
@@ -611,7 +619,8 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> logoUriIsNotNull() {
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
+  logoUriIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const FilterCondition.isNotNull(property: r'logoUri'),
@@ -619,7 +628,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> logoUriEqualTo(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> logoUriEqualTo(
     String? value, {
     bool caseSensitive = true,
   }) {
@@ -634,7 +643,8 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> logoUriGreaterThan(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
+  logoUriGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -651,7 +661,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> logoUriLessThan(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> logoUriLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -668,7 +678,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> logoUriBetween(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> logoUriBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -689,10 +699,8 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> logoUriStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
+  logoUriStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.startsWith(
@@ -704,7 +712,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> logoUriEndsWith(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> logoUriEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -719,7 +727,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> logoUriContains(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> logoUriContains(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -734,7 +742,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> logoUriMatches(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> logoUriMatches(
     String pattern, {
     bool caseSensitive = true,
   }) {
@@ -749,7 +757,8 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> logoUriIsEmpty() {
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
+  logoUriIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.equalTo(property: r'logoUri', value: ''),
@@ -757,7 +766,8 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> logoUriIsNotEmpty() {
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
+  logoUriIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(property: r'logoUri', value: ''),
@@ -765,7 +775,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition>
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
   metadataAddressIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -774,7 +784,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition>
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
   metadataAddressIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -783,7 +793,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition>
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
   metadataAddressEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -796,7 +806,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition>
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
   metadataAddressGreaterThan(
     String? value, {
     bool include = false,
@@ -814,7 +824,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition>
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
   metadataAddressLessThan(
     String? value, {
     bool include = false,
@@ -832,7 +842,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition>
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
   metadataAddressBetween(
     String? lower,
     String? upper, {
@@ -854,7 +864,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition>
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
   metadataAddressStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -867,7 +877,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition>
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
   metadataAddressEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -880,7 +890,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition>
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
   metadataAddressContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -893,7 +903,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition>
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
   metadataAddressMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -906,7 +916,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition>
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
   metadataAddressIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -915,7 +925,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition>
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
   metadataAddressIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -924,7 +934,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> nameEqualTo(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> nameEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -939,7 +949,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> nameGreaterThan(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> nameGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -956,7 +966,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> nameLessThan(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> nameLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -973,7 +983,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> nameBetween(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> nameBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -994,7 +1004,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> nameStartsWith(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> nameStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -1009,7 +1019,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> nameEndsWith(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> nameEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -1024,7 +1034,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> nameContains(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> nameContains(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -1039,7 +1049,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> nameMatches(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> nameMatches(
     String pattern, {
     bool caseSensitive = true,
   }) {
@@ -1054,7 +1064,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> nameIsEmpty() {
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> nameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.equalTo(property: r'name', value: ''),
@@ -1062,7 +1072,8 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> nameIsNotEmpty() {
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
+  nameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(property: r'name', value: ''),
@@ -1070,7 +1081,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> symbolEqualTo(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> symbolEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -1085,7 +1096,8 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> symbolGreaterThan(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
+  symbolGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -1102,7 +1114,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> symbolLessThan(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> symbolLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -1119,7 +1131,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> symbolBetween(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> symbolBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1140,10 +1152,8 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> symbolStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
+  symbolStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.startsWith(
@@ -1155,7 +1165,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> symbolEndsWith(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> symbolEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -1170,7 +1180,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> symbolContains(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> symbolContains(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -1185,7 +1195,7 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> symbolMatches(
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition> symbolMatches(
     String pattern, {
     bool caseSensitive = true,
   }) {
@@ -1200,7 +1210,8 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> symbolIsEmpty() {
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
+  symbolIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.equalTo(property: r'symbol', value: ''),
@@ -1208,7 +1219,8 @@ extension SplTokenQueryFilter
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterFilterCondition> symbolIsNotEmpty() {
+  QueryBuilder<SolContract, SolContract, QAfterFilterCondition>
+  symbolIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(property: r'symbol', value: ''),
@@ -1217,176 +1229,179 @@ extension SplTokenQueryFilter
   }
 }
 
-extension SplTokenQueryObject
-    on QueryBuilder<SplToken, SplToken, QFilterCondition> {}
+extension SolContractQueryObject
+    on QueryBuilder<SolContract, SolContract, QFilterCondition> {}
 
-extension SplTokenQueryLinks
-    on QueryBuilder<SplToken, SplToken, QFilterCondition> {}
+extension SolContractQueryLinks
+    on QueryBuilder<SolContract, SolContract, QFilterCondition> {}
 
-extension SplTokenQuerySortBy on QueryBuilder<SplToken, SplToken, QSortBy> {
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> sortByAddress() {
+extension SolContractQuerySortBy
+    on QueryBuilder<SolContract, SolContract, QSortBy> {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> sortByAddress() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'address', Sort.asc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> sortByAddressDesc() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> sortByAddressDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'address', Sort.desc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> sortByDecimals() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> sortByDecimals() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'decimals', Sort.asc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> sortByDecimalsDesc() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> sortByDecimalsDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'decimals', Sort.desc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> sortByLogoUri() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> sortByLogoUri() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'logoUri', Sort.asc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> sortByLogoUriDesc() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> sortByLogoUriDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'logoUri', Sort.desc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> sortByMetadataAddress() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> sortByMetadataAddress() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'metadataAddress', Sort.asc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> sortByMetadataAddressDesc() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy>
+  sortByMetadataAddressDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'metadataAddress', Sort.desc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> sortByName() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> sortByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> sortByNameDesc() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> sortByNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.desc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> sortBySymbol() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> sortBySymbol() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'symbol', Sort.asc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> sortBySymbolDesc() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> sortBySymbolDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'symbol', Sort.desc);
     });
   }
 }
 
-extension SplTokenQuerySortThenBy
-    on QueryBuilder<SplToken, SplToken, QSortThenBy> {
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> thenByAddress() {
+extension SolContractQuerySortThenBy
+    on QueryBuilder<SolContract, SolContract, QSortThenBy> {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> thenByAddress() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'address', Sort.asc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> thenByAddressDesc() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> thenByAddressDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'address', Sort.desc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> thenByDecimals() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> thenByDecimals() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'decimals', Sort.asc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> thenByDecimalsDesc() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> thenByDecimalsDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'decimals', Sort.desc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> thenById() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> thenByIdDesc() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> thenByLogoUri() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> thenByLogoUri() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'logoUri', Sort.asc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> thenByLogoUriDesc() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> thenByLogoUriDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'logoUri', Sort.desc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> thenByMetadataAddress() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> thenByMetadataAddress() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'metadataAddress', Sort.asc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> thenByMetadataAddressDesc() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy>
+  thenByMetadataAddressDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'metadataAddress', Sort.desc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> thenByName() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> thenByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> thenByNameDesc() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> thenByNameDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.desc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> thenBySymbol() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> thenBySymbol() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'symbol', Sort.asc);
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QAfterSortBy> thenBySymbolDesc() {
+  QueryBuilder<SolContract, SolContract, QAfterSortBy> thenBySymbolDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'symbol', Sort.desc);
     });
   }
 }
 
-extension SplTokenQueryWhereDistinct
-    on QueryBuilder<SplToken, SplToken, QDistinct> {
-  QueryBuilder<SplToken, SplToken, QDistinct> distinctByAddress({
+extension SolContractQueryWhereDistinct
+    on QueryBuilder<SolContract, SolContract, QDistinct> {
+  QueryBuilder<SolContract, SolContract, QDistinct> distinctByAddress({
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1394,13 +1409,13 @@ extension SplTokenQueryWhereDistinct
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QDistinct> distinctByDecimals() {
+  QueryBuilder<SolContract, SolContract, QDistinct> distinctByDecimals() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'decimals');
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QDistinct> distinctByLogoUri({
+  QueryBuilder<SolContract, SolContract, QDistinct> distinctByLogoUri({
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1408,7 +1423,7 @@ extension SplTokenQueryWhereDistinct
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QDistinct> distinctByMetadataAddress({
+  QueryBuilder<SolContract, SolContract, QDistinct> distinctByMetadataAddress({
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1419,7 +1434,7 @@ extension SplTokenQueryWhereDistinct
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QDistinct> distinctByName({
+  QueryBuilder<SolContract, SolContract, QDistinct> distinctByName({
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1427,7 +1442,7 @@ extension SplTokenQueryWhereDistinct
     });
   }
 
-  QueryBuilder<SplToken, SplToken, QDistinct> distinctBySymbol({
+  QueryBuilder<SolContract, SolContract, QDistinct> distinctBySymbol({
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1436,45 +1451,46 @@ extension SplTokenQueryWhereDistinct
   }
 }
 
-extension SplTokenQueryProperty
-    on QueryBuilder<SplToken, SplToken, QQueryProperty> {
-  QueryBuilder<SplToken, int, QQueryOperations> idProperty() {
+extension SolContractQueryProperty
+    on QueryBuilder<SolContract, SolContract, QQueryProperty> {
+  QueryBuilder<SolContract, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
     });
   }
 
-  QueryBuilder<SplToken, String, QQueryOperations> addressProperty() {
+  QueryBuilder<SolContract, String, QQueryOperations> addressProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'address');
     });
   }
 
-  QueryBuilder<SplToken, int, QQueryOperations> decimalsProperty() {
+  QueryBuilder<SolContract, int, QQueryOperations> decimalsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'decimals');
     });
   }
 
-  QueryBuilder<SplToken, String?, QQueryOperations> logoUriProperty() {
+  QueryBuilder<SolContract, String?, QQueryOperations> logoUriProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'logoUri');
     });
   }
 
-  QueryBuilder<SplToken, String?, QQueryOperations> metadataAddressProperty() {
+  QueryBuilder<SolContract, String?, QQueryOperations>
+  metadataAddressProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'metadataAddress');
     });
   }
 
-  QueryBuilder<SplToken, String, QQueryOperations> nameProperty() {
+  QueryBuilder<SolContract, String, QQueryOperations> nameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'name');
     });
   }
 
-  QueryBuilder<SplToken, String, QQueryOperations> symbolProperty() {
+  QueryBuilder<SolContract, String, QQueryOperations> symbolProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'symbol');
     });

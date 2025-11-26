@@ -31,17 +31,17 @@ class SolanaTokenWallet extends Wallet {
   @override
   int get isarTransactionVersion => 2;
 
-  SolanaTokenWallet(this.parentSolanaWallet, this.splToken)
+  SolanaTokenWallet(this.parentSolanaWallet, this.solContract)
     : super(parentSolanaWallet.cryptoCurrency);
 
   final SolanaWallet parentSolanaWallet;
 
-  final SplToken splToken;
+  final SolContract solContract;
 
-  String get tokenMint => splToken.address;
-  String get tokenName => splToken.name;
-  String get tokenSymbol => splToken.symbol;
-  int get tokenDecimals => splToken.decimals;
+  String get tokenMint => solContract.address;
+  String get tokenName => solContract.name;
+  String get tokenSymbol => solContract.symbol;
+  int get tokenDecimals => solContract.decimals;
 
   @override
   String get walletId => parentSolanaWallet.walletId;
@@ -77,7 +77,7 @@ class SolanaTokenWallet extends Wallet {
 
       if (txData.recipients!.length != 1) {
         throw ArgumentError(
-          "SPL token transfers support only 1 recipient per transaction",
+          "SOL token transfers support only 1 recipient per transaction",
         );
       }
 

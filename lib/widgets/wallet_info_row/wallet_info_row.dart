@@ -13,7 +13,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/isar/models/contract.dart';
 import '../../models/isar/models/ethereum/eth_contract.dart';
-import '../../models/isar/models/solana/spl_token.dart';
 import '../../providers/providers.dart';
 import '../../themes/stack_colors.dart';
 import '../../utilities/text_styles.dart';
@@ -50,13 +49,13 @@ class WalletInfoRow extends ConsumerWidget {
     if (contractAddress != null) {
       if (walletInfo.coin is Solana) {
         // Solana token.
-        final splToken = ref.watch(
+        final solContract = ref.watch(
           mainDBProvider.select(
-            (value) => value.getSplTokenSync(contractAddress!),
+            (value) => value.getSolContractSync(contractAddress!),
           ),
         );
-        contract = splToken;
-        contractName = splToken?.name;
+        contract = solContract;
+        contractName = solContract?.name;
       } else {
         // Ethereum token.
         final ethContract = ref.watch(

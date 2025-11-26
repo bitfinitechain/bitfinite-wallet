@@ -164,7 +164,9 @@ class _EthWalletsOverviewState extends ConsumerState<WalletsOverview> {
 
         // fetch each token
         for (final tokenAddress in tokenMintAddresses) {
-          final token = ref.read(mainDBProvider).getSplTokenSync(tokenAddress);
+          final token = ref
+              .read(mainDBProvider)
+              .getSolContractSync(tokenAddress);
 
           // add it to list if it exists in DB
           if (token != null) {

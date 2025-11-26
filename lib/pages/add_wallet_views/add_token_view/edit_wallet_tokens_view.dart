@@ -17,7 +17,7 @@ import 'package:isar_community/isar.dart';
 
 import '../../../db/isar/main_db.dart';
 import '../../../models/isar/models/ethereum/eth_contract.dart';
-import '../../../models/isar/models/solana/spl_token.dart';
+import '../../../models/isar/models/solana/sol_contract.dart';
 import '../../../notifications/show_flush_bar.dart';
 import '../../../pages_desktop_specific/desktop_home_view.dart';
 import '../../../providers/global/price_provider.dart';
@@ -26,7 +26,7 @@ import '../../../themes/stack_colors.dart';
 import '../../../utilities/assets.dart';
 import '../../../utilities/constants.dart';
 import '../../../utilities/default_eth_tokens.dart';
-import '../../../utilities/default_spl_tokens.dart';
+import '../../../utilities/default_sol_tokens.dart';
 import '../../../utilities/text_styles.dart';
 import '../../../utilities/util.dart';
 import '../../../wallets/isar/providers/wallet_info_provider.dart';
@@ -187,7 +187,7 @@ class _EditWalletTokensViewState extends ConsumerState<EditWalletTokensView> {
 
   /// Navigate to add custom Solana token view and handle the result.
   Future<void> _addCustomSolanaToken() async {
-    SplToken? token;
+    SolContract? token;
 
     if (isDesktop) {
       token = await showDialog(
@@ -205,11 +205,11 @@ class _EditWalletTokensViewState extends ConsumerState<EditWalletTokensView> {
         AddCustomSolanaTokenView.routeName,
         arguments: widget.walletId,
       );
-      token = result as SplToken?;
+      token = result as SolContract?;
     }
 
     if (token != null) {
-      await MainDB.instance.putSplToken(token);
+      await MainDB.instance.putSolContract(token);
 
       // Also add the custom token mint address to the wallet's custom token list.
       final wallet = ref.read(pWallets).getWallet(widget.walletId);
@@ -247,14 +247,14 @@ class _EditWalletTokensViewState extends ConsumerState<EditWalletTokensView> {
 
     if (wallet is SolanaWallet) {
       final contracts = MainDB.instance
-          .getSplTokens()
+          .getSolContracts()
           .sortByName()
           .findAllSync();
 
       if (contracts.isEmpty) {
-        contracts.addAll(DefaultSplTokens.list);
+        contracts.addAll(DefaultSolTokens.list);
         MainDB.instance
-            .putSplTokens(contracts)
+            .putSolContracts(contracts)
             .then(
               (_) => ref.read(priceAnd24hChangeNotifierProvider).updatePrice(),
             );

@@ -1682,42 +1682,44 @@ class MockMainDB extends _i1.Mock implements _i3.MainDB {
           as _i10.Future<void>);
 
   @override
-  _i8.QueryBuilder<_i28.SplToken, _i28.SplToken, _i8.QWhere> getSplTokens() =>
+  _i8.QueryBuilder<_i28.SolContract, _i28.SolContract, _i8.QWhere>
+  getSolContracts() =>
       (super.noSuchMethod(
-            Invocation.method(#getSplTokens, []),
+            Invocation.method(#getSolContracts, []),
             returnValue:
-                _FakeQueryBuilder_7<_i28.SplToken, _i28.SplToken, _i8.QWhere>(
-                  this,
-                  Invocation.method(#getSplTokens, []),
-                ),
+                _FakeQueryBuilder_7<
+                  _i28.SolContract,
+                  _i28.SolContract,
+                  _i8.QWhere
+                >(this, Invocation.method(#getSolContracts, [])),
           )
-          as _i8.QueryBuilder<_i28.SplToken, _i28.SplToken, _i8.QWhere>);
+          as _i8.QueryBuilder<_i28.SolContract, _i28.SolContract, _i8.QWhere>);
 
   @override
-  _i10.Future<_i28.SplToken?> getSplToken(String? tokenMint) =>
+  _i10.Future<_i28.SolContract?> getSolContract(String? tokenMint) =>
       (super.noSuchMethod(
-            Invocation.method(#getSplToken, [tokenMint]),
-            returnValue: _i10.Future<_i28.SplToken?>.value(),
+            Invocation.method(#getSolContract, [tokenMint]),
+            returnValue: _i10.Future<_i28.SolContract?>.value(),
           )
-          as _i10.Future<_i28.SplToken?>);
+          as _i10.Future<_i28.SolContract?>);
 
   @override
-  _i28.SplToken? getSplTokenSync(String? tokenMint) =>
-      (super.noSuchMethod(Invocation.method(#getSplTokenSync, [tokenMint]))
-          as _i28.SplToken?);
+  _i28.SolContract? getSolContractSync(String? tokenMint) =>
+      (super.noSuchMethod(Invocation.method(#getSolContractSync, [tokenMint]))
+          as _i28.SolContract?);
 
   @override
-  _i10.Future<int> putSplToken(_i28.SplToken? token) =>
+  _i10.Future<int> putSolContract(_i28.SolContract? token) =>
       (super.noSuchMethod(
-            Invocation.method(#putSplToken, [token]),
+            Invocation.method(#putSolContract, [token]),
             returnValue: _i10.Future<int>.value(0),
           )
           as _i10.Future<int>);
 
   @override
-  _i10.Future<void> putSplTokens(List<_i28.SplToken>? tokens) =>
+  _i10.Future<void> putSolContracts(List<_i28.SolContract>? tokens) =>
       (super.noSuchMethod(
-            Invocation.method(#putSplTokens, [tokens]),
+            Invocation.method(#putSolContracts, [tokens]),
             returnValue: _i10.Future<void>.value(),
             returnValueForMissingStub: _i10.Future<void>.value(),
           )

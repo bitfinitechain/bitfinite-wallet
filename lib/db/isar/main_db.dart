@@ -59,7 +59,7 @@ class MainDB {
         AddressSchema,
         AddressLabelSchema,
         EthContractSchema,
-        SplTokenSchema,
+        SolContractSchema,
         TransactionBlockExplorerSchema,
         StackThemeSchema,
         ContactEntrySchema,
@@ -628,20 +628,21 @@ class MainDB {
 
   // Solana tokens.
 
-  QueryBuilder<SplToken, SplToken, QWhere> getSplTokens() =>
-      isar.splTokens.where();
+  QueryBuilder<SolContract, SolContract, QWhere> getSolContracts() =>
+      isar.solContracts.where();
 
-  Future<SplToken?> getSplToken(String tokenMint) =>
-      isar.splTokens.where().addressEqualTo(tokenMint).findFirst();
+  Future<SolContract?> getSolContract(String tokenMint) =>
+      isar.solContracts.where().addressEqualTo(tokenMint).findFirst();
 
-  SplToken? getSplTokenSync(String tokenMint) =>
-      isar.splTokens.where().addressEqualTo(tokenMint).findFirstSync();
+  SolContract? getSolContractSync(String tokenMint) =>
+      isar.solContracts.where().addressEqualTo(tokenMint).findFirstSync();
 
-  Future<int> putSplToken(SplToken token) => isar.writeTxn(() async {
-    return await isar.splTokens.put(token);
+  Future<int> putSolContract(SolContract token) => isar.writeTxn(() async {
+    return await isar.solContracts.put(token);
   });
 
-  Future<void> putSplTokens(List<SplToken> tokens) => isar.writeTxn(() async {
-    await isar.splTokens.putAll(tokens);
-  });
+  Future<void> putSolContracts(List<SolContract> tokens) =>
+      isar.writeTxn(() async {
+        await isar.solContracts.putAll(tokens);
+      });
 }

@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 
-import '../../../models/isar/models/solana/spl_token.dart';
+import '../../../models/isar/models/solana/sol_contract.dart';
 import '../../../providers/db/main_db_provider.dart';
 import '../../../utilities/util.dart';
 import 'sol_token_select_item.dart';
@@ -28,7 +28,7 @@ class SolanaTokensList extends StatelessWidget {
   final String searchTerm;
   final List<String> tokenMints;
 
-  List<SplToken> _filter(String searchTerm, List<SplToken> allTokens) {
+  List<SolContract> _filter(String searchTerm, List<SolContract> allTokens) {
     if (tokenMints.isEmpty) {
       return [];
     }
@@ -63,7 +63,7 @@ class SolanaTokensList extends StatelessWidget {
         // Get all available SOL tokens.
         final db = ref.watch(mainDBProvider);
 
-        final allTokens = db.getSplTokens().findAllSync();
+        final allTokens = db.getSolContracts().findAllSync();
 
         final tokens = _filter(searchTerm, allTokens);
 

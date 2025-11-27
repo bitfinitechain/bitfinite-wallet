@@ -1942,6 +1942,7 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
         final data = await (this as MwebInterface).processMwebTransaction(
           mwebData,
         );
+        Logging.instance.d("prepare MWEB send: $data");
         return data.copyWith(fee: fee);
       }
 

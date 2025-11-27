@@ -134,7 +134,9 @@ class _MoreFeaturesDialogState extends ConsumerState<MoreFeaturesDialog> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          "Reusing addresses reduces your privacy and security.  Are you sure you want to reuse addresses by default?",
+                          "Reusing addresses reduces your privacy and "
+                          "security. Are you sure you want to reuse "
+                          "addresses by default?",
                           style: STextStyles.desktopTextSmall(context),
                         ),
                         const SizedBox(height: 43),
@@ -238,8 +240,9 @@ class _MoreFeaturesDialogState extends ConsumerState<MoreFeaturesDialog> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          "Activating MWEB requires synchronizing on-chain MWEB related data. "
-                          "This currently requires about 800 MB of storage.",
+                          "Activating MWEB requires synchronizing on-chain "
+                          "MWEB related data. This currently requires about "
+                          "800 MB of storage.",
                           style: STextStyles.desktopTextSmall(context),
                         ),
                         const SizedBox(height: 43),

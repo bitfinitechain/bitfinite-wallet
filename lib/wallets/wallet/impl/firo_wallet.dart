@@ -813,6 +813,6 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
 
   @override
   int estimateTxFee({required int vSize, required BigInt feeRatePerKB}) {
-    return vSize * (feeRatePerKB.toInt() / 1000).ceil();
+    return (feeRatePerKB * BigInt.from(vSize) ~/ BigInt.from(1000)).toInt();
   }
 }

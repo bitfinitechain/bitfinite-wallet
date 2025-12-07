@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-
+    
 import '../../providers/progress_report/xelis_table_progress_provider.dart';
 import '../../wallets/crypto_currency/crypto_currency.dart';
 
@@ -32,7 +32,7 @@ abstract class LibXelisInterface {
 
   Future<void> updateTables({
     required String precomputedTablesPath,
-    required bool l1Low,
+    required bool stack_l1Low,
   });
 
   Future<String> getSeed(OpaqueXelisWallet wallet);
@@ -46,7 +46,7 @@ abstract class LibXelisInterface {
     String? seed,
     String? privateKey,
     String? precomputedTablesPath,
-    bool? l1Low,
+    bool? stack_l1Low,
   });
 
   Future<OpaqueXelisWallet> openXelisWallet(
@@ -56,7 +56,7 @@ abstract class LibXelisInterface {
     required String password,
     required CryptoCurrencyNetwork network,
     String? precomputedTablesPath,
-    bool? l1Low,
+    bool? stack_l1Low,
   });
 
   String getAddress(OpaqueXelisWallet wallet);
@@ -225,6 +225,8 @@ enum XelisTableSize {
   low,
   full;
 
+  // TODO: add more granular table size management interface
+  // for now, just patching the old system into the new FFI API
   bool get isLow => this == XelisTableSize.low;
 
   static XelisTableSize get platformDefault {

@@ -17,6 +17,7 @@ import 'app_config.dart';
 import 'db/drift/database.dart';
 import 'models/add_wallet_list_entity/add_wallet_list_entity.dart';
 import 'models/add_wallet_list_entity/sub_classes/eth_token_entity.dart';
+import 'models/add_wallet_list_entity/sub_classes/sol_token_entity.dart';
 import 'models/buy/response_objects/quote.dart';
 import 'models/exchange/incomplete_exchange.dart';
 import 'models/exchange/response_objects/trade.dart';
@@ -29,6 +30,7 @@ import 'models/keys/view_only_wallet_data.dart';
 import 'models/paynym/paynym_account_lite.dart';
 import 'models/send_view_auto_fill_data.dart';
 import 'pages/add_wallet_views/add_token_view/add_custom_token_view.dart';
+import 'pages/add_wallet_views/add_token_view/add_custom_solana_token_view.dart';
 import 'pages/add_wallet_views/add_token_view/edit_wallet_tokens_view.dart';
 import 'pages/add_wallet_views/add_wallet_view/add_wallet_view.dart';
 import 'pages/add_wallet_views/create_or_restore_wallet_view/create_or_restore_wallet_view.dart';
@@ -43,6 +45,7 @@ import 'pages/add_wallet_views/restore_wallet_view/restore_options_view/restore_
 import 'pages/add_wallet_views/restore_wallet_view/restore_view_only_wallet_view.dart';
 import 'pages/add_wallet_views/restore_wallet_view/restore_wallet_view.dart';
 import 'pages/add_wallet_views/select_wallet_for_token_view.dart';
+import 'pages/add_wallet_views/select_wallet_for_sol_token_view.dart';
 import 'pages/add_wallet_views/verify_recovery_phrase_view/verify_recovery_phrase_view.dart';
 import 'pages/address_book_views/address_book_view.dart';
 import 'pages/address_book_views/subviews/add_address_book_entry_view.dart';
@@ -93,10 +96,12 @@ import 'pages/receive_view/addresses/edit_address_label_view.dart';
 import 'pages/receive_view/addresses/wallet_addresses_view.dart';
 import 'pages/receive_view/generate_receiving_uri_qr_code_view.dart';
 import 'pages/receive_view/receive_view.dart';
+import 'pages/receive_view/sol_token_receive_view.dart';
 import 'pages/salvium_stake/salvium_create_stake_view.dart';
 import 'pages/send_view/confirm_transaction_view.dart';
 import 'pages/send_view/frost_ms/frost_send_view.dart';
 import 'pages/send_view/send_view.dart';
+import 'pages/send_view/sol_token_send_view.dart';
 import 'pages/send_view/token_send_view.dart';
 import 'pages/settings_views/global_settings_view/about_view.dart';
 import 'pages/settings_views/global_settings_view/advanced_views/advanced_settings_view.dart';
@@ -152,6 +157,8 @@ import 'pages/settings_views/wallet_settings_view/wallet_settings_wallet_setting
 import 'pages/settings_views/wallet_settings_view/wallet_settings_wallet_settings/spark_info.dart';
 import 'pages/settings_views/wallet_settings_view/wallet_settings_wallet_settings/wallet_settings_wallet_settings_view.dart';
 import 'pages/settings_views/wallet_settings_view/wallet_settings_wallet_settings/xpub_view.dart';
+import 'pages/signing/signing_view.dart';
+import 'pages/signing/sub_widgets/address_list.dart';
 import 'pages/spark_names/buy_spark_name_view.dart';
 import 'pages/spark_names/confirm_spark_name_transaction_view.dart';
 import 'pages/spark_names/spark_names_home_view.dart';
@@ -159,6 +166,8 @@ import 'pages/spark_names/sub_widgets/spark_name_details.dart';
 import 'pages/special/firo_rescan_recovery_error_dialog.dart';
 import 'pages/stack_privacy_calls.dart';
 import 'pages/token_view/my_tokens_view.dart';
+import 'pages/token_view/sol_token_view.dart';
+import 'pages/token_view/solana_token_contract_details_view.dart';
 import 'pages/token_view/token_contract_details_view.dart';
 import 'pages/token_view/token_view.dart';
 import 'pages/wallet_view/transaction_views/all_transactions_view.dart';
@@ -185,6 +194,7 @@ import 'pages_desktop_specific/desktop_exchange/desktop_exchange_view.dart';
 import 'pages_desktop_specific/desktop_home_view.dart';
 import 'pages_desktop_specific/mweb_utxos_view.dart';
 import 'pages_desktop_specific/my_stack_view/my_stack_view.dart';
+import 'pages_desktop_specific/my_stack_view/wallet_view/desktop_sol_token_view.dart';
 import 'pages_desktop_specific/my_stack_view/wallet_view/desktop_token_view.dart';
 import 'pages_desktop_specific/my_stack_view/wallet_view/desktop_wallet_view.dart';
 import 'pages_desktop_specific/my_stack_view/wallet_view/sub_widgets/delete_wallet_keys_popup.dart';
@@ -224,6 +234,7 @@ import 'wallets/wallet/wallet.dart';
 import 'wallets/wallet/wallet_mixin_interfaces/extended_keys_interface.dart';
 import 'widgets/choose_coin_view.dart';
 import 'widgets/frost_scaffold.dart';
+import 'pages/settings_views/wallet_settings_view/wallet_settings_wallet_settings/spark_view_key_view.dart';
 
 /*
  * This file contains all the routes for the app.
@@ -364,6 +375,19 @@ class RouteGenerator {
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
 
+      case DesktopSolTokenView.routeName:
+        if (args is ({String walletId, String tokenMint})) {
+          return getRoute(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => DesktopSolTokenView(
+              walletId: args.walletId,
+              tokenMint: args.tokenMint,
+            ),
+            settings: RouteSettings(name: settings.name),
+          );
+        }
+        return _routeError("${settings.name} invalid args: ${args.toString()}");
+
       case SelectWalletForTokenView.routeName:
         if (args is EthTokenEntity) {
           return getRoute(
@@ -374,10 +398,28 @@ class RouteGenerator {
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
 
+      case SelectWalletForSolTokenView.routeName:
+        if (args is SolTokenEntity) {
+          return getRoute(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => SelectWalletForSolTokenView(entity: args),
+            settings: RouteSettings(name: settings.name),
+          );
+        }
+        return _routeError("${settings.name} invalid args: ${args.toString()}");
+
       case AddCustomTokenView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const AddCustomTokenView(),
+          settings: RouteSettings(name: settings.name),
+        );
+
+      case AddCustomSolanaTokenView.routeName:
+        final walletId = args is String ? args : null;
+        return getRoute(
+          shouldUseMaterialRoute: useMaterialPageRoute,
+          builder: (_) => AddCustomSolanaTokenView(walletId: walletId),
           settings: RouteSettings(name: settings.name),
         );
 
@@ -404,6 +446,19 @@ class RouteGenerator {
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
 
+      case SolanaTokenContractDetailsView.routeName:
+        if (args is Tuple2<String, String>) {
+          return getRoute(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => SolanaTokenContractDetailsView(
+              tokenMint: args.item1,
+              walletId: args.item2,
+            ),
+            settings: RouteSettings(name: settings.name),
+          );
+        }
+        return _routeError("${settings.name} invalid args: ${args.toString()}");
+
       case SingleFieldEditView.routeName:
         if (args is Tuple2<String, String>) {
           return getRoute(
@@ -422,6 +477,26 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => MonkeyView(walletId: args),
+            settings: RouteSettings(name: settings.name),
+          );
+        }
+        return _routeError("${settings.name} invalid args: ${args.toString()}");
+
+      case SigningView.routeName:
+        if (args is String) {
+          return getRoute(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => SigningView(walletId: args),
+            settings: RouteSettings(name: settings.name),
+          );
+        }
+        return _routeError("${settings.name} invalid args: ${args.toString()}");
+
+      case CompactAddressListView.routeName:
+        if (args is String) {
+          return getRoute<Address>(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => CompactAddressListView(walletId: args),
             settings: RouteSettings(name: settings.name),
           );
         }
@@ -1767,6 +1842,32 @@ class RouteGenerator {
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
 
+      case SolTokenSendView.routeName:
+        if (args is (String, String)) {
+          return getRoute(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => SolTokenSendView(
+              walletId: args.$1,
+              tokenMint: args.$2,
+            ),
+            settings: RouteSettings(name: settings.name),
+          );
+        }
+        return _routeError("${settings.name} invalid args: ${args.toString()}");
+
+      case SolTokenReceiveView.routeName:
+        if (args is (String, String)) {
+          return getRoute(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => SolTokenReceiveView(
+              walletId: args.$1,
+              tokenMint: args.$2,
+            ),
+            settings: RouteSettings(name: settings.name),
+          );
+        }
+        return _routeError("${settings.name} invalid args: ${args.toString()}");
+
       case ConfirmTransactionView.routeName:
         if (args is (TxData, String, VoidCallback)) {
           return getRoute(
@@ -2506,14 +2607,50 @@ class RouteGenerator {
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
 
+      case SolTokenView.routeName:
+        if (args is ({String walletId, String tokenMint})) {
+          return getRoute(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => SolTokenView(
+              walletId: args.walletId,
+              tokenMint: args.tokenMint,
+            ),
+            settings: RouteSettings(name: settings.name),
+          );
+        } else if (args is ({String walletId, String tokenMint, bool popPrevious})) {
+          return getRoute(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => SolTokenView(
+              walletId: args.walletId,
+              tokenMint: args.tokenMint,
+              popPrevious: args.popPrevious,
+            ),
+            settings: RouteSettings(name: settings.name),
+          );
+        }
+        return _routeError("${settings.name} invalid args: ${args.toString()}");
+
       // == End of desktop specific routes =====================================
+
+      case SparkViewKeyView.routeName:
+        if (args is (String, String)) {
+          return getRoute(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => SparkViewKeyView(
+              walletId: args.$1,
+              sparkViewKeyHex: args.$2,
+            ),
+            settings: RouteSettings(name: settings.name),
+          );
+        }
+        return _routeError("${settings.name} invalid args: ${args.toString()}");
 
       default:
         return _routeError("");
     }
   }
 
-  static Route<dynamic> getRoute({
+  static Route<T> getRoute<T>({
     bool shouldUseMaterialRoute = useMaterialPageRoute,
     required Widget Function(BuildContext) builder,
     String? title,
@@ -2522,14 +2659,14 @@ class RouteGenerator {
     bool fullscreenDialog = false,
   }) {
     if (shouldUseMaterialRoute) {
-      return MaterialPageRoute(
+      return MaterialPageRoute<T>(
         builder: builder,
         settings: settings,
         maintainState: maintainState,
         fullscreenDialog: fullscreenDialog,
       );
     } else {
-      return CupertinoPageRoute(
+      return CupertinoPageRoute<T>(
         builder: builder,
         settings: settings,
         title: title,
@@ -2539,7 +2676,7 @@ class RouteGenerator {
     }
   }
 
-  static Route<dynamic> createSlideTransitionRoute(Widget viewToInsert) {
+  static Route<T> createSlideTransitionRoute<T>(Widget viewToInsert) {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => viewToInsert,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -2557,7 +2694,7 @@ class RouteGenerator {
     );
   }
 
-  static Route<dynamic> _routeError(String message) {
+  static Route<T> _routeError<T>(String message) {
     // Replace with robust ErrorView page
     final Widget errorView = Scaffold(
       appBar: AppBar(
@@ -2571,7 +2708,7 @@ class RouteGenerator {
       ),
     );
 
-    return getRoute(
+    return getRoute<T>(
       shouldUseMaterialRoute: useMaterialPageRoute,
       builder: (_) => errorView,
     );

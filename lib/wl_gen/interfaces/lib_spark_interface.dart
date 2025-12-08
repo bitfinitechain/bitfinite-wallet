@@ -14,8 +14,8 @@ abstract class LibSparkInterface {
   int get maxNameLength;
   int get maxAdditionalInfoLengthBytes;
   String get nameRegexString;
-  String get stage3DevelopmentFundAddressMainNet;
-  String get stage3DevelopmentFundAddressTestNet;
+  String get stage3CommunityFundAddressMainNet;
+  String get stage3CommunityFundAddressTestNet;
   List<int> get standardSparkNamesFee;
 
   void initSparkLogging(Level level);
@@ -59,6 +59,25 @@ abstract class LibSparkInterface {
     required final int index,
     required final Uint8List context,
     final bool isTestNet = false,
+  });
+
+  WrappedLibSparkCoin? identifyAndRecoverCoinByFullViewKey(
+    final String serializedCoin, {
+    required final String fullViewKeyHex,
+    required final Uint8List context,
+    final bool isTestNet = false,
+  });
+
+  Future<String> getAddressFromFullViewKey({
+    required String fullViewKeyHex,
+    required int index,
+    required int diversifier,
+    bool isTestNet = false,
+  });
+
+  String getFullViewKeyHexFromPrivateKeyData({
+    required String privateKeyHex,
+    required int index,
   });
 
   ({

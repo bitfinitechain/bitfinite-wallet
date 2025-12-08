@@ -12,16 +12,17 @@ import '../../../../utilities/eth_commons.dart';
 import '../../../../utilities/text_styles.dart';
 import '../../../../wallets/crypto_currency/crypto_currency.dart';
 import '../../../../wallets/crypto_currency/interfaces/electrumx_currency_interface.dart';
+import '../../../../wallets/crypto_currency/intermediate/cryptonote_currency.dart';
 import '../../../../wallets/isar/providers/eth/current_token_wallet_provider.dart';
 import '../../../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../../../wallets/wallet/impl/firo_wallet.dart';
+import '../../../../wallets/wallet/intermediate/cryptonote_wallet.dart';
 import '../../../../widgets/animated_text.dart';
 import '../../../../widgets/conditional_parent.dart';
 import '../../../../widgets/custom_buttons/blue_text_button.dart';
 import '../../../../widgets/desktop/desktop_fee_dialog.dart';
 import '../../../../widgets/eth_fee_form.dart';
 import '../../../../widgets/fee_slider.dart';
-import '../../../../wl_gen/interfaces/cs_monero_interface.dart';
 
 class DesktopSendFeeForm extends ConsumerStatefulWidget {
   const DesktopSendFeeForm({
@@ -76,6 +77,7 @@ class _DesktopSendFeeFormState extends ConsumerState<DesktopSendFeeForm> {
   Widget build(BuildContext context) {
     final canEditFees =
         isEth ||
+        cryptoCurrency is Solana ||
         (cryptoCurrency is ElectrumXCurrencyInterface &&
             !(((cryptoCurrency is Firo) &&
                 (ref.watch(publicPrivateBalanceStateProvider.state).state ==
@@ -167,11 +169,12 @@ class _DesktopSendFeeFormState extends ConsumerState<DesktopSendFeeForm> {
                                         .read(pWallets)
                                         .getWallet(widget.walletId);
 
-                                    if (coin is Monero || coin is Wownero) {
+                                    if (coin is CryptonoteCurrency) {
                                       final fee = await wallet.estimateFeeFor(
                                         amount,
                                         BigInt.from(
-                                          csMonero.getTxPriorityMedium(),
+                                          (wallet as CryptonoteWallet)
+                                              .getTxPriorityMedium(),
                                         ),
                                       );
                                       ref
@@ -209,15 +212,21 @@ class _DesktopSendFeeFormState extends ConsumerState<DesktopSendFeeForm> {
                                           .estimateFeeFor(amount, feeRate);
                                     }
                                   } else {
-                                    final tokenWallet = ref.read(
-                                      pCurrentTokenWallet,
-                                    )!;
-                                    final fee = await tokenWallet
-                                        .estimateFeeFor(amount, feeRate);
-                                    ref
-                                            .read(tokenFeeSessionCacheProvider)
-                                            .average[amount] =
-                                        fee;
+                                    // Token fee estimation (works for ERC20 and SOL tokens).
+                                    try {
+                                      final tokenWallet = ref.read(
+                                        pCurrentTokenWallet,
+                                      )!;
+                                      final fee = await tokenWallet
+                                          .estimateFeeFor(amount, feeRate);
+                                      ref
+                                              .read(tokenFeeSessionCacheProvider)
+                                              .average[amount] =
+                                          fee;
+                                    } catch (_) {
+                                      // Token wallet not available.
+                                      debugPrint("Token fee estimation not available");
+                                    }
                                   }
                                 }
                                 return ref

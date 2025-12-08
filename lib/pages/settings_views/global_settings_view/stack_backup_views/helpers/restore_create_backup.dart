@@ -13,6 +13,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
 import 'package:isar_community/isar.dart';
 import 'package:stack_wallet_backup/stack_wallet_backup.dart';
 import 'package:tuple/tuple.dart';
@@ -31,6 +32,7 @@ import '../../../../../models/node_model.dart';
 import '../../../../../models/stack_restoring_ui_state.dart';
 import '../../../../../models/trade_wallet_lookup.dart';
 import '../../../../../models/wallet_restore_state.dart';
+import '../../../../../notifications/show_flush_bar.dart';
 import '../../../../../services/address_book_service.dart';
 import '../../../../../services/node_service.dart';
 import '../../../../../services/trade_notes_service.dart';
@@ -51,11 +53,8 @@ import '../../../../../wallets/isar/models/wallet_info.dart';
 import '../../../../../wallets/wallet/impl/bitcoin_frost_wallet.dart';
 import '../../../../../wallets/wallet/impl/epiccash_wallet.dart';
 import '../../../../../wallets/wallet/impl/mimblewimblecoin_wallet.dart';
-import '../../../../../wallets/wallet/impl/monero_wallet.dart';
-import '../../../../../wallets/wallet/impl/wownero_wallet.dart';
 import '../../../../../wallets/wallet/impl/xelis_wallet.dart';
-import '../../../../../wallets/wallet/intermediate/lib_monero_wallet.dart';
-import '../../../../../wallets/wallet/intermediate/lib_salvium_wallet.dart';
+import '../../../../../wallets/wallet/intermediate/cryptonote_wallet.dart';
 import '../../../../../wallets/wallet/wallet.dart';
 import '../../../../../wallets/wallet/wallet_mixin_interfaces/mnemonic_interface.dart';
 import '../../../../../wallets/wallet/wallet_mixin_interfaces/private_key_interface.dart';
@@ -90,6 +89,36 @@ String createAutoBackupFilename(String dirPath, DateTime date) {
   return "$dirPath/stackautobackup_"
       "${date.year}_${date.month}_${date.day}_${date.hour}"
       "_${date.minute}_${date.second}.swb";
+}
+
+bool validateFail(
+  BuildContext context,
+  String pathToSave,
+  String passphrase,
+  String repeatPassphrase,
+) {
+  for (final e in [
+    [pathToSave.isEmpty, "Directory not chosen"],
+    if (!pathToSave.startsWith("content://"))
+      [!(Directory(pathToSave).existsSync()), "Directory does not exist"],
+    [passphrase.isEmpty, "A passphrase is required"],
+    [passphrase != repeatPassphrase, "Passphrase does not match"],
+  ]) {
+    if (e[0] as bool) {
+      if (context.mounted) {
+        unawaited(
+          showFloatingFlushBar(
+            type: FlushBarType.warning,
+            message: e[1] as String,
+            context: context,
+          ),
+        );
+      }
+      return true;
+    }
+  }
+
+  return false;
 }
 
 abstract class SWB {
@@ -131,88 +160,42 @@ abstract class SWB {
     }
   }
 
-  static Future<bool> encryptStackWalletWithPassphrase(
-    String fileToSave,
+  static Future<String> encryptStackWalletWithPassphrase(
     String passphrase,
     String plaintext,
   ) async {
-    try {
-      final File backupFile = File(fileToSave);
-      if (!backupFile.existsSync()) {
-        final String jsonBackup = plaintext;
-        final Uint8List content = Uint8List.fromList(utf8.encode(jsonBackup));
-        final Uint8List encryptedContent = await encryptWithPassphrase(
-          passphrase,
-          content,
-        );
-        backupFile.writeAsStringSync(
-          Format.uint8listToString(encryptedContent),
-        );
-      }
-      Logging.instance.d(backupFile.absolute);
-      return true;
-    } catch (e, s) {
-      Logging.instance.e("$e\n$s", error: e, stackTrace: s);
-      return false;
-    }
+    final String jsonBackup = plaintext;
+    final Uint8List content = Uint8List.fromList(utf8.encode(jsonBackup));
+    final Uint8List encryptedContent = await encryptWithPassphrase(
+      passphrase,
+      content,
+    );
+    return Format.uint8listToString(encryptedContent);
   }
 
-  static Future<bool> encryptStackWalletWithADK(
-    String fileToSave,
+  static Future<String> encryptStackWalletWithADK(
     String adk,
     String plaintext,
     int adkVersion,
   ) async {
-    try {
-      final File backupFile = File(fileToSave);
-      if (!backupFile.existsSync()) {
-        final String jsonBackup = plaintext;
-        final Uint8List content = Uint8List.fromList(utf8.encode(jsonBackup));
-        final Uint8List encryptedContent = await encryptWithAdk(
-          Format.stringToUint8List(adk),
-          content,
-          version: adkVersion,
-        );
-        backupFile.writeAsStringSync(
-          Format.uint8listToString(encryptedContent),
-        );
-      }
-      Logging.instance.d(backupFile.absolute);
-      return true;
-    } catch (e, s) {
-      Logging.instance.e("$e\n$s", error: e, stackTrace: s);
-      return false;
-    }
-  }
-
-  static Future<String?> decryptStackWalletWithPassphrase(
-    Tuple2<String, String> data,
-  ) async {
-    try {
-      final String fileToRestore = data.item1;
-      final String passphrase = data.item2;
-      final File backupFile = File(fileToRestore);
-      final String encryptedText = await backupFile.readAsString();
-      return await decryptStackWalletStringWithPassphrase(
-        Tuple2(encryptedText, passphrase),
-      );
-    } catch (e, s) {
-      Logging.instance.e("$e\n$s", error: e, stackTrace: s);
-      return null;
-    }
+    final String jsonBackup = plaintext;
+    final Uint8List content = Uint8List.fromList(utf8.encode(jsonBackup));
+    final Uint8List encryptedContent = await encryptWithAdk(
+      Format.stringToUint8List(adk),
+      content,
+      version: adkVersion,
+    );
+    return Format.uint8listToString(encryptedContent);
   }
 
   static Future<String?> decryptStackWalletStringWithPassphrase(
-    Tuple2<String, String> data,
+    ({String passphrase, String encryptedText}) data,
   ) async {
     try {
-      final encryptedText = data.item1;
-      final passphrase = data.item2;
-
-      final encryptedBytes = Format.stringToUint8List(encryptedText);
+      final encryptedBytes = Format.stringToUint8List(data.encryptedText);
 
       final decryptedContent = await decryptWithPassphrase(
-        passphrase,
+        data.passphrase,
         encryptedBytes,
       );
 
@@ -429,6 +412,7 @@ abstract class SWB {
       mnemonicPassphrase: mnemonicPassphrase,
     );
     Wallet? wallet;
+    bool didExit = false;
     try {
       String? serializedKeys;
       String? multisigConfig;
@@ -473,25 +457,21 @@ abstract class SWB {
         viewOnlyData: viewOnlyData,
       );
 
-      switch (wallet.runtimeType) {
-        case const (EpiccashWallet):
-          await (wallet as EpiccashWallet).init(isRestore: true);
+      switch (wallet) {
+        case EpiccashWallet():
+          await wallet.init(isRestore: true);
           break;
 
-        case const (MimblewimblecoinWallet):
-          await (wallet as MimblewimblecoinWallet).init(isRestore: true);
+        case MimblewimblecoinWallet():
+          await wallet.init(isRestore: true);
           break;
 
-        case const (MoneroWallet):
-          await (wallet as MoneroWallet).init(isRestore: true);
+        case CryptonoteWallet():
+          await wallet.init(isRestore: true);
           break;
 
-        case const (WowneroWallet):
-          await (wallet as WowneroWallet).init(isRestore: true);
-          break;
-
-        case const (XelisWallet):
-          await (wallet as XelisWallet).init(isRestore: true);
+        case XelisWallet():
+          await wallet.init(isRestore: true);
           break;
 
         default:
@@ -501,8 +481,7 @@ abstract class SWB {
       int restoreHeight = walletbackup['restoreHeight'] as int? ?? 0;
       if (restoreHeight <= 0) {
         if (wallet is EpiccashWallet ||
-            wallet is LibMoneroWallet ||
-            wallet is LibSalviumWallet ||
+            wallet is CryptonoteWallet ||
             wallet is MimblewimblecoinWallet) {
           restoreHeight = 0;
         } else {
@@ -572,11 +551,14 @@ abstract class SWB {
 
       await restoringFuture;
 
+      final currentAddress = await wallet.getCurrentReceivingAddress();
+
+      await wallet.exit();
+      didExit = true;
+
       Logging.instance.i(
         "SWB restored: ${info.walletId} ${info.name} ${info.coin.prettyName}",
       );
-
-      final currentAddress = await wallet.getCurrentReceivingAddress();
       uiState?.update(
         walletId: info.walletId,
         restoringStatus: StackRestoringStatus.success,
@@ -587,7 +569,11 @@ abstract class SWB {
         mnemonicPassphrase: mnemonicPassphrase,
       );
     } catch (e, s) {
-      Logging.instance.i("", error: e, stackTrace: s);
+      Logging.instance.e(
+        "${wallet?.runtimeType} _asyncRestore failed",
+        error: e,
+        stackTrace: s,
+      );
       uiState?.update(
         walletId: info.walletId,
         restoringStatus: StackRestoringStatus.failed,
@@ -596,7 +582,9 @@ abstract class SWB {
       );
       return false;
     } finally {
-      await wallet?.exit();
+      if (!didExit) {
+        await wallet?.exit();
+      }
     }
     return true;
   }
@@ -1247,7 +1235,8 @@ abstract class SWB {
       TradeWalletLookup lookup = TradeWalletLookup.fromJson(json);
       // update walletIds
       final List<String> walletIds = lookup.walletIds
-          .map((e) => oldToNewWalletIdMap[e]!)
+          // fallback to e as that wallet may have been deleted in the past
+          .map((e) => oldToNewWalletIdMap[e] ?? e)
           .toList();
       lookup = lookup.copyWith(walletIds: walletIds);
 

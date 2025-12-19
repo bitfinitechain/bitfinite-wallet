@@ -23,6 +23,7 @@ import '../../../../utilities/text_styles.dart';
 import '../../../../wallets/isar/models/wallet_info.dart';
 import '../../../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../../../wallets/wallet/impl/bitcoin_wallet.dart';
+import '../../../../wallets/wallet/impl/epiccash_wallet.dart';
 import '../../../../wallets/wallet/intermediate/cryptonote_wallet.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/multi_address_interface.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/mweb_interface.dart';
@@ -591,8 +592,9 @@ class _WalletSettingsWalletSettingsViewState
                         ),
                       ),
                     ),
-                  if (wallet is CryptonoteWallet) const SizedBox(height: 8),
-                  if (wallet is CryptonoteWallet)
+                  if (wallet is CryptonoteWallet || wallet is EpiccashWallet)
+                    const SizedBox(height: 8),
+                  if (wallet is CryptonoteWallet || wallet is EpiccashWallet)
                     RoundedWhiteContainer(
                       padding: const EdgeInsets.all(0),
                       child: RawMaterialButton(

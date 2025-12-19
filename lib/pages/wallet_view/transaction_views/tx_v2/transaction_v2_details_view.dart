@@ -1019,6 +1019,8 @@ class _TransactionV2DetailsViewState
                                                         maxHeight: 360,
                                                         child: EditNoteView(
                                                           txid:
+                                                              _transaction
+                                                                  .slateId ??
                                                               _transaction.txid,
                                                           walletId: walletId,
                                                         ),
@@ -1034,7 +1036,8 @@ class _TransactionV2DetailsViewState
                                                   ).pushNamed(
                                                     EditNoteView.routeName,
                                                     arguments: Tuple2(
-                                                      _transaction.txid,
+                                                      _transaction.slateId ??
+                                                          _transaction.txid,
                                                       walletId,
                                                     ),
                                                   );
@@ -1069,12 +1072,8 @@ class _TransactionV2DetailsViewState
                                               .watch(
                                                 pTransactionNote((
                                                   txid:
-                                                      (coin is Epiccash ||
-                                                          coin
-                                                              is Mimblewimblecoin)
-                                                      ? _transaction.slateId
-                                                            .toString()
-                                                      : _transaction.txid,
+                                                      _transaction.slateId ??
+                                                      _transaction.txid,
                                                   walletId: walletId,
                                                 )),
                                               )

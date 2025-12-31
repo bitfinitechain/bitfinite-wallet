@@ -2632,11 +2632,11 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "v0.2.0"
-      resolved-ref: "4aeeebc80a1b364b2105799cd1b08d159725bfac"
+      ref: "v0.2.1"
+      resolved-ref: afcc21e0499e78236ca618c7d9f6bee8280dede1
       url: "https://github.com/xelis-project/xelis-flutter-ffi.git"
     source: git
-    version: "0.2.0"
+    version: "0.2.1"
   xml:
     dependency: transitive
     description:

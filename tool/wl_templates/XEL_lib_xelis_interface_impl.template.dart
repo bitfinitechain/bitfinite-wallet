@@ -116,8 +116,8 @@ final class _LibXelisInterfaceImpl extends LibXelisInterface {
   }
 
   @override
-  bool isAddressValid({required String address}) =>
-      x_utils.isAddressValid(strAddress: address);
+  bool isAddressValid({required String address, required CryptoCurrencyNetwork network}) =>
+      x_utils.isAddressValid(strAddress: address, network: network.xelisNetwork);
 
   @override
   bool validateSeedWord(String word) {

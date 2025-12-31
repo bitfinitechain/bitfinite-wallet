@@ -1163,14 +1163,22 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  freezed_annotation:
-    dependency: transitive
+  freezed:
+    dependency: "direct overridden"
     description:
-      name: freezed_annotation
-      sha256: c2e2d632dd9b8a2b7751117abcfc2b4888ecfe181bd9fca7170d9ef02e595fe2
+      name: freezed
+      sha256: "03dd9b7423ff0e31b7e01b2204593e5e1ac5ee553b6ea9d8184dff4a26b9fb07"
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.4"
+    version: "3.2.4"
+  freezed_annotation:
+    dependency: "direct overridden"
+    description:
+      name: freezed_annotation
+      sha256: "7294967ff0a6d98638e7acb774aac3af2550777accd8149c90af5b014e6d44d8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.0"
   frontend_server_client:
     dependency: transitive
     description:
@@ -2462,10 +2470,10 @@ packages:
     dependency: transitive
     description:
       name: very_good_analysis
-      sha256: e479fbc0941009262343db308133e121bf8660c2c81d48dd8e952df7b7e1e382
+      sha256: "96245839dbcc45dfab1af5fa551603b5c7a282028a64746c19c547d21a7f1e3a"
       url: "https://pub.dev"
     source: hosted
-    version: "9.0.0"
+    version: "10.0.0"
   vm_service:
     dependency: transitive
     description:
@@ -2613,23 +2621,22 @@ packages:
     source: hosted
     version: "1.1.0"
   xelis_dart_sdk:
-    dependency: transitive
+    dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "62f1c16a2762b9d4e9db24d101035b28a2dcc69e"
-      url: "https://github.com/Tritonn204/xelis-dart-sdk"
-    source: git
-    version: "0.29.0"
+      name: xelis_dart_sdk
+      sha256: "2393fcd3dfe9175e34ed60e1a1f8821fb63d6a99d66894b9a24cdfc8cb4a6a4b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.30.9"
   xelis_flutter:
     dependency: "direct main"
     description:
       path: "."
-      ref: b09b3ffd89bc6390f6d565b967c2ae1052a4bdd2
-      resolved-ref: b09b3ffd89bc6390f6d565b967c2ae1052a4bdd2
+      ref: "v0.2.0"
+      resolved-ref: "4aeeebc80a1b364b2105799cd1b08d159725bfac"
       url: "https://github.com/xelis-project/xelis-flutter-ffi.git"
     source: git
-    version: "0.1.1"
+    version: "0.2.0"
   xml:
     dependency: transitive
     description:

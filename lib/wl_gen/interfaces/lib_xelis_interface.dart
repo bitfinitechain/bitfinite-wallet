@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:xelis_dart_sdk/src/data_transfer_objects/get_asset/max_supply_mode.dart';
     
 import '../../providers/progress_report/xelis_table_progress_provider.dart';
 import '../../wallets/crypto_currency/crypto_currency.dart';
@@ -18,7 +19,7 @@ abstract class LibXelisInterface {
 
   Stream<XelisTableProgressState> createProgressReportStream();
 
-  bool isAddressValid({required String address});
+  bool isAddressValid({required String address, required CryptoCurrencyNetwork network});
 
   bool validateSeedWord(String word);
 
@@ -296,7 +297,7 @@ final class NewAsset extends Event {
   // final xelis_sdk.AssetData asset;
   final String name;
   final int decimals;
-  final int? maxSupply;
+  final MaxSupplyMode? maxSupply;
 
   NewAsset(this.name, this.decimals, this.maxSupply);
 }

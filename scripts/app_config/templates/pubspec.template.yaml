@@ -30,10 +30,14 @@ dependencies:
 # %%END_ENABLE_FROST%%
 
 # %%ENABLE_XEL%%
+#  xelis_dart_sdk: 0.30.9
+##   git:
+##     url: https://github.com/xelis-project/xelis-dart-sdk.git
+##     ref: f1da98f8bad8b9ad3645661a23f9efb83e44b0c9
 #  xelis_flutter:
 #    git:
 #      url: https://github.com/xelis-project/xelis-flutter-ffi.git
-#      ref: b09b3ffd89bc6390f6d565b967c2ae1052a4bdd2
+#      ref: v0.2.0
 # %%END_ENABLE_XEL%%
 
 # %%ENABLE_FIRO%%
@@ -341,6 +345,8 @@ dependency_overrides:
 
   # xelis override
   json_rpc_2: ^4.0.0
+  freezed: ^3.1.0
+  freezed_annotation: ^3.1.0
 
 # %%ENABLE_ISAR%%
 #  isar_community:

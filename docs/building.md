@@ -158,6 +158,8 @@ cd scripts
 ```
 
 #### Building plugins and configure for Windows
+*This step is only necessary inside WSL2 for building on a Windows host.*
+
 Install dependencies like MXE:
 ```
 cd scripts/windows

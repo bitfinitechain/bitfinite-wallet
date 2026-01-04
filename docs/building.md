@@ -35,7 +35,7 @@ sudo apt install -y openjdk-11-jdk
 sudo snap install android-studio --classic
 ```
 
-Use `Tools > SDK Manager` to install:
+Use `Tools > SDK Manager` and navigate to `Languages & Frameworks > Android SDK > SDK tools` to install:
  - `SDK Tools > Android SDK command line tools`
  - `SDK Tools > CMake`
 and for Android builds,

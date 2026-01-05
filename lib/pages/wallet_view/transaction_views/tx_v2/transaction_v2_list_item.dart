@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tuple/tuple.dart';
 
+import '../../../../models/exchange/response_objects/trade.dart';
 import '../../../../models/isar/models/blockchain_data/v2/transaction_v2.dart';
 import '../../../../models/isar/models/isar_models.dart';
 import '../../../../providers/global/trades_service_provider.dart';
@@ -38,12 +39,17 @@ class TxListItem extends ConsumerWidget {
     if (tx is TransactionV2) {
       final _tx = tx as TransactionV2;
 
-      final matchingTrades = ref
-          .read(tradesServiceProvider)
-          .trades
-          .where((e) => e.payInTxid == _tx.txid || e.payOutTxid == _tx.txid);
+      final Iterable<Trade> matchingTrades =
+          _tx.type == TransactionType.outgoing && _tx.txid.isNotEmpty
+          ? ref
+                .read(tradesServiceProvider)
+                .trades
+                .where(
+                  (e) => e.payInTxid == _tx.txid || e.payOutTxid == _tx.txid,
+                )
+          : [];
 
-      if (_tx.type == TransactionType.outgoing && matchingTrades.isNotEmpty) {
+      if (matchingTrades.isNotEmpty) {
         final trade = matchingTrades.first;
         return Container(
           decoration: BoxDecoration(
@@ -54,10 +60,7 @@ class TxListItem extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TransactionCardV2(
-                  key: UniqueKey(),
-                  transaction: _tx,
-                ),
+                TransactionCardV2(key: UniqueKey(), transaction: _tx),
                 TradeCard(
                   key: Key(
                     _tx.txid +
@@ -94,7 +97,8 @@ class TxListItem extends ConsumerWidget {
                                             Text(
                                               "Trade details",
                                               style: STextStyles.desktopH3(
-                                                  context),
+                                                context,
+                                              ),
                                             ),
                                             DesktopDialogCloseButton(
                                               onPressedOverride: Navigator.of(
@@ -111,8 +115,9 @@ class TxListItem extends ConsumerWidget {
                                           // TODO: [prio:med]
                                           // transactionIfSentFromStack: tx,
                                           transactionIfSentFromStack: null,
-                                          walletName: ref
-                                              .watch(pWalletName(_tx.walletId)),
+                                          walletName: ref.watch(
+                                            pWalletName(_tx.walletId),
+                                          ),
                                           walletId: _tx.walletId,
                                         ),
                                       ),
@@ -171,10 +176,7 @@ class TxListItem extends ConsumerWidget {
         borderRadius: radius,
       ),
       child: Breathing(
-        child: FusionTxGroupCard(
-          key: UniqueKey(),
-          group: group,
-        ),
+        child: FusionTxGroupCard(key: UniqueKey(), group: group),
       ),
     );
   }

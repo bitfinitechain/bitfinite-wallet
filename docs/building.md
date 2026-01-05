@@ -90,6 +90,11 @@ sudo apt-get install clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
 pip3 install --upgrade meson==0.64.1 markdown==3.4.1 markupsafe==2.1.1 jinja2==3.1.2 pygments==2.13.0 toml==0.10.2 typogrify==2.0.7 tomli==2.0.1
 ```
 
+### Flutter
+Install Flutter 3.38.5 by [following their guide](https://docs.flutter.dev/install/manual).
+
+Run `flutter doctor` in a terminal to confirm its installation.
+
 ### Clone the repository and initialize submodules
 After installing the prerequisites listed above, download the code and init the submodules
 ```
@@ -229,7 +234,7 @@ rustup target add aarch64-apple-ios aarch64-apple-darwin
 Optionally download [Android Studio](https://developer.android.com/studio) as an IDE and activate its Dart and Flutter plugins.  VS Code may work as an alternative, but this is not recommended.
 
 ### Flutter
-Install [Flutter](https://docs.flutter.dev/get-started/install) 3.29.2 on your Mac host by following [these instructions](https://docs.flutter.dev/get-started/install/macos).  Run `flutter doctor` in a terminal to confirm its installation.
+Install 3.38.5 on your Mac host by [following their guide](https://docs.flutter.dev/install/manual).  Run `flutter doctor` in a terminal to confirm its installation.
 
 ### Build plugins and configure
 #### Building plugins for iOS 
@@ -295,16 +300,7 @@ If the DLLs were built on the WSL filesystem instead of on Windows, copy the res
 Frostdart will be built by the Windows host later.
 
 ### Install Flutter on Windows host
-Install Flutter 3.38.1 on your Windows host (not in WSL2) by [following their guide](https://docs.flutter.dev/get-started/install/windows/desktop?tab=download#install-the-flutter-sdk) or by cloning https://github.com/flutter/flutter, checking out the `3.38.1` tag, and adding its `flutter/bin` folder to your PATH as in
-```bat
-@echo off
-set "FLUTTER_DIR=%USERPROFILE%\development\flutter"
-git clone https://github.com/flutter/flutter.git "%FLUTTER_DIR%"
-cd /d "%FLUTTER_DIR%"
-git checkout 3.38.1
-setx PATH "%PATH%;%FLUTTER_DIR%\bin"
-echo Flutter setup completed. Please restart your command prompt.
-```
+Install Flutter 3.38.5 on your Windows host (not in WSL2) by [following their guide](https://docs.flutter.dev/install/manual).
 
 Run `flutter doctor` in PowerShell to confirm its installation.
 

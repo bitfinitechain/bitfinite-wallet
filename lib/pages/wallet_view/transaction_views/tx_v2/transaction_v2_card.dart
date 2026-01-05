@@ -49,22 +49,20 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
 
   String whatIsIt(CryptoCurrency coin, int currentHeight) =>
       _transaction.isCancelled && coin is Ethereum
-          ? "Failed"
-          : _transaction.statusLabel(
-            currentChainHeight: currentHeight,
-            minConfirms:
-                ref
-                    .read(pWallets)
-                    .getWallet(walletId)
-                    .cryptoCurrency
-                    .minConfirms,
-            minCoinbaseConfirms:
-                ref
-                    .read(pWallets)
-                    .getWallet(walletId)
-                    .cryptoCurrency
-                    .minCoinbaseConfirms,
-          );
+      ? "Failed"
+      : _transaction.statusLabel(
+          currentChainHeight: currentHeight,
+          minConfirms: ref
+              .read(pWallets)
+              .getWallet(walletId)
+              .cryptoCurrency
+              .minConfirms,
+          minCoinbaseConfirms: ref
+              .read(pWallets)
+              .getWallet(walletId)
+              .cryptoCurrency
+              .minCoinbaseConfirms,
+        );
 
   @override
   void initState() {
@@ -115,10 +113,9 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
     )) {
       price = ref.watch(
         priceAnd24hChangeNotifierProvider.select(
-          (value) =>
-              isTokenTx
-                  ? value.getTokenPrice(tokenContract!.address)?.value
-                  : value.getPrice(coin)?.value,
+          (value) => isTokenTx
+              ? value.getTokenPrice(tokenContract!.address)?.value
+              : value.getPrice(coin)?.value,
         ),
       );
     }
@@ -196,16 +193,15 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
             if (Util.isDesktop) {
               await showDialog<void>(
                 context: context,
-                builder:
-                    (context) => DesktopDialog(
-                      maxHeight: MediaQuery.of(context).size.height - 64,
-                      maxWidth: 580,
-                      child: tvd.TransactionV2DetailsView(
-                        transaction: _transaction,
-                        coin: coin,
-                        walletId: walletId,
-                      ),
-                    ),
+                builder: (context) => DesktopDialog(
+                  maxHeight: MediaQuery.of(context).size.height - 64,
+                  maxWidth: 640,
+                  child: tvd.TransactionV2DetailsView(
+                    transaction: _transaction,
+                    coin: coin,
+                    walletId: walletId,
+                  ),
+                ),
               );
             } else {
               unawaited(
@@ -246,15 +242,14 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
                                       coin.minConfirms,
                                       coin.minCoinbaseConfirms,
                                     ),
-                                builder:
-                                    (child) => Row(
-                                      children: [
-                                        child,
+                                builder: (child) => Row(
+                                  children: [
+                                    child,
 
-                                        const SizedBox(width: 10),
-                                        const CoinTickerTag(ticker: "INSTANT"),
-                                      ],
-                                    ),
+                                    const SizedBox(width: 10),
+                                    const CoinTickerTag(ticker: "INSTANT"),
+                                  ],
+                                ),
                                 child: Text(
                                   whatIsIt(coin, currentHeight),
                                   style: STextStyles.itemSubtitle12(context),

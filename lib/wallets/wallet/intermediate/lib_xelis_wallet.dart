@@ -226,11 +226,10 @@ extension XelisTableManagement on LibXelisWallet {
 
       try {
         Logging.instance.i("Xelis: Generating large tables in background");
-
         final tablePath = await getPrecomputedTablesPath();
         await libXelis.updateTables(
           precomputedTablesPath: tablePath,
-          l1Low: state.desiredSize.isLow,
+          stack_l1Low: state.desiredSize.isLow,
         );
 
         await setTableState(

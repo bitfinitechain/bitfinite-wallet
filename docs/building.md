@@ -13,6 +13,9 @@ Here you will find instructions on how to install the necessary tools for buildi
 
 The following instructions are for building and running on a Linux host.  Alternatively, see the [Mac](#mac-host) and/or [Windows](#windows-host) section.  This entire section (except for the Android Studio section) needs to be completed in WSL if building on a Windows host.
 
+### Flutter
+Install Flutter 3.38.5 by [following their guide](https://docs.flutter.dev/get-started/install/linux/desktop?tab=download#install-the-flutter-sdk).  Run `flutter doctor` in a terminal to confirm its installation.
+
 ### Android Studio
 Install Android Studio.  Follow instructions here [https://developer.android.com/studio/install#linux](https://developer.android.com/studio/install#linux) or install via snap:
 ```
@@ -21,7 +24,7 @@ sudo apt install -y openjdk-11-jdk
 sudo snap install android-studio --classic
 ```
 
-Use `Tools > SDK Manager` to install:
+Use `Tools > SDK Manager` and navigate to `Languages & Frameworks > Android SDK > SDK tools` to install:
  - `SDK Tools > Android SDK command line tools`
  - `SDK Tools > CMake`
 and for Android builds,
@@ -149,6 +152,8 @@ cd scripts
 ```
 
 #### Building plugins and configure for Windows
+*This step is only necessary inside WSL2 for building on a Windows host.*
+
 Install dependencies like MXE:
 ```
 cd scripts/windows
@@ -204,11 +209,11 @@ brew install brotli cairo coreutils gdbm gettext glib gmp libevent libidn2 libng
 ```
 <!-- TODO: determine which of the above list are not needed at all. -->
 
-Download and install [Rust](https://www.rust-lang.org/tools/install).  [Rustup](https://rustup.rs/) is recommended for Rust setup.  Use `rustc` to confirm successful installation.  Install toolchains 1.81.0 and 1.85.1 and `cbindgen` and `cargo-lipo` too.  You will also have to add the platform target(s) `aarch64-apple-ios` and/or `aarch64-apple-darwin`.  You can use the command(s):
+Download and install [Rust](https://www.rust-lang.org/tools/install).  [Rustup](https://rustup.rs/) is recommended for Rust setup.  Use `rustc` to confirm successful installation.  Install toolchains 1.81.0, 1.85.1, and 1.86.0, as well as `cbindgen` and `cargo-lipo` too.  You will also have to add the platform target(s) `aarch64-apple-ios` and/or `aarch64-apple-darwin`.  You can use the command(s):
 ```
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source ~/.bashrc 
-rustup install 1.85.1 1.81.0
+rustup install 1.86.0 1.85.1 1.81.0
 rustup default 1.85.1
 cargo install cargo-ndk
 cargo install cbindgen cargo-lipo
@@ -264,7 +269,7 @@ flutter run macos
 Visual Studio is required for Windows development with the Flutter SDK.  Download it at https://visualstudio.microsoft.com/downloads/ and install the "Desktop development with C++", "Linux development with C++", and "Visual C++ build tools" workloads.  You may also need the Windows 10, 11, and/or Universal SDK workloads depending on your Windows version.
 
 ### Build plugins in WSL2
-Set up Ubuntu 20.04 in WSL2.  Follow the entire Linux host section in the WSL2 Ubuntu 20.04 host to get set up to build.  The Android Studio section may be skipped in WSL (it's only needed on the Windows host).
+Set up Ubuntu 24.04 in WSL2.  Follow the entire Linux host section in the WSL2 Ubuntu 24.04 host to get set up to build.  The Android Studio section may be skipped in WSL (it's only needed on the Windows host).
 
 Install the following libraries:
 ```
@@ -284,14 +289,12 @@ If the DLLs were built on the WSL filesystem instead of on Windows, copy the res
 Frostdart will be built by the Windows host later.
 
 ### Install Flutter on Windows host
-Install Flutter 3.38.5 on your Windows host (not in WSL2) by [following their guide](https://docs.flutter.dev/install/manual).
-
-Run `flutter doctor` in PowerShell to confirm its installation.
+Install Flutter 3.38.5 on your Windows host (not in WSL2) by [following their guide](https://docs.flutter.dev/install/manual).  Run `flutter doctor` in PowerShell to confirm its installation.
 
 ### Rust
 Install [Rust](https://www.rust-lang.org/tools/install) on the Windows host (not in WSL2).  Download the installer from [rustup.rs](https://rustup.rs), make sure it works on the commandline (you may need to open a new terminal), and install the following versions:
 ```
-rustup install 1.85.1 1.81.0
+rustup install 1.86.0 1.85.1 1.81.0
 rustup default 1.85.1
 cargo install cargo-ndk
 ```

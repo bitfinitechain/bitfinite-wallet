@@ -14,18 +14,7 @@ Here you will find instructions on how to install the necessary tools for buildi
 The following instructions are for building and running on a Linux host.  Alternatively, see the [Mac](#mac-host) and/or [Windows](#windows-host) section.  This entire section (except for the Android Studio section) needs to be completed in WSL if building on a Windows host.
 
 ### Flutter
-Install Flutter 3.38.1 by [following their guide](https://docs.flutter.dev/get-started/install/linux/desktop?tab=download#install-the-flutter-sdk).  You can also clone https://github.com/flutter/flutter, check out the `3.35.7` tag, and add its `flutter/bin` folder to your PATH as in
-```sh
-FLUTTER_DIR="$HOME/development/flutter"
-git clone https://github.com/flutter/flutter.git "$FLUTTER_DIR"
-cd "$FLUTTER_DIR"
-git checkout 3.35.7
-echo 'export PATH="$PATH:'"$FLUTTER_DIR"'/bin"' >> "$HOME/.profile"
-source "$HOME/.profile"
-flutter precache
-```
-
-Run `flutter doctor` in a terminal to confirm its installation.
+Install Flutter 3.38.5 by [following their guide](https://docs.flutter.dev/get-started/install/linux/desktop?tab=download#install-the-flutter-sdk).  Run `flutter doctor` in a terminal to confirm its installation.
 
 ### Android Studio
 Install Android Studio.  Follow instructions here [https://developer.android.com/studio/install#linux](https://developer.android.com/studio/install#linux) or install via snap:
@@ -300,9 +289,7 @@ If the DLLs were built on the WSL filesystem instead of on Windows, copy the res
 Frostdart will be built by the Windows host later.
 
 ### Install Flutter on Windows host
-Install Flutter 3.38.5 on your Windows host (not in WSL2) by [following their guide](https://docs.flutter.dev/install/manual).
-
-Run `flutter doctor` in PowerShell to confirm its installation.
+Install Flutter 3.38.5 on your Windows host (not in WSL2) by [following their guide](https://docs.flutter.dev/install/manual).  Run `flutter doctor` in PowerShell to confirm its installation.
 
 ### Rust
 Install [Rust](https://www.rust-lang.org/tools/install) on the Windows host (not in WSL2).  Download the installer from [rustup.rs](https://rustup.rs), make sure it works on the commandline (you may need to open a new terminal), and install the following versions:

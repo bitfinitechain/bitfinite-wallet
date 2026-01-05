@@ -1741,8 +1741,12 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
           throw Exception("Transaction too large");
         }
 
+        const nBytesBuffer = 10;
         final nFeeNeeded = BigInt.from(
-          estimateTxFee(vSize: nBytes, feeRatePerKB: feesObject.medium),
+          estimateTxFee(
+            vSize: nBytes + nBytesBuffer,
+            feeRatePerKB: feesObject.medium,
+          ),
         ); // One day we'll do this properly
 
         if (nFeeRet >= nFeeNeeded) {
@@ -1993,6 +1997,7 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
         ),
       );
 
+      Logging.instance.i("nFeeRet=$nFeeRet, vSize=${data.vSize}");
       if (nFeeRet.toInt() < data.vSize!) {
         Logging.instance.w(
           "Spark mint transaction failed: $nFeeRet is less than ${data.vSize}",

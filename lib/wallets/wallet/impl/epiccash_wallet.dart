@@ -16,6 +16,7 @@ import '../../../models/isar/models/blockchain_data/transaction.dart';
 import '../../../models/isar/models/blockchain_data/v2/input_v2.dart';
 import '../../../models/isar/models/blockchain_data/v2/output_v2.dart';
 import '../../../models/isar/models/blockchain_data/v2/transaction_v2.dart';
+import '../../../models/isar/models/transaction_note.dart';
 import '../../../models/node_model.dart';
 import '../../../models/paymint/fee_object_model.dart';
 import '../../../pages/settings_views/global_settings_view/manage_nodes_views/add_edit_node_view.dart';
@@ -129,6 +130,15 @@ class EpiccashWallet extends Bip39Wallet {
     // }
 
     return _epicBoxConfig;
+  }
+
+  Future<void> updateRestoreHeight(int height) async {
+    final epicData = info.epicData!.copyWith(restoreHeight: height);
+
+    await info.updateExtraEpiccashWalletInfo(
+      epicData: epicData,
+      isar: mainDB.isar,
+    );
   }
 
   // ================= Private =================================================
@@ -444,6 +454,48 @@ class EpiccashWallet extends Bip39Wallet {
     return height;
   }
 
+  static const _mid = "_:'", _end = "':";
+
+  /// eeehhhhhhhhhhhhhhh
+  bool _fuzzyEquals(TransactionV2 a, TransactionV2 b) {
+    final isAmountReceivedMatches =
+        a.getAmountReceivedInThisWallet(
+          fractionDigits: cryptoCurrency.fractionDigits,
+        ) ==
+        b.getAmountReceivedInThisWallet(
+          fractionDigits: cryptoCurrency.fractionDigits,
+        );
+
+    final isFeeMatches =
+        a.getFee(fractionDigits: cryptoCurrency.fractionDigits) ==
+        b.getFee(fractionDigits: cryptoCurrency.fractionDigits);
+
+    final isAmountSentMatches =
+        a.getAmountSentFromThisWallet(
+          fractionDigits: cryptoCurrency.fractionDigits,
+          subtractFee: false,
+        ) ==
+        b.getAmountSentFromThisWallet(
+          fractionDigits: cryptoCurrency.fractionDigits,
+          subtractFee: false,
+        );
+
+    final isHeightMatches = a.height == b.height;
+    final isTxTypeMatches = a.type == b.type && a.subType == b.subType;
+    final isSlateIdMatches = a.slateId == b.slateId;
+
+    if (isHeightMatches &&
+        isTxTypeMatches &&
+        isFeeMatches &&
+        isSlateIdMatches &&
+        isAmountSentMatches &&
+        isAmountReceivedMatches) {
+      return true;
+    }
+
+    return false;
+  }
+
   // ============== Overrides ==================================================
 
   @override
@@ -663,8 +715,67 @@ class EpiccashWallet extends Bip39Wallet {
       _hackedCheckTorNodePrefs();
       await refreshMutex.protect(() async {
         if (isRescan) {
-          // clear blockchain info
-          await mainDB.deleteWalletBlockchainData(walletId);
+          // keep old transactions but id them somehow
+          // with the current db, there is no other way besides editing the
+          // unique key (txid+walletId). Since we cannot change the wallet id we
+          // must therefore hack some stupid stuff into the txid...
+          final currentTxns1 = await mainDB.isar.transactionV2s
+              .where()
+              .walletIdEqualTo(walletId)
+              .findAll();
+
+          final List<TransactionV2> currentTxns = [];
+
+          for (final current in currentTxns1) {
+            if (currentTxns.where((e) => _fuzzyEquals(e, current)).isNotEmpty) {
+              Logging.instance.f("DELETING: $current");
+              await mainDB.isar.writeTxn(() async {
+                await mainDB.isar.transactionV2s.delete(current.id);
+              });
+            } else {
+              currentTxns.add(current);
+            }
+          }
+
+          for (final current in currentTxns) {
+            // check notes first
+            final note = await mainDB.isar.transactionNotes
+                .where()
+                .txidWalletIdEqualTo(current.slateId ?? current.txid, walletId)
+                .findFirst();
+
+            // now handle transaction
+            final firstTime =
+                !(current.txid.contains(_mid) && current.txid.endsWith(_end));
+
+            final String txid;
+            if (firstTime) {
+              txid = "${current.txid}${_mid}0$_end";
+            } else {
+              // this should always be 2 parts if we've gotten this far
+              final parts = current.txid.split(_mid);
+              final rescanCount =
+                  int.parse(parts.last.replaceFirst(_end, "")) + 1;
+              txid = "${parts.first}$_mid$rescanCount$_end";
+            }
+
+            // finally update in db
+            await mainDB.isar.writeTxn(() async {
+              final updated = current.copyWith(txid: txid);
+              if (note != null) {
+                final updatedNote = TransactionNote(
+                  walletId: walletId,
+                  txid: current.slateId ?? txid,
+                  value: note.value,
+                );
+                await mainDB.isar.transactionNotes.delete(note.id);
+                await mainDB.isar.transactionNotes.put(updatedNote);
+              }
+
+              await mainDB.isar.transactionV2s.delete(current.id);
+              await mainDB.isar.transactionV2s.put(updated);
+            });
+          }
 
           await info.updateExtraEpiccashWalletInfo(
             epicData: info.epicData!.copyWith(
@@ -673,7 +784,35 @@ class EpiccashWallet extends Bip39Wallet {
             isar: mainDB.isar,
           );
 
-          unawaited(refresh(doScan: true));
+          final stringConfig = await _getRealConfig();
+          final password = await secureStorageInterface.read(
+            key: '${walletId}_password',
+          );
+
+          // maybe there is some way to tel epic-wallet rust to fully rescan...
+          final result = await deleteEpicWallet(
+            walletId: walletId,
+            secureStore: secureStorageInterface,
+          );
+          Logging.instance.w("Epic rescan temporary delete result: $result");
+          await libEpic.recoverWallet(
+            config: stringConfig,
+            password: password!,
+            mnemonic: await getMnemonic(),
+            name: info.walletId,
+          );
+
+          //Open Wallet
+          final walletOpen = await libEpic.openWallet(
+            config: stringConfig,
+            password: password,
+          );
+          await secureStorageInterface.write(
+            key: '${walletId}_wallet',
+            value: walletOpen,
+          );
+
+          highestPercent = 0;
         } else {
           await updateNode();
           final String password = generatePassword();
@@ -731,8 +870,9 @@ class EpiccashWallet extends Bip39Wallet {
             epicData.receivingIndex,
           );
         }
-        unawaited(refresh(doScan: false));
       });
+
+      unawaited(refresh(doScan: isRescan));
     } catch (e, s) {
       Logging.instance.e(
         "Exception rethrown from electrumx_mixin recover(): ",
@@ -1018,15 +1158,70 @@ class EpiccashWallet extends Bip39Wallet {
           otherData: jsonEncode(otherData),
         );
 
-        txns.add(txn);
+        if (txns.where((e) => _fuzzyEquals(e, txn)).isEmpty) {
+          txns.add(txn);
+        }
       }
 
+      final existingTxns = await mainDB.isar.transactionV2s
+          .where()
+          .walletIdEqualTo(walletId)
+          .findAll();
+
       await mainDB.isar.writeTxn(() async {
-        await mainDB.isar.transactionV2s
-            .where()
-            .walletIdEqualTo(walletId)
-            .deleteAll();
-        await mainDB.isar.transactionV2s.putAll(txns);
+        for (final tx in txns) {
+          final existingMatches = existingTxns.where(
+            (e) => _fuzzyEquals(e, tx),
+          );
+          TransactionNote? note;
+          if (existingMatches.isNotEmpty) {
+            // there should only ever be one. If more then something is\
+            // wrong somewhere, probably
+            if (existingMatches.length > 1) {
+              Logging.instance.w(
+                "existingMatches length: ${existingMatches.length}",
+              );
+            }
+            for (final match in existingMatches) {
+              if (await mainDB.isar.transactionV2s
+                      .where()
+                      .txidWalletIdEqualTo(match.txid, walletId)
+                      .idProperty()
+                      .findFirst() !=
+                  null) {
+                note = await mainDB.isar.transactionNotes
+                    .where()
+                    .txidWalletIdEqualTo(match.slateId ?? match.txid, walletId)
+                    .findFirst();
+
+                await mainDB.isar.transactionV2s.delete(match.id);
+              }
+            }
+          }
+
+          final id = await mainDB.isar.transactionV2s
+              .where()
+              .txidWalletIdEqualTo(tx.txid, walletId)
+              .idProperty()
+              .findFirst();
+
+          if (id != null) {
+            await mainDB.isar.transactionV2s.delete(id);
+          }
+
+          if (note != null) {
+            await mainDB.isar.transactionNotes.delete(note.id);
+            await mainDB.isar.transactionNotes.put(
+              TransactionNote(
+                walletId: walletId,
+                txid: tx.slateId ?? tx.txid,
+                value: note.value,
+              ),
+            );
+          }
+
+          await mainDB.isar.transactionV2s.put(tx);
+        }
       });
     } catch (e, s) {
       Logging.instance.e(

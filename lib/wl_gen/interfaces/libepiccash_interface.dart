@@ -1,3 +1,5 @@
+import 'dart:math';
+
 export '../generated/libepiccash_interface_impl.dart';
 
 abstract class LibEpicCashInterface {
@@ -141,6 +143,24 @@ class EpicTransaction {
     this.kernelLookupMinHeight,
     this.paymentProof,
   });
+
+  @override
+  String toString() {
+    return 'EpicTransaction('
+        'id: $id, '
+        'txSlateId: $txSlateId, '
+        'type: $txType, '
+        'confirmed: $confirmed, '
+        'inputs: $numInputs, '
+        'outputs: $numOutputs, '
+        'credited: $amountCredited, '
+        'debited: $amountDebited, '
+        'fee: $fee, '
+        'created: $creationTs, '
+        'confirmed: $confirmationTs, '
+        'messages: ${messages?.length ?? 0}'
+        ')';
+  }
 }
 
 class EpicMessage {
@@ -155,6 +175,15 @@ class EpicMessage {
     this.message,
     this.messageSig,
   });
+
+  @override
+  String toString() {
+    return 'EpicMessage('
+        'id: $id, '
+        'publicKey: ${publicKey.substring(0, 8)}..., '
+        'message: ${message != null ? '"${message!.substring(0, min(20, message!.length))}..."' : 'null'}'
+        ')';
+  }
 }
 
 class BadHttpAddressException implements Exception {}

@@ -154,6 +154,13 @@ class _WalletNetworkSettingsViewState
             // pop rescanning dialog
             Navigator.of(context, rootNavigator: isDesktop).pop();
 
+            final String message;
+            if (wallet is CryptonoteWallet || wallet is EpiccashWallet) {
+              message = "Rescan started";
+            } else {
+              message = "Rescan completed";
+            }
+
             // show success
             await showDialog<dynamic>(
               context: context,
@@ -164,7 +171,7 @@ class _WalletNetworkSettingsViewState
                 builder: (child) =>
                     DesktopDialog(maxHeight: 150, maxWidth: 500, child: child),
                 child: StackDialog(
-                  title: "Rescan completed",
+                  title: message,
                   rightButton: TextButton(
                     style: Theme.of(context)
                         .extension<StackColors>()!
@@ -380,11 +387,8 @@ class _WalletNetworkSettingsViewState
               ),
               title: Text("Network", style: STextStyles.navBarTitle(context)),
               actions: [
-                if (ref.watch(pWalletCoin(widget.walletId)) is! Epiccash &&
-                        ref.watch(pWalletCoin(widget.walletId))
-                            is! Mimblewimblecoin ||
-                    ref.watch(pWalletCoin(widget.walletId))
-                        is! Mimblewimblecoin)
+                if (ref.watch(pWalletCoin(widget.walletId))
+                    is! Mimblewimblecoin)
                   Padding(
                     padding: const EdgeInsets.only(
                       top: 10,
@@ -984,7 +988,6 @@ class _WalletNetworkSettingsViewState
               ),
             ),
           if (isDesktop &&
-              ref.watch(pWalletCoin(widget.walletId)) is! Epiccash &&
               ref.watch(pWalletCoin(widget.walletId)) is! Mimblewimblecoin)
             RoundedWhiteContainer(
               borderColor: isDesktop

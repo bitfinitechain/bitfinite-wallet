@@ -520,10 +520,6 @@ class _SendViewState extends ConsumerState<SendView> {
   Map<Amount, String> cachedFiroPublicFees = {};
 
   Future<String> calculateFees(Amount amount) async {
-    if (amount <= Amount.zero) {
-      return "0";
-    }
-
     if (isFiro) {
       switch (ref.read(publicPrivateBalanceStateProvider.state).state) {
         case BalanceType.public:

@@ -17,6 +17,7 @@ import '../../../services/exchange/change_now/change_now_exchange.dart';
 import '../../../services/exchange/exchange.dart';
 import '../../../services/exchange/nanswap/nanswap_exchange.dart';
 import '../../../services/exchange/trocador/trocador_exchange.dart';
+import '../../../services/exchange/wizard_swap/wizard_swap_exchange.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/prefs.dart';
 import '../../../utilities/util.dart';
@@ -91,6 +92,11 @@ class _ExchangeProviderOptionsState
       sendCurrency: sendCurrency,
       receiveCurrency: receivingCurrency,
     );
+    final showWizardSwap = exchangeSupported(
+      exchangeName: WizardSwapExchange.exchangeName,
+      sendCurrency: sendCurrency,
+      receiveCurrency: receivingCurrency,
+    );
 
     return RoundedWhiteContainer(
       padding: isDesktop ? const EdgeInsets.all(0) : const EdgeInsets.all(12),
@@ -102,6 +108,7 @@ class _ExchangeProviderOptionsState
           if (showChangeNow) ChangeNowExchange.instance,
           if (showTrocador) TrocadorExchange.instance,
           if (showNanswap) NanswapExchange.instance,
+          if (showWizardSwap) WizardSwapExchange.instance,
         ],
         fixedRate: widget.fixedRate,
         reversed: widget.reversed,

@@ -11,7 +11,9 @@ import '../../../../utilities/constants.dart';
 import '../../../../utilities/text_styles.dart';
 import '../../../../utilities/util.dart';
 import '../../../../wallets/isar/providers/wallet_info_provider.dart';
+import '../../../../wallets/wallet/impl/epiccash_wallet.dart';
 import '../../../../wallets/wallet/intermediate/cryptonote_wallet.dart';
+import '../../../../wallets/wallet/supporting/epiccash_wallet_info_extension.dart';
 import '../../../../widgets/background.dart';
 import '../../../../widgets/conditional_parent.dart';
 import '../../../../widgets/custom_buttons/app_bar_icon_button.dart';
@@ -48,13 +50,19 @@ class _EditRefreshHeightViewState extends ConsumerState<EditRefreshHeightView> {
       try {
         final newHeight = int.tryParse(_controller.text);
         if (newHeight != null && newHeight >= 0) {
-          await ref
-              .read(pWalletInfo(widget.walletId))
-              .updateRestoreHeight(
-                newRestoreHeight: newHeight,
-                isar: ref.read(mainDBProvider).isar,
-              );
           final wallet = ref.read(pWallets).getWallet(widget.walletId);
+
+          if (wallet is EpiccashWallet) {
+            await wallet.updateRestoreHeight(newHeight);
+          } else {
+            await ref
+                .read(pWalletInfo(widget.walletId))
+                .updateRestoreHeight(
+                  newRestoreHeight: newHeight,
+                  isar: ref.read(mainDBProvider).isar,
+                );
+          }
+
           if (wallet is CryptonoteWallet && wallet.wallet != null) {
             wallet.setRefreshFromBlockHeight(newHeight);
           }
@@ -95,7 +103,13 @@ class _EditRefreshHeightViewState extends ConsumerState<EditRefreshHeightView> {
     super.initState();
     _controller = TextEditingController();
     final wallet = ref.read(pWallets).getWallet(widget.walletId);
-    if (wallet is CryptonoteWallet && wallet.wallet != null) {
+    if (wallet is EpiccashWallet) {
+      _controller.text = ref
+          .read(pWalletInfo(widget.walletId))
+          .epicData!
+          .restoreHeight
+          .toString();
+    } else if (wallet is CryptonoteWallet && wallet.wallet != null) {
       _controller.text = wallet.getRefreshFromBlockHeight().toString();
     } else {
       _controller.text = ref

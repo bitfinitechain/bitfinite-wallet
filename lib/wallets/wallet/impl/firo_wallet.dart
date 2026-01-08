@@ -93,9 +93,27 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
 
     final allAddressesSet = {...receivingAddresses, ...changeAddresses};
 
-    final List<Map<String, dynamic>> allTxHashes = await fetchHistory(
+    Logging.instance.d(
+      "firo_wallet.dart updateTransactions() allAddressesSet.length: "
+      "${allAddressesSet.length}",
+    );
+
+    final List<Map<String, dynamic>> allTxHashes1 = await fetchHistory(
       allAddressesSet,
     );
+
+    Logging.instance.d(
+      "firo_wallet.dart updateTransactions() allTxHashes.length: "
+      "${allTxHashes1.length}",
+    );
+
+    final Map<String, Map<String, dynamic>> allHistory = {};
+
+    for (final item in allTxHashes1) {
+      final txid = item["tx_hash"] as String;
+      allHistory[txid] ??= {};
+      allHistory[txid]!["height"] ??= item["height"] as int?;
+    }
 
     final sparkCoins = await mainDB.isar.sparkCoins
         .where()
@@ -111,83 +129,116 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
         .walletIdEqualTo(walletId)
         .filter()
         .heightIsNull()
+        .txidProperty()
         .findAll();
-    for (final tx in unconfirmedTransactions) {
-      final txn = await electrumXCachedClient.getTransaction(
-        txHash: tx.txid,
-        verbose: true,
-        cryptoCurrency: info.coin,
-      );
-      final height = txn["height"] as int?;
-
-      if (height != null) {
-        // tx was mined
-        // add to allTxHashes
-        final info = {"tx_hash": tx.txid, "height": height};
-        allTxHashes.add(info);
+    for (final txid in unconfirmedTransactions) {
+      if (allHistory[txid] == null) {
+        allHistory[txid] = {};
       }
     }
 
     final Set<String> sparkTxids = {};
     for (final coin in sparkCoins) {
       sparkTxids.add(coin.txHash);
-      // check for duplicates before adding to list
-      if (allTxHashes.indexWhere((e) => e["tx_hash"] == coin.txHash) == -1) {
-        final info = {"tx_hash": coin.txHash, "height": coin.height};
-        allTxHashes.add(info);
+      if (allHistory[coin.txHash] == null) {
+        allHistory[coin.txHash] = {"height": coin.height};
       }
     }
 
     final missing = await getSparkSpendTransactionIds();
     for (final txid in missing.map((e) => e.txid).toSet()) {
-      // check for duplicates before adding to list
-      if (allTxHashes.indexWhere((e) => e["tx_hash"] == txid) == -1) {
-        final info = {"tx_hash": txid};
-        allTxHashes.add(info);
+      if (allHistory[txid] == null) {
+        allHistory[txid] = {};
       }
     }
 
-    final currentHeight = await chainHeight;
+    final confirmedTxidsInIsar = await mainDB.isar.transactionV2s
+        .where()
+        .walletIdEqualTo(walletId)
+        .filter()
+        .heightIsNotNull()
+        .and()
+        .heightGreaterThan(1)
+        .txidProperty()
+        .findAll();
 
-    for (final txHash in allTxHashes) {
-      final storedTx = await mainDB.isar.transactionV2s
-          .where()
-          .walletIdEqualTo(walletId)
-          .filter()
-          .txidEqualTo(txHash["tx_hash"] as String)
-          .findFirst();
+    Logging.instance.d(
+      "firo_wallet.dart updateTransactions() confirmedTxidsInIsar.length: "
+      "${confirmedTxidsInIsar.length}",
+    );
 
-      if (storedTx?.isConfirmed(
-            currentHeight,
-            cryptoCurrency.minConfirms,
-            cryptoCurrency.minCoinbaseConfirms,
-          ) ==
-          true) {
-        // tx already confirmed, no need to process it again
-        continue;
-      }
+    // assume every tx that has a height is confirmed and remove them from the
+    // list of transactions to fetch and check. This should be fine in firo.
+    confirmedTxidsInIsar.forEach(allHistory.remove);
 
-      // firod/electrumx seem to take forever to process spark txns so we'll
-      // just ignore null errors and check again on next refresh.
-      // This could also be a bug in the custom electrumx rpc code
-      final Map<String, dynamic> tx;
-      try {
-        tx = await electrumXCachedClient.getTransaction(
-          txHash: txHash["tx_hash"] as String,
-          verbose: true,
-          cryptoCurrency: info.coin,
-        );
-      } catch (_) {
-        continue;
-      }
+    final allTxids = allHistory.keys.toList(growable: false);
 
-      // check for duplicates before adding to list
-      if (allTransactions.indexWhere(
-            (e) => e["txid"] == tx["txid"] as String,
-          ) ==
-          -1) {
-        tx["height"] ??= txHash["height"];
+    const batchSize = 100;
+    final remainder = allTxids.length % batchSize;
+    final batchCount = allTxids.length ~/ batchSize;
+
+    for (int i = 0; i < batchCount; i++) {
+      final start = i * batchSize;
+      final end = start + batchSize;
+      Logging.instance.i("[allTxids]: Fetching batch #$i");
+      final txns = await electrumXCachedClient.getBatchTransactions(
+        txHashes: allTxids.sublist(start, end),
+        cryptoCurrency: cryptoCurrency,
+      );
+      for (final tx in txns) {
+        tx["height"] ??= allHistory[tx["txid"]]!["height"];
         allTransactions.add(tx);
+      }
+    }
+    // handle remainder
+    if (remainder > 0) {
+      final txns = await electrumXCachedClient.getBatchTransactions(
+        txHashes: allTxids.sublist(allTxids.length - remainder),
+        cryptoCurrency: cryptoCurrency,
+      );
+      for (final tx in txns) {
+        tx["height"] ??= allHistory[tx["txid"]]!["height"];
+        allTransactions.add(tx);
+      }
+    }
+
+    final Set<String> txInputTxidsSet = {};
+    for (final txData in allTransactions) {
+      for (final jsonInput in txData["vin"] as List) {
+        final map = Map<String, dynamic>.from(jsonInput as Map);
+        final coinbase = map["coinbase"] as String?;
+
+        final txid = map["txid"] as String?;
+        final vout = map["vout"] as int?;
+        if (coinbase == null && txid != null && vout != null) {
+          txInputTxidsSet.add(txid);
+        }
+      }
+    }
+    final txInputTxids = txInputTxidsSet.toList(growable: false);
+
+    final Map<String, Map<String, dynamic>> someInputTxns = {};
+    final remainder2 = txInputTxids.length % batchSize;
+    for (int i = 0; i < txInputTxids.length ~/ batchSize; i++) {
+      final start = i * batchSize;
+      final end = start + batchSize;
+      Logging.instance.i("[txInputTxids]: Fetching batch #$i");
+      final txns = await electrumXCachedClient.getBatchTransactions(
+        txHashes: txInputTxids.sublist(start, end),
+        cryptoCurrency: cryptoCurrency,
+      );
+      for (final tx in txns) {
+        someInputTxns[tx["txid"] as String] = tx;
+      }
+    }
+    // handle remainder
+    if (remainder2 > 0) {
+      final txns = await electrumXCachedClient.getBatchTransactions(
+        txHashes: txInputTxids.sublist(txInputTxids.length - remainder2),
+        cryptoCurrency: cryptoCurrency,
+      );
+      for (final tx in txns) {
+        someInputTxns[tx["txid"] as String] = tx;
       }
     }
 
@@ -225,14 +276,16 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
 
       if (isMySpark && sparkCoinsInvolvedReceived.isEmpty && !isMySpentSpark) {
         Logging.instance.e(
-          "sparkCoinsInvolvedReceived is empty and should not be! (ignoring tx parsing)",
+          "sparkCoinsInvolvedReceived is empty and should not be!"
+          " (ignoring tx parsing)",
         );
         continue;
       }
 
       if (isMySpentSpark && sparkCoinsInvolvedSpent.isEmpty && !isMySpark) {
         Logging.instance.e(
-          "sparkCoinsInvolvedSpent is empty and should not be! (ignoring tx parsing)",
+          "sparkCoinsInvolvedSpent is empty and should not be!"
+          " (ignoring tx parsing)",
         );
         continue;
       }
@@ -250,7 +303,8 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
               isMint = true;
             } else {
               Logging.instance.d(
-                "Unknown mint op code found for lelantusmint tx: ${txData["txid"]}",
+                "Unknown mint op code found for lelantusmint tx: "
+                "${txData["txid"]}",
               );
             }
           } else {
@@ -268,7 +322,8 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
               isSparkMint = true;
             } else {
               Logging.instance.d(
-                "Unknown mint op code found for sparkmint tx: ${txData["txid"]}",
+                "Unknown mint op code found for sparkmint tx: "
+                "${txData["txid"]}",
               );
             }
           } else {
@@ -431,10 +486,8 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
             anonFees = anonFees! + fees;
           }
         } else if (coinbase == null && txid != null && vout != null) {
-          final inputTx = await electrumXCachedClient.getTransaction(
-            txHash: txid,
-            cryptoCurrency: cryptoCurrency,
-          );
+          // fetched earlier so ! unwrap should be ok
+          final inputTx = someInputTxns[txid]!;
 
           final prevOutJson = Map<String, dynamic>.from(
             (inputTx["vout"] as List).firstWhere((e) => e["n"] == vout) as Map,
@@ -623,8 +676,8 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
     String? label;
 
     if (jsonUTXO["value"] is int) {
-      // TODO: [prio=high] use special electrumx call to verify the 1000 Firo output is masternode
-      // electrumx call should exist now. Unsure if it works though
+      // verify the 1000 Firo output is masternode
+      // Fall back to locked in case network call fails
       blocked =
           Amount.fromDecimal(
             Decimal.fromInt(

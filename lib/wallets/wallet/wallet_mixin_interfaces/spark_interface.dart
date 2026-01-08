@@ -1209,16 +1209,57 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
         );
       }
 
+      Logging.instance.d(
+        "refreshSparkData() coinsToCheck.length: "
+        "${coinsToCheck.length}",
+      );
+
+      // prepare data for next step
+      final coinsToCheckTxids = coinsToCheck
+          .where((e) => e.height == null)
+          .map((e) => e.txHash)
+          .toList(growable: false);
+
+      final Map<String, Map<String, dynamic>> coinsToCheckTransactions = {};
+      if (coinsToCheckTxids.isNotEmpty) {
+        const batchSize = 100;
+        final remainder = coinsToCheckTxids.length % batchSize;
+        final batchCount = coinsToCheckTxids.length ~/ batchSize;
+
+        for (int i = 0; i < batchCount; i++) {
+          final start = i * batchSize;
+          final end = start + batchSize;
+          Logging.instance.i("[coinsToCheck]: Fetching batch #$i");
+          final txns = await electrumXCachedClient.getBatchTransactions(
+            txHashes: coinsToCheckTxids.sublist(start, end),
+            cryptoCurrency: cryptoCurrency,
+          );
+          for (final tx in txns) {
+            coinsToCheckTransactions[tx["txid"] as String] = tx;
+          }
+        }
+        // handle remainder
+        if (remainder > 0) {
+          final txns = await electrumXCachedClient.getBatchTransactions(
+            txHashes: coinsToCheckTxids.sublist(
+              coinsToCheckTxids.length - remainder,
+            ),
+            cryptoCurrency: cryptoCurrency,
+          );
+          for (final tx in txns) {
+            coinsToCheckTransactions[tx["txid"] as String] = tx;
+          }
+        }
+      }
+
       // check and update coins if required
       final List<SparkCoin> checkedCoins = [];
       for (final coin in coinsToCheck) {
         final SparkCoin checked;
 
         if (coin.height == null) {
-          final tx = await electrumXCachedClient.getTransaction(
-            txHash: coin.txHash,
-            cryptoCurrency: info.coin,
-          );
+          final tx = coinsToCheckTransactions[coin.txHash]!;
+
           if (tx["height"] is int) {
             checked = coin.copyWith(
               height: tx["height"] as int,

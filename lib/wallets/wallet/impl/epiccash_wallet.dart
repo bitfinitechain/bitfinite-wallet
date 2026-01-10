@@ -363,8 +363,6 @@ class EpiccashWallet extends Bip39Wallet {
 
   Future<void> _startScans() async {
     try {
-      //First stop the current listener
-      libEpic.stopEpicboxListener();
       final wallet = await secureStorageInterface.read(
         key: '${walletId}_wallet',
       );
@@ -379,6 +377,15 @@ class EpiccashWallet extends Bip39Wallet {
       // restore height if full rescan or a wallet restore)
       int chainHeight = await this.chainHeight;
       int lastScannedBlock = info.epicData!.lastScannedBlock;
+
+      // Only stop the listener if we actually have blocks to scan.
+      // This avoids unnecessary reconnections during periodic refresh
+      // when the wallet is already synced to the tip.
+      final needsScanning = lastScannedBlock < chainHeight;
+      if (needsScanning) {
+        // Stop listener during active scanning to avoid potential conflicts
+        libEpic.stopEpicboxListener(walletId: walletId);
+      }
 
       // loop while scanning in chain in chunks (of blocks?)
       while (lastScannedBlock < chainHeight) {
@@ -407,8 +414,16 @@ class EpiccashWallet extends Bip39Wallet {
       }
 
       Logging.instance.d("_startScans successfully at the tip");
-      //Once scanner completes restart listener
-      await _listenToEpicbox();
+
+      // Ensure listener is running after refresh.
+      // Use health check to verify the Rust listener task is actually alive,
+      // not just that we have a pointer (which could be stale).
+      if (!libEpic.isEpicboxListenerRunning(walletId: walletId)) {
+        Logging.instance.d("Listener not running, starting it...");
+        await _listenToEpicbox();
+      } else {
+        Logging.instance.d("Listener already running, no restart needed");
+      }
     } catch (e, s) {
       Logging.instance.e("_startScans failed: ", error: e, stackTrace: s);
       rethrow;
@@ -420,6 +435,7 @@ class EpiccashWallet extends Bip39Wallet {
     final wallet = await secureStorageInterface.read(key: '${walletId}_wallet');
     final EpicBoxConfigModel epicboxConfig = await getEpicBoxConfig();
     libEpic.startEpicboxListener(
+      walletId: walletId,
       wallet: wallet!,
       epicboxConfig: epicboxConfig.toString(),
     );
@@ -1324,7 +1340,7 @@ class EpiccashWallet extends Bip39Wallet {
 
   @override
   Future<void> exit() async {
-    libEpic.stopEpicboxListener();
+    libEpic.stopEpicboxListener(walletId: walletId);
     timer?.cancel();
     timer = null;
     await super.exit();

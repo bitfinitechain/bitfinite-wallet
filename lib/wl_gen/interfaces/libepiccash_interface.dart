@@ -55,11 +55,18 @@ abstract class LibEpicCashInterface {
   });
 
   void startEpicboxListener({
+    required String walletId,
     required String wallet,
     required String epicboxConfig,
   });
 
-  void stopEpicboxListener();
+  void stopEpicboxListener({required String walletId});
+
+  void stopAllEpicboxListeners();
+
+  bool isEpicboxListenerRunning({required String walletId});
+
+  List<String> getActiveListenerWalletIds();
 
   bool validateSendAddress({required String address});
 

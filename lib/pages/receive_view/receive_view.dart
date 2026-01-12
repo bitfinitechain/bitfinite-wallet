@@ -33,6 +33,7 @@ import '../../utilities/text_styles.dart';
 import '../../wallets/crypto_currency/crypto_currency.dart';
 import '../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../wallets/wallet/impl/bitcoin_wallet.dart';
+import '../../wallets/wallet/impl/epiccash_wallet.dart';
 import '../../wallets/wallet/impl/mimblewimblecoin_wallet.dart';
 import '../../wallets/wallet/intermediate/bip39_hd_wallet.dart';
 import '../../wallets/wallet/wallet_mixin_interfaces/bcash_interface.dart';
@@ -54,6 +55,8 @@ import '../../widgets/rounded_white_container.dart';
 import '../../widgets/stack_dialog.dart';
 import 'addresses/wallet_addresses_view.dart';
 import 'generate_receiving_uri_qr_code_view.dart';
+import 'sub_widgets/epic_slatepack_entry_dialog.dart';
+import 'sub_widgets/epic_slatepack_import_dialog.dart';
 import 'sub_widgets/mwc_slatepack_import_dialog.dart';
 import 'sub_widgets/slatepack_entry_dialog.dart';
 
@@ -141,6 +144,67 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
             context: context,
             barrierDismissible: false,
             builder: (context) => SlatepackResponseDialog(
+              responseSlatepack: response.responseSlatepack,
+              wasEncrypted: response.wasEncrypted,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _importEpicSlatepack() async {
+    final slatepackString = await showDialog<String>(
+      context: context,
+      builder: (context) => const EpicSlatepackEntryDialog(),
+    );
+
+    if (slatepackString == null) return;
+    if (mounted) {
+      final wallet =
+          ref.read(pWallets).getWallet(walletId) as EpiccashWallet;
+
+      Exception? ex;
+      final result = await showLoading(
+        whileFuture: wallet.fullDecodeSlatepack(slatepackString),
+        context: context,
+        message: "Decoding slate...",
+        onException: (e) => ex = e,
+      );
+
+      if (result == null || ex != null) {
+        if (mounted) {
+          await showDialog<void>(
+            context: context,
+            builder: (context) => StackOkDialog(
+              title: "Slate receive error",
+              message: ex?.toString() ?? "Unexpected result without exception",
+            ),
+          );
+        }
+        return;
+      }
+
+      if (mounted) {
+        final response =
+            await showDialog<({String responseSlatepack, bool wasEncrypted})>(
+              context: context,
+              builder: (context) => SDialog(
+                child: EpicSlatepackImportDialog(
+                  walletId: widget.walletId,
+                  clipboard: widget.clipboard,
+                  rawSlatepack: result.raw,
+                  decoded: result.result,
+                  slatepackType: result.type,
+                ),
+              ),
+            );
+
+        if (mounted && response != null) {
+          await showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => EpicSlatepackResponseDialog(
               responseSlatepack: response.responseSlatepack,
               wasEncrypted: response.wasEncrypted,
             ),
@@ -762,6 +826,14 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
                       SecondaryButton(
                         label: "Import Slatepack",
                         onPressed: _importSlatepack,
+                      ),
+                    ],
+                    // Epic Cash Slate import button.
+                    if (coin is Epiccash) ...[
+                      const SizedBox(height: 12),
+                      SecondaryButton(
+                        label: "Import Slate",
+                        onPressed: _importEpicSlatepack,
                       ),
                     ],
                     const SizedBox(height: 30),

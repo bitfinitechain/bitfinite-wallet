@@ -17,6 +17,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../models/epic_slatepack_models.dart';
 import '../../../../models/isar/models/blockchain_data/address.dart';
 import '../../../../models/isar/models/blockchain_data/utxo.dart';
 import '../../../../models/isar/models/contact_entry.dart';
@@ -25,6 +26,7 @@ import '../../../../models/paynym/paynym_account_lite.dart';
 import '../../../../models/send_view_auto_fill_data.dart';
 import '../../../../pages/send_view/confirm_transaction_view.dart';
 import '../../../../pages/send_view/sub_widgets/building_transaction_dialog.dart';
+import '../../../../pages/send_view/sub_widgets/epic_slatepack_dialog.dart';
 import '../../../../pages/send_view/sub_widgets/mwc_slatepack_dialog.dart';
 import '../../../../pages/send_view/sub_widgets/transaction_fee_selection_sheet.dart';
 import '../../../../providers/providers.dart';
@@ -51,6 +53,7 @@ import '../../../../wallets/crypto_currency/crypto_currency.dart';
 import '../../../../wallets/crypto_currency/intermediate/nano_currency.dart';
 import '../../../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../../../wallets/models/tx_data.dart';
+import '../../../../wallets/wallet/impl/epiccash_wallet.dart';
 import '../../../../wallets/wallet/impl/firo_wallet.dart';
 import '../../../../wallets/wallet/impl/mimblewimblecoin_wallet.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/coin_control_interface.dart';
@@ -69,6 +72,7 @@ import '../../../../widgets/icon_widgets/addressbook_icon.dart';
 import '../../../../widgets/icon_widgets/clipboard_icon.dart';
 import '../../../../widgets/icon_widgets/qrcode_icon.dart';
 import '../../../../widgets/icon_widgets/x_icon.dart';
+import '../../../../widgets/epic_txs_method_toggle.dart';
 import '../../../../widgets/mwc_txs_method_toggle.dart';
 import '../../../../widgets/rounded_container.dart';
 import '../../../../widgets/stack_text_field.dart';
@@ -118,6 +122,7 @@ class _DesktopSendState extends ConsumerState<DesktopSend> {
 
   late final bool isStellar;
   late final bool isMimblewimblecoin;
+  late final bool isEpiccash;
 
   String? _note;
   String? _onChainNote;
@@ -292,12 +297,143 @@ class _DesktopSendState extends ConsumerState<DesktopSend> {
     }
   }
 
+  /// Handle Epic Cash slate creation for desktop.
+  Future<void> _handleDesktopEpicSlatepackCreation(
+    EpiccashWallet wallet,
+  ) async {
+    try {
+      final amount = ref.read(pSendAmount)!;
+
+      Future<EpicSlatepackResult> wrappedFutureWithDelay() async {
+        await Future<void>.delayed(const Duration(seconds: 1));
+        return wallet.createSlatepack(
+          amount: amount,
+          recipientAddress: null, // No specific recipient for manual slatepack.
+          message: _onChainNote?.isNotEmpty == true ? _onChainNote : null,
+        );
+      }
+
+      // Create slatepack.
+      Exception? ex;
+      final slatepackResult = await showLoading(
+        whileFuture: wrappedFutureWithDelay(),
+        context: context,
+        rootNavigator: true,
+        message: "Building slate...",
+        delay: const Duration(seconds: 2),
+        onException: (e) => ex = e,
+      );
+
+      if (slatepackResult == null ||
+          !slatepackResult.success ||
+          slatepackResult.slatepack == null ||
+          ex != null) {
+        String error =
+            ex?.toString() ??
+            slatepackResult?.error ??
+            'Failed to create slate';
+        if (error.startsWith("Exception:")) {
+          error = error.replaceFirst("Exception:", "").trim();
+        }
+        throw Exception(error);
+      }
+
+      // refresh asap to show the pending slate tx in history
+      unawaited(() async {
+        await Future<void>.delayed(Duration.zero);
+        await wallet.refresh();
+      }());
+
+      // Show slatepack dialog.
+      if (mounted) {
+        await showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => DesktopDialog(
+            maxHeight: double.infinity,
+            maxWidth: 700,
+            child: EpicSlatepackDialog(slatepackResult: slatepackResult),
+          ),
+        );
+
+        // Clear form after slatepack dialog is closed.
+        clearSendForm();
+      }
+    } catch (e, s) {
+      Logging.instance.e(
+        'Failed to create Epic Cash slate on desktop',
+        error: e,
+        stackTrace: s,
+      );
+
+      if (mounted) {
+        await showDialog<void>(
+          context: context,
+          builder: (context) => DesktopDialog(
+            maxWidth: 450,
+            maxHeight: double.infinity,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 32, bottom: 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Slate Creation Failed',
+                        style: STextStyles.desktopH3(context),
+                      ),
+                      const DesktopDialogCloseButton(),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 32),
+                    child: Text(
+                      'Failed to create slate: $e',
+                      textAlign: TextAlign.left,
+                      style: STextStyles.desktopTextExtraExtraSmall(
+                        context,
+                      ).copyWith(fontSize: 18),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 32),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: PrimaryButton(
+                            buttonHeight: ButtonHeight.l,
+                            label: 'OK',
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> previewSend() async {
     final wallet = ref.read(pWallets).getWallet(walletId);
 
     // Handle MWC slatepack transactions directly.
     if (isMimblewimblecoin && ref.read(pIsSlatepack(widget.walletId))) {
       await _handleDesktopSlatepackCreation(wallet as MimblewimblecoinWallet);
+      return;
+    }
+
+    // Handle Epic Cash slatepack transactions directly.
+    if (isEpiccash && ref.read(pIsSlatepack(widget.walletId))) {
+      await _handleDesktopEpicSlatepackCreation(wallet as EpiccashWallet);
       return;
     }
 
@@ -1078,6 +1214,7 @@ class _DesktopSendState extends ConsumerState<DesktopSend> {
 
     isStellar = coin is Stellar;
     isMimblewimblecoin = coin is Mimblewimblecoin;
+    isEpiccash = coin is Epiccash;
 
     sendToController = TextEditingController();
     cryptoAmountController = TextEditingController();
@@ -1245,6 +1382,34 @@ class _DesktopSendState extends ConsumerState<DesktopSend> {
                 height:
                     60, // Provide an explicit height to avoid infinite constraints
                 child: MwcTxsMethodToggle(),
+              ),
+            ),
+          ),
+
+        if (isEpiccash)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Container(
+              decoration: BoxDecoration(
+                color:
+                    Theme.of(
+                      context,
+                    ).extension<StackColors>()?.textFieldDefaultBG ??
+                    Colors.white, // Fallback color
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color:
+                      Theme.of(
+                        context,
+                      ).extension<StackColors>()?.backgroundAppBar ??
+                      Colors.grey, // Fallback color
+                  width: 1,
+                ),
+              ),
+              child: const SizedBox(
+                height:
+                    60, // Provide an explicit height to avoid infinite constraints
+                child: EpicTxsMethodToggle(),
               ),
             ),
           ),
@@ -1540,7 +1705,7 @@ class _DesktopSendState extends ConsumerState<DesktopSend> {
           ),
         const SizedBox(height: 20),
         if (!isPaynymSend &&
-            !(isMimblewimblecoin && ref.watch(pIsSlatepack(widget.walletId))))
+            !((isMimblewimblecoin || isEpiccash) && ref.watch(pIsSlatepack(widget.walletId))))
           Text(
             "Send to",
             style: STextStyles.desktopTextExtraSmall(context).copyWith(
@@ -1551,10 +1716,10 @@ class _DesktopSendState extends ConsumerState<DesktopSend> {
             textAlign: TextAlign.left,
           ),
         if (!isPaynymSend &&
-            !(isMimblewimblecoin && ref.watch(pIsSlatepack(widget.walletId))))
+            !((isMimblewimblecoin || isEpiccash) && ref.watch(pIsSlatepack(widget.walletId))))
           const SizedBox(height: 10),
         if (!isPaynymSend &&
-            !(isMimblewimblecoin && ref.watch(pIsSlatepack(widget.walletId))))
+            !((isMimblewimblecoin || isEpiccash) && ref.watch(pIsSlatepack(widget.walletId))))
           ClipRRect(
             borderRadius: BorderRadius.circular(
               Constants.size.circularBorderRadius,
@@ -1733,7 +1898,7 @@ class _DesktopSendState extends ConsumerState<DesktopSend> {
             ),
           ),
         if (!isPaynymSend &&
-            !(isMimblewimblecoin && ref.watch(pIsSlatepack(widget.walletId))))
+            !((isMimblewimblecoin || isEpiccash) && ref.watch(pIsSlatepack(widget.walletId))))
           Builder(
             builder: (_) {
               final String? error;
@@ -1752,9 +1917,9 @@ class _DesktopSendState extends ConsumerState<DesktopSend> {
               } else {
                 if (_data != null && _data.contactLabel == _address) {
                   error = null;
-                } else if (coin is Mimblewimblecoin &&
+                } else if ((coin is Mimblewimblecoin || coin is Epiccash) &&
                     ref.watch(pIsSlatepack(widget.walletId))) {
-                  // For MWC slatepack transactions, address validation is not required.
+                  // For MWC/Epic slatepack transactions, address validation is not required.
                   // TODO: When implementing encrypted slatepacks, address validation will be required.
                   error = null;
                 } else if (!ref.watch(pValidSendToAddress)) {

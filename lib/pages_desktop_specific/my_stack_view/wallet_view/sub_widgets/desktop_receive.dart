@@ -22,6 +22,7 @@ import '../../../../models/isar/models/isar_models.dart';
 import '../../../../models/keys/view_only_wallet_data.dart';
 import '../../../../notifications/show_flush_bar.dart';
 import '../../../../pages/receive_view/generate_receiving_uri_qr_code_view.dart';
+import '../../../../pages/receive_view/sub_widgets/epic_slatepack_import_dialog.dart';
 import '../../../../pages/receive_view/sub_widgets/mwc_slatepack_import_dialog.dart';
 import '../../../../providers/providers.dart';
 import '../../../../providers/ui/preview_tx_button_state_provider.dart';
@@ -39,6 +40,7 @@ import '../../../../wallets/crypto_currency/crypto_currency.dart';
 import '../../../../wallets/isar/providers/eth/current_token_wallet_provider.dart';
 import '../../../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../../../wallets/wallet/impl/bitcoin_wallet.dart';
+import '../../../../wallets/wallet/impl/epiccash_wallet.dart';
 import '../../../../wallets/wallet/impl/mimblewimblecoin_wallet.dart';
 import '../../../../wallets/wallet/intermediate/bip39_hd_wallet.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/bcash_interface.dart';
@@ -56,6 +58,7 @@ import '../../../../widgets/desktop/secondary_button.dart';
 import '../../../../widgets/dialogs/s_dialog.dart';
 import '../../../../widgets/icon_widgets/clipboard_icon.dart';
 import '../../../../widgets/icon_widgets/x_icon.dart';
+import '../../../../widgets/epic_txs_method_toggle.dart';
 import '../../../../widgets/mwc_txs_method_toggle.dart';
 import '../../../../widgets/qr.dart';
 import '../../../../widgets/rounded_white_container.dart';
@@ -87,6 +90,7 @@ class _DesktopReceiveState extends ConsumerState<DesktopReceive> {
   late bool supportsMweb;
   late final bool showMultiType;
   late final bool isMimblewimblecoin;
+  late final bool isEpiccash;
   late TextEditingController _receiveSlateController;
   String? _slate;
   bool _slateToggleFlag = false;
@@ -161,6 +165,66 @@ class _DesktopReceiveState extends ConsumerState<DesktopReceive> {
           context: context,
           barrierDismissible: false,
           builder: (context) => SlatepackResponseDialog(
+            responseSlatepack: response.responseSlatepack,
+            wasEncrypted: response.wasEncrypted,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _onEpicReceiveSlatePressed() async {
+    final wallet =
+        ref.read(pWallets).getWallet(walletId) as EpiccashWallet;
+
+    Exception? ex;
+    final result = await showLoading(
+      whileFuture: wallet.fullDecodeSlatepack(_receiveSlateController.text),
+      context: context,
+      message: "Decoding slatepack...",
+      rootNavigator: Util.isDesktop,
+      onException: (e) => ex = e,
+    );
+
+    if (result == null || ex != null) {
+      if (mounted) {
+        await showDialog<void>(
+          context: context,
+          useRootNavigator: true,
+          builder: (context) => StackOkDialog(
+            desktopPopRootNavigator: true,
+            title: "Slatepack receive error",
+            message: ex?.toString() ?? "Unexpected result without exception",
+            maxWidth: 400,
+          ),
+        );
+      }
+      return;
+    }
+
+    if (mounted) {
+      final response =
+          await showDialog<({String responseSlatepack, bool wasEncrypted})>(
+            context: context,
+            builder: (context) => SDialog(
+              child: SizedBox(
+                width: 700,
+                child: EpicSlatepackImportDialog(
+                  walletId: widget.walletId,
+                  clipboard: widget.clipboard,
+                  rawSlatepack: result.raw,
+                  decoded: result.result,
+                  slatepackType: result.type,
+                ),
+              ),
+            ),
+          );
+
+      if (mounted && response != null) {
+        await showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => EpicSlatepackResponseDialog(
             responseSlatepack: response.responseSlatepack,
             wasEncrypted: response.wasEncrypted,
           ),
@@ -351,6 +415,7 @@ class _DesktopReceiveState extends ConsumerState<DesktopReceive> {
         wallet.info.isMwebEnabled;
 
     isMimblewimblecoin = wallet is MimblewimblecoinWallet;
+    isEpiccash = wallet is EpiccashWallet;
 
     if (wallet is ViewOnlyOptionInterface && wallet.isViewOnly) {
       showMultiType = false;
@@ -513,9 +578,36 @@ class _DesktopReceiveState extends ConsumerState<DesktopReceive> {
               ),
             ),
           ),
-        if (!(isMimblewimblecoin && ref.watch(pIsSlatepack(widget.walletId))))
+        if (isEpiccash)
+          Padding(
+            padding: const EdgeInsets.all(0),
+            child: Container(
+              decoration: BoxDecoration(
+                color:
+                    Theme.of(
+                      context,
+                    ).extension<StackColors>()?.textFieldDefaultBG ??
+                    Colors.white, // Fallback color
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color:
+                      Theme.of(
+                        context,
+                      ).extension<StackColors>()?.backgroundAppBar ??
+                      Colors.grey, // Fallback color
+                  width: 1,
+                ),
+              ),
+              child: const SizedBox(
+                height:
+                    60, // Provide an explicit height to avoid infinite constraints
+                child: EpicTxsMethodToggle(),
+              ),
+            ),
+          ),
+        if (!((isMimblewimblecoin || isEpiccash) && ref.watch(pIsSlatepack(widget.walletId))))
           const SizedBox(height: 20),
-        if (!(isMimblewimblecoin && ref.watch(pIsSlatepack(widget.walletId))))
+        if (!((isMimblewimblecoin || isEpiccash) && ref.watch(pIsSlatepack(widget.walletId))))
           ConditionalParent(
             condition: showMultiType,
             builder: (child) => Column(
@@ -686,7 +778,7 @@ class _DesktopReceiveState extends ConsumerState<DesktopReceive> {
             label: "Generate new address",
           ),
         const SizedBox(height: 20),
-        if (isMimblewimblecoin && ref.watch(pIsSlatepack(widget.walletId)))
+        if ((isMimblewimblecoin || isEpiccash) && ref.watch(pIsSlatepack(widget.walletId)))
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -817,14 +909,16 @@ class _DesktopReceiveState extends ConsumerState<DesktopReceive> {
 
         // TODO: create transparent button class to account for hover
         // Conditional logic for 'Submit' button or QR code
-        if (isMimblewimblecoin && ref.watch(pIsSlatepack(widget.walletId)))
+        if ((isMimblewimblecoin || isEpiccash) && ref.watch(pIsSlatepack(widget.walletId)))
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: PrimaryButton(
               buttonHeight: ButtonHeight.l,
               label: "Receive Slatepack",
               enabled: _slateToggleFlag,
-              onPressed: _slateToggleFlag ? _onReceiveSlatePressed : null,
+              onPressed: _slateToggleFlag
+                  ? (isEpiccash ? _onEpicReceiveSlatePressed : _onReceiveSlatePressed)
+                  : null,
             ),
           )
         else

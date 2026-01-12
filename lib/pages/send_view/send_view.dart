@@ -18,6 +18,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tuple/tuple.dart';
 
+import '../../models/epic_slatepack_models.dart';
 import '../../models/input.dart';
 import '../../models/isar/models/isar_models.dart';
 import '../../models/mwc_slatepack_models.dart';
@@ -53,6 +54,7 @@ import '../../wallets/crypto_currency/intermediate/cryptonote_currency.dart';
 import '../../wallets/crypto_currency/intermediate/nano_currency.dart';
 import '../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../wallets/models/tx_data.dart';
+import '../../wallets/wallet/impl/epiccash_wallet.dart';
 import '../../wallets/wallet/impl/firo_wallet.dart';
 import '../../wallets/wallet/impl/mimblewimblecoin_wallet.dart';
 import '../../wallets/wallet/intermediate/cryptonote_wallet.dart';
@@ -71,6 +73,7 @@ import '../../widgets/icon_widgets/addressbook_icon.dart';
 import '../../widgets/icon_widgets/clipboard_icon.dart';
 import '../../widgets/icon_widgets/qrcode_icon.dart';
 import '../../widgets/icon_widgets/x_icon.dart';
+import '../../widgets/epic_txs_method_toggle.dart';
 import '../../widgets/mwc_txs_method_toggle.dart';
 import '../../widgets/rounded_white_container.dart';
 import '../../widgets/stack_dialog.dart';
@@ -81,6 +84,7 @@ import '../coin_control/coin_control_view.dart';
 import 'confirm_transaction_view.dart';
 import 'sub_widgets/building_transaction_dialog.dart';
 import 'sub_widgets/dual_balance_selection_sheet.dart';
+import 'sub_widgets/epic_slatepack_dialog.dart';
 import 'sub_widgets/mwc_slatepack_dialog.dart';
 import 'sub_widgets/transaction_fee_selection_sheet.dart';
 
@@ -688,6 +692,93 @@ class _SendViewState extends ConsumerState<SendView> {
           context: context,
           builder: (context) => StackOkDialog(
             title: "Slatepack Creation Failed",
+            message: e.toString(),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _createEpicSlatepack() async {
+    // wait for keyboard to disappear
+    FocusScope.of(context).unfocus();
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+
+    try {
+      if (mounted) {
+        final wallet =
+            ref.read(pWallets).getWallet(walletId) as EpiccashWallet;
+
+        final amount = ref.read(pSendAmount)!;
+
+        Future<EpicSlatepackResult> wrappedFutureWithDelay() async {
+          await Future<void>.delayed(const Duration(seconds: 1));
+          return wallet.createSlatepack(
+            amount: amount,
+            recipientAddress: null,
+            // No specific recipient for manual slatepack.
+            message: onChainNoteController.text.isNotEmpty == true
+                ? onChainNoteController.text
+                : null,
+          );
+        }
+
+        // Create slatepack.
+        Exception? ex;
+        final slatepackResult = await showLoading(
+          whileFuture: wrappedFutureWithDelay(),
+          context: context,
+          message: "Building slate...",
+          delay: const Duration(seconds: 2),
+          onException: (e) => ex = e,
+        );
+
+        if (slatepackResult == null ||
+            !slatepackResult.success ||
+            slatepackResult.slatepack == null ||
+            ex != null) {
+          String error =
+              ex?.toString() ??
+              slatepackResult?.error ??
+              'Failed to create slate';
+          if (error.startsWith("Exception:")) {
+            error = error.replaceFirst("Exception:", "").trim();
+          }
+          throw Exception(error);
+        }
+
+        // refresh asap to show the pending slate tx in history
+        unawaited(() async {
+          await Future<void>.delayed(Duration.zero);
+          await wallet.refresh();
+        }());
+
+        // Show slatepack dialog.
+        if (mounted) {
+          await showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => StackDialogBase(
+              child: EpicSlatepackDialog(slatepackResult: slatepackResult),
+            ),
+          );
+
+          // Clear form after slatepack dialog is closed.
+          clearSendForm();
+        }
+      }
+    } catch (e, s) {
+      Logging.instance.e(
+        'Failed to create Epic Cash slate on mobile',
+        error: e,
+        stackTrace: s,
+      );
+
+      if (mounted) {
+        await showDialog<void>(
+          context: context,
+          builder: (context) => StackOkDialog(
+            title: "Slate Creation Failed",
             message: e.toString(),
           ),
         );
@@ -1375,6 +1466,9 @@ class _SendViewState extends ConsumerState<SendView> {
 
     final isMwcSlatepack =
         coin is Mimblewimblecoin && ref.watch(pIsSlatepack(widget.walletId));
+    final isEpicSlatepack =
+        coin is Epiccash && ref.watch(pIsSlatepack(widget.walletId));
+    final isSlatepackMode = isMwcSlatepack || isEpicSlatepack;
 
     return Background(
       child: Scaffold(
@@ -1553,7 +1647,16 @@ class _SendViewState extends ConsumerState<SendView> {
                               const SizedBox(height: 16),
                             ],
 
-                            if (!isMwcSlatepack)
+                            // Epic Cash Transaction Method Selector.
+                            if (coin is Epiccash) ...[
+                              const SizedBox(
+                                height: 40,
+                                child: EpicTxsMethodToggle(),
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+
+                            if (!isSlatepackMode)
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -1582,7 +1685,7 @@ class _SendViewState extends ConsumerState<SendView> {
                                   //   ),
                                 ],
                               ),
-                            if (!isMwcSlatepack) const SizedBox(height: 8),
+                            if (!isSlatepackMode) const SizedBox(height: 8),
                             if (isPaynymSend)
                               TextField(
                                 key: const Key("sendViewPaynymAddressFieldKey"),
@@ -1591,7 +1694,7 @@ class _SendViewState extends ConsumerState<SendView> {
                                 readOnly: true,
                                 style: STextStyles.fieldLabel(context),
                               ),
-                            if (!isPaynymSend && !isMwcSlatepack)
+                            if (!isPaynymSend && !isSlatepackMode)
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(
                                   Constants.size.circularBorderRadius,
@@ -1648,7 +1751,7 @@ class _SendViewState extends ConsumerState<SendView> {
                                   style: STextStyles.field(context),
                                   decoration:
                                       standardInputDecoration(
-                                        isMwcSlatepack
+                                        isSlatepackMode
                                             ? "Enter ${coin.ticker} address (optional)"
                                             : "Enter ${coin.ticker} address",
                                         _addressFocusNode,
@@ -2559,9 +2662,11 @@ class _SendViewState extends ConsumerState<SendView> {
                             TextButton(
                               onPressed:
                                   ref.watch(pPreviewTxButtonEnabled(coin))
-                                  ? ref.watch(pIsSlatepack(widget.walletId))
+                                  ? isMwcSlatepack
                                         ? _createSlatepack
-                                        : _previewTransaction
+                                        : isEpicSlatepack
+                                            ? _createEpicSlatepack
+                                            : _previewTransaction
                                   : null,
                               style: ref.watch(pPreviewTxButtonEnabled(coin))
                                   ? Theme.of(context)
@@ -2571,8 +2676,8 @@ class _SendViewState extends ConsumerState<SendView> {
                                         .extension<StackColors>()!
                                         .getPrimaryDisabledButtonStyle(context),
                               child: Text(
-                                ref.watch(pIsSlatepack(widget.walletId))
-                                    ? "Create slatepack"
+                                isSlatepackMode
+                                    ? "Create slate"
                                     : "Preview",
                                 style: STextStyles.button(context),
                               ),

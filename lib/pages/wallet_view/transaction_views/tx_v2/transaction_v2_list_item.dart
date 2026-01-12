@@ -49,6 +49,8 @@ class TxListItem extends ConsumerWidget {
                 )
           : [];
 
+      final txKeyString = _tx.txid + _tx.type.name + _tx.hashCode.toString();
+
       if (matchingTrades.isNotEmpty) {
         final trade = matchingTrades.first;
         return Container(
@@ -60,14 +62,9 @@ class TxListItem extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TransactionCardV2(key: UniqueKey(), transaction: _tx),
+                TransactionCardV2(key: Key(txKeyString), transaction: _tx),
                 TradeCard(
-                  key: Key(
-                    _tx.txid +
-                        _tx.type.name +
-                        _tx.hashCode.toString() +
-                        trade.uuid,
-                  ), //
+                  key: Key(txKeyString + trade.uuid),
                   trade: trade,
                   onTap: () async {
                     if (Util.isDesktop) {
@@ -160,7 +157,7 @@ class TxListItem extends ConsumerWidget {
           child: Breathing(
             child: TransactionCardV2(
               // this may mess with combined firo transactions
-              key: UniqueKey(),
+              key: Key(txKeyString),
               transaction: _tx,
             ),
           ),
@@ -176,7 +173,7 @@ class TxListItem extends ConsumerWidget {
         borderRadius: radius,
       ),
       child: Breathing(
-        child: FusionTxGroupCard(key: UniqueKey(), group: group),
+        child: FusionTxGroupCard(key: ObjectKey(group), group: group),
       ),
     );
   }

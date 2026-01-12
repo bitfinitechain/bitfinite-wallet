@@ -121,10 +121,12 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
     return cryptoCurrency.network.isTestNet;
   }
 
-  // This is the BIP44 derivation path for the spark private key; spark public keys will have their own derivation path.
+  // This is the BIP44 derivation path for the spark private key; spark public
+  // keys will have their own derivation path.
   String get sparkDerivationPath {
-    // NOTE: This is reusing the sparkIndex for backwards compatibility, but these are actually distinct things which do
-    // not have to be the same. sparkIndex has nothing at all to do with the derivation path.
+    // NOTE: This is reusing the sparkIndex for backwards compatibility, but
+    // these are actually distinct things which do not have to be the same.
+    // sparkIndex has nothing at all to do with the derivation path.
     if (isTestNet) {
       return "${libSpark.sparkBaseDerivationPathTestnet}$kDefaultSparkIndex";
     } else {
@@ -132,8 +134,8 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
     }
   }
 
-  // This is the index for the spark key, which is NOT the diversifier or the BIP44 derivation path (which generates the
-  // private key data).
+  // This is the index for the spark key, which is NOT the diversifier or the
+  // BIP44 derivation path (which generates the private key data).
   int get sparkIndex => kDefaultSparkIndex;
 
   Future<Address> _generateSparkAddress(int diversifier) async {
@@ -272,12 +274,7 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
 
   Future<String> hashTag(String tag) async {
     try {
-      return await computeWithLibSparkLogging((t) {
-        final components = t.split(",");
-        final x = components[0].substring(1);
-        final y = components[1].substring(0, components[1].length - 1);
-        return libSpark.hashTag(x, y);
-      }, tag);
+      return await computeWithLibSparkLogging(_hashTag, tag);
     } catch (_) {
       throw ArgumentError("Invalid tag string format", "tag");
     }
@@ -901,7 +898,8 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
         );
       } catch (_) {
         throw Exception(
-          "Unexpectedly did not find used spark coin. This should never happen.",
+          "Unexpectedly did not find used spark coin. "
+          "This should never happen.",
         );
       }
     }
@@ -952,7 +950,8 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
 
       // Update used spark coins as used in database. They should already have
       // been marked as isUsed.
-      // TODO: [prio=med] Could (probably should) throw an exception here if txData.usedSparkCoins is null or empty
+      // TODO: [prio=med] Could (probably should) throw an exception here
+      //  if txData.usedSparkCoins is null or empty
       if (txData.usedSparkCoins != null && txData.usedSparkCoins!.isNotEmpty) {
         await mainDB.isar.writeTxn(() async {
           await mainDB.isar.sparkCoins.putAll(txData.usedSparkCoins!);
@@ -1041,7 +1040,8 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
     return current + increment;
   }
 
-  // Linearly make calls so there is less chance of timing out or otherwise breaking
+  // Linearly make calls so there is less chance of timing out or otherwise
+  // breaking
   Future<void> refreshSparkData(
     (double startingPercent, double endingPercent)? refreshProgressRange,
   ) async {
@@ -1388,10 +1388,6 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
     }
   }
 
-  Future<void> recoverViewOnlyWallet() async {
-    await recoverSparkWallet(latestSparkCoinId: 0);
-  }
-
   Future<({String address, int validUntil, String additionalInfo})>
   getSparkNameData({required String sparkName}) async {
     return await electrumXClient.getSparkNameData(sparkName: sparkName);
@@ -1423,8 +1419,8 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
               .toSet();
 
       // some look ahead
-      // TODO revisit this and clean up (track pre gen'd addresses instead of generating every time)
-      // arbitrary number of addresses
+      // TODO revisit this and clean up (track pre gen'd addresses instead of
+      //  generating every time) arbitrary number of addresses
       const lookAheadCount = 100;
 
       int diversifier = _currentSparkAddress.derivationIndex;
@@ -1769,7 +1765,7 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
             sd.utxo.txid,
             sd.utxo.vout,
             0xffffffff -
-                1, // minus 1 is important. 0xffffffff on its own will burn funds
+                1, // - 1 is important. 0xffffffff on its own will burn funds
             data!.output!,
           );
         }
@@ -1785,7 +1781,8 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
             ),
             witnessValue: setCoins[i].utxo.value,
 
-            // maybe not needed here as this was originally copied from btc? We'll find out...
+            // maybe not needed here as this was originally copied from btc?
+            // We'll find out...
             // redeemScript: setCoins[i].redeemScript,
           );
         }
@@ -1992,7 +1989,8 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
             ),
             witnessValue: vin[i].utxo.value,
 
-            // maybe not needed here as this was originally copied from btc? We'll find out...
+            // maybe not needed here as this was originally copied from btc?
+            // We'll find out...
             // redeemScript: setCoins[i].redeemScript,
           );
         }
@@ -2014,9 +2012,10 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
             .where((e) => e.$1 is Uint8List) // ignore change
             .map(
               (e) => (
-                address: outputs
-                    .first
-                    .address, // for display purposes on confirm tx screen. See todos above
+                // for display purposes on confirm tx screen.
+                // See todos above
+                address: outputs.first.address,
+
                 memo: "",
                 amount: Amount(
                   rawValue: BigInt.from(e.$2),
@@ -2316,7 +2315,9 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
     if (additionalInfo.toUint8ListFromUtf8.length >
         libSpark.maxAdditionalInfoLengthBytes) {
       throw Exception(
-        "Additional info exceeds ${libSpark.maxAdditionalInfoLengthBytes} bytes.",
+        "Additional info exceeds "
+        "${libSpark.maxAdditionalInfoLengthBytes}"
+        " bytes.",
       );
     }
 
@@ -2347,7 +2348,9 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
 
       default:
         throw Exception(
-          "Invalid network '${cryptoCurrency.network}' for spark name registration.",
+          "Invalid network "
+          "'${cryptoCurrency.network}'"
+          " for spark name registration.",
         );
     }
 
@@ -2490,7 +2493,11 @@ class MutableSparkRecipient {
 
   @override
   String toString() {
-    return 'MutableSparkRecipient{ address: $address, value: $value, memo: $memo }';
+    return 'MutableSparkRecipient{ '
+        'address: $address, '
+        'value: $value,'
+        ' memo: $memo'
+        ' }';
   }
 }
 

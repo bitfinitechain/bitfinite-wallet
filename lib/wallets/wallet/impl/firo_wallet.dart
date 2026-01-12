@@ -1,16 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:coinlib_flutter/coinlib_flutter.dart'
-    show base58Decode, P2SH, Base58Address, P2PKH;
-import 'package:crypto/crypto.dart' as Cryptography;
+import 'package:coinlib_flutter/coinlib_flutter.dart' show base58Decode, P2PKH;
+import 'package:crypto/crypto.dart' as crypto;
 import 'package:decimal/decimal.dart';
 import 'package:isar_community/isar.dart';
 
 import '../../../db/sqlite/firo_cache.dart';
-import '../../../models/buy/response_objects/crypto.dart';
 import '../../../models/input.dart';
 import '../../../models/isar/models/blockchain_data/v2/input_v2.dart';
 import '../../../models/isar/models/blockchain_data/v2/output_v2.dart';
@@ -23,7 +20,6 @@ import '../../../utilities/logger.dart';
 import '../../../utilities/util.dart';
 import '../../crypto_currency/crypto_currency.dart';
 import '../../crypto_currency/interfaces/electrumx_currency_interface.dart';
-import '../../crypto_currency/intermediate/bip39_hd_currency.dart';
 import '../../isar/models/spark_coin.dart';
 import '../../isar/models/wallet_info.dart';
 import '../../models/tx_data.dart';
@@ -72,6 +68,8 @@ class MasternodeInfo {
     required this.pubKeyOperator,
   });
 }
+
+final _masterNodeValue = Decimal.fromInt(1000); // full value (not sats)
 
 class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
     with
@@ -726,9 +724,7 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
       // Fall back to locked in case network call fails
       blocked =
           Amount.fromDecimal(
-            Decimal.fromInt(
-              1000, // 1000 firo output is a possible master node
-            ),
+            _masterNodeValue,
             fractionDigits: cryptoCurrency.fractionDigits,
           ).raw ==
           BigInt.from(jsonUTXO["value"] as int);
@@ -925,7 +921,7 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
   ) async {
     if (info.cachedBalance.spendable <
         Amount.fromDecimal(
-          Decimal.fromInt(1000),
+          _masterNodeValue,
           fractionDigits: cryptoCurrency.fractionDigits,
         )) {
       throw Exception(
@@ -970,7 +966,8 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
     registrationTx.add(ByteData(32).buffer.asUint8List());
 
     // collateralOutpoint.index (2 bytes)
-    // This is going to be 0. (The only other output will be change at position 1.)
+    // This is going to be 0.
+    // (The only other output will be change at position 1.)
     registrationTx.add(
       (ByteData(4)..setInt16(0, 0, Endian.little)).buffer.asUint8List(),
     );
@@ -990,7 +987,8 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
         throw Exception("Invalid IP part: $part");
       }
     }
-    // This is serialized as an IPv6 address (which it cannot be), so there will be 12 bytes of padding.
+    // This is serialized as an IPv6 address (which it cannot be),
+    // so there will be 12 bytes of padding.
     registrationTx.add(ByteData(10).buffer.asUint8List());
     registrationTx.add([0xff, 0xff]);
     registrationTx.add(ipParts);
@@ -1015,7 +1013,8 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
     // pubKeyOperator (48 bytes)
     final operatorPubKeyBytes = operatorPubKey.toUint8ListFromHex;
     if (operatorPubKeyBytes.length != 48) {
-      // These actually have a required format, but we're not going to check it. The transaction will fail if it's not
+      // These actually have a required format, but we're not going to check it.
+      // The transaction will fail if it's not
       // valid.
       throw Exception("Invalid operator public key: $operatorPubKey");
     }
@@ -1066,15 +1065,16 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
     final partialTxData = TxData(
       // nVersion: 3, nType: 1 (TRANSACTION_PROVIDER_REGISTER)
       overrideVersion: 3 + (1 << 16),
-      // coinSelection fee calculation uses a heuristic that doesn't know about vExtraData, so we'll just use a really
-      // big fee to make sure the transaction confirms.
+      // coinSelection fee calculation uses a heuristic that doesn't know about
+      // vExtraData, so we'll just use a really big fee to make sure the
+      // transaction confirms.
       feeRateAmount: cryptoCurrency.defaultFeeRate * BigInt.from(10),
       recipients: [
         TxRecipient(
-          address: collateralAddress!.value,
+          address: collateralAddress.value,
           addressType: AddressType.p2pkh,
           amount: Amount.fromDecimal(
-            Decimal.fromInt(1000),
+            _masterNodeValue,
             fractionDigits: cryptoCurrency.fractionDigits,
           ),
           isChange: false,
@@ -1107,13 +1107,12 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
             .asUint8List(),
       );
     }
-    final inputsHash = Cryptography.sha256
-        .convert(inputsHashInput.toBytes())
-        .bytes;
-    final inputsHashHash = Cryptography.sha256.convert(inputsHash).bytes;
+    final inputsHash = crypto.sha256.convert(inputsHashInput.toBytes()).bytes;
+    final inputsHashHash = crypto.sha256.convert(inputsHash).bytes;
     registrationTx.add(inputsHashHash);
 
-    // vchSig is a variable length field that we need iff the collateral is NOT in the same transaction, but for us it is.
+    // vchSig is a variable length field that we need iff the collateral is
+    // NOT in the same transaction, but for us it is.
     registrationTx.addByte(0);
 
     final finalTxData = partialTx.copyWith(
@@ -1134,7 +1133,8 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
       throw Exception("Failed to broadcast transaction: $broadcastedTxHash");
     }
     Logging.instance.i(
-      "Successfully broadcasted masternode registration transaction: $finalTransactionHex (txid $broadcastedTxHash)",
+      "Successfully broadcasted masternode registration transaction: "
+      "$finalTransactionHex (txid $broadcastedTxHash)",
     );
 
     await updateSentCachedTxData(txData: finalTx);
@@ -1180,7 +1180,8 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
               pubKeyOperator: info["state"]["pubKeyOperator"] as String,
             );
           } catch (err) {
-            // getMyMasternodeProTxHashes() may give non-masternode txids, so only log as info.
+            // getMyMasternodeProTxHashes() may give non-masternode txids, so
+            // only log as info.
             Logging.instance.i("Error getting masternode info for $e: $err");
             return null;
           }
@@ -1190,26 +1191,38 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
   }
 
   Future<List<String>> getMyMasternodeProTxHashes() async {
-    // - This registers only masternodes which have collateral in the same transaction.
-    // - If this seed is shared with firod or such and a masternode is created there, it will probably not appear here
+    // - This registers only masternodes which have collateral in the same
+    //   transaction.
+    // - If this seed is shared with firod or such and a masternode is created
+    //   there, it will probably not appear here
     //   because that doesn't put collateral in the protx tx.
-    // - An exactly 1000 FIRO vout will show up here even if it's not a masternode collateral. This will just log an
+    // - An exactly 1000 FIRO vout will show up here even if it's not a
+    // masternode collateral. This will just log an
     //   info in getMyMasternodes.
-    // - If this wallet created a masternode not owned by this wallet it will erroneously be emitted here and actually
-    //   shown to the user as our own masternode, but this is contrived and nothing actually produces transactions like
+    // - If this wallet created a masternode not owned by this wallet it will
+    //   erroneously be emitted here and actually
+    //   shown to the user as our own masternode, but this is contrived and
+    //   nothing actually produces transactions like
     //   that.
 
-    // utxos are UNSPENT txos, so broken masternodes will not show up here by design.
+    // utxos are UNSPENT txos, so broken masternodes will not show up here by
+    // design.
     final utxos = await mainDB.getUTXOs(walletId).sortByBlockHeight().findAll();
 
     final List<String> r = [];
 
+    final rawMasterNodeAmount = Amount.fromDecimal(
+      _masterNodeValue,
+      fractionDigits: cryptoCurrency.fractionDigits,
+    ).raw.toInt();
+
     for (final utxo in utxos) {
-      if (utxo.value != cryptoCurrency.satsPerCoin.toInt() * 1000) {
+      if (utxo.value != rawMasterNodeAmount) {
         continue;
       }
 
-      // A duplicate could occur if a protx transaction has a non-collateral 1000 FIRO vout.
+      // A duplicate could occur if a protx transaction has a non-collateral
+      // 1000 FIRO vout.
       if (r.contains(utxo.txid)) {
         continue;
       }

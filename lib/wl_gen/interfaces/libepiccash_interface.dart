@@ -34,7 +34,7 @@ abstract class LibEpicCashInterface {
     required String address,
   });
 
-  Future<({String commitId, String slateId})> createTransaction({
+  Future<({String commitId, String slateId, String slateJson})> createTransaction({
     required String wallet,
     required int amount,
     required String address,
@@ -42,6 +42,17 @@ abstract class LibEpicCashInterface {
     required String epicboxConfig,
     required int minimumConfirmations,
     required String note,
+    bool returnSlate = false,
+  });
+
+  Future<({String slateId, String commitId, String slateJson})> txReceive({
+    required String wallet,
+    required String slateJson,
+  });
+
+  Future<({String slateId, String commitId})> txFinalize({
+    required String wallet,
+    required String slateJson,
   });
 
   Future<String> cancelTransaction({
@@ -55,11 +66,18 @@ abstract class LibEpicCashInterface {
   });
 
   void startEpicboxListener({
+    required String walletId,
     required String wallet,
     required String epicboxConfig,
   });
 
-  void stopEpicboxListener();
+  void stopEpicboxListener({required String walletId});
+
+  void stopAllEpicboxListeners();
+
+  bool isEpicboxListenerRunning({required String walletId});
+
+  List<String> getActiveListenerWalletIds();
 
   bool validateSendAddress({required String address});
 

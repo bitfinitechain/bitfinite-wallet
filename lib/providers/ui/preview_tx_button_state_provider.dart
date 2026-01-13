@@ -11,6 +11,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../utilities/amount/amount.dart';
+import '../../utilities/enums/epic_transaction_method.dart';
 import '../../utilities/enums/mwc_transaction_method.dart';
 import '../../wallets/crypto_currency/crypto_currency.dart';
 import '../../wallets/isar/providers/wallet_info_provider.dart';
@@ -27,10 +28,20 @@ final pSelectedMwcTransactionMethod = StateProvider<MwcTransactionMethod>(
   (_) => MwcTransactionMethod.slatepack,
 );
 
+// Epic Cash Transaction Method Provider.
+final pSelectedEpicTransactionMethod = StateProvider<EpicTransactionMethod>(
+  (_) => EpicTransactionMethod.epicbox,
+);
+
 final pIsSlatepack = Provider.family<bool, String>((ref, walletId) {
-  if (ref.watch(pWalletCoin(walletId)) is Mimblewimblecoin) {
+  final coin = ref.watch(pWalletCoin(walletId));
+  if (coin is Mimblewimblecoin) {
     return ref.watch(pSelectedMwcTransactionMethod) ==
         MwcTransactionMethod.slatepack;
+  }
+  if (coin is Epiccash) {
+    return ref.watch(pSelectedEpicTransactionMethod) ==
+        EpicTransactionMethod.slatepack;
   }
 
   return false;
@@ -44,6 +55,14 @@ final pPreviewTxButtonEnabled = Provider.autoDispose
       if (coin is Mimblewimblecoin) {
         final selectedMethod = ref.watch(pSelectedMwcTransactionMethod);
         if (selectedMethod == MwcTransactionMethod.slatepack) {
+          return amount > Amount.zero;
+        }
+      }
+
+      // For Epic Cash slatepack transactions, address validation is not required.
+      if (coin is Epiccash) {
+        final selectedMethod = ref.watch(pSelectedEpicTransactionMethod);
+        if (selectedMethod == EpicTransactionMethod.slatepack) {
           return amount > Amount.zero;
         }
       }

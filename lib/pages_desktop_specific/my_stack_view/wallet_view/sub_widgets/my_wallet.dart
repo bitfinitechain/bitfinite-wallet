@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../frost_route_generator.dart';
+import '../../../../pages/epic_finalize_view/epic_finalize_view.dart';
 import '../../../../pages/finalize_view/finalize_view.dart';
 import '../../../../pages/send_view/frost_ms/frost_send_view.dart';
 import '../../../../pages/wallet_view/transaction_views/tx_v2/transaction_v2_list.dart';
@@ -49,6 +50,7 @@ class _MyWalletState extends ConsumerState<MyWallet> {
   late final CryptoCurrency coin;
   late final bool isFrost;
   late final bool isMimblewimblecoin;
+  late final bool isEpiccash;
   late final bool isViewOnly;
 
   @override
@@ -59,8 +61,9 @@ class _MyWalletState extends ConsumerState<MyWallet> {
     isEth = coin is Ethereum;
     isSolana = wallet is SolanaWallet;
     isMimblewimblecoin = coin is Mimblewimblecoin;
+    isEpiccash = coin is Epiccash;
 
-    if (isMimblewimblecoin) {
+    if (isMimblewimblecoin || isEpiccash) {
       titles.add("Finalize");
     }
 
@@ -185,6 +188,11 @@ class _MyWalletState extends ConsumerState<MyWallet> {
                 Padding(
                   padding: const EdgeInsets.all(20),
                   child: FinalizeView(walletId: widget.walletId),
+                ),
+              if (isEpiccash)
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: EpicFinalizeView(walletId: widget.walletId),
                 ),
 
               if (isEth && widget.contractAddress == null)

@@ -69,7 +69,7 @@ class MasternodeInfo {
   });
 }
 
-final _masterNodeValue = Decimal.fromInt(1000); // full value (not sats)
+final kMasterNodeValue = Decimal.fromInt(1000); // full value (not sats)
 
 class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
     with
@@ -724,7 +724,7 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
       // Fall back to locked in case network call fails
       blocked =
           Amount.fromDecimal(
-            _masterNodeValue,
+            kMasterNodeValue,
             fractionDigits: cryptoCurrency.fractionDigits,
           ).raw ==
           BigInt.from(jsonUTXO["value"] as int);
@@ -921,7 +921,7 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
   ) async {
     if (info.cachedBalance.spendable <
         Amount.fromDecimal(
-          _masterNodeValue,
+          kMasterNodeValue,
           fractionDigits: cryptoCurrency.fractionDigits,
         )) {
       throw Exception(
@@ -1074,7 +1074,7 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
           address: collateralAddress.value,
           addressType: AddressType.p2pkh,
           amount: Amount.fromDecimal(
-            _masterNodeValue,
+            kMasterNodeValue,
             fractionDigits: cryptoCurrency.fractionDigits,
           ),
           isChange: false,
@@ -1212,7 +1212,7 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
     final List<String> r = [];
 
     final rawMasterNodeAmount = Amount.fromDecimal(
-      _masterNodeValue,
+      kMasterNodeValue,
       fractionDigits: cryptoCurrency.fractionDigits,
     ).raw.toInt();
 

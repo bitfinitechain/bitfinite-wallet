@@ -2,20 +2,21 @@
 import 'dart:convert';
 
 import 'package:logger/logger.dart';
+import 'package:xelis_dart_sdk/src/data_transfer_objects/get_asset/max_supply_mode.dart';
 import 'package:xelis_dart_sdk/xelis_dart_sdk.dart' as xelis_sdk;
 import 'package:xelis_flutter/src/api/api.dart' as xelis_api;
 import 'package:xelis_flutter/src/api/logger.dart' as xelis_logging;
+import 'package:xelis_flutter/src/api/models/wallet_dtos.dart' as x_wallet_dtos;
 import 'package:xelis_flutter/src/api/network.dart' as x_network;
+import 'package:xelis_flutter/src/api/precomputed_tables.dart' as x_tables;
+import 'package:xelis_flutter/src/api/progress_report.dart' as x_report;
 import 'package:xelis_flutter/src/api/seed_search_engine.dart' as x_seed;
 import 'package:xelis_flutter/src/api/utils.dart' as x_utils;
 import 'package:xelis_flutter/src/api/wallet.dart' as x_wallet;
-import 'package:xelis_flutter/src/api/precomputed_tables.dart' as x_tables;
-import 'package:xelis_flutter/src/api/models/wallet_dtos.dart' as x_wallet_dtos;
-import 'package:xelis_flutter/src/api/progress_report.dart' as x_report;
-
 import 'package:xelis_flutter/src/frb_generated.dart' as xelis_rust;
 
 import '../../providers/progress_report/xelis_table_progress_provider.dart';
+import '../../utilities/dynamic_object.dart';
 import '../../utilities/logger.dart';
 import '../../wallets/crypto_currency/crypto_currency.dart';
 //END_ON
@@ -83,14 +84,16 @@ final class _LibXelisInterfaceImpl extends LibXelisInterface {
         tableGeneration: (progress, step, message) {
           final currentStep = XelisTableGenerationStep.fromString(step);
 
-          final hasProgressJump = (progress - lastPrintedProgress).abs() >= 0.05;
+          final hasProgressJump =
+              (progress - lastPrintedProgress).abs() >= 0.05;
           final stepChanged = currentStep != lastStep;
           final isFinished = progress >= 0.99;
 
           if (hasProgressJump || stepChanged || isFinished) {
             final percent = (progress * 100).toStringAsFixed(1);
-            final extra =
-                (message != null && message.isNotEmpty) ? ' – $message' : '';
+            final extra = (message != null && message.isNotEmpty)
+                ? ' – $message'
+                : '';
 
             Logging.instance.d(
               'Xelis Table Generation: $step - $percent%$extra',
@@ -116,8 +119,13 @@ final class _LibXelisInterfaceImpl extends LibXelisInterface {
   }
 
   @override
-  bool isAddressValid({required String address, required CryptoCurrencyNetwork network}) =>
-      x_utils.isAddressValid(strAddress: address, network: network.xelisNetwork);
+  bool isAddressValid({
+    required String address,
+    required CryptoCurrencyNetwork network,
+  }) => x_utils.isAddressValid(
+    strAddress: address,
+    network: network.xelisNetwork,
+  );
 
   @override
   bool validateSeedWord(String word) {
@@ -144,7 +152,11 @@ final class _LibXelisInterfaceImpl extends LibXelisInterface {
               json['data'] as Map<String, dynamic>,
             );
 
-            yield NewAsset(data.name, data.decimals, data.maxSupply);
+            yield NewAsset(
+              data.name,
+              data.decimals,
+              DynamicObject(data.maxSupply),
+            );
           case xelis_sdk.WalletEvent.newTransaction:
             final tx = xelis_sdk.TransactionEntry.fromJson(
               json['data'] as Map<String, dynamic>,
@@ -211,8 +223,8 @@ final class _LibXelisInterfaceImpl extends LibXelisInterface {
     // for now, just patching the old system into the new FFI API
 
     x_tables.PrecomputedTableType tableType = stack_l1Low
-      ? x_tables.PrecomputedTableType.l1Low()
-      : x_tables.PrecomputedTableType.l1Full();
+        ? x_tables.PrecomputedTableType.l1Low()
+        : x_tables.PrecomputedTableType.l1Full();
 
     return x_wallet.updateTables(
       precomputedTablesPath: precomputedTablesPath,
@@ -239,8 +251,8 @@ final class _LibXelisInterfaceImpl extends LibXelisInterface {
     // for now, just patching the old system into the new FFI API
 
     x_tables.PrecomputedTableType tableType = stack_l1Low ?? false
-      ? x_tables.PrecomputedTableType.l1Low()
-      : x_tables.PrecomputedTableType.l1Full();
+        ? x_tables.PrecomputedTableType.l1Low()
+        : x_tables.PrecomputedTableType.l1Full();
 
     final wallet = await x_wallet.createXelisWallet(
       name: name,
@@ -270,8 +282,8 @@ final class _LibXelisInterfaceImpl extends LibXelisInterface {
     // for now, just patching the old system into the new FFI API
 
     x_tables.PrecomputedTableType tableType = (stack_l1Low ?? false)
-      ? x_tables.PrecomputedTableType.l1Low()
-      : x_tables.PrecomputedTableType.l1Full();
+        ? x_tables.PrecomputedTableType.l1Low()
+        : x_tables.PrecomputedTableType.l1Full();
 
     final wallet = await x_wallet.openXelisWallet(
       name: name,

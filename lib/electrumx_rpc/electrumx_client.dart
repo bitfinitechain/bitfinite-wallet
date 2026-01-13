@@ -828,6 +828,28 @@ class ElectrumXClient {
     return Map<String, dynamic>.from(response as Map);
   }
 
+  Future<List<Map<String, dynamic>>> getBatchTransactions({
+    required List<String> txHashes,
+    String? requestID,
+  }) async {
+    Logging.instance.d(
+      "attempting to fetch BATCHED blockchain.transaction.get...",
+    );
+
+    final response = await batchRequest(
+      command: 'blockchain.transaction.get',
+      args: txHashes.map((e) => [e, true]).toList(),
+    );
+    final List<Map<String, dynamic>> result = [];
+    for (int i = 0; i < response.length; i++) {
+      result.add(Map<String, dynamic>.from(response[i] as Map));
+    }
+
+    Logging.instance.d("Fetching blockchain.transaction.get BATCHED finished");
+
+    return result;
+  }
+
   /// Returns the whole Lelantus anonymity set for denomination in the groupId.
   ///
   /// ex:

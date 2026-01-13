@@ -78,6 +78,7 @@ import 'pages/home_view/home_view.dart';
 import 'pages/intro_view.dart';
 import 'pages/manage_favorites_view/manage_favorites_view.dart';
 import 'pages/masternodes/create_masternode_view.dart';
+import 'pages/masternodes/masternode_details_view.dart';
 import 'pages/masternodes/masternodes_home_view.dart';
 import 'pages/monkey/monkey_view.dart';
 import 'pages/namecoin_names/buy_domain_view.dart';
@@ -233,6 +234,7 @@ import 'utilities/enums/add_wallet_type_enum.dart';
 import 'wallets/crypto_currency/crypto_currency.dart';
 import 'wallets/crypto_currency/intermediate/frost_currency.dart';
 import 'wallets/models/tx_data.dart';
+import 'wallets/wallet/impl/firo_wallet.dart';
 import 'wallets/wallet/wallet.dart';
 import 'wallets/wallet/wallet_mixin_interfaces/extended_keys_interface.dart';
 import 'widgets/choose_coin_view.dart';
@@ -914,6 +916,16 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => CreateMasternodeView(firoWalletId: args),
+            settings: RouteSettings(name: settings.name),
+          );
+        }
+        return _routeError("${settings.name} invalid args: ${args.toString()}");
+
+      case MasternodeDetailsView.routeName:
+        if (args is MasternodeInfo) {
+          return getRoute(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => MasternodeDetailsView(node: args),
             settings: RouteSettings(name: settings.name),
           );
         }

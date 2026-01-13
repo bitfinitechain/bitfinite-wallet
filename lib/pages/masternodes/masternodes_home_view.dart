@@ -13,6 +13,7 @@ import '../../widgets/desktop/desktop_app_bar.dart';
 import '../../widgets/desktop/desktop_scaffold.dart';
 import '../../widgets/desktop/primary_button.dart';
 import '../../widgets/dialogs/s_dialog.dart';
+import '../../widgets/loading_indicator.dart';
 import 'create_masternode_view.dart';
 import 'sub_widgets/masternodes_list.dart';
 import 'sub_widgets/masternodes_table_desktop.dart';
@@ -32,9 +33,6 @@ class MasternodesHomeView extends ConsumerStatefulWidget {
 class _MasternodesHomeViewState extends ConsumerState<MasternodesHomeView> {
   late Future<List<MasternodeInfo>> _masternodesFuture;
 
-  FiroWallet get _wallet =>
-      ref.read(pWallets).getWallet(widget.walletId) as FiroWallet;
-
   void _showDesktopCreateMasternodeDialog() {
     showDialog<void>(
       context: context,
@@ -47,7 +45,11 @@ class _MasternodesHomeViewState extends ConsumerState<MasternodesHomeView> {
   @override
   void initState() {
     super.initState();
-    _masternodesFuture = _wallet.getMyMasternodes();
+
+    // TODO polling and update on successful registration
+    _masternodesFuture =
+        (ref.read(pWallets).getWallet(widget.walletId) as FiroWallet)
+            .getMyMasternodes();
   }
 
   @override
@@ -168,7 +170,7 @@ class _MasternodesHomeViewState extends ConsumerState<MasternodesHomeView> {
         future: _masternodesFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: LoadingIndicator(height: 50, width: 50));
           }
           if (snapshot.hasError) {
             return Center(

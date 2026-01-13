@@ -5,6 +5,7 @@ import 'package:flutter_svg/svg.dart';
 import '../../providers/global/wallets_provider.dart';
 import '../../themes/stack_colors.dart';
 import '../../utilities/assets.dart';
+import '../../utilities/logger.dart';
 import '../../utilities/text_styles.dart';
 import '../../utilities/util.dart';
 import '../../wallets/wallet/impl/firo_wallet.dart';
@@ -14,6 +15,7 @@ import '../../widgets/desktop/desktop_scaffold.dart';
 import '../../widgets/desktop/primary_button.dart';
 import '../../widgets/dialogs/s_dialog.dart';
 import '../../widgets/loading_indicator.dart';
+import '../../widgets/stack_dialog.dart';
 import 'create_masternode_view.dart';
 import 'sub_widgets/masternodes_list.dart';
 import 'sub_widgets/masternodes_table_desktop.dart';
@@ -33,13 +35,40 @@ class MasternodesHomeView extends ConsumerStatefulWidget {
 class _MasternodesHomeViewState extends ConsumerState<MasternodesHomeView> {
   late Future<List<MasternodeInfo>> _masternodesFuture;
 
-  void _showDesktopCreateMasternodeDialog() {
-    showDialog<void>(
+  Future<void> _showDesktopCreateMasternodeDialog() async {
+    final txid = await showDialog<Object>(
       context: context,
       barrierDismissible: true,
       builder: (context) =>
           SDialog(child: CreateMasternodeView(firoWalletId: widget.walletId)),
     );
+    _handleSuccessTxid(txid);
+  }
+
+  void _handleSuccessTxid(Object? txid) {
+    Logging.instance.i(
+      "$runtimeType _handleSuccessTxid($txid) called where mounted=$mounted",
+    );
+    if (mounted && txid is String) {
+      setState(() {
+        _masternodesFuture =
+            (ref.read(pWallets).getWallet(widget.walletId) as FiroWallet)
+                .getMyMasternodes();
+      });
+
+      showDialog<void>(
+        context: context,
+        builder: (_) => StackOkDialog(
+          title: "Masternode Registration Submitted",
+          message:
+              "Masternode registration submitted, your masternode will "
+              "appear in the list after the tx is confirmed.\n\nTransaction"
+              " ID: $txid",
+          desktopPopRootNavigator: Util.isDesktop,
+          maxWidth: Util.isDesktop ? 400 : null,
+        ),
+      );
+    }
   }
 
   @override
@@ -155,11 +184,12 @@ class _MasternodesHomeViewState extends ConsumerState<MasternodesHomeView> {
                         width: 20,
                         height: 20,
                       ),
-                      onPressed: () {
-                        Navigator.of(context).pushNamed(
+                      onPressed: () async {
+                        final txid = await Navigator.of(context).pushNamed(
                           CreateMasternodeView.routeName,
                           arguments: widget.walletId,
                         );
+                        _handleSuccessTxid(txid);
                       },
                     ),
                   ),
@@ -199,14 +229,15 @@ class _MasternodesHomeViewState extends ConsumerState<MasternodesHomeView> {
                         label: "Create Your First Masternode",
                         horizontalContentPadding: 16,
                         buttonHeight: Util.isDesktop ? .l : null,
-                        onPressed: () {
+                        onPressed: () async {
                           if (Util.isDesktop) {
-                            _showDesktopCreateMasternodeDialog();
+                            await _showDesktopCreateMasternodeDialog();
                           } else {
-                            Navigator.of(context).pushNamed(
+                            final txid = await Navigator.of(context).pushNamed(
                               CreateMasternodeView.routeName,
                               arguments: widget.walletId,
                             );
+                            _handleSuccessTxid(txid);
                           }
                         },
                       ),

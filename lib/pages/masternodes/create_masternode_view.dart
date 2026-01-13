@@ -11,11 +11,16 @@ import '../../widgets/desktop/desktop_dialog_close_button.dart';
 import 'sub_widgets/register_masternode_form.dart';
 
 class CreateMasternodeView extends ConsumerStatefulWidget {
-  const CreateMasternodeView({super.key, required this.firoWalletId});
+  const CreateMasternodeView({
+    super.key,
+    required this.firoWalletId,
+    this.popTxidOnSuccess = true,
+  });
 
   static const routeName = "/createMasternodeView";
 
   final String firoWalletId;
+  final bool popTxidOnSuccess;
 
   @override
   ConsumerState<CreateMasternodeView> createState() =>
@@ -100,7 +105,14 @@ class _CreateMasternodeDialogState extends ConsumerState<CreateMasternodeView> {
             ),
           ),
         ),
-        child: RegisterMasternodeForm(firoWalletId: widget.firoWalletId),
+        child: RegisterMasternodeForm(
+          firoWalletId: widget.firoWalletId,
+          onRegistrationSuccess: (txid) {
+            if (widget.popTxidOnSuccess && mounted) {
+              Navigator.of(context, rootNavigator: Util.isDesktop).pop(txid);
+            }
+          },
+        ),
       ),
     );
   }

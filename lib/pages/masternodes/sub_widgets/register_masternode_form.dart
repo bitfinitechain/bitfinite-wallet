@@ -11,6 +11,7 @@ import '../../../utilities/text_styles.dart';
 import '../../../utilities/util.dart';
 import '../../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../../wallets/wallet/impl/firo_wallet.dart';
+import '../../../widgets/conditional_parent.dart';
 import '../../../widgets/desktop/primary_button.dart';
 import '../../../widgets/desktop/secondary_button.dart';
 import '../../../widgets/rounded_container.dart';
@@ -18,9 +19,15 @@ import '../../../widgets/stack_dialog.dart';
 import '../../../widgets/textfields/adaptive_text_field.dart';
 
 class RegisterMasternodeForm extends ConsumerStatefulWidget {
-  const RegisterMasternodeForm({super.key, required this.firoWalletId});
+  const RegisterMasternodeForm({
+    super.key,
+    required this.firoWalletId,
+    required this.onRegistrationSuccess,
+  });
 
   final String firoWalletId;
+
+  final void Function(String) onRegistrationSuccess;
 
   @override
   ConsumerState<RegisterMasternodeForm> createState() =>
@@ -53,11 +60,18 @@ class _RegisterMasternodeFormState
 
   void _validate() {
     if (mounted) {
+      final percent = double.tryParse(_operatorRewardController.text);
       setState(() {
         _enableCreateButton = [
-          _ipAndPortController.text.trim().isNotEmpty,
+          _ipAndPortController.text
+                  .trim()
+                  .split(":")
+                  .where((e) => e.isNotEmpty)
+                  .length ==
+              2,
           _operatorPubKeyController.text.trim().isNotEmpty,
-          _operatorRewardController.text.trim().isNotEmpty,
+          percent != null && !percent.isNegative,
+          percent != null && percent <= 100.0,
           _payoutAddressController.text.trim().isNotEmpty,
         ].every((e) => e);
       });
@@ -70,10 +84,15 @@ class _RegisterMasternodeFormState
     final port = int.parse(parts[1]);
     final operatorPubKey = _operatorPubKeyController.text.trim();
     final votingAddress = _votingAddressController.text.trim();
-    final operatorReward = _operatorRewardController.text.trim().isNotEmpty
-        ? (double.parse(_operatorRewardController.text.trim()) * 100).floor()
-        : 0;
     final payoutAddress = _payoutAddressController.text.trim();
+
+    // according to https://github.com/cypherstack/stack_wallet/blob/c898a70f808ed5490b8dd23571f5f162d9e38158/lib/wallets/wallet/impl/firo_wallet.dart#L1064
+    // this should be a percent of 10000
+    final operatorPercent = double.parse(_operatorRewardController.text);
+    final operatorReward = (10000 * (operatorPercent / 100)).round().clamp(
+      0,
+      10000,
+    );
 
     final wallet =
         ref.read(pWallets).getWallet(widget.firoWalletId) as FiroWallet;
@@ -105,7 +124,7 @@ class _RegisterMasternodeFormState
       Exception? ex;
 
       final txId = await showLoading(
-        whileFuture: _registerMasternode(),
+        whileFutureAlt: _registerMasternode,
         context: context,
         message: "Creating and submitting masternode registration...",
         delay: const Duration(seconds: 1),
@@ -113,33 +132,25 @@ class _RegisterMasternodeFormState
       );
 
       if (mounted) {
-        final String title;
-        String message;
         if (ex != null || txId == null) {
-          message = ex?.toString().trim() ?? "Unknown error: txId=$txId";
+          String message = ex?.toString().trim() ?? "Unknown error: txId=$txId";
           const exceptionPrefix = "Exception:";
           while (message.startsWith(exceptionPrefix) &&
               message.length > exceptionPrefix.length) {
             message = message.substring(exceptionPrefix.length).trim();
           }
-          title = "Registration failed";
+          await showDialog<void>(
+            context: context,
+            builder: (_) => StackOkDialog(
+              title: "Registration failed",
+              message: message,
+              desktopPopRootNavigator: Util.isDesktop,
+              maxWidth: Util.isDesktop ? 400 : null,
+            ),
+          );
         } else {
-          title = "Masternode Registration Submitted";
-          message =
-              "Masternode registration submitted, your masternode will "
-              "appear in the list after the tx is confirmed.\n\nTransaction"
-              " ID: $txId";
+          widget.onRegistrationSuccess.call(txId);
         }
-
-        await showDialog<void>(
-          context: context,
-          builder: (_) => StackOkDialog(
-            title: title,
-            message: message,
-            desktopPopRootNavigator: Util.isDesktop,
-            maxWidth: Util.isDesktop ? 400 : null,
-          ),
-        );
       }
     }).execute;
   }
@@ -180,26 +191,23 @@ class _RegisterMasternodeFormState
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Flexible(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Flexible(
-                child: RoundedContainer(
-                  color: infoColorBG,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      infoMessage,
-                      style: STextStyles.w600_14(
-                        context,
-                      ).copyWith(color: infoColor),
-                    ),
+        Row(
+          children: [
+            Expanded(
+              child: RoundedContainer(
+                color: infoColorBG,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    infoMessage,
+                    style: STextStyles.w600_14(
+                      context,
+                    ).copyWith(color: infoColor),
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
 
         SizedBox(height: Util.isDesktop ? 24 : 16),
@@ -254,27 +262,32 @@ class _RegisterMasternodeFormState
           onChangedComprehensive: (_) => _validate(),
         ),
 
-        Util.isDesktop ? const SizedBox(height: 32) : const Spacer(),
+        Util.isDesktop
+            ? const SizedBox(height: 32)
+            : const SizedBox(height: 16),
+        if (!Util.isDesktop) const Spacer(),
 
-        Row(
-          children: [
-            Expanded(
-              child: SecondaryButton(
-                label: "Cancel",
-                onPressed: Navigator.of(context).pop,
-                buttonHeight: Util.isDesktop ? .l : null,
+        ConditionalParent(
+          condition: Util.isDesktop,
+          builder: (child) => Row(
+            children: [
+              Expanded(
+                child: SecondaryButton(
+                  label: "Cancel",
+                  onPressed: Navigator.of(context).pop,
+                  buttonHeight: .l,
+                ),
               ),
-            ),
-            SizedBox(width: Util.isDesktop ? 24 : 16),
-            Expanded(
-              child: PrimaryButton(
-                label: "Create",
-                enabled: _enableCreateButton,
-                onPressed: _enableCreateButton ? _register : null,
-                buttonHeight: Util.isDesktop ? .l : null,
-              ),
-            ),
-          ],
+              const SizedBox(width: 24),
+              Expanded(child: child),
+            ],
+          ),
+          child: PrimaryButton(
+            label: "Create",
+            enabled: _enableCreateButton,
+            onPressed: _enableCreateButton ? _register : null,
+            buttonHeight: Util.isDesktop ? .l : null,
+          ),
         ),
       ],
     );

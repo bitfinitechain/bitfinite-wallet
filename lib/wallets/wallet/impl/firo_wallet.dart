@@ -34,7 +34,7 @@ class MasternodeInfo {
   final String collateralHash;
   final int collateralIndex;
   final String collateralAddress;
-  final int operatorReward;
+  final double operatorReward;
   final String serviceAddr;
   final int servicePort;
   final int registeredHeight;
@@ -1181,7 +1181,7 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
               collateralHash: info["collateralHash"] as String,
               collateralIndex: info["collateralIndex"] as int,
               collateralAddress: info["collateralAddress"] as String,
-              operatorReward: info["operatorReward"] as int,
+              operatorReward: double.parse(info["operatorReward"].toString()),
               serviceAddr: (info["state"]["service"] as String).substring(
                 0,
                 (info["state"]["service"] as String).lastIndexOf(":"),

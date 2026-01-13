@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../themes/stack_colors.dart';
 import '../utilities/assets.dart';
+import '../utilities/text_styles.dart';
 import 'custom_buttons/app_bar_icon_button.dart';
 
 enum PageItemPosition { first, last, solo, somewhere }
@@ -117,6 +118,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
         const SizedBox(height: 10),
         Row(
           mainAxisAlignment: .center,
+          crossAxisAlignment: .center,
           children: [
             IconButton(
               color: Theme.of(
@@ -129,6 +131,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
               onPressed: _currentPage > 0 ? _firstPage : null,
               tooltip: "First page",
             ),
+            const SizedBox(width: 8),
             AppBarIconButton(
               icon: Transform.flip(
                 flipX: true,
@@ -145,6 +148,19 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
               tooltip: "Previous page",
               onPressed: _currentPage > 0 ? _previousPage : null,
             ),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                "${_currentPage + 1} / $_totalPages",
+                style: STextStyles.w500_14(context).copyWith(
+                  color: Theme.of(
+                    context,
+                  ).extension<StackColors>()!.topNavIconPrimary.withAlpha(190),
+                ),
+              ),
+            ),
+
             AppBarIconButton(
               icon: SvgPicture.asset(
                 Assets.svg.chevronRight,
@@ -158,6 +174,7 @@ class _PaginatedListViewState<T> extends State<PaginatedListView<T>> {
               tooltip: "Next page",
               onPressed: _currentPage < _totalPages - 1 ? _nextPage : null,
             ),
+            const SizedBox(width: 8),
             IconButton(
               color: Theme.of(
                 context,

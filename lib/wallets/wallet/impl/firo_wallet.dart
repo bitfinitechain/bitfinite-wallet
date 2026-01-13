@@ -947,7 +947,8 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
           fractionDigits: cryptoCurrency.fractionDigits,
         )) {
       throw Exception(
-        'Not enough funds to register a master You must have at least 1000 FIRO in your public balance.',
+        'Not enough funds to register a masternode. '
+        'You must have at least 1000 FIRO in your public balance.',
       );
     }
 

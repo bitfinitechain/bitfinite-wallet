@@ -50,6 +50,7 @@ import '../../wallets/crypto_currency/crypto_currency.dart';
 import '../../wallets/crypto_currency/intermediate/frost_currency.dart';
 import '../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../wallets/wallet/impl/bitcoin_frost_wallet.dart';
+import '../../wallets/wallet/impl/epiccash_wallet.dart';
 import '../../wallets/wallet/impl/firo_wallet.dart';
 import '../../wallets/wallet/impl/mimblewimblecoin_wallet.dart';
 import '../../wallets/wallet/impl/namecoin_wallet.dart';
@@ -90,6 +91,7 @@ import '../buy_view/buy_in_wallet_view.dart';
 import '../cashfusion/cashfusion_view.dart';
 import '../churning/churning_view.dart';
 import '../coin_control/coin_control_view.dart';
+import '../epic_finalize_view/epic_finalize_view.dart';
 import '../exchange_view/wallet_initiated_exchange_view.dart';
 import '../finalize_view/finalize_view.dart';
 import '../monkey/monkey_view.dart';
@@ -1023,6 +1025,21 @@ class _WalletViewState extends ConsumerState<WalletView> {
                             unawaited(
                               Navigator.of(context).pushNamed(
                                 FinalizeView.routeName,
+                                arguments: walletId,
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    if (wallet is EpiccashWallet)
+                      WalletNavigationBarItemData(
+                        label: "Finalize",
+                        icon: const FinalizeNavIcon(),
+                        onTap: () {
+                          if (mounted) {
+                            unawaited(
+                              Navigator.of(context).pushNamed(
+                                EpicFinalizeView.routeName,
                                 arguments: walletId,
                               ),
                             );

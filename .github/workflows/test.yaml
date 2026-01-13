@@ -3,34 +3,42 @@ name: Test
 on: [pull_request]
 jobs:
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Prepare repository
         uses: actions/checkout@v4
       - name: Install Flutter 
         uses: subosito/flutter-action@v2 
         with:
-          flutter-version: '3.19.6'
+          flutter-version: '3.38.1'
           channel: 'stable'
-      - name: Setup | Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
+
+          #      - name: Setup | Rust
+          #        uses: dtolnay/rust-toolchain@stable
+          #        with:
+          #          components: clippy
       - name: Checkout submodules
         run: git submodule update --init --recursive
+
       - name: install dependencies
         run: |
           cargo install cargo-ndk
           rustup target add x86_64-unknown-linux-gnu
-          sudo apt clean
           sudo apt update
-          sudo apt install -y unzip automake build-essential file pkg-config git python libtool libtinfo5 cmake openjdk-8-jre-headless libgit2-dev clang libncurses5-dev libncursesw5-dev zlib1g-dev llvm debhelper libclang-dev opencl-headers libssl-dev ocl-icd-opencl-dev libc6-dev-i386
-      - name: Build Epic Cash
+          sudo apt install -y meson ninja-build libglib2.0-dev libgcrypt20-dev libgirepository1.0-dev unzip automake build-essential file pkg-config git python3 libtool cmake openjdk-8-jre-headless libgit2-dev clang libncurses5-dev libncursesw5-dev zlib1g-dev llvm debhelper libclang-dev opencl-headers libssl-dev ocl-icd-opencl-dev libc6-dev-i386
+          #      - name: Build Epic Cash
+          #run: |
+          #cd crypto_plugins/flutter_libepiccash/scripts/linux/
+          #./build_all.sh
+
+      - name: Configure app
         run: |
-          cd crypto_plugins/flutter_libepiccash/scripts/linux/
-          ./build_all.sh
+          cd scripts
+          yes yes | ./build_app.sh -v "0.0.1" -b "1" -p "linux" -a "stack_wallet" || true
+
       - name: Get dependencies
         run: flutter pub get
+
       - name: Create temp files
         id: secret-file1
         run: |
@@ -85,6 +93,10 @@ jobs:
           BITCOINCASH_TEST: ${{ secrets.BITCOINCASH_TEST }}
           NAMECOIN_TEST: ${{ secrets.NAMECOIN_TEST }}
           PARTICL_TEST: ${{ secrets.PARTICL_TEST }}
+
+      - name: Verify Dart formatting
+        run: dart format --output=none --set-exit-if-changed .
+
 #      - name: Analyze
 #        run: flutter analyze
       - name: Test

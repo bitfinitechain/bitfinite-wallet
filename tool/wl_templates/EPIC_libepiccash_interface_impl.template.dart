@@ -30,7 +30,29 @@ final class _LibEpicCashInterfaceImpl extends LibEpicCashInterface {
   }
 
   @override
-  Future<({String commitId, String slateId})> createTransaction({
+  Future<({String slateId, String commitId, String slateJson})> txReceive({
+    required String wallet,
+    required String slateJson,
+  }) {
+    return LibEpiccash.txReceive(
+      wallet: wallet,
+      slateJson: slateJson,
+    );
+  }
+
+  @override
+  Future<({String slateId, String commitId})> txFinalize({
+    required String wallet,
+    required String slateJson,
+  }) {
+    return LibEpiccash.txFinalize(
+      wallet: wallet,
+      slateJson: slateJson,
+    );
+  }
+
+  @override
+  Future<({String commitId, String slateId, String slateJson})> createTransaction({
     required String wallet,
     required int amount,
     required String address,
@@ -38,6 +60,7 @@ final class _LibEpicCashInterfaceImpl extends LibEpicCashInterface {
     required String epicboxConfig,
     required int minimumConfirmations,
     required String note,
+    bool returnSlate = false,
   }) {
     return LibEpiccash.createTransaction(
       wallet: wallet,
@@ -47,6 +70,7 @@ final class _LibEpicCashInterfaceImpl extends LibEpicCashInterface {
       epicboxConfig: epicboxConfig,
       minimumConfirmations: minimumConfirmations,
       note: note,
+      returnSlate: returnSlate,
     );
   }
 
@@ -210,18 +234,35 @@ final class _LibEpicCashInterfaceImpl extends LibEpicCashInterface {
 
   @override
   void startEpicboxListener({
+    required String walletId,
     required String wallet,
     required String epicboxConfig,
   }) {
     return LibEpiccash.startEpicboxListener(
+      walletId: walletId,
       wallet: wallet,
       epicboxConfig: epicboxConfig,
     );
   }
 
   @override
-  void stopEpicboxListener() {
-    return LibEpiccash.stopEpicboxListener();
+  void stopEpicboxListener({required String walletId}) {
+    return LibEpiccash.stopEpicboxListener(walletId: walletId);
+  }
+
+  @override
+  void stopAllEpicboxListeners() {
+    return LibEpiccash.stopAllEpicboxListeners();
+  }
+
+  @override
+  bool isEpicboxListenerRunning({required String walletId}) {
+    return LibEpiccash.isEpicboxListenerRunning(walletId: walletId);
+  }
+
+  @override
+  List<String> getActiveListenerWalletIds() {
+    return LibEpiccash.getActiveListenerWalletIds();
   }
 
   @override

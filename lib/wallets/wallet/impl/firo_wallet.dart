@@ -67,6 +67,28 @@ class MasternodeInfo {
     required this.payoutAddress,
     required this.pubKeyOperator,
   });
+
+  Map<String, String> pretty() {
+    return {
+      "ProTx Hash": proTxHash,
+      "IP:Port": "$serviceAddr:$servicePort",
+      "Status": revocationReason == 0 ? "Active" : "Revoked",
+      "Registered Height": registeredHeight.toString(),
+      "Last Paid Height": lastPaidHeight.toString(),
+      "Payout Address": payoutAddress,
+      "Owner Address": ownerAddress,
+      "Voting Address": votingAddress,
+      "Operator Public Key": pubKeyOperator,
+      "Operator Reward": "$operatorReward %",
+      "Collateral Hash": collateralHash,
+      "Collateral Index": collateralIndex.toString(),
+      "Collateral Address": collateralAddress,
+      "Pose Penalty": posePenalty.toString(),
+      "Pose Revived Height": poseRevivedHeight.toString(),
+      "Pose Ban Height": poseBanHeight.toString(),
+      "Revocation Reason": revocationReason.toString(),
+    };
+  }
 }
 
 final kMasterNodeValue = Decimal.fromInt(1000); // full value (not sats)
@@ -925,7 +947,7 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
           fractionDigits: cryptoCurrency.fractionDigits,
         )) {
       throw Exception(
-        'Not enough funds to register a masternode. You must have at least 1000 FIRO in your public balance.',
+        'Not enough funds to register a master You must have at least 1000 FIRO in your public balance.',
       );
     }
 

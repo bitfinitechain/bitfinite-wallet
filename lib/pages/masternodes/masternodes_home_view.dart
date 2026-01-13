@@ -14,6 +14,7 @@ import '../../widgets/desktop/desktop_scaffold.dart';
 import '../../widgets/desktop/primary_button.dart';
 import '../../widgets/dialogs/s_dialog.dart';
 import 'create_masternode_view.dart';
+import 'sub_widgets/masternode_info_widget.dart';
 
 class MasternodesHomeView extends ConsumerStatefulWidget {
   const MasternodesHomeView({super.key, required this.walletId});
@@ -502,134 +503,8 @@ class _MasternodesHomeViewState extends ConsumerState<MasternodesHomeView> {
     showDialog<void>(
       context: context,
       barrierDismissible: true,
-      builder: (context) => _MasternodeInfoDialog(node: node),
-    );
-  }
-}
-
-class _MasternodeInfoDialog extends StatelessWidget {
-  const _MasternodeInfoDialog({required this.node});
-
-  final MasternodeInfo node;
-
-  @override
-  Widget build(BuildContext context) {
-    final stack = Theme.of(context).extension<StackColors>()!;
-    final status = node.revocationReason == 0 ? 'Active' : 'Revoked';
-
-    return AlertDialog(
-      backgroundColor: stack.popupBG,
-      title: const Text('Masternode Information'),
-      content: SizedBox(
-        width: 500,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildInfoRow(context, 'ProTx Hash', node.proTxHash),
-              _buildInfoRow(
-                context,
-                'IP:Port',
-                '${node.serviceAddr}:${node.servicePort}',
-              ),
-              _buildInfoRow(context, 'Status', status),
-              _buildInfoRow(
-                context,
-                'Registered Height',
-                node.registeredHeight.toString(),
-              ),
-              _buildInfoRow(
-                context,
-                'Last Paid Height',
-                node.lastPaidHeight.toString(),
-              ),
-              _buildInfoRow(context, 'Payout Address', node.payoutAddress),
-              _buildInfoRow(context, 'Owner Address', node.ownerAddress),
-              _buildInfoRow(context, 'Voting Address', node.votingAddress),
-              _buildInfoRow(
-                context,
-                'Operator Public Key',
-                node.pubKeyOperator,
-              ),
-              _buildInfoRow(
-                context,
-                'Operator Reward',
-                '${node.operatorReward / 100} %',
-              ),
-              _buildInfoRow(context, 'Collateral Hash', node.collateralHash),
-              _buildInfoRow(
-                context,
-                'Collateral Index',
-                node.collateralIndex.toString(),
-              ),
-              _buildInfoRow(
-                context,
-                'Collateral Address',
-                node.collateralAddress,
-              ),
-              _buildInfoRow(
-                context,
-                'Pose Penalty',
-                node.posePenalty.toString(),
-              ),
-              _buildInfoRow(
-                context,
-                'Pose Revived Height',
-                node.poseRevivedHeight.toString(),
-              ),
-              _buildInfoRow(
-                context,
-                'Pose Ban Height',
-                node.poseBanHeight.toString(),
-              ),
-              _buildInfoRow(
-                context,
-                'Revocation Reason',
-                node.revocationReason.toString(),
-              ),
-            ],
-          ),
-        ),
-      ),
-      actions: [
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop(),
-          style: FilledButton.styleFrom(
-            backgroundColor: stack.buttonBackPrimary,
-            foregroundColor: stack.buttonTextPrimary,
-          ),
-          child: const Text('Close'),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoRow(BuildContext context, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: STextStyles.w600_14(context).copyWith(
-              color: Theme.of(context).extension<StackColors>()!.textSubtitle1,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Theme.of(
-                context,
-              ).extension<StackColors>()!.textFieldDefaultBG,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(value, style: STextStyles.w500_12(context)),
-          ),
-        ],
+      builder: (context) => SDialog(
+        child: SizedBox(width: 600, child: MasternodeInfoWidget(info: node)),
       ),
     );
   }

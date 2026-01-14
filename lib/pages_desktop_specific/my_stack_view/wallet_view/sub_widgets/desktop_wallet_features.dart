@@ -20,6 +20,7 @@ import 'package:flutter_svg/svg.dart';
 import '../../../../app_config.dart';
 import '../../../../models/keys/view_only_wallet_data.dart';
 import '../../../../notifications/show_flush_bar.dart';
+import '../../../../pages/masternodes/masternodes_home_view.dart';
 import '../../../../pages/monkey/monkey_view.dart';
 import '../../../../pages/namecoin_names/namecoin_names_home_view.dart';
 import '../../../../pages/paynym/paynym_claim_view.dart';
@@ -27,7 +28,6 @@ import '../../../../pages/paynym/paynym_home_view.dart';
 import '../../../../pages/salvium_stake/salvium_create_stake_view.dart';
 import '../../../../pages/signing/signing_view.dart';
 import '../../../../pages/spark_names/spark_names_home_view.dart';
-import '../../../../pages/masternodes/masternodes_home_view.dart';
 import '../../../../providers/desktop/current_desktop_menu_item.dart';
 import '../../../../providers/global/paynym_api_provider.dart';
 import '../../../../providers/providers.dart';
@@ -504,9 +504,8 @@ class _DesktopWalletFeaturesState extends ConsumerState<DesktopWalletFeatures> {
       if (wallet is SignVerifyInterface && !isViewOnly)
         (WalletFeature.sign, Assets.svg.pencil, _onSignPressed),
 
-      if (!isViewOnly && wallet is FiroWallet)
-        (WalletFeature.masternodes, Assets.svg.recycle, _onMasternodesPressed),
-
+      // if ( !isViewOnly && wallet is FiroWallet)
+      //   (WalletFeature.masternodes, Assets.svg.recycle, _onMasternodesPressed),
       if (showCoinControl)
         (
           WalletFeature.coinControl,

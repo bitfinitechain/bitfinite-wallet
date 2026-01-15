@@ -421,7 +421,8 @@ class _NewWalletOptionsViewState extends ConsumerState<NewWalletOptionsView> {
                         .state,
                     mnemonicPassphrase: passwordController.text,
                     convertToViewOnly: _convertToViewOnly,
-                    convertToViewOnlySpark: _convertToViewOnly && _firoFlag,
+                    convertToViewOnlySpark:
+                        widget.coin is Firo && _convertToViewOnly && _firoFlag,
                   );
                 } else {
                   ref.read(pNewWalletOptions.notifier).state = null;

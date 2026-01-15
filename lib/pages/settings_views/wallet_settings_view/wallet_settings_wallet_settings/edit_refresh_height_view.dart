@@ -110,7 +110,13 @@ class _EditRefreshHeightViewState extends ConsumerState<EditRefreshHeightView> {
           .restoreHeight
           .toString();
     } else if (wallet is CryptonoteWallet && wallet.wallet != null) {
-      _controller.text = wallet.getRefreshFromBlockHeight().toString();
+      wallet.getRefreshFromBlockHeight().then((height) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _controller.text = height.toString();
+          }
+        });
+      });
     } else {
       _controller.text = ref
           .read(pWalletInfo(widget.walletId))

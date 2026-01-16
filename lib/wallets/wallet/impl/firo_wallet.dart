@@ -999,9 +999,7 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
     final ipParts = ip
         .split('.')
         .map((e) => int.parse(e))
-        .toList()
-        .reversed
-        .toList(); // network byte order
+        .toList();
     if (ipParts.length != 4) {
       throw Exception("Invalid IP address: $ip");
     }
@@ -1017,11 +1015,12 @@ class FiroWallet<T extends ElectrumXCurrencyInterface> extends Bip39HDWallet<T>
     registrationTx.add(ipParts);
 
     // addr.port (2 bytes)
-    if (port < 0 || port > 65535) {
+    if (port < 1 || port > 65535) {
       throw Exception("Invalid port: $port");
     }
     registrationTx.add(
-      (ByteData(2)..setInt16(0, port, Endian.little)).buffer.asUint8List(),
+      // network byte order
+      (ByteData(2)..setInt16(0, port, Endian.big)).buffer.asUint8List(),
     );
 
     // keyIDOwner (20 bytes)

@@ -108,7 +108,7 @@ Future<R> computeWithLibSparkLogging<M, R>(
 
 mixin SparkInterface<T extends ElectrumXCurrencyInterface>
     on Bip39HDWallet<T>, ElectrumXInterface<T> {
-  late Address _currentSparkAddress;
+  Address? _currentSparkAddress;
 
   String? _viewKeyHex;
   String? get sparkViewKey => _viewKeyHex!;
@@ -367,7 +367,7 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
   Future<Address?> getCurrentReceivingSparkAddress() async {
     try {
       // if _currentSparkAddress is not initialized, this will throw.
-      return _currentSparkAddress;
+      return _currentSparkAddress!;
     } catch (e) {
       return await mainDB.isar.addresses
           .where()
@@ -380,7 +380,10 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
   }
 
   Future<Address> generateNextSparkAddress({required bool saveToDB}) async {
-    int diversifier = _currentSparkAddress.derivationIndex + 1;
+    final currentDiversifier =
+        (await getCurrentReceivingAddress())?.derivationIndex;
+    // if current is null, start at index 1
+    int diversifier = (currentDiversifier ?? 0) + 1;
     if (diversifier == libSpark.sparkChange) {
       diversifier++; // ensure only receiving addresses are shown
     }
@@ -1423,7 +1426,9 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
       //  generating every time) arbitrary number of addresses
       const lookAheadCount = 100;
 
-      int diversifier = _currentSparkAddress.derivationIndex;
+      // force unwrap optional should be fine here. If not then the
+      // eclosing function is being called somewhere it probably shouldn't be.
+      int diversifier = _currentSparkAddress!.derivationIndex;
       final maxDiversifier = diversifier + lookAheadCount;
 
       while (diversifier < maxDiversifier) {

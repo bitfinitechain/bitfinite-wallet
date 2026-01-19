@@ -280,7 +280,7 @@ class _SendFromCardState extends ConsumerState<SendFromCard> {
 
       // if not firo then do normal send
       if (shouldSendPublicFiroFunds == null) {
-        final memo = coin is Stellar
+        final memo = coin is Stellar || coin is Solana
             ? trade.payInExtraId.isNotEmpty
                   ? trade.payInExtraId
                   : null

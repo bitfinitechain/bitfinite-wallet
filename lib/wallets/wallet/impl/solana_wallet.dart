@@ -74,7 +74,10 @@ class SolanaWallet extends Bip39Wallet<Solana> {
     return BigInt.from(balance!.value);
   }
 
-  Future<BigInt?> _getEstimatedNetworkFee(Amount transferAmount) async {
+  Future<BigInt?> _getEstimatedNetworkFee(
+    Amount transferAmount,
+    String? memo,
+  ) async {
     checkClient();
     final latestBlockhash = await _rpcClient?.getLatestBlockhash();
     final pubKey = (await _getKeyPair()).publicKey;
@@ -82,6 +85,7 @@ class SolanaWallet extends Bip39Wallet<Solana> {
     final compiledMessage =
         Message(
           instructions: [
+            if (memo != null) MemoInstruction(signers: const [], memo: memo),
             SystemInstruction.transfer(
               fundingAccount: pubKey,
               recipientAccount: pubKey,
@@ -140,7 +144,7 @@ class SolanaWallet extends Bip39Wallet<Solana> {
         throw Exception("Insufficient available balance");
       }
 
-      final feeAmount = await _getEstimatedNetworkFee(sendAmount);
+      final feeAmount = await _getEstimatedNetworkFee(sendAmount, txData.memo);
       if (feeAmount == null) {
         throw Exception(
           "Failed to get fees, please check your node connection.",
@@ -198,6 +202,8 @@ class SolanaWallet extends Bip39Wallet<Solana> {
       );
       final message = Message(
         instructions: [
+          if (txData.memo != null)
+            MemoInstruction(signers: const [], memo: txData.memo!),
           SystemInstruction.transfer(
             fundingAccount: keyPair.publicKey,
             recipientAccount: recipientPubKey,
@@ -301,6 +307,7 @@ class SolanaWallet extends Bip39Wallet<Solana> {
         Decimal.one, // 1 SOL.
         fractionDigits: cryptoCurrency.fractionDigits,
       ),
+      null, // ?
     );
     if (baseFee == null) {
       throw Exception("Failed to get fees, please check your node connection.");

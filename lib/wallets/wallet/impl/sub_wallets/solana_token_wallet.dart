@@ -215,10 +215,10 @@ class SolanaTokenWallet extends Wallet {
       }
 
       final TokenProgramType tokenProgram =
-          tokenProgramId != 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA'
-              && tokenProgramId.startsWith('Token')
-              ? TokenProgramType.token2022Program
-              : TokenProgramType.tokenProgram;
+          tokenProgramId != 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA' &&
+              tokenProgramId.startsWith('Token')
+          ? TokenProgramType.token2022Program
+          : TokenProgramType.tokenProgram;
 
       // ignore: unused_local_variable
       final instruction = TokenInstruction.transferChecked(
@@ -238,14 +238,12 @@ class SolanaTokenWallet extends Wallet {
             ownerPublicKey: keyPair.publicKey,
             amount: txData.amount!.raw.toInt(),
             rpcClient: rpcClient,
+            memo: txData.memo,
           ) ??
           5000;
 
       return txData.copyWith(
-        fee: Amount(
-          rawValue: BigInt.from(feeEstimate),
-          fractionDigits: 9,
-        ),
+        fee: Amount(rawValue: BigInt.from(feeEstimate), fractionDigits: 9),
         solanaRecipientTokenAccount: recipientTokenAccount,
       );
     } catch (e, s) {
@@ -340,10 +338,10 @@ class SolanaTokenWallet extends Wallet {
 
       // Build the TransferChecked instruction.
       final TokenProgramType tokenProgram =
-          tokenProgramId != 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA'
-              && tokenProgramId.startsWith('Token') // Token-2022 variant.
-              ? TokenProgramType.token2022Program
-              : TokenProgramType.tokenProgram;
+          tokenProgramId != 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA' &&
+              tokenProgramId.startsWith('Token') // Token-2022 variant.
+          ? TokenProgramType.token2022Program
+          : TokenProgramType.tokenProgram;
 
       final instruction = TokenInstruction.transferChecked(
         source: senderTokenAccountKey,
@@ -356,7 +354,13 @@ class SolanaTokenWallet extends Wallet {
       );
 
       // Create message.
-      final message = Message(instructions: [instruction]);
+      final message = Message(
+        instructions: [
+          if (txData.memo != null)
+            MemoInstruction(signers: const [], memo: txData.memo!),
+          instruction,
+        ],
+      );
 
       // Sign and broadcast tx.
       final txid = await rpcClient.signAndSendTransaction(message, [keyPair]);
@@ -896,6 +900,7 @@ class SolanaTokenWallet extends Wallet {
     required Ed25519HDPublicKey ownerPublicKey,
     required int amount,
     required RpcClient rpcClient,
+    required String? memo,
   }) async {
     try {
       // Get latest blockhash for message compilation.
@@ -910,7 +915,8 @@ class SolanaTokenWallet extends Wallet {
           tokenMint,
           encoding: Encoding.jsonParsed,
         );
-        tokenProgramId = mintInfo.value?.owner ??
+        tokenProgramId =
+            mintInfo.value?.owner ??
             'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA';
       } catch (e) {
         tokenProgramId = 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA';
@@ -919,10 +925,10 @@ class SolanaTokenWallet extends Wallet {
       // Build the TransferChecked instruction.
       // Determine which token program type to use based on the queried owner.
       final TokenProgramType tokenProgram =
-          tokenProgramId != 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA'
-              && tokenProgramId.startsWith('Token')
-              ? TokenProgramType.token2022Program
-              : TokenProgramType.tokenProgram;
+          tokenProgramId != 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA' &&
+              tokenProgramId.startsWith('Token')
+          ? TokenProgramType.token2022Program
+          : TokenProgramType.tokenProgram;
 
       final instruction = TokenInstruction.transferChecked(
         source: senderTokenAccountKey,
@@ -935,10 +941,16 @@ class SolanaTokenWallet extends Wallet {
       );
 
       // Compile the message with the blockhash.
-      final compiledMessage = Message(instructions: [instruction]).compile(
-        recentBlockhash: latestBlockhash.value.blockhash,
-        feePayer: ownerPublicKey,
-      );
+      final compiledMessage =
+          Message(
+            instructions: [
+              if (memo != null) MemoInstruction(signers: const [], memo: memo),
+              instruction,
+            ],
+          ).compile(
+            recentBlockhash: latestBlockhash.value.blockhash,
+            feePayer: ownerPublicKey,
+          );
 
       // Get the fee for this compiled message.
       final feeEstimate = await rpcClient.getFeeForMessage(

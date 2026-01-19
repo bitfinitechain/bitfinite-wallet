@@ -27,9 +27,9 @@ import '../../utilities/address_utils.dart';
 import '../../utilities/amount/amount.dart';
 import '../../utilities/amount/amount_formatter.dart';
 import '../../utilities/amount/amount_input_formatter.dart';
+import '../../utilities/assets.dart';
 import '../../utilities/barcode_scanner_interface.dart';
 import '../../utilities/clipboard_interface.dart';
-import '../../utilities/assets.dart';
 import '../../utilities/constants.dart';
 import '../../utilities/enums/fee_rate_type_enum.dart';
 import '../../utilities/logger.dart';
@@ -82,6 +82,7 @@ class _SolTokenSendViewState extends ConsumerState<SolTokenSendView> {
   late final ClipboardInterface clipboard;
 
   late TextEditingController sendToController;
+  late TextEditingController memoController;
   late TextEditingController cryptoAmountController;
   late TextEditingController baseAmountController;
   late TextEditingController noteController;
@@ -93,6 +94,7 @@ class _SolTokenSendViewState extends ConsumerState<SolTokenSendView> {
   final _noteFocusNode = FocusNode();
   final _cryptoFocus = FocusNode();
   final _baseFocus = FocusNode();
+  final _memoFocus = FocusNode();
 
   Amount? _amountToSend;
   Amount? _cachedAmountToSend;
@@ -467,6 +469,7 @@ class _SolTokenSendViewState extends ConsumerState<SolTokenSendView> {
               addressType: AddressType.solana,
             ),
           ],
+          memo: memoController.text.isEmpty ? null : memoController.text,
           feeRateType: ref.read(feeRateTypeMobileStateProvider),
           note: noteController.text,
           tokenMint: tokenMint,
@@ -542,6 +545,7 @@ class _SolTokenSendViewState extends ConsumerState<SolTokenSendView> {
 
   void clearSendForm() {
     sendToController.text = "";
+    memoController.text = "";
     cryptoAmountController.text = "";
     baseAmountController.text = "";
     noteController.text = "";
@@ -568,6 +572,7 @@ class _SolTokenSendViewState extends ConsumerState<SolTokenSendView> {
     clipboard = widget.clipboard;
 
     sendToController = TextEditingController();
+    memoController = TextEditingController();
     cryptoAmountController = TextEditingController();
     baseAmountController = TextEditingController();
     noteController = TextEditingController();
@@ -598,6 +603,7 @@ class _SolTokenSendViewState extends ConsumerState<SolTokenSendView> {
     baseAmountController.removeListener(_baseAmountChanged);
 
     sendToController.dispose();
+    memoController.dispose();
     cryptoAmountController.dispose();
     baseAmountController.dispose();
     noteController.dispose();
@@ -607,6 +613,7 @@ class _SolTokenSendViewState extends ConsumerState<SolTokenSendView> {
     _addressFocusNode.dispose();
     _cryptoFocus.dispose();
     _baseFocus.dispose();
+    _memoFocus.dispose();
     super.dispose();
   }
 
@@ -935,6 +942,95 @@ class _SolTokenSendViewState extends ConsumerState<SolTokenSendView> {
                                   );
                                 }
                               },
+                            ),
+                            const SizedBox(height: 10),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(
+                                Constants.size.circularBorderRadius,
+                              ),
+                              child: TextField(
+                                key: const Key("sendViewMemoFieldKey"),
+                                controller: memoController,
+                                readOnly: false,
+                                autocorrect: false,
+                                enableSuggestions: false,
+                                focusNode: _memoFocus,
+                                style: STextStyles.field(context),
+                                onChanged: (_) {
+                                  setState(() {});
+                                },
+                                decoration:
+                                    standardInputDecoration(
+                                      "Enter memo (optional)",
+                                      _memoFocus,
+                                      context,
+                                    ).copyWith(
+                                      counterText: '',
+                                      contentPadding: const EdgeInsets.only(
+                                        left: 16,
+                                        top: 6,
+                                        bottom: 8,
+                                        right: 5,
+                                      ),
+                                      suffixIcon: Padding(
+                                        padding: memoController.text.isEmpty
+                                            ? const EdgeInsets.only(right: 8)
+                                            : const EdgeInsets.only(right: 0),
+                                        child: UnconstrainedBox(
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                            children: [
+                                              memoController.text.isNotEmpty
+                                                  ? TextFieldIconButton(
+                                                      semanticsLabel:
+                                                          "Clear Button. Clears The Memo Field Input.",
+                                                      key: const Key(
+                                                        "sendSolTokenViewClearMemoFieldButtonKey",
+                                                      ),
+                                                      onTap: () {
+                                                        memoController.text =
+                                                            "";
+                                                        setState(() {});
+                                                      },
+                                                      child: const XIcon(),
+                                                    )
+                                                  : TextFieldIconButton(
+                                                      semanticsLabel:
+                                                          "Paste Button. Pastes From Clipboard To Memo Field Input.",
+                                                      key: const Key(
+                                                        "sendSolTokenViewPasteMemoFieldButtonKey",
+                                                      ),
+                                                      onTap: () async {
+                                                        final ClipboardData?
+                                                        data = await clipboard
+                                                            .getData(
+                                                              Clipboard
+                                                                  .kTextPlain,
+                                                            );
+                                                        if (data?.text !=
+                                                                null &&
+                                                            data!
+                                                                .text!
+                                                                .isNotEmpty) {
+                                                          final String content =
+                                                              data.text!.trim();
+
+                                                          memoController.text =
+                                                              content.trim();
+
+                                                          setState(() {});
+                                                        }
+                                                      },
+                                                      child:
+                                                          const ClipboardIcon(),
+                                                    ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                              ),
                             ),
                             const SizedBox(height: 12),
                             Row(

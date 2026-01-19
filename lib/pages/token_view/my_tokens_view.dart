@@ -222,21 +222,23 @@ class _MyTokensViewState extends ConsumerState<MyTokensView> {
           Expanded(
             child: Builder(
               builder: (context) {
-                final wallet = ref.watch(pWallets).getWallet(widget.walletId);
-                final tokenAddresses = ref.watch(
-                  pWalletTokenAddresses(widget.walletId),
-                );
+                final wallet = ref.read(pWallets).getWallet(widget.walletId);
+
                 if (wallet is SolanaWallet) {
                   return SolanaTokensList(
                     walletId: widget.walletId,
                     searchTerm: _searchString,
-                    tokenMints: tokenAddresses,
+                    tokenMints: ref.watch(
+                      pWalletTokenAddresses(widget.walletId),
+                    ),
                   );
                 } else {
                   return MyTokensList(
                     walletId: widget.walletId,
                     searchTerm: _searchString,
-                    tokenContracts: tokenAddresses,
+                    tokenContracts: ref.watch(
+                      pWalletTokenAddresses(widget.walletId),
+                    ),
                   );
                 }
               },

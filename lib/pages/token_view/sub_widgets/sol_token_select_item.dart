@@ -24,6 +24,7 @@ import '../../../wallets/isar/providers/solana/current_sol_token_wallet_provider
 import '../../../wallets/isar/providers/solana/sol_token_balance_provider.dart';
 import '../../../wallets/wallet/impl/solana_wallet.dart';
 import '../../../wallets/wallet/impl/sub_wallets/solana_token_wallet.dart';
+import '../../../wallets/wallet/wallet.dart';
 import '../../../widgets/desktop/primary_button.dart';
 import '../../../widgets/dialogs/basic_dialog.dart';
 import '../../../widgets/icon_widgets/sol_token_icon.dart';
@@ -103,10 +104,12 @@ class _SolTokenSelectItemState extends ConsumerState<SolTokenSelectItem> {
       return;
     }
 
-    ref.read(solanaTokenServiceStateProvider.state).state = SolanaTokenWallet(
-      solanaWallet,
-      widget.token,
-    );
+    ref.read(solanaTokenServiceStateProvider.state).state =
+        Wallet.loadSolTokenWallet(
+              solWallet: solanaWallet,
+              contract: widget.token,
+            )
+            as SolanaTokenWallet;
 
     final success = await showLoading<bool>(
       whileFuture: _loadTokenWallet(context, ref),

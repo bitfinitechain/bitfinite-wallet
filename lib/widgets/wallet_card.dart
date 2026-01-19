@@ -108,10 +108,12 @@ class SimpleWalletCard extends ConsumerWidget {
     final old = ref.read(solanaTokenServiceStateProvider);
     // exit previous if there is one
     unawaited(old?.exit());
-    ref.read(solanaTokenServiceStateProvider.state).state = SolanaTokenWallet(
-      wallet as SolanaWallet,
-      token,
-    );
+    ref.read(solanaTokenServiceStateProvider.state).state =
+        Wallet.loadSolTokenWallet(
+              solWallet: wallet as SolanaWallet,
+              contract: token,
+            )
+            as SolanaTokenWallet;
 
     try {
       await ref.read(pCurrentSolanaTokenWallet)!.init();

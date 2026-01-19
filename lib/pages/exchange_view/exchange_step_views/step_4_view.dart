@@ -19,7 +19,6 @@ import '../../../app_config.dart';
 import '../../../models/exchange/incomplete_exchange.dart';
 import '../../../providers/providers.dart';
 import '../../../route_generator.dart';
-import '../../../services/wallets.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/amount/amount.dart';
 import '../../../utilities/amount/amount_formatter.dart';
@@ -29,12 +28,11 @@ import '../../../utilities/constants.dart';
 import '../../../utilities/enums/fee_rate_type_enum.dart';
 import '../../../utilities/logger.dart';
 import '../../../utilities/text_styles.dart';
+import '../../../utilities/util.dart';
 import '../../../wallets/crypto_currency/crypto_currency.dart';
 import '../../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../../wallets/models/tx_data.dart';
 import '../../../wallets/wallet/impl/firo_wallet.dart';
-import '../../../wallets/wallet/intermediate/external_wallet.dart';
-import '../../../wallets/wallet/wallet_mixin_interfaces/mweb_interface.dart';
 import '../../../widgets/background.dart';
 import '../../../widgets/custom_buttons/app_bar_icon_button.dart';
 import '../../../widgets/custom_buttons/simple_copy_button.dart';
@@ -76,29 +74,6 @@ class _Step4ViewState extends ConsumerState<Step4View> {
   String _statusString = "New";
 
   Timer? _statusTimer;
-
-  bool isWalletCoinAndCanSendWithoutWalletOpened(
-    String ticker,
-    Wallets walletsInstance,
-  ) {
-    try {
-      final coin = AppConfig.getCryptoCurrencyForTicker(ticker);
-      return walletsInstance.wallets
-          .where(
-            (e) =>
-                e.info.coin == coin &&
-                (e is! ExternalWallet ||
-                    e is MwebInterface), // ltc mweb is external but swaps
-            // should not use mweb, hence the odd logic check here
-          )
-          .isNotEmpty;
-    } catch (e, s) {
-      Logging.instance.i(
-        "isWalletCoinAndCanSendWithoutWalletOpened($ticker): $e\n$s",
-      );
-      return false;
-    }
-  }
 
   Future<void> _updateStatus() async {
     final statusResponse = await ref
@@ -179,10 +154,11 @@ class _Step4ViewState extends ConsumerState<Step4View> {
     model = widget.model;
     clipboard = widget.clipboard;
 
-    isWalletCoinAndCanSend = isWalletCoinAndCanSendWithoutWalletOpened(
-      model.trade!.payInCurrency,
-      ref.read(pWallets),
-    );
+    isWalletCoinAndCanSend =
+        Util.isWalletCoinAndCanSendWithoutWalletOpenedIgnoringXMR(
+          model.trade!.payInCurrency,
+          ref.read(pWallets).wallets,
+        );
 
     _statusTimer = Timer.periodic(const Duration(seconds: 60), (_) {
       _updateStatus();

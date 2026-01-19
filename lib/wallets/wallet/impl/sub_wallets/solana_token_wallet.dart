@@ -21,6 +21,7 @@ import '../../../../models/isar/models/isar_models.dart';
 import '../../../../models/paymint/fee_object_model.dart';
 import '../../../../services/solana/solana_token_api.dart';
 import '../../../../utilities/amount/amount.dart';
+import '../../../../utilities/extensions/extensions.dart';
 import '../../../../utilities/logger.dart';
 import '../../../models/tx_data.dart';
 import '../../wallet.dart';
@@ -866,16 +867,16 @@ class SolanaTokenWallet extends Wallet {
       final tokenProgramPubkey = Ed25519HDPublicKey.fromBase58(tokenProgramId);
 
       const associatedTokenProgramId =
-          'ATokenGPvbdGVqstVQmcLsNZAqeEjlCoquUSjfJ5c';
+          'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
       final associatedTokenProgramPubkey = Ed25519HDPublicKey.fromBase58(
         associatedTokenProgramId,
       );
 
       final seeds = [
-        'account'.codeUnits,
-        ownerPubkey.toBase58().codeUnits,
-        tokenProgramPubkey.toBase58().codeUnits,
-        mintPubkey.toBase58().codeUnits,
+        'account'.toUint8ListFromUtf8,
+        ownerPubkey.toBase58().toUint8ListFromBase58Encoded,
+        tokenProgramPubkey.toBase58().toUint8ListFromBase58Encoded,
+        mintPubkey.toBase58().toUint8ListFromBase58Encoded,
       ];
 
       final ataAddress = await Ed25519HDPublicKey.findProgramAddress(

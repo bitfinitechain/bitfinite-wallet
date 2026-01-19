@@ -63,6 +63,7 @@ import 'pages/churning/churning_progress_view.dart';
 import 'pages/churning/churning_view.dart';
 import 'pages/coin_control/coin_control_view.dart';
 import 'pages/coin_control/utxo_details_view.dart';
+import 'pages/epic_finalize_view/epic_finalize_view.dart';
 import 'pages/exchange_view/choose_from_stack_view.dart';
 import 'pages/exchange_view/edit_trade_note_view.dart';
 import 'pages/exchange_view/exchange_step_views/step_1_view.dart';
@@ -72,7 +73,6 @@ import 'pages/exchange_view/exchange_step_views/step_4_view.dart';
 import 'pages/exchange_view/send_from_view.dart';
 import 'pages/exchange_view/trade_details_view.dart';
 import 'pages/exchange_view/wallet_initiated_exchange_view.dart';
-import 'pages/epic_finalize_view/epic_finalize_view.dart';
 import 'pages/finalize_view/finalize_view.dart';
 import 'pages/generic/single_field_edit_view.dart';
 import 'pages/home_view/home_view.dart';
@@ -381,13 +381,10 @@ class RouteGenerator {
         return _routeError("${settings.name} invalid args: ${args.toString()}");
 
       case DesktopSolTokenView.routeName:
-        if (args is ({String walletId, String tokenMint})) {
+        if (args is String) {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
-            builder: (_) => DesktopSolTokenView(
-              walletId: args.walletId,
-              tokenMint: args.tokenMint,
-            ),
+            builder: (_) => DesktopSolTokenView(walletId: args),
             settings: RouteSettings(name: settings.name),
           );
         }
@@ -2649,22 +2646,17 @@ class RouteGenerator {
         return _routeError("${settings.name} invalid args: ${args.toString()}");
 
       case SolTokenView.routeName:
-        if (args is ({String walletId, String tokenMint})) {
+        if (args is String) {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
-            builder: (_) => SolTokenView(
-              walletId: args.walletId,
-              tokenMint: args.tokenMint,
-            ),
+            builder: (_) => SolTokenView(walletId: args),
             settings: RouteSettings(name: settings.name),
           );
-        } else if (args
-            is ({String walletId, String tokenMint, bool popPrevious})) {
+        } else if (args is ({String walletId, bool popPrevious})) {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => SolTokenView(
               walletId: args.walletId,
-              tokenMint: args.tokenMint,
               popPrevious: args.popPrevious,
             ),
             settings: RouteSettings(name: settings.name),

@@ -11,7 +11,6 @@ import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:tuple/tuple.dart';
 
 import '../../../pages/send_view/sub_widgets/transaction_fee_selection_sheet.dart';
 import '../../../pages/token_view/solana_token_contract_details_view.dart';
@@ -26,8 +25,10 @@ import '../../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../../widgets/coin_ticker_tag.dart';
 import '../../../widgets/custom_buttons/blue_text_button.dart';
 import '../../../widgets/desktop/desktop_app_bar.dart';
+import '../../../widgets/desktop/desktop_dialog_close_button.dart';
 import '../../../widgets/desktop/desktop_scaffold.dart';
 import '../../../widgets/desktop/secondary_button.dart';
+import '../../../widgets/dialogs/s_dialog.dart';
 import '../../../widgets/icon_widgets/sol_token_icon.dart';
 import '../../../widgets/rounded_white_container.dart';
 import 'sub_widgets/desktop_wallet_features.dart';
@@ -36,17 +37,11 @@ import 'sub_widgets/my_wallet.dart';
 
 /// [eventBus] should only be set during testing.
 class DesktopSolTokenView extends ConsumerStatefulWidget {
-  const DesktopSolTokenView({
-    super.key,
-    required this.walletId,
-    required this.tokenMint,
-    this.eventBus,
-  });
+  const DesktopSolTokenView({super.key, required this.walletId, this.eventBus});
 
   static const String routeName = "/desktopSolTokenView";
 
   final String walletId;
-  final String tokenMint;
   final EventBus? eventBus;
 
   @override
@@ -108,35 +103,73 @@ class _DesktopTokenViewState extends ConsumerState<DesktopSolTokenView> {
         ),
         center: Expanded(
           flex: 4,
-          child: Consumer(
-            builder: (context, ref, _) {
-              final tokenWallet = ref.watch(pCurrentSolanaTokenWallet);
-              final tokenName = tokenWallet?.tokenName ?? "Token";
-              final tokenSymbol = tokenWallet?.tokenSymbol ?? "SOL";
-              return GestureDetector(
-                onTap: () {
-                  Navigator.of(context).pushNamed(
-                    SolanaTokenContractDetailsView.routeName,
-                    arguments: Tuple2(
-                      widget.tokenMint,
-                      widget.walletId,
+          child: GestureDetector(
+            onTap: () {
+              showDialog<void>(
+                context: context,
+                builder: (context) => SDialog(
+                  child: SizedBox(
+                    width: 580,
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 32),
+                              child: Text(
+                                "Token details",
+                                style: STextStyles.desktopH3(context),
+                              ),
+                            ),
+                            const DesktopDialogCloseButton(),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 32),
+                          child: SolanaTokenContractDetailsView(
+                            tokenMint: ref
+                                .read(pCurrentSolanaTokenWallet)!
+                                .tokenMint,
+                            walletId: widget.walletId,
+                          ),
+                        ),
+                      ],
                     ),
-                  );
-                },
-                child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: Row(
-                    children: [
-                      SolTokenIcon(mintAddress: widget.tokenMint, size: 32),
-                      const SizedBox(width: 12),
-                      Text(tokenName, style: STextStyles.desktopH3(context)),
-                      const SizedBox(width: 12),
-                      CoinTickerTag(ticker: tokenSymbol),
-                    ],
                   ),
                 ),
               );
             },
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: Row(
+                children: [
+                  SolTokenIcon(
+                    mintAddress: ref.watch(
+                      pCurrentSolanaTokenWallet.select(
+                        (value) => value!.tokenMint,
+                      ),
+                    ),
+                    size: 32,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    ref.watch(
+                      pCurrentSolanaTokenWallet.select(
+                        (value) => value!.tokenName,
+                      ),
+                    ),
+                    style: STextStyles.desktopH3(context),
+                  ),
+                  const SizedBox(width: 12),
+                  CoinTickerTag(
+                    ticker: ref.watch(
+                      pWalletCoin(widget.walletId).select((s) => s.ticker),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
         useSpacers: false,
@@ -150,7 +183,14 @@ class _DesktopTokenViewState extends ConsumerState<DesktopSolTokenView> {
               padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  SolTokenIcon(mintAddress: widget.tokenMint, size: 40),
+                  SolTokenIcon(
+                    mintAddress: ref.watch(
+                      pCurrentSolanaTokenWallet.select(
+                        (value) => value!.tokenMint,
+                      ),
+                    ),
+                    size: 40,
+                  ),
                   const SizedBox(width: 10),
                   DesktopWalletSummary(
                     walletId: widget.walletId,
@@ -217,7 +257,11 @@ class _DesktopTokenViewState extends ConsumerState<DesktopSolTokenView> {
                     width: sendReceiveColumnWidth,
                     child: MyWallet(
                       walletId: widget.walletId,
-                      contractAddress: widget.tokenMint,
+                      contractAddress: ref.watch(
+                        pCurrentSolanaTokenWallet.select(
+                          (value) => value!.tokenMint,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),

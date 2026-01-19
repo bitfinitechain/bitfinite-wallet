@@ -33,7 +33,6 @@ class SolTokenView extends ConsumerStatefulWidget {
   const SolTokenView({
     super.key,
     required this.walletId,
-    required this.tokenMint,
     this.popPrevious = false,
     this.eventBus,
   });
@@ -41,7 +40,6 @@ class SolTokenView extends ConsumerStatefulWidget {
   static const String routeName = "/sol_token";
 
   final String walletId;
-  final String tokenMint;
   final bool popPrevious;
   final EventBus? eventBus;
 
@@ -97,34 +95,37 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
               },
             ),
             centerTitle: true,
-            title: Consumer(
-              builder: (context, ref, _) {
-                final tokenWallet = ref.watch(pCurrentSolanaTokenWallet);
-                final tokenName = tokenWallet?.tokenName ?? "Token";
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Expanded(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SolTokenIcon(mintAddress: widget.tokenMint, size: 24),
-                          const SizedBox(width: 10),
-                          Flexible(
-                            child: Text(
-                              tokenName,
-                              style: STextStyles.navBarTitle(context),
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SolTokenIcon(
+                        mintAddress: ref.watch(
+                          pCurrentSolanaTokenWallet.select((s) => s!.tokenMint),
+                        ),
+                        size: 24,
+                      ),
+                      const SizedBox(width: 10),
+                      Flexible(
+                        child: Text(
+                          ref.watch(
+                            pCurrentSolanaTokenWallet.select(
+                              (s) => s!.tokenName,
                             ),
                           ),
-                        ],
+                          style: STextStyles.navBarTitle(context),
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                        ),
                       ),
-                    ),
-                  ],
-                );
-              },
+                    ],
+                  ),
+                ),
+              ],
             ),
             actions: [
               Padding(
@@ -142,7 +143,7 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
                       Navigator.of(context).pushNamed(
                         SolanaTokenContractDetailsView.routeName,
                         arguments: Tuple2(
-                          widget.tokenMint,
+                          ref.read(pCurrentSolanaTokenWallet)!.tokenMint,
                           widget.walletId,
                         ),
                       );
@@ -162,7 +163,9 @@ class _SolTokenViewState extends ConsumerState<SolTokenView> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: SolanaTokenSummary(
                       walletId: widget.walletId,
-                      tokenMint: widget.tokenMint,
+                      tokenMint: ref.watch(
+                        pCurrentSolanaTokenWallet.select((s) => s!.tokenMint),
+                      ),
                       initialSyncStatus: initialSyncStatus,
                     ),
                   ),

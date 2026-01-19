@@ -12,7 +12,6 @@ import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:tuple/tuple.dart';
 
 import '../../../pages/send_view/sub_widgets/transaction_fee_selection_sheet.dart';
 import '../../../pages/token_view/sub_widgets/token_transaction_list_widget.dart';
@@ -28,8 +27,10 @@ import '../../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../../widgets/coin_ticker_tag.dart';
 import '../../../widgets/custom_buttons/blue_text_button.dart';
 import '../../../widgets/desktop/desktop_app_bar.dart';
+import '../../../widgets/desktop/desktop_dialog_close_button.dart';
 import '../../../widgets/desktop/desktop_scaffold.dart';
 import '../../../widgets/desktop/secondary_button.dart';
+import '../../../widgets/dialogs/s_dialog.dart';
 import '../../../widgets/icon_widgets/eth_token_icon.dart';
 import '../../../widgets/rounded_white_container.dart';
 import 'sub_widgets/desktop_wallet_features.dart';
@@ -56,10 +57,9 @@ class _DesktopTokenViewState extends ConsumerState<DesktopTokenView> {
 
   @override
   void initState() {
-    initialSyncStatus =
-        ref.read(pCurrentTokenWallet)!.refreshMutex.isLocked
-            ? WalletSyncStatus.syncing
-            : WalletSyncStatus.synced;
+    initialSyncStatus = ref.read(pCurrentTokenWallet)!.refreshMutex.isLocked
+        ? WalletSyncStatus.syncing
+        : WalletSyncStatus.synced;
     super.initState();
   }
 
@@ -88,10 +88,9 @@ class _DesktopTokenViewState extends ConsumerState<DesktopTokenView> {
                   Assets.svg.arrowLeft,
                   width: 18,
                   height: 18,
-                  color:
-                      Theme.of(
-                        context,
-                      ).extension<StackColors>()!.topNavIconPrimary,
+                  color: Theme.of(
+                    context,
+                  ).extension<StackColors>()!.topNavIconPrimary,
                 ),
                 onPressed: () {
                   ref.refresh(feeSheetSessionCacheProvider);
@@ -106,14 +105,42 @@ class _DesktopTokenViewState extends ConsumerState<DesktopTokenView> {
           flex: 4,
           child: GestureDetector(
             onTap: () {
-              final contractAddress = ref.watch(
-                pCurrentTokenWallet.select(
-                  (value) => value!.tokenContract.address,
+              final contractAddress = ref
+                  .read(pCurrentTokenWallet)!
+                  .tokenContract
+                  .address;
+
+              showDialog<void>(
+                context: context,
+                builder: (context) => SDialog(
+                  child: SizedBox(
+                    width: 580,
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 32),
+                              child: Text(
+                                "Token details",
+                                style: STextStyles.desktopH3(context),
+                              ),
+                            ),
+                            const DesktopDialogCloseButton(),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 32),
+                          child: TokenContractDetailsView(
+                            contractAddress: contractAddress,
+                            walletId: widget.walletId,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              );
-              Navigator.of(context).pushNamed(
-                TokenContractDetailsView.routeName,
-                arguments: Tuple2(contractAddress, widget.walletId),
               );
             },
             child: MouseRegion(
@@ -173,12 +200,12 @@ class _DesktopTokenViewState extends ConsumerState<DesktopTokenView> {
                     isToken: true,
                     initialSyncStatus:
                         ref
-                                .watch(pWallets)
-                                .getWallet(widget.walletId)
-                                .refreshMutex
-                                .isLocked
-                            ? WalletSyncStatus.syncing
-                            : WalletSyncStatus.synced,
+                            .watch(pWallets)
+                            .getWallet(widget.walletId)
+                            .refreshMutex
+                            .isLocked
+                        ? WalletSyncStatus.syncing
+                        : WalletSyncStatus.synced,
                   ),
                   const Spacer(),
                   DesktopWalletFeatures(walletId: widget.walletId),
@@ -193,10 +220,9 @@ class _DesktopTokenViewState extends ConsumerState<DesktopTokenView> {
                   child: Text(
                     "My wallet",
                     style: STextStyles.desktopTextExtraSmall(context).copyWith(
-                      color:
-                          Theme.of(context)
-                              .extension<StackColors>()!
-                              .textFieldActiveSearchIconLeft,
+                      color: Theme.of(
+                        context,
+                      ).extension<StackColors>()!.textFieldActiveSearchIconLeft,
                     ),
                   ),
                 ),
@@ -207,14 +233,12 @@ class _DesktopTokenViewState extends ConsumerState<DesktopTokenView> {
                     children: [
                       Text(
                         "Recent transactions",
-                        style: STextStyles.desktopTextExtraSmall(
-                          context,
-                        ).copyWith(
-                          color:
-                              Theme.of(context)
+                        style: STextStyles.desktopTextExtraSmall(context)
+                            .copyWith(
+                              color: Theme.of(context)
                                   .extension<StackColors>()!
                                   .textFieldActiveSearchIconLeft,
-                        ),
+                            ),
                       ),
                       CustomTextButton(
                         text: "See all",

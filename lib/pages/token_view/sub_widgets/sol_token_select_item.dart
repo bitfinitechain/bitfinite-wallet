@@ -123,10 +123,7 @@ class _SolTokenSelectItemState extends ConsumerState<SolTokenSelectItem> {
       unawaited(ref.read(pCurrentSolanaTokenWallet)!.refresh());
       await Navigator.of(context).pushNamed(
         isDesktop ? DesktopSolTokenView.routeName : SolTokenView.routeName,
-        arguments: (
-          walletId: widget.walletId,
-          tokenMint: widget.token.address,
-        ),
+        arguments: widget.walletId,
       );
     }
   }
@@ -147,10 +144,9 @@ class _SolTokenSelectItemState extends ConsumerState<SolTokenSelectItem> {
       padding: const EdgeInsets.all(0),
       child: MaterialButton(
         key: Key("walletListItemButtonKey_${widget.token.symbol}"),
-        padding:
-            isDesktop
-                ? const EdgeInsets.symmetric(horizontal: 28, vertical: 24)
-                : const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
+        padding: isDesktop
+            ? const EdgeInsets.symmetric(horizontal: 28, vertical: 24)
+            : const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(
@@ -160,26 +156,23 @@ class _SolTokenSelectItemState extends ConsumerState<SolTokenSelectItem> {
         onPressed: _onPressed,
         child: Row(
           children: [
-            SolTokenIcon(
-              mintAddress: widget.token.address,
-              size: 32,
-            ),
+            SolTokenIcon(mintAddress: widget.token.address, size: 32),
             SizedBox(width: isDesktop ? 12 : 10),
             Expanded(
               child: Consumer(
                 builder: (_, ref, __) {
                   // Watch the balance from the database.
                   final balance = ref.watch(
-                    pSolanaTokenBalance(
-                      (
-                        walletId: widget.walletId,
-                        tokenMint: widget.token.address,
-                      ),
-                    ),
+                    pSolanaTokenBalance((
+                      walletId: widget.walletId,
+                      tokenMint: widget.token.address,
+                    )),
                   );
 
                   // Format the balance.
-                  final decimalValue = balance.total.decimal.toStringAsFixed(widget.token.decimals);
+                  final decimalValue = balance.total.decimal.toStringAsFixed(
+                    widget.token.decimals,
+                  );
                   final balanceString = "$decimalValue ${widget.token.symbol}";
 
                   return Column(
@@ -189,32 +182,28 @@ class _SolTokenSelectItemState extends ConsumerState<SolTokenSelectItem> {
                         children: [
                           Text(
                             widget.token.name,
-                            style:
-                                isDesktop
-                                    ? STextStyles.desktopTextExtraSmall(
+                            style: isDesktop
+                                ? STextStyles.desktopTextExtraSmall(
+                                    context,
+                                  ).copyWith(
+                                    color: Theme.of(
                                       context,
-                                    ).copyWith(
-                                      color:
-                                          Theme.of(
-                                            context,
-                                          ).extension<StackColors>()!.textDark,
-                                    )
-                                    : STextStyles.titleBold12(context),
+                                    ).extension<StackColors>()!.textDark,
+                                  )
+                                : STextStyles.titleBold12(context),
                           ),
                           const Spacer(),
                           Text(
                             balanceString,
-                            style:
-                                isDesktop
-                                    ? STextStyles.desktopTextExtraSmall(
+                            style: isDesktop
+                                ? STextStyles.desktopTextExtraSmall(
+                                    context,
+                                  ).copyWith(
+                                    color: Theme.of(
                                       context,
-                                    ).copyWith(
-                                      color:
-                                          Theme.of(
-                                            context,
-                                          ).extension<StackColors>()!.textDark,
-                                    )
-                                    : STextStyles.itemSubtitle(context),
+                                    ).extension<StackColors>()!.textDark,
+                                  )
+                                : STextStyles.itemSubtitle(context),
                           ),
                         ],
                       ),
@@ -223,24 +212,22 @@ class _SolTokenSelectItemState extends ConsumerState<SolTokenSelectItem> {
                         children: [
                           Text(
                             widget.token.symbol,
-                            style:
-                                isDesktop
-                                    ? STextStyles.desktopTextExtraExtraSmall(
-                                      context,
-                                    )
-                                    : STextStyles.itemSubtitle(context),
+                            style: isDesktop
+                                ? STextStyles.desktopTextExtraExtraSmall(
+                                    context,
+                                  )
+                                : STextStyles.itemSubtitle(context),
                           ),
                           const Spacer(),
                           if (priceString != null)
                             Text(
                               "$priceString "
                               "${ref.watch(prefsChangeNotifierProvider.select((value) => value.currency))}",
-                              style:
-                                  isDesktop
-                                      ? STextStyles.desktopTextExtraExtraSmall(
-                                        context,
-                                      )
-                                      : STextStyles.itemSubtitle(context),
+                              style: isDesktop
+                                  ? STextStyles.desktopTextExtraExtraSmall(
+                                      context,
+                                    )
+                                  : STextStyles.itemSubtitle(context),
                             ),
                         ],
                       ),

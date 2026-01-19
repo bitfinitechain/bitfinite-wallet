@@ -13,7 +13,6 @@ import 'package:isar_community/isar.dart';
 import 'package:solana/dto.dart';
 import 'package:solana/solana.dart' hide Wallet;
 
-import '../../../../db/isar/main_db.dart';
 import '../../../../models/balance.dart';
 import '../../../../models/isar/models/blockchain_data/v2/input_v2.dart';
 import '../../../../models/isar/models/blockchain_data/v2/output_v2.dart';
@@ -44,20 +43,21 @@ class SolanaTokenWallet extends Wallet {
   int get tokenDecimals => solContract.decimals;
 
   @override
-  String get walletId => parentSolanaWallet.walletId;
+  FilterOperation? get changeAddressFilterOperation =>
+      parentSolanaWallet.changeAddressFilterOperation;
 
   @override
-  MainDB get mainDB => parentSolanaWallet.mainDB;
+  FilterOperation? get receivingAddressFilterOperation =>
+      parentSolanaWallet.receivingAddressFilterOperation;
 
   @override
-  FilterOperation? get changeAddressFilterOperation => null;
-
-  @override
-  FilterOperation? get receivingAddressFilterOperation => null;
-
-  @override
-  FilterOperation? get transactionFilterOperation =>
-      FilterCondition.equalTo(property: r"contractAddress", value: tokenMint);
+  FilterOperation? get transactionFilterOperation => FilterGroup.and([
+    FilterCondition.equalTo(property: r"contractAddress", value: tokenMint),
+    const FilterCondition.equalTo(
+      property: r"subType",
+      value: TransactionSubType.ethToken,
+    ),
+  ]);
 
   @override
   Future<void> init() async {
@@ -472,7 +472,7 @@ class SolanaTokenWallet extends Wallet {
 
   @override
   Future<void> updateNode() async {
-    // No-op for token wallet.
+    await parentSolanaWallet.updateNode();
   }
 
   @override
@@ -748,7 +748,9 @@ class SolanaTokenWallet extends Wallet {
   }
 
   @override
-  Future<void> checkSaveInitialReceivingAddress() async {}
+  Future<void> checkSaveInitialReceivingAddress() async {
+    await parentSolanaWallet.checkSaveInitialReceivingAddress();
+  }
 
   Future<String?> _findTokenAccount({
     required String ownerAddress,

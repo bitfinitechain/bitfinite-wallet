@@ -16,7 +16,6 @@ import 'package:isar_community/isar.dart';
 import '../../app_config.dart';
 import '../../models/add_wallet_list_entity/sub_classes/coin_entity.dart';
 import '../../models/isar/models/contract.dart';
-import '../../pages_desktop_specific/my_stack_view/dialogs/desktop_expanding_solana_wallet_card.dart';
 import '../../pages_desktop_specific/my_stack_view/dialogs/desktop_expanding_wallet_card.dart';
 import '../../providers/providers.dart';
 import '../../services/event_bus/events/wallet_added_event.dart';
@@ -343,23 +342,14 @@ class _EthWalletsOverviewState extends ConsumerState<WalletsOverview> {
 
                     if (wallet.cryptoCurrency.hasTokenSupport) {
                       if (isDesktop) {
-                        if (wallet.cryptoCurrency is Solana) {
-                          return DesktopExpandingSolanaWalletCard(
-                            key: Key(
-                              "${wallet.walletId}_${entry.contracts.map((e) => e.address).join()}",
-                            ),
-                            data: entry,
-                            navigatorState: widget.navigatorState!,
-                          );
-                        } else {
-                          return DesktopExpandingWalletCard(
-                            key: Key(
-                              "${wallet.walletId}_${entry.contracts.map((e) => e.address).join()}",
-                            ),
-                            data: entry,
-                            navigatorState: widget.navigatorState!,
-                          );
-                        }
+                        return DesktopExpandingWalletCard(
+                          key: Key(
+                            "${wallet.walletId}_${entry.contracts.map((e) => e.address).join()}",
+                          ),
+                          data: entry,
+                          navigatorState: widget.navigatorState!,
+                        );
+                        // }
                       } else {
                         return MasterWalletCard(
                           key: Key(wallet.walletId),

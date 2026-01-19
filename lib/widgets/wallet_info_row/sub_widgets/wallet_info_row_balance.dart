@@ -10,7 +10,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../db/isar/main_db.dart';
+import '../../../models/isar/models/contract.dart';
 import '../../../models/isar/models/ethereum/eth_contract.dart';
 import '../../../models/isar/models/solana/sol_contract.dart';
 import '../../../themes/stack_colors.dart';
@@ -38,56 +40,57 @@ class WalletInfoRowBalance extends ConsumerWidget {
     final info = ref.watch(pWalletInfo(walletId));
 
     final Amount totalBalance;
-    EthContract? contract;
-    SolContract? splToken;
+    Contract? contract;
 
     if (contractAddress == null) {
-      totalBalance = info.cachedBalance.total +
+      totalBalance =
+          info.cachedBalance.total +
           info.cachedBalanceSecondary.total +
           info.cachedBalanceTertiary.total;
 
       contract = null;
-      splToken = null;
     } else {
       // Check if it's a Solana wallet.
       if (info.coin is Solana) {
-        splToken = MainDB.instance.getSolContractSync(contractAddress!);
-        if (splToken != null) {
-          final solanaTokenInfo = ref
-              .watch(
-                pSolanaTokenWalletInfo(
-                  (walletId: walletId, tokenMint: contractAddress!),
-                ),
-              );
+        contract = MainDB.instance.getSolContractSync(contractAddress!);
+        if (contract != null) {
+          final solanaTokenInfo = ref.watch(
+            pSolanaTokenWalletInfo((
+              walletId: walletId,
+              tokenMint: contractAddress!,
+            )),
+          );
           totalBalance = solanaTokenInfo.getCachedBalance().total;
         } else {
           // Token not yet in database, show zero balance.
           totalBalance = Amount(rawValue: BigInt.zero, fractionDigits: 0);
         }
-        contract = null;
       } else {
         // Ethereum token.
         contract = MainDB.instance.getEthContractSync(contractAddress!);
         if (contract != null) {
           totalBalance = ref
               .watch(
-                pTokenBalance(
-                  (walletId: walletId, contractAddress: contractAddress!),
-                ),
+                pTokenBalance((
+                  walletId: walletId,
+                  contractAddress: contractAddress!,
+                )),
               )
               .total;
         } else {
           // Contract not yet in database, show zero balance.
           totalBalance = Amount(rawValue: BigInt.zero, fractionDigits: 0);
         }
-        splToken = null;
       }
     }
 
     return Text(
-      ref.watch(pAmountFormatter(info.coin)).format(
+      ref
+          .watch(pAmountFormatter(info.coin))
+          .format(
             totalBalance,
-            ethContract: contract,
+            ethContract: contract is EthContract ? contract : null,
+            solContract: contract is SolContract ? contract : null,
           ),
       style: Util.isDesktop
           ? STextStyles.desktopTextExtraSmall(context).copyWith(

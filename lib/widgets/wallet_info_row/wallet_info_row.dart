@@ -12,7 +12,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/isar/models/contract.dart';
-import '../../models/isar/models/ethereum/eth_contract.dart';
 import '../../providers/providers.dart';
 import '../../themes/stack_colors.dart';
 import '../../utilities/text_styles.dart';
@@ -41,13 +40,9 @@ class WalletInfoRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final wallet = ref.watch(pWallets).getWallet(walletId);
-    final walletInfo = ref.watch(pWalletInfo(walletId));
-
     Contract? contract;
-    String? contractName;
-
     if (contractAddress != null) {
-      if (walletInfo.coin is Solana) {
+      if (wallet.info.coin is Solana) {
         // Solana token.
         final solContract = ref.watch(
           mainDBProvider.select(
@@ -55,7 +50,6 @@ class WalletInfoRow extends ConsumerWidget {
           ),
         );
         contract = solContract;
-        contractName = solContract?.name;
       } else {
         // Ethereum token.
         final ethContract = ref.watch(
@@ -64,7 +58,6 @@ class WalletInfoRow extends ConsumerWidget {
           ),
         );
         contract = ethContract;
-        contractName = ethContract?.name;
       }
     }
 
@@ -84,11 +77,11 @@ class WalletInfoRow extends ConsumerWidget {
                       contractAddress: contractAddress,
                     ),
                     const SizedBox(width: 12),
-                    contractName != null
+                    contract != null
                         ? Row(
                             children: [
                               Text(
-                                contractName!,
+                                contract.name,
                                 style:
                                     STextStyles.desktopTextExtraSmall(
                                       context,
@@ -157,11 +150,11 @@ class WalletInfoRow extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (contractName != null)
+                if (contract != null)
                   Row(
                     children: [
                       Text(
-                        contractName!,
+                        contract.name,
                         style: STextStyles.titleBold12(context),
                       ),
                       const SizedBox(width: 4),

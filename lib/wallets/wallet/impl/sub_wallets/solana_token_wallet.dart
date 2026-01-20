@@ -10,7 +10,8 @@
 import 'dart:convert';
 
 import 'package:isar_community/isar.dart';
-import 'package:solana/dto.dart';
+import 'package:solana/dto.dart' hide Instruction;
+import 'package:solana/encoder.dart' show Instruction;
 import 'package:solana/solana.dart' hide Wallet;
 
 import '../../../../models/balance.dart';
@@ -21,7 +22,6 @@ import '../../../../models/isar/models/isar_models.dart';
 import '../../../../models/paymint/fee_object_model.dart';
 import '../../../../services/solana/solana_token_api.dart';
 import '../../../../utilities/amount/amount.dart';
-import '../../../../utilities/extensions/extensions.dart';
 import '../../../../utilities/logger.dart';
 import '../../../models/tx_data.dart';
 import '../../wallet.dart';
@@ -140,44 +140,11 @@ class SolanaTokenWallet extends Wallet {
         rpcClient: rpcClient,
       );
 
-      if (recipientTokenAccount == null || recipientTokenAccount.isEmpty) {
+      if (recipientTokenAccount.isEmpty) {
         throw Exception(
           "Cannot determine recipient token account for mint $tokenMint. "
           "Recipient may not have a token account for this mint. "
           "Please ensure the recipient has initialized an Associated Token Account (ATA) first.",
-        );
-      }
-
-      try {
-        final recipientAccountInfo = await rpcClient.getAccountInfo(
-          recipientTokenAccount,
-          encoding: Encoding.jsonParsed,
-        );
-        if (recipientAccountInfo.value == null) {
-          throw Exception(
-            "Recipient token account $recipientTokenAccount does not exist on-chain. "
-            "The recipient must initialize their token account before receiving tokens. "
-            "You can ask the recipient to accept the token in their wallet app first.",
-          );
-        }
-
-        final accountData = recipientAccountInfo.value!;
-
-        // Verify account is owned by token program (not System Program).
-        if (accountData.owner == '11111111111111111111111111111111') {
-          throw Exception(
-            "Recipient token account $recipientTokenAccount is owned by the System Program, "
-            "not a token program. The account may not be a valid token account.",
-          );
-        }
-      } catch (e) {
-        if (e.toString().contains("does not exist") ||
-            e.toString().contains("not owned by")) {
-          rethrow;
-        }
-        throw Exception(
-          "Failed to validate recipient token account: $e. "
-          "Ensure the recipient has initialized their token account.",
         );
       }
 
@@ -216,12 +183,47 @@ class SolanaTokenWallet extends Wallet {
       }
 
       final TokenProgramType tokenProgram =
-          tokenProgramId != 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA' &&
-              tokenProgramId.startsWith('Token')
+          tokenProgramId == Token2022Program.programId
           ? TokenProgramType.token2022Program
           : TokenProgramType.tokenProgram;
 
-      // ignore: unused_local_variable
+      final recipientAccountInfo = await rpcClient.getAccountInfo(
+        recipientTokenAccount,
+        encoding: Encoding.jsonParsed,
+      );
+
+      AssociatedTokenAccountInstruction? createAccountInstruction;
+      if (recipientAccountInfo.value == null) {
+        createAccountInstruction =
+            AssociatedTokenAccountInstruction.createAccount(
+              funder: keyPair.publicKey,
+              address: recipientTokenAccountKey,
+              owner: Ed25519HDPublicKey.fromBase58(recipientAddress),
+              mint: mintPubkey,
+            );
+      } else {
+        try {
+          final accountData = recipientAccountInfo.value!;
+
+          // Verify account is owned by token program (not System Program).
+          if (accountData.owner == '11111111111111111111111111111111') {
+            throw Exception(
+              "Recipient token account $recipientTokenAccount is owned by the System Program, "
+              "not a token program. The account may not be a valid token account.",
+            );
+          }
+        } catch (e) {
+          if (e.toString().contains("does not exist") ||
+              e.toString().contains("not owned by")) {
+            rethrow;
+          }
+          throw Exception(
+            "Failed to validate recipient token account: $e. "
+            "Ensure the recipient has initialized their token account.",
+          );
+        }
+      }
+
       final instruction = TokenInstruction.transferChecked(
         source: senderTokenAccountKey,
         destination: recipientTokenAccountKey,
@@ -232,20 +234,23 @@ class SolanaTokenWallet extends Wallet {
         tokenProgram: tokenProgram,
       );
 
+      final instructions = [
+        if (createAccountInstruction != null) createAccountInstruction,
+        instruction,
+      ];
+
       final feeEstimate =
           await _getEstimatedTokenTransferFee(
-            senderTokenAccountKey: senderTokenAccountKey,
-            recipientTokenAccountKey: recipientTokenAccountKey,
             ownerPublicKey: keyPair.publicKey,
-            amount: txData.amount!.raw.toInt(),
             rpcClient: rpcClient,
+            instructions: instructions,
             memo: txData.memo,
           ) ??
           5000;
 
       return txData.copyWith(
         fee: Amount(rawValue: BigInt.from(feeEstimate), fractionDigits: 9),
-        solanaRecipientTokenAccount: recipientTokenAccount,
+        solInstructions: instructions,
       );
     } catch (e, s) {
       Logging.instance.e(
@@ -291,67 +296,19 @@ class SolanaTokenWallet extends Wallet {
 
       await rpcClient.getLatestBlockhash();
 
-      // Reuse the recipient token account from prepareSend (already looked up once).
-      final recipientTokenAccount = txData.solanaRecipientTokenAccount;
+      final instructions = txData.solInstructions;
 
-      if (recipientTokenAccount == null || recipientTokenAccount.isEmpty) {
+      if (instructions == null || instructions.isEmpty) {
         throw Exception(
-          "Recipient token account not found in prepared transaction. "
-          "Call prepareSend() first to determine the recipient's token account.",
+          "Token transaction missing instructions. "
+          "Call prepareSend() first.",
         );
       }
 
-      // Build SPL token tx instruction.
-      final senderTokenAccountKey = Ed25519HDPublicKey.fromBase58(
-        senderTokenAccount,
-      );
-      final recipientTokenAccountKey = Ed25519HDPublicKey.fromBase58(
-        recipientTokenAccount,
-      );
-      final mintPubkey = Ed25519HDPublicKey.fromBase58(tokenMint);
-
-      // Query the actual token program owner (important for Token-2022 variants).
-      String tokenProgramId;
-      try {
-        final mintInfo = await rpcClient.getAccountInfo(
-          tokenMint,
-          encoding: Encoding.jsonParsed,
-        );
-        if (mintInfo.value != null) {
-          tokenProgramId = mintInfo.value!.owner;
-          Logging.instance.i(
-            "$runtimeType confirmSend: Token program owner = $tokenProgramId for mint $tokenMint",
-          );
-        } else {
-          // Fallback to SPL Token.
-          tokenProgramId = 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA';
-          Logging.instance.w(
-            "$runtimeType confirmSend: Could not query mint owner, using SPL Token",
-          );
-        }
-      } catch (e) {
-        // Fallback to SPL Token on error.
-        tokenProgramId = 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA';
-        Logging.instance.w(
-          "$runtimeType confirmSend: Error querying mint owner: $e, using SPL Token",
-        );
-      }
-
-      // Build the TransferChecked instruction.
-      final TokenProgramType tokenProgram =
-          tokenProgramId != 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA' &&
-              tokenProgramId.startsWith('Token') // Token-2022 variant.
-          ? TokenProgramType.token2022Program
-          : TokenProgramType.tokenProgram;
-
-      final instruction = TokenInstruction.transferChecked(
-        source: senderTokenAccountKey,
-        destination: recipientTokenAccountKey,
-        mint: mintPubkey,
-        owner: keyPair.publicKey,
-        decimals: tokenDecimals,
-        amount: txData.amount!.raw.toInt(),
-        tokenProgram: tokenProgram,
+      final recipientTokenAccount = await _findOrDeriveRecipientTokenAccount(
+        recipientAddress: txData.recipients!.first.address,
+        mint: tokenMint,
+        rpcClient: rpcClient,
       );
 
       // Create message.
@@ -359,7 +316,7 @@ class SolanaTokenWallet extends Wallet {
         instructions: [
           if (txData.memo != null)
             MemoInstruction(signers: const [], memo: txData.memo!),
-          instruction,
+          ...instructions,
         ],
       );
 
@@ -785,170 +742,103 @@ class SolanaTokenWallet extends Wallet {
     }
   }
 
-  Future<String?> _findOrDeriveRecipientTokenAccount({
+  Future<String> _findOrDeriveRecipientTokenAccount({
     required String recipientAddress,
     required String mint,
     required RpcClient rpcClient,
   }) async {
-    try {
-      // First, try to find an existing token account
-      final existingAccount = await _findTokenAccount(
-        ownerAddress: recipientAddress,
-        mint: mint,
-        rpcClient: rpcClient,
-      );
+    // First, try to find an existing token account
+    final existingAccount = await _findTokenAccount(
+      ownerAddress: recipientAddress,
+      mint: mint,
+      rpcClient: rpcClient,
+    );
 
-      if (existingAccount != null) {
-        Logging.instance.i(
-          "$runtimeType Found existing token account for recipient: $existingAccount",
-        );
-        return existingAccount;
-      }
-
-      // If no existing account found, try to derive the ATA
+    if (existingAccount != null) {
       Logging.instance.i(
-        "$runtimeType No existing token account found, deriving ATA for recipient",
+        "$runtimeType Found existing token account for recipient: $existingAccount",
       );
-
-      try {
-        final ataAddress = await _deriveAtaAddress(
-          ownerAddress: recipientAddress,
-          mint: mint,
-          rpcClient: rpcClient,
-        );
-        if (ataAddress != null) {
-          Logging.instance.i("$runtimeType Derived ATA address: $ataAddress");
-          return ataAddress;
-        } else {
-          Logging.instance.w("$runtimeType ATA derivation returned null");
-          return null;
-        }
-      } catch (derivationError) {
-        Logging.instance.w(
-          "$runtimeType Failed to derive ATA address: $derivationError",
-        );
-        return null;
-      }
-    } catch (e) {
-      Logging.instance.w(
-        "$runtimeType _findOrDeriveRecipientTokenAccount error: $e",
-      );
-      return null;
+      return existingAccount;
     }
+
+    // If no existing account found, try to derive the ATA
+    Logging.instance.i(
+      "$runtimeType No existing token account found, deriving ATA for recipient",
+    );
+
+    return await _deriveAtaAddress(
+      ownerAddress: recipientAddress,
+      mint: mint,
+      rpcClient: rpcClient,
+    );
   }
 
-  Future<String?> _deriveAtaAddress({
+  Future<String> _deriveAtaAddress({
     required String ownerAddress,
     required String mint,
     required RpcClient rpcClient,
   }) async {
+    final ownerPubkey = Ed25519HDPublicKey.fromBase58(ownerAddress);
+    final mintPubkey = Ed25519HDPublicKey.fromBase58(mint);
+
+    final tokenApi = SolanaTokenAPI();
+    tokenApi.initializeRpcClient(rpcClient);
+
+    String tokenProgramId;
     try {
-      final ownerPubkey = Ed25519HDPublicKey.fromBase58(ownerAddress);
-      final mintPubkey = Ed25519HDPublicKey.fromBase58(mint);
-
-      final tokenApi = SolanaTokenAPI();
-      tokenApi.initializeRpcClient(rpcClient);
-
-      String tokenProgramId;
-      try {
-        final mintInfo = await rpcClient.getAccountInfo(
-          mint,
-          encoding: Encoding.jsonParsed,
-        );
-        if (mintInfo.value != null) {
-          tokenProgramId = mintInfo.value!.owner;
-        } else {
-          tokenProgramId = 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA';
-        }
-      } catch (e) {
+      final mintInfo = await rpcClient.getAccountInfo(
+        mint,
+        encoding: Encoding.jsonParsed,
+      );
+      if (mintInfo.value != null) {
+        tokenProgramId = mintInfo.value!.owner;
+      } else {
         tokenProgramId = 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA';
       }
-
-      final tokenProgramPubkey = Ed25519HDPublicKey.fromBase58(tokenProgramId);
-
-      const associatedTokenProgramId =
-          'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
-      final associatedTokenProgramPubkey = Ed25519HDPublicKey.fromBase58(
-        associatedTokenProgramId,
-      );
-
-      final seeds = [
-        'account'.toUint8ListFromUtf8,
-        ownerPubkey.toBase58().toUint8ListFromBase58Encoded,
-        tokenProgramPubkey.toBase58().toUint8ListFromBase58Encoded,
-        mintPubkey.toBase58().toUint8ListFromBase58Encoded,
-      ];
-
-      final ataAddress = await Ed25519HDPublicKey.findProgramAddress(
-        seeds: seeds,
-        programId: associatedTokenProgramPubkey,
-      );
-
-      final ataBase58 = ataAddress.toBase58();
-
-      return ataBase58;
-    } catch (e, stackTrace) {
-      Logging.instance.w(
-        "$runtimeType _deriveAtaAddress error: $e",
-        error: e,
-        stackTrace: stackTrace,
-      );
-      return null;
+    } catch (e) {
+      tokenProgramId = 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA';
     }
+
+    final tokenProgramPubkey = Ed25519HDPublicKey.fromBase58(tokenProgramId);
+
+    const associatedTokenProgramId =
+        'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL';
+    final associatedTokenProgramPubkey = Ed25519HDPublicKey.fromBase58(
+      associatedTokenProgramId,
+    );
+
+    final seeds = [
+      ownerPubkey.bytes,
+      tokenProgramPubkey.bytes,
+      mintPubkey.bytes,
+    ];
+
+    final ataAddress = await Ed25519HDPublicKey.findProgramAddress(
+      seeds: seeds,
+      programId: associatedTokenProgramPubkey,
+    );
+
+    final ataBase58 = ataAddress.toBase58();
+
+    return ataBase58;
   }
 
   Future<int?> _getEstimatedTokenTransferFee({
-    required Ed25519HDPublicKey senderTokenAccountKey,
-    required Ed25519HDPublicKey recipientTokenAccountKey,
     required Ed25519HDPublicKey ownerPublicKey,
-    required int amount,
     required RpcClient rpcClient,
+    required List<Instruction> instructions,
     required String? memo,
   }) async {
     try {
       // Get latest blockhash for message compilation.
       final latestBlockhash = await rpcClient.getLatestBlockhash();
 
-      final mintPubkey = Ed25519HDPublicKey.fromBase58(tokenMint);
-
-      // Query the actual token program owner (important for Token-2022 variants).
-      String tokenProgramId;
-      try {
-        final mintInfo = await rpcClient.getAccountInfo(
-          tokenMint,
-          encoding: Encoding.jsonParsed,
-        );
-        tokenProgramId =
-            mintInfo.value?.owner ??
-            'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA';
-      } catch (e) {
-        tokenProgramId = 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA';
-      }
-
-      // Build the TransferChecked instruction.
-      // Determine which token program type to use based on the queried owner.
-      final TokenProgramType tokenProgram =
-          tokenProgramId != 'TokenkegQfeZyiNwAJsyFbPVwwQQfg5bgUiqhStM5QA' &&
-              tokenProgramId.startsWith('Token')
-          ? TokenProgramType.token2022Program
-          : TokenProgramType.tokenProgram;
-
-      final instruction = TokenInstruction.transferChecked(
-        source: senderTokenAccountKey,
-        destination: recipientTokenAccountKey,
-        mint: mintPubkey,
-        owner: ownerPublicKey,
-        decimals: tokenDecimals,
-        amount: amount,
-        tokenProgram: tokenProgram,
-      );
-
       // Compile the message with the blockhash.
       final compiledMessage =
           Message(
             instructions: [
               if (memo != null) MemoInstruction(signers: const [], memo: memo),
-              instruction,
+              ...instructions,
             ],
           ).compile(
             recentBlockhash: latestBlockhash.value.blockhash,

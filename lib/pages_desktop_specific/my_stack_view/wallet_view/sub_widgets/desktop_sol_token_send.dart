@@ -261,9 +261,6 @@ class _DesktopSolTokenSendState extends ConsumerState<DesktopSolTokenSend> {
             ),
           ],
           memo: memo,
-          tokenSymbol: tokenSymbol,
-          tokenMint: tokenMint,
-          tokenDecimals: tokenDecimals,
         ),
       );
 
@@ -272,12 +269,7 @@ class _DesktopSolTokenSendState extends ConsumerState<DesktopSolTokenSend> {
       txData = results.first as TxData;
 
       if (!wasCancelled && mounted) {
-        txData = txData.copyWith(
-          note: _note ?? "",
-          tokenSymbol: tokenSymbol,
-          tokenMint: tokenMint,
-          tokenDecimals: tokenDecimals,
-        );
+        txData = txData.copyWith(note: _note ?? "");
 
         // pop building dialog
         Navigator.of(context, rootNavigator: true).pop();

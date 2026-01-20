@@ -472,9 +472,6 @@ class _SolTokenSendViewState extends ConsumerState<SolTokenSendView> {
           memo: memoController.text.isEmpty ? null : memoController.text,
           feeRateType: ref.read(feeRateTypeMobileStateProvider),
           note: noteController.text,
-          tokenMint: tokenMint,
-          tokenSymbol: tokenWallet.tokenSymbol,
-          tokenDecimals: tokenWallet.tokenDecimals,
         ),
       );
 

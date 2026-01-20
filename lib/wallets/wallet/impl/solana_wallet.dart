@@ -579,6 +579,16 @@ class SolanaWallet extends Bip39Wallet<Solana> {
             txType = isar.TransactionType.unknown;
           }
 
+          // check for memo
+          final memos = parsedTx.message.instructions
+              .map((e) => e.toJson())
+              .where(
+                (e) => e["parsed"] is String && e["program"] == "spl-memo",
+              );
+          final String? memo = memos.isEmpty
+              ? null
+              : memos.first["parsed"] as String;
+
           // Create TransactionV2 object.
           final txn = TransactionV2(
             walletId: walletId,
@@ -615,6 +625,7 @@ class SolanaWallet extends Bip39Wallet<Solana> {
             subType: isar.TransactionSubType.none,
             otherData: jsonEncode({
               TxV2OdKeys.overrideFee: tx.meta!.fee.toString(),
+              if (memo != null) TxV2OdKeys.memo: memo,
             }),
           );
 

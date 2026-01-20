@@ -544,6 +544,16 @@ class SolanaTokenWallet extends Wallet {
             txType = TransactionType.unknown;
           }
 
+          // check for memo
+          final memos = parsedTx.message.instructions
+              .map((e) => e.toJson())
+              .where(
+                (e) => e["parsed"] is String && e["program"] == "spl-memo",
+              );
+          final String? memo = memos.isEmpty
+              ? null
+              : memos.first["parsed"] as String;
+
           // Create placeholder TransactionV2 object.
           final txn = TransactionV2(
             walletId: walletId,
@@ -583,6 +593,7 @@ class SolanaTokenWallet extends Wallet {
               TxV2OdKeys.contractAddress: tokenMint,
               TxV2OdKeys.isCancelled: (txDetails.meta!.err != null),
               TxV2OdKeys.overrideFee: txDetails.meta!.fee.toString(),
+              if (memo != null) TxV2OdKeys.memo: memo,
             }),
           );
 

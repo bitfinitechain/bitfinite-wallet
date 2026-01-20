@@ -1264,6 +1264,15 @@ class _TransactionV2DetailsViewState
                                   label: "Nonce",
                                   detail: _transaction.nonce.toString(),
                                 ),
+                              if (_transaction.memo != null)
+                                isDesktop
+                                    ? const _Divider()
+                                    : const SizedBox(height: 12),
+                              if (_transaction.memo != null)
+                                _DetailItem(
+                                  label: "Memo",
+                                  detail: _transaction.memo!,
+                                ),
                               if (coin is Salvium &&
                                   _transaction.salviumTypeString != null)
                                 isDesktop

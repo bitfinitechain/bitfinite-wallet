@@ -67,13 +67,13 @@ import '../../widgets/background.dart';
 import '../../widgets/custom_buttons/app_bar_icon_button.dart';
 import '../../widgets/custom_buttons/blue_text_button.dart';
 import '../../widgets/dialogs/firo_exchange_address_dialog.dart';
+import '../../widgets/epic_txs_method_toggle.dart';
 import '../../widgets/eth_fee_form.dart';
 import '../../widgets/fee_slider.dart';
 import '../../widgets/icon_widgets/addressbook_icon.dart';
 import '../../widgets/icon_widgets/clipboard_icon.dart';
 import '../../widgets/icon_widgets/qrcode_icon.dart';
 import '../../widgets/icon_widgets/x_icon.dart';
-import '../../widgets/epic_txs_method_toggle.dart';
 import '../../widgets/mwc_txs_method_toggle.dart';
 import '../../widgets/rounded_white_container.dart';
 import '../../widgets/stack_dialog.dart';
@@ -139,7 +139,7 @@ class _SendViewState extends ConsumerState<SendView> {
   final _baseFocus = FocusNode();
   final _memoFocus = FocusNode();
 
-  late final bool isStellar;
+  late final bool hasOptionalMemo;
   late final bool isFiro;
   late final bool isEth;
 
@@ -706,8 +706,7 @@ class _SendViewState extends ConsumerState<SendView> {
 
     try {
       if (mounted) {
-        final wallet =
-            ref.read(pWallets).getWallet(walletId) as EpiccashWallet;
+        final wallet = ref.read(pWallets).getWallet(walletId) as EpiccashWallet;
 
         final amount = ref.read(pSendAmount)!;
 
@@ -1279,7 +1278,7 @@ class _SendViewState extends ConsumerState<SendView> {
     _data = widget.autoFillData;
     walletId = widget.walletId;
     clipboard = widget.clipboard;
-    isStellar = coin is Stellar;
+    hasOptionalMemo = coin is Stellar || coin is Solana;
     isFiro = coin is Firo;
     isEth = coin is Ethereum;
 
@@ -1849,7 +1848,7 @@ class _SendViewState extends ConsumerState<SendView> {
                                 ),
                               ),
                             const SizedBox(height: 10),
-                            if (isStellar ||
+                            if (hasOptionalMemo ||
                                 ref.watch(pValidSparkSendToAddress))
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(
@@ -2665,8 +2664,8 @@ class _SendViewState extends ConsumerState<SendView> {
                                   ? isMwcSlatepack
                                         ? _createSlatepack
                                         : isEpicSlatepack
-                                            ? _createEpicSlatepack
-                                            : _previewTransaction
+                                        ? _createEpicSlatepack
+                                        : _previewTransaction
                                   : null,
                               style: ref.watch(pPreviewTxButtonEnabled(coin))
                                   ? Theme.of(context)
@@ -2676,9 +2675,7 @@ class _SendViewState extends ConsumerState<SendView> {
                                         .extension<StackColors>()!
                                         .getPrimaryDisabledButtonStyle(context),
                               child: Text(
-                                isSlatepackMode
-                                    ? "Create slate"
-                                    : "Preview",
+                                isSlatepackMode ? "Create slate" : "Preview",
                                 style: STextStyles.button(context),
                               ),
                             ),

@@ -195,7 +195,7 @@ class _Balance extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return SelectableText(
-      ref.watch(pAmountFormatter(coin)).format(amount, ethContract: null),
+      ref.watch(pAmountFormatter(coin)).format(amount, tokenContract: null),
       style: STextStyles.desktopH3(context),
       textAlign: TextAlign.end,
     );

@@ -84,7 +84,8 @@ class _AddressBookViewState extends ConsumerState<AddressBookView> {
       final wallets = ref.read(pWallets).wallets;
       for (final wallet in wallets) {
         final String addressString;
-        if (wallet is SparkInterface) {
+        if (wallet is SparkInterface &&
+            !(wallet.isViewOnly && wallet.viewOnlyType != .spark)) {
           Address? address = await wallet.getCurrentReceivingSparkAddress();
           address ??= await wallet.generateNextSparkAddress(saveToDB: true);
           addressString = address.value;

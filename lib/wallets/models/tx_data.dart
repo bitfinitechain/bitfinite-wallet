@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:solana/encoder.dart' show Instruction;
 import 'package:tezart/tezart.dart' as tezart;
 import 'package:web3dart/web3dart.dart' as web3dart;
 
@@ -70,11 +71,8 @@ class TxData {
   final int? nonce;
   final BigInt? chainId;
 
-  // Solana & Ethereum token-specific.
-  final String? tokenSymbol;
-  final String? tokenMint;
-  final int? tokenDecimals;
-  final String? solanaRecipientTokenAccount;
+  // Solana token-specific.
+  final List<Instruction>? solInstructions;
 
   // wownero and monero specific
   final CsPendingTransaction? pendingTransaction;
@@ -137,10 +135,7 @@ class TxData {
     this.web3dartTransaction,
     this.nonce,
     this.chainId,
-    this.tokenSymbol,
-    this.tokenMint,
-    this.tokenDecimals,
-    this.solanaRecipientTokenAccount,
+    this.solInstructions,
     this.pendingTransaction,
     this.pendingSalviumTransaction,
     this.tezosOperationsList,
@@ -279,10 +274,7 @@ class TxData {
     web3dart.Transaction? web3dartTransaction,
     int? nonce,
     BigInt? chainId,
-    String? tokenSymbol,
-    String? tokenMint,
-    int? tokenDecimals,
-    String? solanaRecipientTokenAccount,
+    List<Instruction>? solInstructions,
     CsPendingTransaction? pendingTransaction,
     CsPendingTransaction? pendingSalviumTransaction,
     int? jMintValue,
@@ -334,11 +326,7 @@ class TxData {
       web3dartTransaction: web3dartTransaction ?? this.web3dartTransaction,
       nonce: nonce ?? this.nonce,
       chainId: chainId ?? this.chainId,
-      tokenSymbol: tokenSymbol ?? this.tokenSymbol,
-      tokenMint: tokenMint ?? this.tokenMint,
-      tokenDecimals: tokenDecimals ?? this.tokenDecimals,
-      solanaRecipientTokenAccount:
-          solanaRecipientTokenAccount ?? this.solanaRecipientTokenAccount,
+      solInstructions: solInstructions ?? this.solInstructions,
       pendingTransaction: pendingTransaction ?? this.pendingTransaction,
       pendingSalviumTransaction:
           pendingSalviumTransaction ?? this.pendingSalviumTransaction,
@@ -381,6 +369,7 @@ class TxData {
       'web3dartTransaction: $web3dartTransaction, '
       'nonce: $nonce, '
       'chainId: $chainId, '
+      'solInstructions: $solInstructions, '
       'pendingTransaction: $pendingTransaction, '
       'pendingSalviumTransaction: $pendingSalviumTransaction, '
       'tezosOperationsList: $tezosOperationsList, '

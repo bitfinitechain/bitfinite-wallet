@@ -19,6 +19,7 @@ import 'package:isar_community/isar.dart';
 
 import '../../../../models/isar/models/blockchain_data/v2/transaction_v2.dart';
 import '../../../../models/isar/models/contact_entry.dart';
+import '../../../../models/isar/models/contract.dart';
 import '../../../../models/isar/models/isar_models.dart';
 import '../../../../models/transaction_filter.dart';
 import '../../../../providers/global/address_book_service_provider.dart';
@@ -33,6 +34,7 @@ import '../../../../utilities/format.dart';
 import '../../../../utilities/text_styles.dart';
 import '../../../../utilities/util.dart';
 import '../../../../wallets/crypto_currency/coins/ethereum.dart';
+import '../../../../wallets/crypto_currency/coins/solana.dart';
 import '../../../../wallets/isar/providers/eth/current_token_wallet_provider.dart';
 import '../../../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/spark_interface.dart';
@@ -836,9 +838,9 @@ class _DesktopTransactionCardRowState
   late final TransactionV2 _transaction;
   late final String walletId;
   late final int minConfirms;
-  late final EthContract? ethContract;
+  late final Contract? contract;
 
-  bool get isTokenTx => ethContract != null;
+  bool get isTokenTx => contract != null;
 
   String whatIsIt(TransactionV2 tx, int height) => tx.statusLabel(
     currentChainHeight: height,
@@ -860,12 +862,16 @@ class _DesktopTransactionCardRowState
         .minConfirms;
     _transaction = widget.transaction;
 
-    if (_transaction.subType == TransactionSubType.ethToken) {
-      ethContract = ref
+    if (_transaction.subType == TransactionSubType.splToken) {
+      contract = ref
+          .read(mainDBProvider)
+          .getSolContractSync(_transaction.contractAddress!);
+    } else if (_transaction.subType == TransactionSubType.ethToken) {
+      contract = ref
           .read(mainDBProvider)
           .getEthContractSync(_transaction.contractAddress!);
     } else {
-      ethContract = null;
+      contract = null;
     }
 
     super.initState();
@@ -912,7 +918,7 @@ class _DesktopTransactionCardRowState
     final currentHeight = ref.watch(pWalletChainHeight(walletId));
 
     final Amount amount;
-    final fractionDigits = ethContract?.decimals ?? coin.fractionDigits;
+    final fractionDigits = contract?.decimals ?? coin.fractionDigits;
     if (_transaction.subType == TransactionSubType.cashFusion) {
       amount = _transaction.getAmountReceivedInThisWallet(
         fractionDigits: fractionDigits,
@@ -922,7 +928,7 @@ class _DesktopTransactionCardRowState
         case TransactionType.outgoing:
           amount = _transaction.getAmountSentFromThisWallet(
             fractionDigits: fractionDigits,
-            subtractFee: coin is! Ethereum,
+            subtractFee: !(coin is Ethereum || coin is Solana),
           );
           break;
 
@@ -954,7 +960,7 @@ class _DesktopTransactionCardRowState
         case TransactionType.unknown:
           amount = _transaction.getAmountSentFromThisWallet(
             fractionDigits: fractionDigits,
-            subtractFee: coin is! Ethereum,
+            subtractFee: !(coin is Ethereum || coin is Solana),
           );
           break;
       }
@@ -1036,22 +1042,38 @@ class _DesktopTransactionCardRowState
               ),
               Expanded(
                 flex: 6,
-                child: Text(
-                  "$prefix${ref.watch(pAmountFormatter(coin)).format(amount, ethContract: ethContract)}",
-                  style: STextStyles.desktopTextExtraExtraSmall(context)
-                      .copyWith(
-                        color: Theme.of(
-                          context,
-                        ).extension<StackColors>()!.textDark,
-                      ),
+                child: Builder(
+                  builder: (context) {
+                    final formattedAmount = ref
+                        .watch(pAmountFormatter(coin))
+                        .format(amount, tokenContract: contract);
+
+                    return Text(
+                      "$prefix$formattedAmount",
+                      style: STextStyles.desktopTextExtraExtraSmall(context)
+                          .copyWith(
+                            color: Theme.of(
+                              context,
+                            ).extension<StackColors>()!.textDark,
+                          ),
+                    );
+                  },
                 ),
               ),
               if (price != null)
                 Expanded(
                   flex: 4,
-                  child: Text(
-                    "$prefix${(amount.decimal * price).toAmount(fractionDigits: 2).fiatString(locale: locale)} $baseCurrency",
-                    style: STextStyles.desktopTextExtraExtraSmall(context),
+                  child: Builder(
+                    builder: (context) {
+                      final formattedFiat = (amount.decimal * price!)
+                          .toAmount(fractionDigits: 2)
+                          .fiatString(locale: locale);
+
+                      return Text(
+                        "$prefix$formattedFiat $baseCurrency",
+                        style: STextStyles.desktopTextExtraExtraSmall(context),
+                      );
+                    },
                   ),
                 ),
               SvgPicture.asset(

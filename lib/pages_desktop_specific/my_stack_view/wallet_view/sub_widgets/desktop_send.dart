@@ -67,12 +67,12 @@ import '../../../../widgets/desktop/primary_button.dart';
 import '../../../../widgets/desktop/qr_code_scanner_dialog.dart';
 import '../../../../widgets/desktop/secondary_button.dart';
 import '../../../../widgets/dialogs/firo_exchange_address_dialog.dart';
+import '../../../../widgets/epic_txs_method_toggle.dart';
 import '../../../../widgets/eth_fee_form.dart';
 import '../../../../widgets/icon_widgets/addressbook_icon.dart';
 import '../../../../widgets/icon_widgets/clipboard_icon.dart';
 import '../../../../widgets/icon_widgets/qrcode_icon.dart';
 import '../../../../widgets/icon_widgets/x_icon.dart';
-import '../../../../widgets/epic_txs_method_toggle.dart';
 import '../../../../widgets/mwc_txs_method_toggle.dart';
 import '../../../../widgets/rounded_container.dart';
 import '../../../../widgets/stack_text_field.dart';
@@ -120,7 +120,7 @@ class _DesktopSendState extends ConsumerState<DesktopSend> {
   final _memoFocus = FocusNode();
   final _nonceFocusNode = FocusNode();
 
-  late final bool isStellar;
+  late final bool hasOptionalMemo;
   late final bool isMimblewimblecoin;
   late final bool isEpiccash;
 
@@ -705,7 +705,7 @@ class _DesktopSendState extends ConsumerState<DesktopSend> {
           ),
         );
       } else {
-        final memo = isStellar ? memoController.text : null;
+        final memo = hasOptionalMemo ? memoController.text : null;
         txDataFuture = wallet.prepareSend(
           txData: TxData(
             recipients: [
@@ -1212,7 +1212,7 @@ class _DesktopSendState extends ConsumerState<DesktopSend> {
     coin = ref.read(pWalletInfo(walletId)).coin;
     clipboard = widget.clipboard;
 
-    isStellar = coin is Stellar;
+    hasOptionalMemo = coin is Stellar || coin is Solana;
     isMimblewimblecoin = coin is Mimblewimblecoin;
     isEpiccash = coin is Epiccash;
 
@@ -1705,7 +1705,8 @@ class _DesktopSendState extends ConsumerState<DesktopSend> {
           ),
         const SizedBox(height: 20),
         if (!isPaynymSend &&
-            !((isMimblewimblecoin || isEpiccash) && ref.watch(pIsSlatepack(widget.walletId))))
+            !((isMimblewimblecoin || isEpiccash) &&
+                ref.watch(pIsSlatepack(widget.walletId))))
           Text(
             "Send to",
             style: STextStyles.desktopTextExtraSmall(context).copyWith(
@@ -1716,10 +1717,12 @@ class _DesktopSendState extends ConsumerState<DesktopSend> {
             textAlign: TextAlign.left,
           ),
         if (!isPaynymSend &&
-            !((isMimblewimblecoin || isEpiccash) && ref.watch(pIsSlatepack(widget.walletId))))
+            !((isMimblewimblecoin || isEpiccash) &&
+                ref.watch(pIsSlatepack(widget.walletId))))
           const SizedBox(height: 10),
         if (!isPaynymSend &&
-            !((isMimblewimblecoin || isEpiccash) && ref.watch(pIsSlatepack(widget.walletId))))
+            !((isMimblewimblecoin || isEpiccash) &&
+                ref.watch(pIsSlatepack(widget.walletId))))
           ClipRRect(
             borderRadius: BorderRadius.circular(
               Constants.size.circularBorderRadius,
@@ -1898,7 +1901,8 @@ class _DesktopSendState extends ConsumerState<DesktopSend> {
             ),
           ),
         if (!isPaynymSend &&
-            !((isMimblewimblecoin || isEpiccash) && ref.watch(pIsSlatepack(widget.walletId))))
+            !((isMimblewimblecoin || isEpiccash) &&
+                ref.watch(pIsSlatepack(widget.walletId))))
           Builder(
             builder: (_) {
               final String? error;
@@ -1950,9 +1954,9 @@ class _DesktopSendState extends ConsumerState<DesktopSend> {
               }
             },
           ),
-        if (isStellar || ref.watch(pValidSparkSendToAddress))
+        if (hasOptionalMemo || ref.watch(pValidSparkSendToAddress))
           const SizedBox(height: 10),
-        if (isStellar || ref.watch(pValidSparkSendToAddress))
+        if (hasOptionalMemo || ref.watch(pValidSparkSendToAddress))
           ClipRRect(
             borderRadius: BorderRadius.circular(
               Constants.size.circularBorderRadius,

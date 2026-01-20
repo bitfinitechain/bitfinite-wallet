@@ -33,7 +33,6 @@ import '../../services/exchange/nanswap/nanswap_exchange.dart';
 import '../../services/exchange/simpleswap/simpleswap_exchange.dart';
 import '../../services/exchange/trocador/trocador_exchange.dart';
 import '../../services/exchange/wizard_swap/wizard_swap_exchange.dart';
-import '../../services/wallets.dart';
 import '../../themes/stack_colors.dart';
 import '../../themes/theme_providers.dart';
 import '../../utilities/amount/amount.dart';
@@ -45,8 +44,6 @@ import '../../utilities/format.dart';
 import '../../utilities/text_styles.dart';
 import '../../utilities/util.dart';
 import '../../wallets/crypto_currency/crypto_currency.dart';
-import '../../wallets/wallet/intermediate/external_wallet.dart';
-import '../../wallets/wallet/wallet_mixin_interfaces/mweb_interface.dart';
 import '../../widgets/background.dart';
 import '../../widgets/conditional_parent.dart';
 import '../../widgets/custom_buttons/app_bar_icon_button.dart';
@@ -156,26 +153,6 @@ class _TradeDetailsViewState extends ConsumerState<TradeDetailsView> {
     }
   }
 
-  bool isWalletCoinAndCanSendWithoutWalletOpened(
-    String ticker,
-    Wallets walletsInstance,
-  ) {
-    try {
-      final coin = AppConfig.getCryptoCurrencyForTicker(ticker);
-      return walletsInstance.wallets
-          .where(
-            (e) =>
-                e.info.coin == coin &&
-                (e is! ExternalWallet ||
-                    e is MwebInterface), // ltc mweb is external but swaps
-            // should not use mweb, hence the odd logic check here
-          )
-          .isNotEmpty;
-    } catch (_) {
-      return false;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final bool sentFromStack =
@@ -218,9 +195,9 @@ class _TradeDetailsViewState extends ConsumerState<TradeDetailsView> {
     final showSendFromStackButton =
         !hasTx &&
         AppConfig.isStackCoin(trade.payInCurrency) &&
-        isWalletCoinAndCanSendWithoutWalletOpened(
+        Util.isWalletCoinAndCanSendWithoutWalletOpenedIgnoringXMR(
           trade.payInCurrency,
-          ref.read(pWallets),
+          ref.read(pWallets).wallets,
         ) &&
         (trade.status == "New" ||
             trade.status == "new" ||

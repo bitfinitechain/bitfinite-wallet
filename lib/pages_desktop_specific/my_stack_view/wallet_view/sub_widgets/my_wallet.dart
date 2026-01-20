@@ -67,7 +67,7 @@ class _MyWalletState extends ConsumerState<MyWallet> {
       titles.add("Finalize");
     }
 
-    if (isEth && widget.contractAddress == null) {
+    if ((isEth || isSolana) && widget.contractAddress == null) {
       titles.add("Transactions");
     }
 
@@ -195,7 +195,7 @@ class _MyWalletState extends ConsumerState<MyWallet> {
                   child: EpicFinalizeView(walletId: widget.walletId),
                 ),
 
-              if (isEth && widget.contractAddress == null)
+              if ((isEth || isSolana) && widget.contractAddress == null)
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: ConstrainedBox(

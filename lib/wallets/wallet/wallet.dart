@@ -7,6 +7,7 @@ import 'package:mutex/mutex.dart';
 import '../../db/isar/main_db.dart';
 import '../../models/isar/models/blockchain_data/address.dart';
 import '../../models/isar/models/ethereum/eth_contract.dart';
+import '../../models/isar/models/solana/sol_contract.dart';
 import '../../models/keys/view_only_wallet_data.dart';
 import '../../models/node_model.dart';
 import '../../models/paymint/fee_object_model.dart';
@@ -48,16 +49,17 @@ import 'impl/salvium_wallet.dart';
 import 'impl/solana_wallet.dart';
 import 'impl/stellar_wallet.dart';
 import 'impl/sub_wallets/eth_token_wallet.dart';
+import 'impl/sub_wallets/solana_token_wallet.dart';
 import 'impl/tezos_wallet.dart';
 import 'impl/wownero_wallet.dart';
 import 'impl/xelis_wallet.dart';
 import 'intermediate/cryptonote_wallet.dart';
 import 'wallet_mixin_interfaces/electrumx_interface.dart';
-import 'wallet_mixin_interfaces/spark_interface.dart';
 import 'wallet_mixin_interfaces/mnemonic_interface.dart';
 import 'wallet_mixin_interfaces/multi_address_interface.dart';
 import 'wallet_mixin_interfaces/paynym_interface.dart';
 import 'wallet_mixin_interfaces/private_key_interface.dart';
+import 'wallet_mixin_interfaces/spark_interface.dart';
 import 'wallet_mixin_interfaces/view_only_option_interface.dart';
 
 abstract class Wallet<T extends CryptoCurrency> {
@@ -284,6 +286,20 @@ abstract class Wallet<T extends CryptoCurrency> {
     wallet.mainDB = ethWallet.mainDB;
 
     return wallet.._walletId = ethWallet.info.walletId;
+  }
+
+  static Wallet loadSolTokenWallet({
+    required SolanaWallet solWallet,
+    required SolContract contract,
+  }) {
+    final Wallet wallet = SolanaTokenWallet(solWallet, contract);
+
+    wallet.prefs = solWallet.prefs;
+    wallet.nodeService = solWallet.nodeService;
+    wallet.secureStorageInterface = solWallet.secureStorageInterface;
+    wallet.mainDB = solWallet.mainDB;
+
+    return wallet.._walletId = solWallet.info.walletId;
   }
 
   //============================================================================

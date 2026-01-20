@@ -14,14 +14,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
-import '../../providers/global/wallets_provider.dart';
 import '../../themes/stack_colors.dart';
 import '../../utilities/assets.dart';
 import '../../utilities/constants.dart';
 import '../../utilities/text_styles.dart';
 import '../../utilities/util.dart';
+import '../../wallets/crypto_currency/coins/solana.dart';
 import '../../wallets/isar/providers/wallet_info_provider.dart';
-import '../../wallets/wallet/impl/solana_wallet.dart';
 import '../../widgets/background.dart';
 import '../../widgets/conditional_parent.dart';
 import '../../widgets/custom_buttons/app_bar_icon_button.dart';
@@ -220,27 +219,21 @@ class _MyTokensViewState extends ConsumerState<MyTokensView> {
           ),
           const SizedBox(height: 8),
           Expanded(
-            child: Builder(
-              builder: (context) {
-                final wallet = ref.watch(pWallets).getWallet(widget.walletId);
-                final tokenAddresses = ref.watch(
-                  pWalletTokenAddresses(widget.walletId),
-                );
-                if (wallet is SolanaWallet) {
-                  return SolanaTokensList(
+            child: ref.watch(pWalletCoin(widget.walletId)) is Solana
+                ? SolanaTokensList(
                     walletId: widget.walletId,
                     searchTerm: _searchString,
-                    tokenMints: tokenAddresses,
-                  );
-                } else {
-                  return MyTokensList(
+                    tokenMints: ref.watch(
+                      pWalletTokenAddresses(widget.walletId),
+                    ),
+                  )
+                : MyTokensList(
                     walletId: widget.walletId,
                     searchTerm: _searchString,
-                    tokenContracts: tokenAddresses,
-                  );
-                }
-              },
-            ),
+                    tokenContracts: ref.watch(
+                      pWalletTokenAddresses(widget.walletId),
+                    ),
+                  ),
           ),
         ],
       ),

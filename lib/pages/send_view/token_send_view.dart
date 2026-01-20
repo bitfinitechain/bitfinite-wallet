@@ -295,7 +295,7 @@ class _TokenSendViewState extends ConsumerState<TokenSendView> {
     if (!_cryptoAmountChangeLock) {
       final cryptoAmount = ref
           .read(pAmountFormatter(coin))
-          .tryParse(cryptoAmountController.text, ethContract: tokenContract);
+          .tryParse(cryptoAmountController.text, tokenContract: tokenContract);
       if (cryptoAmount != null) {
         _amountToSend = cryptoAmount;
         if (_cachedAmountToSend != null &&
@@ -746,7 +746,7 @@ class _TokenSendViewState extends ConsumerState<TokenSendView> {
                                                     )),
                                                   )
                                                   .spendable,
-                                              ethContract: tokenContract,
+                                              tokenContract: tokenContract,
                                               withUnitName: false,
                                               indicatePrecisionLoss: true,
                                             );
@@ -772,7 +772,8 @@ class _TokenSendViewState extends ConsumerState<TokenSendView> {
                                                           )),
                                                         )
                                                         .spendable,
-                                                    ethContract: tokenContract,
+                                                    tokenContract:
+                                                        tokenContract,
                                                   ),
                                               style: STextStyles.titleBold12(
                                                 context,

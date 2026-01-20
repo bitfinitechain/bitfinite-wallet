@@ -11,12 +11,14 @@
 import 'dart:math' as math;
 
 import 'package:decimal/decimal.dart';
+
+import '../../models/isar/models/contract.dart';
 import '../../models/isar/models/ethereum/eth_contract.dart';
 import '../../models/isar/models/solana/sol_contract.dart';
-import 'amount.dart';
-import '../util.dart';
 import '../../wallets/crypto_currency/crypto_currency.dart';
 import '../../wallets/crypto_currency/intermediate/nano_currency.dart';
+import '../util.dart';
+import 'amount.dart';
 
 // preserve index order as index is used to store value in preferences
 enum AmountUnit {
@@ -30,8 +32,7 @@ enum AmountUnit {
   zepto(21),
   yocto(24),
   ronto(27),
-  quecto(30),
-  ;
+  quecto(30);
 
   const AmountUnit(this.shift);
   final int shift;
@@ -170,9 +171,7 @@ extension AmountUnitExt on AmountUnit {
       case AmountUnit.atto:
         return "wei";
       default:
-        throw ArgumentError(
-          "Does eth even allow more than 18 decimal places?",
-        );
+        throw ArgumentError("Does eth even allow more than 18 decimal places?");
     }
   }
 
@@ -201,7 +200,7 @@ extension AmountUnitExt on AmountUnit {
     String value, {
     required String locale,
     required CryptoCurrency coin,
-    EthContract? tokenContract,
+     Contract? tokenContract,
     bool overrideWithDecimalPlacesFromString = false,
   }) {
     final precisionLost = value.startsWith("~");
@@ -252,8 +251,7 @@ extension AmountUnitExt on AmountUnit {
     bool withUnitName = true,
     bool indicatePrecisionLoss = true,
     String? overrideUnit,
-    EthContract? tokenContract,
-    SolContract? splToken,
+    Contract? tokenContract,
   }) {
     assert(maxDecimalPlaces >= 0);
 
@@ -297,10 +295,6 @@ extension AmountUnitExt on AmountUnit {
         updatedMax = maxDecimalPlaces > tokenContract.decimals
             ? tokenContract.decimals
             : maxDecimalPlaces;
-      } else if (splToken != null) {
-        updatedMax = maxDecimalPlaces > splToken.decimals
-            ? splToken.decimals
-            : maxDecimalPlaces;
       } else {
         updatedMax = maxDecimalPlaces > coin.fractionDigits
             ? coin.fractionDigits
@@ -319,8 +313,9 @@ extension AmountUnitExt on AmountUnit {
 
       if (remainder.length > actualDecimalPlaces) {
         // check for loss of precision
-        final remainingRemainder =
-            BigInt.tryParse(remainder.substring(actualDecimalPlaces));
+        final remainingRemainder = BigInt.tryParse(
+          remainder.substring(actualDecimalPlaces),
+        );
         if (remainingRemainder != null) {
           didLosePrecision = remainingRemainder > BigInt.zero;
         }
@@ -354,10 +349,10 @@ extension AmountUnitExt on AmountUnit {
     }
 
     // return the value with the proper unit symbol
-    if (tokenContract != null) {
+    if (tokenContract is EthContract) {
       overrideUnit = unitForContract(tokenContract);
-    } else if (splToken != null) {
-      overrideUnit = unitForSplToken(splToken);
+    } else if (tokenContract is SolContract) {
+      overrideUnit = unitForSplToken(tokenContract);
     }
 
     return "$returnValue ${overrideUnit ?? unitForCoin(coin)}";

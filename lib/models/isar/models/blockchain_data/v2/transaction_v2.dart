@@ -88,6 +88,9 @@ class TransactionV2 {
   }
 
   @ignore
+  String? get memo => _getFromOtherData(key: TxV2OdKeys.memo) as String?;
+
+  @ignore
   int? get size => _getFromOtherData(key: TxV2OdKeys.size) as int?;
 
   @ignore
@@ -447,4 +450,5 @@ abstract final class TxV2OdKeys {
   static const isInstantLock = "isInstantLock";
   static const salviumTypeInt = "salviumTypeInt";
   static const salviumTypeString = "salviumTypeString";
+  static const memo = "onChainMemo";
 }

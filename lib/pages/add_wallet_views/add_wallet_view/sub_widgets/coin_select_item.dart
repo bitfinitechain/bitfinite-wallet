@@ -48,18 +48,17 @@ class _CoinSelectItemState extends ConsumerState<CoinSelectItem> {
 
     if (widget.entity is EthTokenEntity) {
       ExchangeDataLoadingService.instance.isar.then((isar) async {
-        final currency =
-            await isar.currencies
-                .where()
-                .exchangeNameEqualTo(ChangeNowExchange.exchangeName)
-                .filter()
-                .tokenContractEqualTo(
-                  (widget.entity as EthTokenEntity).token.address,
-                  caseSensitive: false,
-                )
-                .and()
-                .imageIsNotEmpty()
-                .findFirst();
+        final currency = await isar.currencies
+            .where()
+            .exchangeNameEqualTo(ChangeNowExchange.exchangeName)
+            .filter()
+            .tokenContractEqualTo(
+              (widget.entity as EthTokenEntity).token.address,
+              caseSensitive: false,
+            )
+            .and()
+            .imageIsNotEmpty()
+            .findFirst();
 
         if (mounted) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -75,24 +74,21 @@ class _CoinSelectItemState extends ConsumerState<CoinSelectItem> {
       final solToken = (widget.entity as SolTokenEntity).token;
 
       ExchangeDataLoadingService.instance.isar.then((isar) async {
-        final currency =
-            await isar.currencies
-                .where()
-                .exchangeNameEqualTo(ChangeNowExchange.exchangeName)
-                .filter()
-                .tokenContractEqualTo(
-                  solToken.address,
-                  caseSensitive: false,
-                )
-                .and()
-                .imageIsNotEmpty()
-                .findFirst();
+        final currency = await isar.currencies
+            .where()
+            .exchangeNameEqualTo(ChangeNowExchange.exchangeName)
+            .filter()
+            .tokenContractEqualTo(solToken.address, caseSensitive: false)
+            .and()
+            .imageIsNotEmpty()
+            .findFirst();
 
         if (mounted) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
               setState(() {
-                // Use exchange cache image if available, otherwise use logoUri if it's a PNG.
+                // Use exchange cache image if available,
+                // otherwise use logoUri if it's a PNG.
                 String? fallbackUri;
                 if (solToken.logoUri != null &&
                     solToken.logoUri!.endsWith('.png')) {
@@ -116,22 +112,21 @@ class _CoinSelectItemState extends ConsumerState<CoinSelectItem> {
 
     return Container(
       decoration: BoxDecoration(
-        color:
-            selectedEntity == widget.entity
-                ? Theme.of(context).extension<StackColors>()!.textFieldActiveBG
-                : Theme.of(context).extension<StackColors>()!.popupBG,
+        color: selectedEntity == widget.entity
+            ? Theme.of(context).extension<StackColors>()!.textFieldActiveBG
+            : Theme.of(context).extension<StackColors>()!.popupBG,
         borderRadius: BorderRadius.circular(
           Constants.size.circularBorderRadius,
         ),
       ),
       child: MaterialButton(
         key: Key(
-          "coinSelectItemButtonKey_${widget.entity.name}${widget.entity.ticker}",
+          "coinSelectItemButtonKey_"
+          "${widget.entity.name}${widget.entity.ticker}",
         ),
-        padding:
-            isDesktop
-                ? const EdgeInsets.only(left: 24)
-                : const EdgeInsets.all(12),
+        padding: isDesktop
+            ? const EdgeInsets.only(left: 24)
+            : const EdgeInsets.all(12),
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(
@@ -143,28 +138,45 @@ class _CoinSelectItemState extends ConsumerState<CoinSelectItem> {
           child: Row(
             children: [
               tokenImageUri != null
-                  ? SvgPicture.network(
-                    tokenImageUri!,
-                    width: 26,
-                    height: 26,
-                    placeholderBuilder: (_) => AppIcon(width: 26, height: 26),
-                  )
+                  ? tokenImageUri!.toLowerCase().endsWith(".svg")
+                        ? SvgPicture.network(
+                            tokenImageUri!,
+                            width: 26,
+                            height: 26,
+                            placeholderBuilder: (_) =>
+                                const AppIcon(width: 26, height: 26),
+                          )
+                        : Image.network(
+                            tokenImageUri!,
+                            width: 26,
+                            height: 26,
+                            errorBuilder: (_, _, _) => SvgPicture.file(
+                              File(
+                                ref.watch(
+                                  coinIconProvider(
+                                    widget.entity.cryptoCurrency,
+                                  ),
+                                ),
+                              ),
+                              width: 26,
+                              height: 26,
+                            ),
+                          )
                   : SvgPicture.file(
-                    File(
-                      ref.watch(coinIconProvider(widget.entity.cryptoCurrency)),
+                      File(
+                        ref.watch(
+                          coinIconProvider(widget.entity.cryptoCurrency),
+                        ),
+                      ),
+                      width: 26,
+                      height: 26,
                     ),
-                    width: 26,
-                    height: 26,
-                  ),
               SizedBox(width: isDesktop ? 12 : 10),
               Text(
                 "${widget.entity.name} (${widget.entity.ticker})",
-                style:
-                    isDesktop
-                        ? STextStyles.desktopTextMedium(context)
-                        : STextStyles.subtitle600(
-                          context,
-                        ).copyWith(fontSize: 14),
+                style: isDesktop
+                    ? STextStyles.desktopTextMedium(context)
+                    : STextStyles.subtitle600(context).copyWith(fontSize: 14),
               ),
               if (isDesktop && selectedEntity == widget.entity) const Spacer(),
               if (isDesktop && selectedEntity == widget.entity)
@@ -175,10 +187,9 @@ class _CoinSelectItemState extends ConsumerState<CoinSelectItem> {
                     height: 24,
                     child: SvgPicture.asset(
                       Assets.svg.check,
-                      color:
-                          Theme.of(
-                            context,
-                          ).extension<StackColors>()!.accentColorDark,
+                      color: Theme.of(
+                        context,
+                      ).extension<StackColors>()!.accentColorDark,
                     ),
                   ),
                 ),

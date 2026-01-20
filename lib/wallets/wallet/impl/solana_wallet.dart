@@ -107,8 +107,23 @@ class SolanaWallet extends Bip39Wallet<Solana> {
   }
 
   @override
+  int get isarTransactionVersion => 2;
+
+  @override
+  FilterOperation? get transactionFilterOperation => FilterGroup.not(
+    const FilterCondition.equalTo(
+      property: r"subType",
+      value: TransactionSubType.splToken,
+    ),
+  );
+
+  @override
   FilterOperation? get changeAddressFilterOperation =>
-      throw UnimplementedError();
+      FilterGroup.and(standardChangeAddressFilters);
+
+  @override
+  FilterOperation? get receivingAddressFilterOperation =>
+      FilterGroup.and(standardReceivingAddressFilters);
 
   @override
   Future<void> checkSaveInitialReceivingAddress() async {
@@ -364,10 +379,6 @@ class SolanaWallet extends Bip39Wallet<Solana> {
   }
 
   @override
-  FilterOperation? get receivingAddressFilterOperation =>
-      FilterGroup.and(standardReceivingAddressFilters);
-
-  @override
   Future<void> recover({required bool isRescan}) async {
     await refreshMutex.protect(() async {
       final addressStruct = await _generateAddress();
@@ -515,67 +526,57 @@ class SolanaWallet extends Bip39Wallet<Solana> {
           final txid = parsedTx.signatures.isNotEmpty
               ? parsedTx.signatures[0]
               : null;
+
+          if (parsedTx.signatures.length > 1) {
+            Logging.instance.w(
+              "SOL $walletId found tx with "
+              "${parsedTx.signatures.length} signatures",
+            );
+          }
+
           if (txid == null) {
             skippedCount++;
             continue;
           }
 
-          // Determine transaction direction.
-          final senderAddress = parsedTx.message.accountKeys[0].pubkey;
-          var receiverAddress = parsedTx.message.accountKeys.length > 1
-              ? parsedTx.message.accountKeys[1].pubkey
-              : senderAddress;
-          var txType = isar.TransactionType.unknown;
+          final systemTransfers = parsedTx.message.instructions
+              .map((e) => e.toJson())
+              .where(
+                (e) =>
+                    e.containsKey("parsed") &&
+                    e["program"] == "system" &&
+                    e["parsed"]["type"] == "transfer",
+              );
+
+          if (systemTransfers.length != 1) {
+            Logging.instance.w(
+              "SOL $walletId found tx with "
+              "${systemTransfers.length} system transfer! Skipping...",
+            );
+            skippedCount++;
+            continue;
+          }
+          final transfer = systemTransfers.first;
+          final lamports = BigInt.parse(
+            transfer["parsed"]["info"]["lamports"].toString(),
+          );
+          final senderAddress = transfer["parsed"]["info"]["source"] as String;
+          final receiverAddress =
+              transfer["parsed"]["info"]["destination"] as String;
+
+          final isar.TransactionType txType;
 
           if ((senderAddress == myAddress.value) &&
-              (receiverAddress == "11111111111111111111111111111111")) {
-            // System Program account means sent to self.
+              (receiverAddress == senderAddress)) {
             txType = isar.TransactionType.sentToSelf;
-            receiverAddress = senderAddress;
           } else if (senderAddress == myAddress.value) {
             txType = isar.TransactionType.outgoing;
           } else if (receiverAddress == myAddress.value) {
             txType = isar.TransactionType.incoming;
-          }
-
-          // Calculate transfer amount.
-          final amount = BigInt.from(
-            tx.meta!.postBalances[1] - tx.meta!.preBalances[1],
-          );
-
-          // Check if this transaction already exists.
-          // If it does, preserve the overrideFee from the pending transaction.
-          dynamic existingOverrideFee;
-          try {
-            final allTxsForWallet = await mainDB.isar.transactionV2s
-                .where()
-                .walletIdEqualTo(walletId)
-                .findAll();
-            for (final existingTx in allTxsForWallet) {
-              if (existingTx.txid == txid) {
-                final existingOtherData = existingTx.otherData;
-                if (existingOtherData != null && existingOtherData.isNotEmpty) {
-                  try {
-                    final otherDataMap = jsonDecode(existingOtherData);
-                    if (otherDataMap is Map &&
-                        otherDataMap.containsKey('overrideFee')) {
-                      existingOverrideFee = otherDataMap['overrideFee'];
-                    }
-                  } catch (e) {
-                    // Ignore parsing errors.
-                  }
-                }
-                break;
-              }
-            }
-          } catch (e) {
-            // Ignore database query errors.
-          }
-
-          // Build otherData, preserving overrideFee if it existed.
-          final otherDataMap = <String, dynamic>{};
-          if (existingOverrideFee != null) {
-            otherDataMap["overrideFee"] = existingOverrideFee;
+          } else {
+            // probably should never get here? If so, then this fragile parsing
+            // is broken which isn't surprising...
+            txType = isar.TransactionType.unknown;
           }
 
           // Create TransactionV2 object.
@@ -594,7 +595,7 @@ class SolanaWallet extends Bip39Wallet<Solana> {
                 sequence: null,
                 outpoint: null,
                 addresses: [senderAddress],
-                valueStringSats: amount.toString(),
+                valueStringSats: lamports.toString(),
                 witness: null,
                 innerRedeemScriptAsm: null,
                 coinbase: null,
@@ -604,17 +605,17 @@ class SolanaWallet extends Bip39Wallet<Solana> {
             outputs: [
               OutputV2.isarCantDoRequiredInDefaultConstructor(
                 scriptPubKeyHex: "00",
-                valueStringSats: amount.toString(),
+                valueStringSats: lamports.toString(),
                 addresses: [receiverAddress],
                 walletOwns: receiverAddress == myAddress.value,
               ),
             ],
-            version: -1,
+            version: tx.version?.version?.toInt() ?? -1,
             type: txType,
             subType: isar.TransactionSubType.none,
-            otherData: otherDataMap.isNotEmpty
-                ? jsonEncode(otherDataMap)
-                : null,
+            otherData: jsonEncode({
+              TxV2OdKeys.overrideFee: tx.meta!.fee.toString(),
+            }),
           );
 
           txns.add(txn);

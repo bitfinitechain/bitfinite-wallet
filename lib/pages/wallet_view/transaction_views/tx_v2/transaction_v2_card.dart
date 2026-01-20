@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../models/isar/models/blockchain_data/v2/transaction_v2.dart';
+import '../../../../models/isar/models/contract.dart';
 import '../../../../models/isar/models/isar_models.dart';
 import '../../../../providers/db/main_db_provider.dart';
 import '../../../../providers/global/locale_provider.dart';
@@ -43,7 +44,7 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
   late final String unit;
   late final CryptoCurrency coin;
   late final TransactionType txType;
-  late final EthContract? tokenContract;
+  late final Contract? tokenContract;
 
   bool get isTokenTx => tokenContract != null;
 
@@ -74,6 +75,12 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
       tokenContract = ref
           .read(mainDBProvider)
           .getEthContractSync(_transaction.contractAddress!);
+
+      unit = tokenContract!.symbol;
+    } else if (_transaction.subType == TransactionSubType.splToken) {
+      tokenContract = ref
+          .read(mainDBProvider)
+          .getSolContractSync(_transaction.contractAddress!);
 
       unit = tokenContract!.symbol;
     } else {
@@ -262,9 +269,23 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
                             child: FittedBox(
                               fit: BoxFit.scaleDown,
                               child: Builder(
-                                builder: (_) {
+                                builder: (context) {
+                                  final formattedAmount = ref
+                                      .watch(pAmountFormatter(coin))
+                                      .format(
+                                        amount,
+                                        ethContract:
+                                            tokenContract is EthContract
+                                            ? tokenContract as EthContract
+                                            : null,
+                                        solContract:
+                                            tokenContract is SolContract
+                                            ? tokenContract as SolContract
+                                            : null,
+                                      );
+
                                   return Text(
-                                    "$prefix${ref.watch(pAmountFormatter(coin)).format(amount, ethContract: tokenContract)}",
+                                    "$prefix$formattedAmount",
                                     style: STextStyles.itemSubtitle12(context),
                                   );
                                 },
@@ -293,9 +314,14 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
                               child: FittedBox(
                                 fit: BoxFit.scaleDown,
                                 child: Builder(
-                                  builder: (_) {
+                                  builder: (context) {
+                                    final formattedFiat =
+                                        (amount.decimal * price!)
+                                            .toAmount(fractionDigits: 2)
+                                            .fiatString(locale: locale);
+
                                     return Text(
-                                      "$prefix${Amount.fromDecimal(amount.decimal * price!, fractionDigits: 2).fiatString(locale: locale)} $baseCurrency",
+                                      "$prefix$formattedFiat $baseCurrency",
                                       style: STextStyles.label(context),
                                     );
                                   },

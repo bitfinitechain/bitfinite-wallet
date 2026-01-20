@@ -56,7 +56,7 @@ class SolanaTokenWallet extends Wallet {
     FilterCondition.equalTo(property: r"contractAddress", value: tokenMint),
     const FilterCondition.equalTo(
       property: r"subType",
-      value: TransactionSubType.ethToken,
+      value: TransactionSubType.splToken,
     ),
   ]);
 
@@ -448,19 +448,19 @@ class SolanaTokenWallet extends Wallet {
       final walletAddress = keyPair.address;
 
       // Find token account for this mint.
-      final senderTokenAccount = await _findTokenAccount(
+      final myTokenAccount = await _findTokenAccount(
         ownerAddress: walletAddress,
         mint: tokenMint,
         rpcClient: rpcClient,
       );
 
-      if (senderTokenAccount == null) {
+      if (myTokenAccount == null) {
         return;
       }
 
       // Fetch recent transactions for this token account.
       final txListIterable = await rpcClient.getTransactionsList(
-        Ed25519HDPublicKey.fromBase58(senderTokenAccount),
+        Ed25519HDPublicKey.fromBase58(myTokenAccount),
         encoding: Encoding.jsonParsed,
       );
 
@@ -488,50 +488,60 @@ class SolanaTokenWallet extends Wallet {
             continue;
           }
           final parsedTx = txDetails.transaction as ParsedTransaction;
-
-          // Get the txid for this transaction
           final txid = parsedTx.signatures.isNotEmpty
               ? parsedTx.signatures[0]
-              : "unknown_txid_$i";
+              : null;
 
-          // Check if this transaction already exists in the database.
-          // If it does, preserve the overrideFee from the pending transaction.
-          dynamic existingOverrideFee;
-          try {
-            final allTxsForWallet = await mainDB.isar.transactionV2s
-                .where()
-                .walletIdEqualTo(walletId)
-                .findAll();
-            for (final tx in allTxsForWallet) {
-              if (tx.txid == txid) {
-                final existingOtherData = tx.otherData;
-                if (existingOtherData != null && existingOtherData.isNotEmpty) {
-                  try {
-                    final otherDataMap = jsonDecode(existingOtherData);
-                    if (otherDataMap is Map &&
-                        otherDataMap.containsKey('overrideFee')) {
-                      existingOverrideFee = otherDataMap['overrideFee'];
-                    }
-                  } catch (e) {
-                    // Ignore parsing errors.
-                  }
-                }
-                break;
-              }
-            }
-          } catch (e) {
-            // Ignore database query errors.
+          if (parsedTx.signatures.length > 1) {
+            Logging.instance.w(
+              "SOL $walletId found tx with "
+              "${parsedTx.signatures.length} signatures",
+            );
           }
 
-          // Build otherData, preserving overrideFee if it existed.
-          final otherDataMap = <String, dynamic>{
-            "mint": tokenMint,
-            "senderTokenAccount": senderTokenAccount,
-            "recipientTokenAccount": senderTokenAccount,
-            "isCancelled": (txDetails.meta!.err != null),
-          };
-          if (existingOverrideFee != null) {
-            otherDataMap["overrideFee"] = existingOverrideFee;
+          if (txid == null) {
+            skippedCount++;
+            continue;
+          }
+
+          final splTransfers = parsedTx.message.instructions
+              .map((e) => e.toJson())
+              .where(
+                (e) =>
+                    e.containsKey("parsed") &&
+                    e["program"] == "spl-token" &&
+                    e["parsed"]["type"] == "transferChecked",
+              );
+
+          if (splTransfers.length != 1) {
+            Logging.instance.w(
+              "SOL $walletId found tx with "
+              "${splTransfers.length} spl transfer! Skipping...",
+            );
+            skippedCount++;
+            continue;
+          }
+          final transfer = splTransfers.first;
+          final lamports = BigInt.parse(
+            transfer["parsed"]["info"]["tokenAmount"]["amount"].toString(),
+          );
+          final senderAddress = transfer["parsed"]["info"]["source"] as String;
+          final receiverAddress =
+              transfer["parsed"]["info"]["destination"] as String;
+
+          final TransactionType txType;
+
+          if ((senderAddress == myTokenAccount) &&
+              (receiverAddress == senderAddress)) {
+            txType = TransactionType.sentToSelf;
+          } else if (senderAddress == myTokenAccount) {
+            txType = TransactionType.outgoing;
+          } else if (receiverAddress == myTokenAccount) {
+            txType = TransactionType.incoming;
+          } else {
+            // probably should never get here? If so, then this fragile parsing
+            // is broken which isn't surprising...
+            txType = TransactionType.unknown;
           }
 
           // Create placeholder TransactionV2 object.
@@ -550,26 +560,30 @@ class SolanaTokenWallet extends Wallet {
                 scriptSigAsm: null,
                 sequence: null,
                 outpoint: null,
-                addresses: [senderTokenAccount],
-                valueStringSats: "0",
+                addresses: [senderAddress],
+                valueStringSats: lamports.toString(),
                 witness: null,
                 innerRedeemScriptAsm: null,
                 coinbase: null,
-                walletOwns: true,
+                walletOwns: senderAddress == myTokenAccount,
               ),
             ],
             outputs: [
               OutputV2.isarCantDoRequiredInDefaultConstructor(
                 scriptPubKeyHex: "00",
-                valueStringSats: "0",
-                addresses: [senderTokenAccount],
-                walletOwns: false,
+                valueStringSats: lamports.toString(),
+                addresses: [receiverAddress],
+                walletOwns: receiverAddress == myTokenAccount,
               ),
             ],
-            version: -1,
-            type: TransactionType.outgoing,
+            version: txDetails.version?.version?.toInt() ?? -1,
+            type: txType,
             subType: TransactionSubType.splToken,
-            otherData: jsonEncode(otherDataMap),
+            otherData: jsonEncode({
+              TxV2OdKeys.contractAddress: tokenMint,
+              TxV2OdKeys.isCancelled: (txDetails.meta!.err != null),
+              TxV2OdKeys.overrideFee: txDetails.meta!.fee.toString(),
+            }),
           );
 
           txns.add(txn);

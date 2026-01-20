@@ -22,7 +22,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../models/isar/models/blockchain_data/transaction.dart';
 import '../../../../models/isar/models/blockchain_data/v2/transaction_v2.dart';
+import '../../../../models/isar/models/contract.dart';
 import '../../../../models/isar/models/ethereum/eth_contract.dart';
+import '../../../../models/isar/models/solana/sol_contract.dart';
 import '../../../../notifications/show_flush_bar.dart';
 import '../../../../providers/global/address_book_service_provider.dart';
 import '../../../../providers/providers.dart';
@@ -97,11 +99,11 @@ class _TransactionV2DetailsViewState
   late final String amountPrefix;
   late final String unit;
   late final int minConfirms;
-  late final EthContract? ethContract;
+  late final Contract? tokenContract;
   late final bool supportsRbf;
   late final bool hasTxKeyProbably;
 
-  bool get isTokenTx => ethContract != null;
+  bool get isTokenTx => tokenContract != null;
 
   late final List<({List<String> addresses, Amount amount})> data;
 
@@ -200,13 +202,13 @@ class _TransactionV2DetailsViewState
     coin = widget.coin;
 
     if (_transaction.subType == TransactionSubType.ethToken) {
-      ethContract = ref
+      tokenContract = ref
           .read(mainDBProvider)
           .getEthContractSync(_transaction.contractAddress!);
 
-      unit = ethContract!.symbol;
+      unit = tokenContract!.symbol;
     } else {
-      ethContract = null;
+      tokenContract = null;
       unit = coin.ticker;
     }
 
@@ -216,7 +218,7 @@ class _TransactionV2DetailsViewState
         .cryptoCurrency
         .minConfirms;
 
-    final fractionDigits = ethContract?.decimals ?? coin.fractionDigits;
+    final fractionDigits = tokenContract?.decimals ?? coin.fractionDigits;
 
     fee = _transaction.getFee(fractionDigits: fractionDigits);
 
@@ -571,109 +573,19 @@ class _TransactionV2DetailsViewState
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              RoundedWhiteContainer(
-                                padding: isDesktop
-                                    ? const EdgeInsets.all(0)
-                                    : const EdgeInsets.all(12),
-                                child: Container(
-                                  decoration: isDesktop
-                                      ? BoxDecoration(
-                                          color: Theme.of(context)
-                                              .extension<StackColors>()!
-                                              .backgroundAppBar,
-                                          borderRadius: BorderRadius.vertical(
-                                            top: Radius.circular(
-                                              Constants
-                                                  .size
-                                                  .circularBorderRadius,
-                                            ),
-                                          ),
-                                        )
-                                      : null,
-                                  child: Padding(
-                                    padding: isDesktop
-                                        ? const EdgeInsets.all(12)
-                                        : const EdgeInsets.all(0),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        if (isDesktop)
-                                          Row(
-                                            children: [
-                                              TxIcon(
-                                                transaction: _transaction,
-                                                currentHeight: currentHeight,
-                                                coin: coin,
-                                              ),
-                                              const SizedBox(width: 16),
-                                              SelectableText(
-                                                whatIsIt(
-                                                  _transaction,
-                                                  currentHeight,
-                                                ),
-                                                style:
-                                                    STextStyles.desktopTextMedium(
-                                                      context,
-                                                    ),
-                                              ),
-                                            ],
-                                          ),
-                                        Column(
-                                          crossAxisAlignment: isDesktop
-                                              ? CrossAxisAlignment.end
-                                              : CrossAxisAlignment.start,
-                                          children: [
-                                            SelectableText(
-                                              "$amountPrefix${ref.watch(pAmountFormatter(coin)).format(amount, ethContract: ethContract)}",
-                                              style: detailStyle,
-                                            ),
-                                            const SizedBox(height: 2),
-                                            if (price != null)
-                                              Builder(
-                                                builder: (context) {
-                                                  final total =
-                                                      (amount.decimal * price!)
-                                                          .toAmount(
-                                                            fractionDigits: 2,
-                                                          );
-                                                  final formatted = total
-                                                      .fiatString(
-                                                        locale: ref.watch(
-                                                          localeServiceChangeNotifierProvider
-                                                              .select(
-                                                                (value) => value
-                                                                    .locale,
-                                                              ),
-                                                        ),
-                                                      );
-                                                  final ticker = ref.watch(
-                                                    prefsChangeNotifierProvider
-                                                        .select(
-                                                          (value) =>
-                                                              value.currency,
-                                                        ),
-                                                  );
-                                                  return SelectableText(
-                                                    "$amountPrefix$formatted $ticker",
-                                                    style: labelStyle,
-                                                  );
-                                                },
-                                              ),
-                                          ],
-                                        ),
-                                        if (!isDesktop)
-                                          TxIcon(
-                                            transaction: _transaction,
-                                            currentHeight: currentHeight,
-                                            coin: coin,
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
+                              _TxDetailsAmountHeader(
+                                isDesktop: isDesktop,
+                                currentHeight: currentHeight,
+                                transaction: _transaction,
+                                coin: coin,
+                                whatIsIt: whatIsIt,
+                                amount: amount,
+                                price: price,
+                                labelStyle: labelStyle,
+                                detailStyle: detailStyle,
+                                amountPrefix: amountPrefix,
+                                tokenContract: tokenContract,
                               ),
-
                               isDesktop
                                   ? const _Divider()
                                   : const SizedBox(height: 12),
@@ -2213,6 +2125,135 @@ class _TxidDetailItemState extends ConsumerState<_TxidDetailItem> {
                 if (isDesktop) IconCopyButton(data: widget.txid),
               ],
             ),
+    );
+  }
+}
+
+class _TxDetailsAmountHeader extends ConsumerWidget {
+  const _TxDetailsAmountHeader({
+    required this.isDesktop,
+    required this.currentHeight,
+    required this.transaction,
+    required this.coin,
+    required this.whatIsIt,
+    required this.amount,
+    this.price,
+    required this.labelStyle,
+    required this.detailStyle,
+    required this.amountPrefix,
+    this.tokenContract,
+  });
+
+  final bool isDesktop;
+  final int currentHeight;
+  final TransactionV2 transaction;
+  final CryptoCurrency coin;
+  final String Function(TransactionV2, int) whatIsIt;
+  final Amount amount;
+  final Decimal? price;
+  final TextStyle labelStyle;
+  final TextStyle detailStyle;
+  final String amountPrefix;
+  final Contract? tokenContract;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return RoundedWhiteContainer(
+      padding: isDesktop ? const EdgeInsets.all(0) : const EdgeInsets.all(12),
+      child: Container(
+        decoration: isDesktop
+            ? BoxDecoration(
+                color: Theme.of(
+                  context,
+                ).extension<StackColors>()!.backgroundAppBar,
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(Constants.size.circularBorderRadius),
+                ),
+              )
+            : null,
+        child: Padding(
+          padding: isDesktop
+              ? const EdgeInsets.all(12)
+              : const EdgeInsets.all(0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              if (isDesktop)
+                Row(
+                  children: [
+                    TxIcon(
+                      transaction: transaction,
+                      currentHeight: currentHeight,
+                      coin: coin,
+                    ),
+                    const SizedBox(width: 16),
+                    SelectableText(
+                      whatIsIt(transaction, currentHeight),
+                      style: STextStyles.desktopTextMedium(context),
+                    ),
+                  ],
+                ),
+              Column(
+                crossAxisAlignment: isDesktop
+                    ? CrossAxisAlignment.end
+                    : CrossAxisAlignment.start,
+                children: [
+                  Builder(
+                    builder: (context) {
+                      final formattedAmount = ref
+                          .watch(pAmountFormatter(coin))
+                          .format(
+                            amount,
+                            ethContract: tokenContract is EthContract
+                                ? tokenContract as EthContract
+                                : null,
+                            solContract: tokenContract is SolContract
+                                ? tokenContract as SolContract
+                                : null,
+                          );
+                      return SelectableText(
+                        "$amountPrefix$formattedAmount",
+                        style: detailStyle,
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 2),
+                  if (price != null)
+                    Builder(
+                      builder: (context) {
+                        final total = (amount.decimal * price!).toAmount(
+                          fractionDigits: 2,
+                        );
+                        final formatted = total.fiatString(
+                          locale: ref.watch(
+                            localeServiceChangeNotifierProvider.select(
+                              (value) => value.locale,
+                            ),
+                          ),
+                        );
+                        final ticker = ref.watch(
+                          prefsChangeNotifierProvider.select(
+                            (value) => value.currency,
+                          ),
+                        );
+                        return SelectableText(
+                          "$amountPrefix$formatted $ticker",
+                          style: labelStyle,
+                        );
+                      },
+                    ),
+                ],
+              ),
+              if (!isDesktop)
+                TxIcon(
+                  transaction: transaction,
+                  currentHeight: currentHeight,
+                  coin: coin,
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

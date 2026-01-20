@@ -1046,15 +1046,7 @@ class _DesktopTransactionCardRowState
                   builder: (context) {
                     final formattedAmount = ref
                         .watch(pAmountFormatter(coin))
-                        .format(
-                          amount,
-                          ethContract: contract is EthContract
-                              ? contract as EthContract
-                              : null,
-                          solContract: contract is SolContract
-                              ? contract as SolContract
-                              : null,
-                        );
+                        .format(amount, tokenContract: contract);
 
                     return Text(
                       "$prefix$formattedAmount",

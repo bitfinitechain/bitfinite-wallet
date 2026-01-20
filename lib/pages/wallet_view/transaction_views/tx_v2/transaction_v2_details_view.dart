@@ -23,8 +23,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../models/isar/models/blockchain_data/transaction.dart';
 import '../../../../models/isar/models/blockchain_data/v2/transaction_v2.dart';
 import '../../../../models/isar/models/contract.dart';
-import '../../../../models/isar/models/ethereum/eth_contract.dart';
-import '../../../../models/isar/models/solana/sol_contract.dart';
 import '../../../../notifications/show_flush_bar.dart';
 import '../../../../providers/global/address_book_service_provider.dart';
 import '../../../../providers/providers.dart';
@@ -201,7 +199,13 @@ class _TransactionV2DetailsViewState
 
     coin = widget.coin;
 
-    if (_transaction.subType == TransactionSubType.ethToken) {
+    if (_transaction.subType == TransactionSubType.splToken) {
+      tokenContract = ref
+          .read(mainDBProvider)
+          .getSolContractSync(_transaction.contractAddress!);
+
+      unit = tokenContract!.symbol;
+    } else if (_transaction.subType == TransactionSubType.ethToken) {
       tokenContract = ref
           .read(mainDBProvider)
           .getEthContractSync(_transaction.contractAddress!);
@@ -2202,15 +2206,7 @@ class _TxDetailsAmountHeader extends ConsumerWidget {
                     builder: (context) {
                       final formattedAmount = ref
                           .watch(pAmountFormatter(coin))
-                          .format(
-                            amount,
-                            ethContract: tokenContract is EthContract
-                                ? tokenContract as EthContract
-                                : null,
-                            solContract: tokenContract is SolContract
-                                ? tokenContract as SolContract
-                                : null,
-                          );
+                          .format(amount, tokenContract: tokenContract);
                       return SelectableText(
                         "$amountPrefix$formattedAmount",
                         style: detailStyle,

@@ -274,14 +274,7 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
                                       .watch(pAmountFormatter(coin))
                                       .format(
                                         amount,
-                                        ethContract:
-                                            tokenContract is EthContract
-                                            ? tokenContract as EthContract
-                                            : null,
-                                        solContract:
-                                            tokenContract is SolContract
-                                            ? tokenContract as SolContract
-                                            : null,
+                                        tokenContract: tokenContract,
                                       );
 
                                   return Text(

@@ -12,7 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../models/balance.dart';
-import '../../../../models/isar/models/ethereum/eth_contract.dart';
+import '../../../../models/isar/models/contract.dart';
 import '../../../../pages/wallet_view/sub_widgets/wallet_refresh_button.dart';
 import '../../../../providers/providers.dart';
 import '../../../../providers/wallet/public_private_balance_state_provider.dart';
@@ -33,7 +33,6 @@ import '../../../../wallets/isar/providers/eth/token_balance_provider.dart';
 import '../../../../wallets/isar/providers/solana/current_sol_token_wallet_provider.dart';
 import '../../../../wallets/isar/providers/solana/sol_token_balance_provider.dart';
 import '../../../../wallets/isar/providers/wallet_info_provider.dart';
-import '../../../../wallets/wallet/impl/sub_wallets/solana_token_wallet.dart';
 import 'desktop_balance_toggle_button.dart';
 
 class DesktopWalletSummary extends ConsumerStatefulWidget {
@@ -83,44 +82,34 @@ class _WDesktopWalletSummaryState extends ConsumerState<DesktopWalletSummary> {
       prefsChangeNotifierProvider.select((value) => value.currency),
     );
 
-    // For Ethereum tokens, get the token contract; for Solana tokens, get the token wallet.
-    final EthContract? tokenContract;
-    final SolanaTokenWallet? solanaTokenWallet;
+    final coin = ref.watch(pWalletCoin(walletId));
+    final Contract? tokenContract;
+
     if (widget.isToken) {
-      switch (ref.watch(pWalletCoin(walletId))) {
+      switch (coin) {
         case Ethereum():
           tokenContract = ref.watch(
             pCurrentTokenWallet.select((value) => value!.tokenContract),
           );
-          solanaTokenWallet = null;
           break;
 
         case Solana():
-          tokenContract = null;
-          // this cannot be null if coin is sol and isToken is true.
-          // if it is null, then there is a bug somewhere else.
-          solanaTokenWallet = ref.watch(pCurrentSolanaTokenWallet);
+          tokenContract = ref.watch(
+            pCurrentSolanaTokenWallet.select((value) => value!.solContract),
+          );
           break;
 
         default:
           tokenContract = null;
-          solanaTokenWallet = null;
       }
     } else {
       tokenContract = null;
-      solanaTokenWallet = null;
     }
 
-    final price = widget.isToken && tokenContract != null
+    final price = tokenContract != null
         ? ref.watch(
             priceAnd24hChangeNotifierProvider.select(
               (value) => value.getTokenPrice(tokenContract!.address),
-            ),
-          )
-        : widget.isToken && solanaTokenWallet != null
-        ? ref.watch(
-            priceAnd24hChangeNotifierProvider.select(
-              (value) => value.getTokenPrice(solanaTokenWallet!.tokenMint),
             ),
           )
         : ref.watch(
@@ -148,7 +137,7 @@ class _WDesktopWalletSummaryState extends ConsumerState<DesktopWalletSummary> {
       }
     } else {
       final Balance balance;
-      if (widget.isToken && tokenContract != null) {
+      if (tokenContract != null && coin is Ethereum) {
         // Ethereum token balance
         balance = ref.watch(
           pTokenBalance((
@@ -156,12 +145,12 @@ class _WDesktopWalletSummaryState extends ConsumerState<DesktopWalletSummary> {
             contractAddress: tokenContract.address,
           )),
         );
-      } else if (widget.isToken && solanaTokenWallet != null) {
+      } else if (tokenContract != null && coin is Solana) {
         // Watch Solana token balance from db.
         balance = ref.watch(
           pSolanaTokenBalance((
             walletId: walletId,
-            tokenMint: solanaTokenWallet.tokenMint,
+            tokenMint: tokenContract.address,
           )),
         );
       } else {
@@ -185,11 +174,7 @@ class _WDesktopWalletSummaryState extends ConsumerState<DesktopWalletSummary> {
                   child: SelectableText(
                     ref
                         .watch(pAmountFormatter(coin))
-                        .format(
-                          balanceToShow,
-                          ethContract: tokenContract,
-                          solContract: solanaTokenWallet?.solContract,
-                        ),
+                        .format(balanceToShow, tokenContract: tokenContract),
                     style: STextStyles.desktopH3(context),
                   ),
                 ),

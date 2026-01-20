@@ -13,8 +13,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../db/isar/main_db.dart';
 import '../../../models/isar/models/contract.dart';
-import '../../../models/isar/models/ethereum/eth_contract.dart';
-import '../../../models/isar/models/solana/sol_contract.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/amount/amount.dart';
 import '../../../utilities/amount/amount_formatter.dart';
@@ -87,11 +85,7 @@ class WalletInfoRowBalance extends ConsumerWidget {
     return Text(
       ref
           .watch(pAmountFormatter(info.coin))
-          .format(
-            totalBalance,
-            ethContract: contract is EthContract ? contract : null,
-            solContract: contract is SolContract ? contract : null,
-          ),
+          .format(totalBalance, tokenContract: contract),
       style: Util.isDesktop
           ? STextStyles.desktopTextExtraSmall(context).copyWith(
               color: Theme.of(context).extension<StackColors>()!.textSubtitle1,

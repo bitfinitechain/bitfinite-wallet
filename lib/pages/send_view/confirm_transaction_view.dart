@@ -723,14 +723,12 @@ class _ConfirmTransactionViewState
                               .watch(pAmountFormatter(coin))
                               .format(
                                 amountWithoutChange,
-                                ethContract:
+                                tokenContract:
                                     widget.isTokenTx && wallet is! SolanaWallet
                                     ? ref
                                           .watch(pCurrentTokenWallet)!
                                           .tokenContract
-                                    : null,
-                                solContract:
-                                    widget.isTokenTx && wallet is SolanaWallet
+                                    : widget.isTokenTx && wallet is SolanaWallet
                                     ? ref
                                           .watch(pCurrentSolanaTokenWallet)!
                                           .solContract
@@ -975,7 +973,7 @@ class _ConfirmTransactionViewState
                                           .watch(pAmountFormatter(coin))
                                           .format(
                                             amountWithoutChange,
-                                            ethContract:
+                                            tokenContract:
                                                 widget.isTokenTx &&
                                                     wallet is! SolanaWallet
                                                 ? ref
@@ -983,10 +981,8 @@ class _ConfirmTransactionViewState
                                                         pCurrentTokenWallet,
                                                       )!
                                                       .tokenContract
-                                                : null,
-                                            solContract:
-                                                widget.isTokenTx &&
-                                                    wallet is SolanaWallet
+                                                : widget.isTokenTx &&
+                                                      wallet is SolanaWallet
                                                 ? ref
                                                       .watch(
                                                         pCurrentSolanaTokenWallet,

@@ -65,7 +65,12 @@ class Epiccash extends Bip39Currency {
       }
     }
 
-    return libEpic.validateSendAddress(address: address);
+    if (address.contains("@")) {
+      return true; // Epicbox address format
+    }
+
+    // Very very basic (bad) check
+    return address.isNotEmpty && address.length > 10;
   }
 
   @override

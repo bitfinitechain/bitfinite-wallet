@@ -160,9 +160,12 @@ class EpiccashWallet extends Bip39Wallet {
       throw Exception('Wallet password not found');
     }
 
+    final epicboxConfig = await getEpicBoxConfig();
+
     _wallet = await epic.EpicWallet.load(
       config: config,
       password: password,
+      epicboxConfig: epicboxConfig.toString(),
     );
 
     final handle = _wallet!.handle;
@@ -186,14 +189,11 @@ class EpiccashWallet extends Bip39Wallet {
       if (_wallet == null) {
         throw Exception('Wallet not initialized');
       }
-      final EpicBoxConfigModel epicboxConfig = await getEpicBoxConfig();
-
       // Create transaction with returnSlate: true for slatepack mode.
       final result = await _wallet!.createTransaction(
         amount: amount.raw.toInt(),
         address: 'slate', // Not used in slate mode.
         secretKeyIndex: 0,
-        epicboxConfig: epicboxConfig.toString(),
         minimumConfirmations:
             minimumConfirmations ?? cryptoCurrency.minConfirms,
         note: message ?? '',
@@ -632,7 +632,6 @@ class EpiccashWallet extends Bip39Wallet {
 
     final walletAddress = await _wallet!.getAddressInfo(
       index: index,
-      epicboxConfig: epicboxConfig.toString(),
     );
 
     Logging.instance.d("WALLET_ADDRESS_IS $walletAddress");
@@ -850,6 +849,7 @@ class EpiccashWallet extends Bip39Wallet {
           mnemonic: mnemonicString,
           password: password,
           name: name,
+          epicboxConfig: epicboxConfig.toString(),
         ); // Spawns worker isolate
 
         // Store the wallet handle for listeners
@@ -891,10 +891,12 @@ class EpiccashWallet extends Bip39Wallet {
           final password = await secureStorageInterface.read(
             key: '${walletId}_password',
           );
+          final epicboxConfig = await getEpicBoxConfig();
 
           _wallet = await epic.EpicWallet.load(
             config: config,
             password: password!,
+            epicboxConfig: epicboxConfig.toString(),
           ); // Spawns worker isolate
 
           // Store the wallet handle for listeners
@@ -957,7 +959,6 @@ class EpiccashWallet extends Bip39Wallet {
           amount: txData.recipients!.first.amount.raw.toInt(),
           address: txData.recipients!.first.address,
           secretKeyIndex: 0,
-          epicboxConfig: epicboxConfig.toString(),
           minimumConfirmations: cryptoCurrency.minConfirms,
           note: txData.noteOnChain!,
         )).toRecord();
@@ -1090,6 +1091,7 @@ class EpiccashWallet extends Bip39Wallet {
           final password = await secureStorageInterface.read(
             key: '${walletId}_password',
           );
+          final epicboxConfig = await getEpicBoxConfig();
 
           // maybe there is some way to tel epic-wallet rust to fully rescan...
           final result = await deleteEpicWallet(
@@ -1104,6 +1106,13 @@ class EpiccashWallet extends Bip39Wallet {
             password: password!,
             mnemonic: await getMnemonic(),
             name: info.walletId,
+            epicboxConfig: epicboxConfig.toString(),
+          );
+
+          // Save wallet handle after recovery
+          await secureStorageInterface.write(
+            key: '${walletId}_wallet',
+            value: _wallet!.handle,
           );
 
           highestPercent = 0;
@@ -1134,6 +1143,13 @@ class EpiccashWallet extends Bip39Wallet {
             password: password,
             mnemonic: await getMnemonic(),
             name: info.walletId,
+            epicboxConfig: epicboxConfig.toString(),
+          );
+
+          // Save wallet handle after recovery
+          await secureStorageInterface.write(
+            key: '${walletId}_wallet',
+            value: _wallet!.handle,
           );
 
           final epicData = ExtraEpiccashWalletInfo(
@@ -1199,6 +1215,8 @@ class EpiccashWallet extends Bip39Wallet {
       // this will always be zero????
       final int curAdd = await _getCurrentIndex();
       await _generateAndStoreReceivingAddressForIndex(curAdd);
+
+      await _ensureWalletOpen();
 
       if (doScan) {
         await _startScans();

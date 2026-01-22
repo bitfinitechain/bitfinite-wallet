@@ -79,7 +79,7 @@ abstract class LibEpicCashInterface {
 
   List<String> getActiveListenerWalletIds();
 
-  bool validateSendAddress({required String address});
+  Future<bool> validateSendAddress({required String address});
 
   Future<({int fee, bool strategyUseAll, int total})> getTransactionFees({
     required String wallet,

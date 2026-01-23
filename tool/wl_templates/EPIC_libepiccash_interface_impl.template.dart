@@ -35,10 +35,7 @@ final class _LibEpicCashInterfaceImpl extends LibEpicCashInterface {
     required String wallet,
     required String slateJson,
   }) {
-    return LibEpiccash.txReceive(
-      wallet: wallet,
-      slateJson: slateJson,
-    );
+    return LibEpiccash.txReceive(wallet: wallet, slateJson: slateJson);
   }
 
   @override
@@ -46,14 +43,12 @@ final class _LibEpicCashInterfaceImpl extends LibEpicCashInterface {
     required String wallet,
     required String slateJson,
   }) {
-    return LibEpiccash.txFinalize(
-      wallet: wallet,
-      slateJson: slateJson,
-    );
+    return LibEpiccash.txFinalize(wallet: wallet, slateJson: slateJson);
   }
 
   @override
-  Future<({String commitId, String slateId, String slateJson})> createTransaction({
+  Future<({String commitId, String slateId, String slateJson})>
+  createTransaction({
     required String wallet,
     required int amount,
     required String address,

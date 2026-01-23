@@ -40,7 +40,8 @@ abstract class LibEpicCashInterface {
     required String address,
   });
 
-  Future<({String commitId, String slateId, String slateJson})> createTransaction({
+  Future<({String commitId, String slateId, String slateJson})>
+  createTransaction({
     required String wallet,
     required int amount,
     required String address,

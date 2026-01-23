@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import '../../utilities/dynamic_object.dart';
+
 export '../generated/libepiccash_interface_impl.dart';
 
 abstract class LibEpicCashInterface {
@@ -16,7 +18,11 @@ abstract class LibEpicCashInterface {
     required String name,
   });
 
-  Future<String> openWallet({required String config, required String password});
+  Future<DynamicObject> openWallet({
+    required String config,
+    required String password,
+    required String epicboxConfig,
+  });
 
   Future<void> recoverWallet({
     required String config,

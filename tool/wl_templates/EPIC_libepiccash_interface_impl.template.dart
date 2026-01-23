@@ -2,8 +2,9 @@
 import 'package:flutter_libepiccash/git_versions.dart' as epic_versions;
 import 'package:flutter_libepiccash/lib.dart';
 import 'package:flutter_libepiccash/models/transaction.dart';
-
 //END_ON
+import 'package:stackwallet/utilities/dynamic_object.dart';
+
 import '../interfaces/libepiccash_interface.dart';
 
 LibEpicCashInterface get libEpic => _getLib();
@@ -197,11 +198,18 @@ final class _LibEpicCashInterfaceImpl extends LibEpicCashInterface {
   }
 
   @override
-  Future<String> openWallet({
+  Future<DynamicObject> openWallet({
     required String config,
     required String password,
-  }) {
-    return LibEpiccash.openWallet(config: config, password: password);
+    required String epicboxConfig,
+  }) async {
+    final wallet = await EpicWallet.load(
+      config: config,
+      password: password,
+      epicboxConfig: epicboxConfig,
+    );
+
+    return DynamicObject(wallet);
   }
 
   @override

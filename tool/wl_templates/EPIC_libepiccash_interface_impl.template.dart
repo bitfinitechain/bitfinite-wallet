@@ -2,9 +2,9 @@
 import 'package:flutter_libepiccash/git_versions.dart' as epic_versions;
 import 'package:flutter_libepiccash/lib.dart';
 import 'package:flutter_libepiccash/models/transaction.dart';
-//END_ON
-import 'package:stackwallet/utilities/dynamic_object.dart';
 
+//END_ON
+import '../../utilities/dynamic_object.dart';
 import '../interfaces/libepiccash_interface.dart';
 
 LibEpicCashInterface get libEpic => _getLib();

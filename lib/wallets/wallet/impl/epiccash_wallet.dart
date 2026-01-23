@@ -28,6 +28,7 @@ import '../../../services/event_bus/events/global/wallet_sync_status_changed_eve
 import '../../../services/event_bus/global_event_bus.dart';
 import '../../../utilities/amount/amount.dart';
 import '../../../utilities/default_epicboxes.dart';
+import '../../../utilities/dynamic_object.dart';
 import '../../../utilities/flutter_secure_storage_interface.dart';
 import '../../../utilities/logger.dart';
 import '../../../utilities/stack_file_system.dart';
@@ -39,8 +40,6 @@ import '../../models/tx_data.dart';
 import '../intermediate/bip39_wallet.dart';
 import '../supporting/epiccash_wallet_info_extension.dart';
 
-import 'package:flutter_libepiccash/flutter_libepiccash.dart' as epic;
-
 //
 // refactor of https://github.com/cypherstack/stack_wallet/blob/1d9fb4cd069f22492ece690ac788e05b8f8b1209/lib/services/coins/epiccash/epiccash_wallet.dart
 //
@@ -51,7 +50,7 @@ class EpiccashWallet extends Bip39Wallet {
   NodeModel? _epicNode;
   Timer? timer;
 
-  epic.EpicWallet? _wallet;
+  DynamicObject? _wallet;
 
   double highestPercent = 0;
   Future<double> get getSyncPercent async {
@@ -78,7 +77,7 @@ class EpiccashWallet extends Bip39Wallet {
   Future<void> open() async {
     if (_wallet != null) {
       Logging.instance.d("Wallet already open, ensuring listener");
-      if (!await _wallet!.isEpicboxListenerRunning()) {
+      if (!await libEpic.isEpicboxListenerRunning(wallet: _wallet!)) {
         await _listenToEpicbox();
       }
       return;
@@ -95,21 +94,17 @@ class EpiccashWallet extends Bip39Wallet {
 
       final epicboxConfig = await getEpicBoxConfig();
 
-      _wallet = await epic.EpicWallet.load(
+      _wallet = await libEpic.openWallet(
         config: config,
         password: password,
         epicboxConfig: epicboxConfig.toString(),
       );
 
-      // Store wallet handle
-      await secureStorageInterface.write(
-        key: '${walletId}_wallet',
-        value: _wallet!.handle,
-      );
-
       await _listenToEpicbox();
 
-      Logging.instance.d("Epic wallet opened successfully with persistent isolate");
+      Logging.instance.d(
+        "Epic wallet opened successfully with persistent isolate",
+      );
     } catch (e, s) {
       Logging.instance.e("Failed to open Epic wallet", error: e, stackTrace: s);
       _wallet = null;
@@ -128,7 +123,7 @@ class EpiccashWallet extends Bip39Wallet {
       key: '${walletId}_epicboxConfig',
       value: stringConfig,
     );
-    _wallet?.updateEpicboxConfig(stringConfig);
+    libEpic.updateEpicboxConfig(wallet: _wallet!, epicBoxConfig: stringConfig);
     // TODO: refresh anything that needs to be refreshed/updated due to epicbox info changed
   }
 
@@ -140,7 +135,8 @@ class EpiccashWallet extends Bip39Wallet {
         throw Exception('Wallet not initialized');
       }
 
-      final result = await _wallet!.cancelTransaction(
+      final result = await libEpic.cancelTransaction(
+        wallet: _wallet!,
         transactionId: txSlateId,
       );
       Logging.instance.d("cancel $txSlateId result: $result");
@@ -158,7 +154,8 @@ class EpiccashWallet extends Bip39Wallet {
 
     //Get the default Epicbox server and check if it's conected
     // bool isEpicboxConnected = await _testEpicboxServer(
-    //     DefaultEpicBoxes.defaultEpicBoxServer.host, DefaultEpicBoxes.defaultEpicBoxServer.port ?? 443);
+    //     DefaultEpicBoxes.defaultEpicBoxServer.host,
+    //     DefaultEpicBoxes.defaultEpicBoxServer.port ?? 443);
 
     // if (isEpicboxConnected) {
     //Use default server for as Epicbox config
@@ -205,7 +202,8 @@ class EpiccashWallet extends Bip39Wallet {
         throw Exception('Wallet not opened. Call open() first.');
       }
       // Create transaction with returnSlate: true for slatepack mode.
-      final result = await _wallet!.createTransaction(
+      final result = await libEpic.createTransaction(
+        wallet: _wallet!,
         amount: amount.raw.toInt(),
         address: 'slate', // Not used in slate mode.
         secretKeyIndex: 0,
@@ -286,7 +284,8 @@ class EpiccashWallet extends Bip39Wallet {
       }
 
       // Receive and get updated slate JSON.
-      final received = await _wallet!.txReceive(
+      final received = await libEpic.txReceive(
+        wallet: _wallet!,
         slateJson: slateJson,
       );
 
@@ -313,7 +312,8 @@ class EpiccashWallet extends Bip39Wallet {
       }
 
       // Finalize transaction.
-      final finalized = await _wallet!.txFinalize(
+      final finalized = await libEpic.txFinalize(
+        wallet: _wallet!,
         slateJson: slateJson,
       );
 
@@ -374,7 +374,8 @@ class EpiccashWallet extends Bip39Wallet {
           type = 'Incoming'; // Response slate - this means we're receiving.
         } else if (signedParticipants >= participants.length) {
           status = 'S3';
-          type = 'Outgoing'; // Finalized slate - completed outgoing transaction.
+          type =
+              'Outgoing'; // Finalized slate - completed outgoing transaction.
         }
       }
 
@@ -420,7 +421,8 @@ class EpiccashWallet extends Bip39Wallet {
       // Check for common slate fields.
       return parsed is Map &&
           (parsed.containsKey('id') || parsed.containsKey('slate_id')) &&
-          (parsed.containsKey('amount') || parsed.containsKey('participant_data'));
+          (parsed.containsKey('amount') ||
+              parsed.containsKey('participant_data'));
     } catch (e) {
       return false;
     }
@@ -483,9 +485,9 @@ class EpiccashWallet extends Bip39Wallet {
     }
     try {
       _hackedCheckTorNodePrefs();
-      final available = info.cachedBalance.spendable.raw.toInt();
 
-      final transactionFees = await _wallet!.getTransactionFees(
+      final transactionFees = await libEpic.getTransactionFees(
+        wallet: _wallet!,
         amount: satoshiAmount,
         minimumConfirmations: cryptoCurrency.minConfirms,
       );
@@ -515,8 +517,9 @@ class EpiccashWallet extends Bip39Wallet {
     const int refreshFromNode = 1;
     if (!syncMutex.isLocked) {
       await syncMutex.protect(() async {
-        // How does getWalletBalances start syncing????
-        await _wallet!.getBalances(
+        // How does getWalletBalances start syncing?????????!!!!!
+        await libEpic.getWalletBalances(
+          wallet: _wallet!,
           refreshFromNode: refreshFromNode,
           minimumConfirmations: 10,
         );
@@ -540,10 +543,11 @@ class EpiccashWallet extends Bip39Wallet {
       throw Exception('Wallet not opened. Call open() first.');
     }
     const refreshFromNode = 0;
-    return (await _wallet!.getBalances(
+    return (await libEpic.getWalletBalances(
+      wallet: _wallet!,
       refreshFromNode: refreshFromNode,
       minimumConfirmations: cryptoCurrency.minConfirms,
-    )).toRecord();
+    ));
   }
 
   Future<bool> _testEpicboxServer(EpicBoxConfigModel epicboxConfig) async {
@@ -603,7 +607,8 @@ class EpiccashWallet extends Bip39Wallet {
     try {
       final int receivingIndex = info.epicData!.receivingIndex;
       // TODO: go through pendingarray and processed array and choose the index
-      //  of the last one that has not been processed, or the index after the one most recently processed;
+      //  of the last one that has not been processed, or the index after the
+      //  one most recently processed;
       return receivingIndex;
     } catch (e, s) {
       Logging.instance.e("$e $s", error: e, stackTrace: s);
@@ -639,8 +644,10 @@ class EpiccashWallet extends Bip39Wallet {
       throw Exception('Wallet not opened. Call open() first.');
     }
 
-    final walletAddress = await _wallet!.getAddressInfo(
+    final walletAddress = await libEpic.getAddressInfo(
+      wallet: _wallet!,
       index: index,
+      epicboxConfig: epicboxConfig.toString(),
     );
 
     Logging.instance.d("WALLET_ADDRESS_IS $walletAddress");
@@ -677,7 +684,7 @@ class EpiccashWallet extends Bip39Wallet {
       final needsScanning = lastScannedBlock < chainHeight;
       if (needsScanning) {
         // Stop listener during active scanning to avoid potential conflicts
-        await _wallet!.stopListeners();
+        await libEpic.stopEpicboxListener(wallet: _wallet!);
       }
 
       // loop while scanning in chain in chunks (of blocks?)
@@ -686,7 +693,8 @@ class EpiccashWallet extends Bip39Wallet {
           "chainHeight: $chainHeight, lastScannedBlock: $lastScannedBlock",
         );
 
-        final int nextScannedBlock = await _wallet!.scanOutputs(
+        final int nextScannedBlock = await libEpic.scanOutputs(
+          wallet: _wallet!,
           startHeight: lastScannedBlock,
           numberOfBlocks: scanChunkSize,
         );
@@ -710,7 +718,7 @@ class EpiccashWallet extends Bip39Wallet {
       // Ensure listener is running after refresh.
       // Use health check to verify the Rust listener task is actually alive,
       // not just that we have a pointer (which could be stale).
-      if (!await _wallet!.isEpicboxListenerRunning()) {
+      if (!await libEpic.isEpicboxListenerRunning(wallet: _wallet!)) {
         Logging.instance.d("Listener not running, starting it...");
         await _listenToEpicbox();
       } else {
@@ -728,8 +736,11 @@ class EpiccashWallet extends Bip39Wallet {
     if (_wallet == null) {
       throw Exception('Wallet not opened. Call open() first.');
     }
-    _wallet!.updateEpicboxConfig(epicboxConfig.toString());
-    await _wallet!.startListeners();
+    libEpic.updateEpicboxConfig(
+      wallet: _wallet!,
+      epicBoxConfig: epicboxConfig.toString(),
+    );
+    await libEpic.startEpicboxListener(wallet: _wallet!);
   }
 
   // As opposed to fake config?
@@ -829,12 +840,8 @@ class EpiccashWallet extends Bip39Wallet {
     }
 
     if (isRestore != true) {
-      String? encodedWallet = await secureStorageInterface.read(
-        key: "${walletId}_wallet",
-      );
-
       // check if should create a new wallet
-      if (encodedWallet == null) {
+      if (_wallet == null) {
         await updateNode();
         final mnemonicString = await getMnemonic();
 
@@ -857,20 +864,13 @@ class EpiccashWallet extends Bip39Wallet {
 
         final String name = walletId;
 
-        _wallet = await epic.EpicWallet.create(
+        _wallet = await libEpic.initializeNewWallet(
           config: stringConfig,
           mnemonic: mnemonicString,
           password: password,
           name: name,
-          epicboxConfig: epicboxConfig.toString(),
+          epicBoxConfig: epicboxConfig.toString(),
         ); // Spawns worker isolate
-
-        // Store the wallet handle for listeners
-        encodedWallet = _wallet!.handle;
-        await secureStorageInterface.write(
-          key: '${walletId}_wallet',
-          value: encodedWallet,
-        );
 
         //Store Epic box address info
         await _generateAndStoreReceivingAddressForIndex(0);
@@ -908,17 +908,11 @@ class EpiccashWallet extends Bip39Wallet {
           );
           final epicboxConfig = await getEpicBoxConfig();
 
-          _wallet = await epic.EpicWallet.load(
+          _wallet = await libEpic.openWallet(
             config: config,
             password: password!,
             epicboxConfig: epicboxConfig.toString(),
           ); // Spawns worker isolate
-
-          // Store the wallet handle for listeners
-          await secureStorageInterface.write(
-            key: '${walletId}_wallet',
-            value: _wallet!.handle,
-          );
 
           await updateNode();
 
@@ -959,7 +953,8 @@ class EpiccashWallet extends Bip39Wallet {
 
       if (receiverAddress.startsWith("http://") ||
           receiverAddress.startsWith("https://")) {
-        final httpResult = await _wallet!.txHttpSend(
+        final httpResult = await libEpic.txHttpSend(
+          wallet: _wallet!,
           selectionStrategyIsAll: 0,
           minimumConfirmations: cryptoCurrency.minConfirms,
           message: txData.noteOnChain ?? "",
@@ -972,22 +967,23 @@ class EpiccashWallet extends Bip39Wallet {
           slateJson: '',
         );
       } else {
-        transaction = (await _wallet!.createTransaction(
+        transaction = (await libEpic.createTransaction(
+          wallet: _wallet!,
           amount: txData.recipients!.first.amount.raw.toInt(),
           address: txData.recipients!.first.address,
           secretKeyIndex: 0,
           minimumConfirmations: cryptoCurrency.minConfirms,
           note: txData.noteOnChain!,
-        )).toRecord();
+        ));
       }
 
       final Map<String, String> txAddressInfo = {};
       txAddressInfo['from'] = (await getCurrentReceivingAddress())!.value;
       txAddressInfo['to'] = txData.recipients!.first.address;
-      await _putSendToAddresses(
-        (commitId: transaction.commitId, slateId: transaction.slateId),
-        txAddressInfo,
-      );
+      await _putSendToAddresses((
+        commitId: transaction.commitId,
+        slateId: transaction.slateId,
+      ), txAddressInfo);
 
       return txData.copyWith(txid: transaction.slateId);
     } catch (e, s) {
@@ -1112,29 +1108,23 @@ class EpiccashWallet extends Bip39Wallet {
 
           // maybe there is some way to tel epic-wallet rust to fully rescan...
           final result = await deleteEpicWallet(
-            walletId: walletId,
+            wallet: this,
             secureStore: secureStorageInterface,
           );
           Logging.instance.w("Epic rescan temporary delete result: $result");
 
           // Close old wallet before recovery
           if (_wallet != null) {
-            await _wallet!.close();
+            await libEpic.close(wallet: _wallet!);
             _wallet = null;
           }
 
-          _wallet = await epic.EpicWallet.recover(
+          _wallet = await libEpic.recoverWallet(
             config: stringConfig,
             password: password!,
             mnemonic: await getMnemonic(),
             name: info.walletId,
-            epicboxConfig: epicboxConfig.toString(),
-          );
-
-          // Save wallet handle after recovery
-          await secureStorageInterface.write(
-            key: '${walletId}_wallet',
-            value: _wallet!.handle,
+            epicBoxConfig: epicboxConfig.toString(),
           );
 
           await _listenToEpicbox();
@@ -1163,22 +1153,16 @@ class EpiccashWallet extends Bip39Wallet {
 
           // Close old wallet before recovery
           if (_wallet != null) {
-            await _wallet!.close();
+            await libEpic.close(wallet: _wallet!);
             _wallet = null;
           }
 
-          _wallet = await epic.EpicWallet.recover(
+          _wallet = await libEpic.recoverWallet(
             config: stringConfig,
             password: password,
             mnemonic: await getMnemonic(),
             name: info.walletId,
-            epicboxConfig: epicboxConfig.toString(),
-          );
-
-          // Save wallet handle after recovery
-          await secureStorageInterface.write(
-            key: '${walletId}_wallet',
-            value: _wallet!.handle,
+            epicBoxConfig: epicboxConfig.toString(),
           );
 
           await _listenToEpicbox();
@@ -1306,7 +1290,8 @@ class EpiccashWallet extends Bip39Wallet {
           // chain height check currently broken
           // if ((await chainHeight) != (await storedChainHeight)) {
 
-          // TODO: [prio=med] some kind of quick check if wallet needs to refresh to replace the old refreshIfThereIsNewData call
+          // TODO: [prio=med] some kind of quick check if wallet needs to
+          //  refresh to replace the old refreshIfThereIsNewData call
           // if (await refreshIfThereIsNewData()) {
           unawaited(refresh());
 
@@ -1391,7 +1376,8 @@ class EpiccashWallet extends Bip39Wallet {
           .findAll();
       final myAddressesSet = myAddresses.toSet();
 
-      final transactions = await _wallet!.getTransactions(
+      final transactions = await libEpic.getTransactions(
+        wallet: _wallet!,
         refreshFromNode: refreshFromNode,
       );
 
@@ -1405,8 +1391,8 @@ class EpiccashWallet extends Bip39Wallet {
             libEpic.txTypeIsReceiveCancelled(tx.txType);
         final slateId = tx.txSlateId;
         final commitId = slatesToCommits[slateId]?['commitId'] as String?;
-        final numberOfMessages = tx.messages?.messages.length;
-        final onChainNote = tx.messages?.messages.first.message;
+        final numberOfMessages = tx.messages?.length;
+        final onChainNote = tx.messages?.first.message;
         final addressFrom = slatesToCommits[slateId]?["from"] as String?;
         final addressTo = slatesToCommits[slateId]?["to"] as String?;
 
@@ -1449,7 +1435,8 @@ class EpiccashWallet extends Bip39Wallet {
           output = output.copyWith(
             addresses: [
               myAddressesSet
-                  .first, // Must be changed if we ever do more than a single wallet address!!!
+                  .first, // Must be changed if we ever do more than a single
+              // wallet address!!!
             ],
             walletOwns: true,
           );
@@ -1575,7 +1562,8 @@ class EpiccashWallet extends Bip39Wallet {
   Future<void> updateNode() async {
     _epicNode = getCurrentNode();
 
-    // TODO: [prio=low] move this out of secure storage if secure storage not needed
+    // TODO: [prio=low] move this out of secure storage if secure storage not
+    //  needed
     final String stringConfig = await _getConfig();
     await secureStorageInterface.write(
       key: '${walletId}_config',
@@ -1623,7 +1611,8 @@ class EpiccashWallet extends Bip39Wallet {
   @override
   Future<Amount> estimateFeeFor(Amount amount, BigInt feeRate) async {
     _hackedCheckTorNodePrefs();
-    // setting ifErrorEstimateFee doesn't do anything as its not used in the nativeFee function?????
+    // setting ifErrorEstimateFee doesn't do anything as its not used in the
+    // nativeFee function?????
     final int currentFee = await _nativeFee(
       amount.raw.toInt(),
       ifErrorEstimateFee: true,
@@ -1656,7 +1645,7 @@ class EpiccashWallet extends Bip39Wallet {
 
   @override
   Future<void> exit() async {
-    await _wallet?.stopListeners();
+    if (_wallet != null) await libEpic.stopEpicboxListener(wallet: _wallet!);
     timer?.cancel();
     timer = null;
 
@@ -1688,16 +1677,15 @@ class EpiccashWallet extends Bip39Wallet {
 }
 
 Future<String> deleteEpicWallet({
-  required String walletId,
+  required EpiccashWallet wallet,
   required SecureStorageInterface secureStore,
 }) async {
-  final wallet = await secureStore.read(key: '${walletId}_wallet');
-  String? config = await secureStore.read(key: '${walletId}_config');
+  String? config = await secureStore.read(key: '${wallet.walletId}_config');
   if (Platform.isIOS) {
     final Directory appDir = await StackFileSystem.applicationRootDirectory();
 
     final path = "${appDir.path}/epiccash";
-    final String name = walletId.trim();
+    final String name = wallet.walletId.trim();
     final walletDir = '$path/$name';
 
     final editConfig = jsonDecode(config as String);
@@ -1706,14 +1694,15 @@ Future<String> deleteEpicWallet({
     config = jsonEncode(editConfig);
   }
 
-  if (wallet == null) {
-    return "Tried to delete non existent epic wallet file with walletId=$walletId";
+  if (config == null) {
+    return "Tried to delete non existent epic wallet file with"
+        " walletId=${wallet.walletId}";
   } else {
     try {
-      return libEpic.deleteWallet(wallet: wallet, config: config!);
+      return libEpic.deleteWallet(wallet: wallet._wallet!, config: config);
     } catch (e, s) {
       Logging.instance.e("$e\n$s", error: e, stackTrace: s);
-      return "deleteEpicWallet($walletId) failed...";
+      return "deleteEpicWallet(${wallet.walletId}) failed...";
     }
   }
 }

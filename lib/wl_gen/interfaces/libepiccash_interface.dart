@@ -11,11 +11,12 @@ abstract class LibEpicCashInterface {
   bool txTypeIsReceiveCancelled(Enum value);
   bool txTypeIsSentCancelled(Enum value);
 
-  Future<String> initializeNewWallet({
+  Future<DynamicObject> initializeNewWallet({
     required String config,
     required String mnemonic,
     required String password,
     required String name,
+    required String epicBoxConfig,
   });
 
   Future<DynamicObject> openWallet({
@@ -24,15 +25,16 @@ abstract class LibEpicCashInterface {
     required String epicboxConfig,
   });
 
-  Future<void> recoverWallet({
+  Future<DynamicObject> recoverWallet({
     required String config,
     required String password,
     required String mnemonic,
     required String name,
+    required String epicBoxConfig,
   });
 
   Future<({String commitId, String slateId})> txHttpSend({
-    required String wallet,
+    required DynamicObject wallet,
     required int selectionStrategyIsAll,
     required int minimumConfirmations,
     required String message,
@@ -42,57 +44,47 @@ abstract class LibEpicCashInterface {
 
   Future<({String commitId, String slateId, String slateJson})>
   createTransaction({
-    required String wallet,
+    required DynamicObject wallet,
     required int amount,
     required String address,
     required int secretKeyIndex,
-    required String epicboxConfig,
     required int minimumConfirmations,
     required String note,
     bool returnSlate = false,
   });
 
   Future<({String slateId, String commitId, String slateJson})> txReceive({
-    required String wallet,
+    required DynamicObject wallet,
     required String slateJson,
   });
 
-  Future<({String slateId, String commitId})> txFinalize({
-    required String wallet,
+  Future<({String slateId, String commitId, String slateJson})> txFinalize({
+    required DynamicObject wallet,
     required String slateJson,
   });
 
   Future<String> cancelTransaction({
-    required String wallet,
+    required DynamicObject wallet,
     required String transactionId,
   });
 
   Future<List<EpicTransaction>> getTransactions({
-    required String wallet,
+    required DynamicObject wallet,
     required int refreshFromNode,
   });
 
-  void startEpicboxListener({
-    required String walletId,
-    required String wallet,
-    required String epicboxConfig,
-  });
+  Future<void> startEpicboxListener({required DynamicObject wallet});
 
-  void stopEpicboxListener({required String walletId});
+  Future<void> stopEpicboxListener({required DynamicObject wallet});
 
-  void stopAllEpicboxListeners();
-
-  bool isEpicboxListenerRunning({required String walletId});
-
-  List<String> getActiveListenerWalletIds();
+  Future<bool> isEpicboxListenerRunning({required DynamicObject wallet});
 
   Future<bool> validateSendAddress({required String address});
 
   Future<({int fee, bool strategyUseAll, int total})> getTransactionFees({
-    required String wallet,
+    required DynamicObject wallet,
     required int amount,
     required int minimumConfirmations,
-    required int available,
   });
 
   Future<
@@ -104,26 +96,36 @@ abstract class LibEpicCashInterface {
     })
   >
   getWalletBalances({
-    required String wallet,
+    required DynamicObject wallet,
     required int refreshFromNode,
     required int minimumConfirmations,
   });
 
   Future<String> getAddressInfo({
-    required String wallet,
+    required DynamicObject wallet,
     required int index,
     required String epicboxConfig,
   });
 
   Future<int> scanOutputs({
-    required String wallet,
+    required DynamicObject wallet,
     required int startHeight,
     required int numberOfBlocks,
   });
 
   Future<int> getChainHeight({required String config});
 
-  Future<String> deleteWallet({required String wallet, required String config});
+  Future<void> close({required DynamicObject wallet});
+
+  Future<String> deleteWallet({
+    required DynamicObject wallet,
+    required String config,
+  });
+
+  void updateEpicboxConfig({
+    required DynamicObject wallet,
+    required String epicBoxConfig,
+  });
 
   String getPluginVersion();
 }

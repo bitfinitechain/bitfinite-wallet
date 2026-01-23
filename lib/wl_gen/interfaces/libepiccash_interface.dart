@@ -117,10 +117,7 @@ abstract class LibEpicCashInterface {
 
   Future<void> close({required DynamicObject wallet});
 
-  Future<String> deleteWallet({
-    required DynamicObject wallet,
-    required String config,
-  });
+  Future<String> deleteWallet({required String config});
 
   void updateEpicboxConfig({
     required DynamicObject wallet,

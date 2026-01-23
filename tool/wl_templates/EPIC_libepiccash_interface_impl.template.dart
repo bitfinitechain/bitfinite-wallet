@@ -79,11 +79,8 @@ final class _LibEpicCashInterfaceImpl extends LibEpicCashInterface {
   }
 
   @override
-  Future<String> deleteWallet({
-    required DynamicObject wallet,
-    required String config,
-  }) {
-    return wallet.get<EpicWallet>().deleteWallet(config: config);
+  Future<String> deleteWallet({required String config}) {
+    return EpicWallet.deleteWallet(config: config);
   }
 
   @override

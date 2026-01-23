@@ -1699,7 +1699,8 @@ Future<String> deleteEpicWallet({
         " walletId=${wallet.walletId}";
   } else {
     try {
-      return libEpic.deleteWallet(wallet: wallet._wallet!, config: config);
+      if (wallet._wallet != null) await libEpic.close(wallet: wallet._wallet!);
+      return libEpic.deleteWallet(config: config);
     } catch (e, s) {
       Logging.instance.e("$e\n$s", error: e, stackTrace: s);
       return "deleteEpicWallet(${wallet.walletId}) failed...";

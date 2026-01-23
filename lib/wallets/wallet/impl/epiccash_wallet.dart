@@ -77,7 +77,10 @@ class EpiccashWallet extends Bip39Wallet {
   /// Should only be called once during wallet initialization.
   Future<void> open() async {
     if (_wallet != null) {
-      Logging.instance.d("Wallet already open, skipping");
+      Logging.instance.d("Wallet already open, ensuring listener");
+      if (!await _wallet!.isEpicboxListenerRunning()) {
+        await _listenToEpicbox();
+      }
       return;
     }
 
@@ -125,6 +128,7 @@ class EpiccashWallet extends Bip39Wallet {
       key: '${walletId}_epicboxConfig',
       value: stringConfig,
     );
+    _wallet?.updateEpicboxConfig(stringConfig);
     // TODO: refresh anything that needs to be refreshed/updated due to epicbox info changed
   }
 
@@ -673,7 +677,7 @@ class EpiccashWallet extends Bip39Wallet {
       final needsScanning = lastScannedBlock < chainHeight;
       if (needsScanning) {
         // Stop listener during active scanning to avoid potential conflicts
-        libEpic.stopEpicboxListener(walletId: walletId);
+        await _wallet!.stopListeners();
       }
 
       // loop while scanning in chain in chunks (of blocks?)
@@ -706,7 +710,7 @@ class EpiccashWallet extends Bip39Wallet {
       // Ensure listener is running after refresh.
       // Use health check to verify the Rust listener task is actually alive,
       // not just that we have a pointer (which could be stale).
-      if (!libEpic.isEpicboxListenerRunning(walletId: walletId)) {
+      if (!await _wallet!.isEpicboxListenerRunning()) {
         Logging.instance.d("Listener not running, starting it...");
         await _listenToEpicbox();
       } else {
@@ -720,13 +724,12 @@ class EpiccashWallet extends Bip39Wallet {
 
   Future<void> _listenToEpicbox() async {
     Logging.instance.d("STARTING WALLET LISTENER ....");
-    final wallet = await secureStorageInterface.read(key: '${walletId}_wallet');
     final EpicBoxConfigModel epicboxConfig = await getEpicBoxConfig();
-    libEpic.startEpicboxListener(
-      walletId: walletId,
-      wallet: wallet!,
-      epicboxConfig: epicboxConfig.toString(),
-    );
+    if (_wallet == null) {
+      throw Exception('Wallet not opened. Call open() first.');
+    }
+    _wallet!.updateEpicboxConfig(epicboxConfig.toString());
+    await _wallet!.startListeners();
   }
 
   // As opposed to fake config?
@@ -1653,12 +1656,9 @@ class EpiccashWallet extends Bip39Wallet {
 
   @override
   Future<void> exit() async {
-    libEpic.stopEpicboxListener(walletId: walletId);
+    await _wallet?.stopListeners();
     timer?.cancel();
     timer = null;
-
-    await _wallet?.close();
-    _wallet = null;
 
     await super.exit();
     Logging.instance.d("EpicCash_wallet exit finished");

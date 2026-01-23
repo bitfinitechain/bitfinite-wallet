@@ -215,7 +215,7 @@ final class _LibEpicCashInterfaceImpl extends LibEpicCashInterface {
     required String name,
     required String epicBoxConfig,
   }) async {
-    final wallet = EpicWallet.recover(
+    final wallet = await EpicWallet.recover(
       config: config,
       password: password,
       mnemonic: mnemonic,

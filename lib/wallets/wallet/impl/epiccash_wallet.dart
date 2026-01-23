@@ -74,43 +74,43 @@ class EpiccashWallet extends Bip39Wallet {
 
   /// Opens and initializes the Epic wallet instance.
   /// Should only be called once during wallet initialization.
-  Future<void> open() async {
-    if (_wallet != null) {
-      Logging.instance.d("Wallet already open, ensuring listener");
-      if (!await libEpic.isEpicboxListenerRunning(wallet: _wallet!)) {
-        await _listenToEpicbox();
-      }
-      return;
-    }
-
-    try {
-      final config = await _getRealConfig();
-      final password = await secureStorageInterface.read(
-        key: '${walletId}_password',
-      );
-      if (password == null) {
-        throw Exception('Wallet password not found');
-      }
-
-      final epicboxConfig = await getEpicBoxConfig();
-
-      _wallet = await libEpic.openWallet(
-        config: config,
-        password: password,
-        epicboxConfig: epicboxConfig.toString(),
-      );
-
-      await _listenToEpicbox();
-
-      Logging.instance.d(
-        "Epic wallet opened successfully with persistent isolate",
-      );
-    } catch (e, s) {
-      Logging.instance.e("Failed to open Epic wallet", error: e, stackTrace: s);
-      _wallet = null;
-      rethrow;
-    }
-  }
+  // Future<void> open() async {
+  //   if (_wallet != null) {
+  //     Logging.instance.d("Wallet already open, ensuring listener");
+  //     if (!await libEpic.isEpicboxListenerRunning(wallet: _wallet!)) {
+  //       await _listenToEpicbox();
+  //     }
+  //     return;
+  //   }
+  //
+  //   try {
+  //     final config = await _getRealConfig();
+  //     final password = await secureStorageInterface.read(
+  //       key: '${walletId}_password',
+  //     );
+  //     if (password == null) {
+  //       throw Exception('Wallet password not found');
+  //     }
+  //
+  //     final epicboxConfig = await getEpicBoxConfig();
+  //
+  //     _wallet = await libEpic.openWallet(
+  //       config: config,
+  //       password: password,
+  //       epicboxConfig: epicboxConfig.toString(),
+  //     );
+  //
+  //     await _listenToEpicbox();
+  //
+  //     Logging.instance.d(
+  //       "Epic wallet opened successfully with persistent isolate",
+  //     );
+  //   } catch (e, s) {
+  //     Logging.instance.e("Failed to open Epic wallet", error: e, stackTrace: s);
+  //     _wallet = null;
+  //     rethrow;
+  //   }
+  // }
 
   Future<void> updateEpicboxConfig(String host, int port) async {
     final String stringConfig = jsonEncode({
@@ -834,14 +834,13 @@ class EpiccashWallet extends Bip39Wallet {
 
   @override
   Future<void> init({bool? isRestore}) async {
-    if (_wallet != null) {
-      Logging.instance.d("Wallet already initialized, skipping init");
-      return await super.init();
-    }
-
     if (isRestore != true) {
+      final existingWalletConfig = await secureStorageInterface.read(
+        key: '${walletId}_config',
+      );
+
       // check if should create a new wallet
-      if (_wallet == null) {
+      if (existingWalletConfig == null) {
         await updateNode();
         final mnemonicString = await getMnemonic();
 
@@ -902,14 +901,13 @@ class EpiccashWallet extends Bip39Wallet {
             "initializeExisting() ${cryptoCurrency.prettyName} wallet",
           );
 
-          final config = await _getRealConfig();
           final password = await secureStorageInterface.read(
             key: '${walletId}_password',
           );
           final epicboxConfig = await getEpicBoxConfig();
 
           _wallet = await libEpic.openWallet(
-            config: config,
+            config: existingWalletConfig,
             password: password!,
             epicboxConfig: epicboxConfig.toString(),
           ); // Spawns worker isolate

@@ -440,10 +440,12 @@ class EpiccashWallet extends Bip39Wallet {
 
   // ================= Private =================================================
 
-  Future<String> _getConfig() async {
-    if (_epicNode == null) {
-      await updateNode();
-    }
+  Future<bool> _hasConfig() async =>
+      (await secureStorageInterface.read(key: '${walletId}_config')) != null;
+
+  Future<String> _buildConfig() async {
+    _epicNode ??= getCurrentNode();
+
     final NodeModel node = _epicNode!;
     final String nodeAddress = node.host;
     final int port = node.port;
@@ -465,6 +467,7 @@ class EpiccashWallet extends Bip39Wallet {
       "",
     );
     final String stringConfig = jsonEncode(config);
+
     return stringConfig;
   }
 
@@ -743,21 +746,6 @@ class EpiccashWallet extends Bip39Wallet {
     await libEpic.startEpicboxListener(wallet: _wallet!);
   }
 
-  // As opposed to fake config?
-  Future<String> _getRealConfig() async {
-    String? config = await secureStorageInterface.read(
-      key: '${walletId}_config',
-    );
-    if (Platform.isIOS) {
-      final walletDir = await _currentWalletDirPath();
-      final editConfig = jsonDecode(config as String);
-
-      editConfig["wallet_dir"] = walletDir;
-      config = jsonEncode(editConfig);
-    }
-    return config!;
-  }
-
   // TODO: make more robust estimate of date maybe using https://explorer.epic.tech/api-index
   int _calculateRestoreHeightFrom({required DateTime date}) {
     final int secondsSinceEpoch = date.millisecondsSinceEpoch ~/ 1000;
@@ -835,23 +823,25 @@ class EpiccashWallet extends Bip39Wallet {
   @override
   Future<void> init({bool? isRestore}) async {
     if (isRestore != true) {
-      final existingWalletConfig = await secureStorageInterface.read(
-        key: '${walletId}_config',
-      );
+      final existingWalletConfig = await _hasConfig();
 
       // check if should create a new wallet
-      if (existingWalletConfig == null) {
+      if (!existingWalletConfig) {
         await updateNode();
         final mnemonicString = await getMnemonic();
 
         final String password = generatePassword();
-        final String stringConfig = await _getConfig();
         final EpicBoxConfigModel epicboxConfig = await getEpicBoxConfig();
 
+        final String stringConfig = await _buildConfig();
+
+        // no need to save the config, just a string flag to know we have a
+        // wallet created
         await secureStorageInterface.write(
           key: '${walletId}_config',
-          value: stringConfig,
+          value: "true",
         );
+
         await secureStorageInterface.write(
           key: '${walletId}_password',
           value: password,
@@ -907,7 +897,7 @@ class EpiccashWallet extends Bip39Wallet {
           final epicboxConfig = await getEpicBoxConfig();
 
           _wallet = await libEpic.openWallet(
-            config: existingWalletConfig,
+            config: await _buildConfig(),
             password: password!,
             epicboxConfig: epicboxConfig.toString(),
           ); // Spawns worker isolate
@@ -1098,7 +1088,6 @@ class EpiccashWallet extends Bip39Wallet {
             isar: mainDB.isar,
           );
 
-          final stringConfig = await _getRealConfig();
           final password = await secureStorageInterface.read(
             key: '${walletId}_password',
           );
@@ -1118,7 +1107,7 @@ class EpiccashWallet extends Bip39Wallet {
           }
 
           _wallet = await libEpic.recoverWallet(
-            config: stringConfig,
+            config: await _buildConfig(),
             password: password!,
             mnemonic: await getMnemonic(),
             name: info.walletId,
@@ -1132,12 +1121,13 @@ class EpiccashWallet extends Bip39Wallet {
           await updateNode();
           final String password = generatePassword();
 
-          final String stringConfig = await _getConfig();
           final EpicBoxConfigModel epicboxConfig = await getEpicBoxConfig();
 
+          // no need to save the config, just a string flag to know we have a
+          // wallet created
           await secureStorageInterface.write(
             key: '${walletId}_config',
-            value: stringConfig,
+            value: "true",
           );
           await secureStorageInterface.write(
             key: '${walletId}_password',
@@ -1156,7 +1146,7 @@ class EpiccashWallet extends Bip39Wallet {
           }
 
           _wallet = await libEpic.recoverWallet(
-            config: stringConfig,
+            config: await _buildConfig(),
             password: password,
             mnemonic: await getMnemonic(),
             name: info.walletId,
@@ -1560,13 +1550,7 @@ class EpiccashWallet extends Bip39Wallet {
   Future<void> updateNode() async {
     _epicNode = getCurrentNode();
 
-    // TODO: [prio=low] move this out of secure storage if secure storage not
-    //  needed
-    final String stringConfig = await _getConfig();
-    await secureStorageInterface.write(
-      key: '${walletId}_config',
-      value: stringConfig,
-    );
+    libEpic.updateConfig(wallet: _wallet!, config: await _buildConfig());
 
     // unawaited(refresh());
   }
@@ -1598,7 +1582,7 @@ class EpiccashWallet extends Bip39Wallet {
   @override
   Future<void> updateChainHeight() async {
     _hackedCheckTorNodePrefs();
-    final config = await _getRealConfig();
+    final config = await _buildConfig();
     final latestHeight = await libEpic.getChainHeight(config: config);
     await info.updateCachedChainHeight(
       newHeight: latestHeight,
@@ -1678,19 +1662,7 @@ Future<String> deleteEpicWallet({
   required EpiccashWallet wallet,
   required SecureStorageInterface secureStore,
 }) async {
-  String? config = await secureStore.read(key: '${wallet.walletId}_config');
-  if (Platform.isIOS) {
-    final Directory appDir = await StackFileSystem.applicationRootDirectory();
-
-    final path = "${appDir.path}/epiccash";
-    final String name = wallet.walletId.trim();
-    final walletDir = '$path/$name';
-
-    final editConfig = jsonDecode(config as String);
-
-    editConfig["wallet_dir"] = walletDir;
-    config = jsonEncode(editConfig);
-  }
+  final config = await wallet._hasConfig() ? await wallet._buildConfig() : null;
 
   if (config == null) {
     return "Tried to delete non existent epic wallet file with"

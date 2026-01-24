@@ -65,12 +65,7 @@ class Epiccash extends Bip39Currency {
       }
     }
 
-    if (address.contains("@")) {
-      return true; // Epicbox address format
-    }
-
-    // Very very basic (bad) check
-    return address.isNotEmpty && address.length > 10;
+    return libEpic.validateSendAddressSync(address: address);
   }
 
   @override
@@ -143,7 +138,8 @@ class Epiccash extends Bip39Currency {
       // Check for common slate fields.
       return parsed is Map &&
           (parsed.containsKey('id') || parsed.containsKey('slate_id')) &&
-          (parsed.containsKey('amount') || parsed.containsKey('participant_data'));
+          (parsed.containsKey('amount') ||
+              parsed.containsKey('participant_data'));
     } catch (e) {
       return false;
     }
@@ -163,7 +159,8 @@ class Epiccash extends Bip39Currency {
   EpicTransactionMethod getTransactionMethod(String addressOrData) {
     if (isSlateJson(addressOrData)) {
       return EpicTransactionMethod.slatepack;
-    } else if (isEpicboxAddress(addressOrData) || isHttpAddress(addressOrData)) {
+    } else if (isEpicboxAddress(addressOrData) ||
+        isHttpAddress(addressOrData)) {
       return EpicTransactionMethod.epicbox;
     } else {
       throw Exception("Unknown EpicTransactionMethod found!");

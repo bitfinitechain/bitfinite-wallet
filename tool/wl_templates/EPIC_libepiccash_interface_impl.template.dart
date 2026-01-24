@@ -1,4 +1,5 @@
 //ON
+import 'package:flutter_libepiccash/epic_cash.dart' as epc;
 import 'package:flutter_libepiccash/git_versions.dart' as epic_versions;
 import 'package:flutter_libepiccash/lib.dart';
 import 'package:flutter_libepiccash/models/transaction.dart';
@@ -298,6 +299,11 @@ final class _LibEpicCashInterfaceImpl extends LibEpicCashInterface {
   @override
   Future<bool> validateSendAddress({required String address}) {
     return EpicWallet.validateSendAddress(address: address);
+  }
+
+  @override
+  bool validateSendAddressSync({required String address}) {
+    return epc.validateSendAddress(address) == "1"; //lol
   }
 
   @override

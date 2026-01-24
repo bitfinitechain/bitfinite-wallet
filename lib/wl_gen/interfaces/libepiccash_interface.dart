@@ -81,6 +81,8 @@ abstract class LibEpicCashInterface {
 
   Future<bool> validateSendAddress({required String address});
 
+  bool validateSendAddressSync({required String address});
+
   Future<({int fee, bool strategyUseAll, int total})> getTransactionFees({
     required DynamicObject wallet,
     required int amount,

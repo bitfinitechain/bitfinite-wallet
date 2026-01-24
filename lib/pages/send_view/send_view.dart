@@ -1259,6 +1259,14 @@ class _SendViewState extends ConsumerState<SendView> {
   @override
   void initState() {
     coin = widget.coin;
+    isFiro = coin is Firo;
+    isEth = coin is Ethereum;
+    hasOptionalMemo = coin is Stellar || coin is Solana;
+
+    _data = widget.autoFillData;
+    walletId = widget.walletId;
+    clipboard = widget.clipboard;
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.refresh(feeSheetSessionCacheProvider);
       ref.refresh(pIsExchangeAddress);
@@ -1275,12 +1283,6 @@ class _SendViewState extends ConsumerState<SendView> {
     _calculateFeesFuture = calculateFees(
       0.toAmountAsRaw(fractionDigits: coin.fractionDigits),
     );
-    _data = widget.autoFillData;
-    walletId = widget.walletId;
-    clipboard = widget.clipboard;
-    hasOptionalMemo = coin is Stellar || coin is Solana;
-    isFiro = coin is Firo;
-    isEth = coin is Ethereum;
 
     sendToController = TextEditingController();
     cryptoAmountController = TextEditingController();

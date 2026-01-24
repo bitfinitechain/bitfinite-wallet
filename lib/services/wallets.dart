@@ -126,13 +126,21 @@ class Wallets {
     if (info.coin is CryptonoteCurrency) {
       await _deleteCryptonoteWalletFilesHelper(info);
     } else if (info.coin is Epiccash) {
-      final deleteResult = await deleteEpicWallet(
-        walletId: walletId,
-        secureStore: secureStorage,
-      );
-      Logging.instance.d(
-        "epic wallet: $walletId deleted with result: $deleteResult",
-      );
+      if (wallet is! EpiccashWallet) {
+        Logging.instance.e(
+          "epic wallet: $walletId does not appear to exist???",
+          error: Exception(),
+          stackTrace: StackTrace.current,
+        );
+      } else {
+        final deleteResult = await deleteEpicWallet(
+          wallet: wallet,
+          secureStore: secureStorage,
+        );
+        Logging.instance.d(
+          "epic wallet: $walletId deleted with result: $deleteResult",
+        );
+      }
     } else if (info.coin is Mimblewimblecoin) {
       final deleteResult = await deleteMimblewimblecoinWallet(
         walletId: walletId,

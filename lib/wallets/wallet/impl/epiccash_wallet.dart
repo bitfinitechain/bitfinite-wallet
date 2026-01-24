@@ -1550,7 +1550,9 @@ class EpiccashWallet extends Bip39Wallet {
   Future<void> updateNode() async {
     _epicNode = getCurrentNode();
 
-    libEpic.updateConfig(wallet: _wallet!, config: await _buildConfig());
+    if (_wallet != null) {
+      libEpic.updateConfig(wallet: _wallet!, config: await _buildConfig());
+    }
 
     // unawaited(refresh());
   }

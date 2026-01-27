@@ -85,7 +85,10 @@ abstract class AppConfig {
 
     try {
       return coins.firstWhere(
-        (e) => e.identifier.toLowerCase() == name || e.prettyName == prettyName,
+        (e) =>
+            e.identifier.toLowerCase() == name ||
+            e.prettyName == prettyName ||
+            (e is Epiccash && prettyName == "Epic Private Internet Cash"),
       );
     } catch (_) {
       throw Exception("getCryptoCurrencyByPrettyName($prettyName) failed!");

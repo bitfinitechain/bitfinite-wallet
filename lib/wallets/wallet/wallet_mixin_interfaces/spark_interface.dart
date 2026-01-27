@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
 import 'dart:math';
@@ -66,7 +67,18 @@ abstract class _SparkIsolate {
   static SendPort? _sendPort;
   static final ReceivePort _receivePort = ReceivePort();
 
+  static Completer<void>? completer;
+
   static Future<void> initialize() async {
+    if (completer != null) {
+      if (!completer!.isCompleted) {
+        await completer!.future;
+      }
+
+      return;
+    }
+    completer = Completer();
+
     final level = Prefs.instance.logLevel;
 
     _isolate = await Isolate.spawn((SendPort sendPort) {
@@ -88,6 +100,7 @@ abstract class _SparkIsolate {
       });
     }, _receivePort.sendPort);
     _sendPort = await _receivePort.first as SendPort;
+    completer!.complete();
   }
 
   static Future<R> run<M, R>(ComputeCallback<M, R> task, M argument) async {

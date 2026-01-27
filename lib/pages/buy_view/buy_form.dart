@@ -57,7 +57,7 @@ import '../../widgets/stack_dialog.dart';
 import '../../widgets/stack_text_field.dart';
 import '../../widgets/textfield_icon_button.dart';
 import '../address_book_views/address_book_view.dart';
-import '../exchange_view/choose_from_stack_view.dart';
+import '../exchange_view/choose_address_from_stack_view.dart';
 import 'buy_quote_preview.dart';
 import 'sub_widgets/crypto_selection_view.dart';
 import 'sub_widgets/fiat_selection_view.dart';
@@ -1172,14 +1172,19 @@ class _BuyFormState extends ConsumerState<BuyForm> {
                         );
                         Navigator.of(context)
                             .pushNamed(
-                              ChooseFromStackView.routeName,
+                              ChooseAddressFromStackView.routeName,
                               arguments: coin,
                             )
                             .then((value) async {
-                              if (value is String) {
+                              if (value
+                                  is ({
+                                    String walletId,
+                                    String address,
+                                    String walletName,
+                                  })) {
                                 final wallet = ref
                                     .read(pWallets)
-                                    .getWallet(value);
+                                    .getWallet(value.walletId);
 
                                 // _toController.text = manager.walletName;
                                 // model.recipientAddress =

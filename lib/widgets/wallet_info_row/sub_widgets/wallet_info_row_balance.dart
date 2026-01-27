@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../db/isar/main_db.dart';
 import '../../../models/isar/models/contract.dart';
+import '../../../providers/wallet/public_private_balance_state_provider.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/amount/amount.dart';
 import '../../../utilities/amount/amount_formatter.dart';
@@ -28,10 +29,12 @@ class WalletInfoRowBalance extends ConsumerWidget {
     super.key,
     required this.walletId,
     this.contractAddress,
+    this.balanceType,
   });
 
   final String walletId;
   final String? contractAddress;
+  final BalanceType? balanceType;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,10 +44,13 @@ class WalletInfoRowBalance extends ConsumerWidget {
     Contract? contract;
 
     if (contractAddress == null) {
-      totalBalance =
-          info.cachedBalance.total +
-          info.cachedBalanceSecondary.total +
-          info.cachedBalanceTertiary.total;
+      totalBalance = balanceType == BalanceType.private
+          ? info.cachedBalanceSecondary.total + info.cachedBalanceTertiary.total
+          : balanceType == BalanceType.public
+          ? info.cachedBalance.total
+          : info.cachedBalance.total +
+                info.cachedBalanceSecondary.total +
+                info.cachedBalanceTertiary.total;
 
       contract = null;
     } else {

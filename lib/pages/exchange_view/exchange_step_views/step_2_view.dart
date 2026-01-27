@@ -35,7 +35,7 @@ import '../../../widgets/stack_text_field.dart';
 import '../../../widgets/textfield_icon_button.dart';
 import '../../address_book_views/address_book_view.dart';
 import '../../address_book_views/subviews/contact_popup.dart';
-import '../choose_from_stack_view.dart';
+import '../choose_address_from_stack_view.dart';
 import '../sub_widgets/step_row.dart';
 import 'step_3_view.dart';
 
@@ -299,24 +299,21 @@ class _Step2ViewState extends ConsumerState<Step2View> {
 
                                         Navigator.of(context)
                                             .pushNamed(
-                                              ChooseFromStackView.routeName,
+                                              ChooseAddressFromStackView
+                                                  .routeName,
                                               arguments: coin,
                                             )
                                             .then((value) async {
-                                              if (value is String) {
-                                                final wallet = ref
-                                                    .read(pWallets)
-                                                    .getWallet(value);
-
+                                              if (value
+                                                  is ({
+                                                    String walletId,
+                                                    String address,
+                                                    String walletName,
+                                                  })) {
                                                 _toController.text =
-                                                    wallet.info.name;
+                                                    value.walletName;
                                                 model.recipientAddress =
-                                                    (await wallet
-                                                            .getCurrentReceivingAddress())
-                                                        ?.value ??
-                                                    wallet
-                                                        .info
-                                                        .cachedReceivingAddress;
+                                                    value.address;
 
                                                 setState(() {
                                                   enableNext =
@@ -571,21 +568,21 @@ class _Step2ViewState extends ConsumerState<Step2View> {
 
                                           Navigator.of(context)
                                               .pushNamed(
-                                                ChooseFromStackView.routeName,
+                                                ChooseAddressFromStackView
+                                                    .routeName,
                                                 arguments: coin,
                                               )
                                               .then((value) async {
-                                                if (value is String) {
-                                                  final wallet = ref
-                                                      .read(pWallets)
-                                                      .getWallet(value);
-
+                                                if (value
+                                                    is ({
+                                                      String walletId,
+                                                      String address,
+                                                      String walletName,
+                                                    })) {
                                                   _refundController.text =
-                                                      wallet.info.name;
+                                                      value.walletName;
                                                   model.refundAddress =
-                                                      (await wallet
-                                                              .getCurrentReceivingAddress())!
-                                                          .value;
+                                                      value.address;
                                                 }
                                                 setState(() {
                                                   enableNext =

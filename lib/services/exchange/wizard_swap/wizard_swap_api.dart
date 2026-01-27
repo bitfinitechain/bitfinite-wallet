@@ -77,21 +77,40 @@ abstract class WizardSwapApi {
     }
   }
 
+  static Map<String, dynamic> _decode(dynamic map) {
+    if (map is! Map) {
+      throw Exception(
+        "Expected a `Map`, but found a `${map.runtimeType}: $map",
+      );
+    }
+
+    try {
+      return Map<String, dynamic>.from(map);
+    } catch (_) {
+      Logging.instance.e("$map is NOT Map<String, dynamic>");
+      rethrow;
+    }
+  }
+
   static Future<List<Map<String, dynamic>>> getCurrencies() async {
     final body = await _makeGetRequest(_getUri("/currency"));
     final data = jsonDecode(body);
-    return List<Map<String, dynamic>>.from(data as List);
+    if (data is! List) {
+      throw Exception("$body is not a json list!");
+    }
+
+    return data.map(_decode).toList();
   }
 
   /// [symbol] should be lowercase. Example: btc
   static Future<Map<String, dynamic>> getCurrencyInfo(String symbol) async {
     final body = await _makeGetRequest(_getUri("/currency/$symbol"));
-    return Map<String, dynamic>.from(jsonDecode(body) as Map);
+    return _decode(jsonDecode(body));
   }
 
   static Future<dynamic> getExchange(String id) async {
     final body = await _makeGetRequest(_getUri("/exchange/$id"));
-    return Map<String, dynamic>.from(jsonDecode(body) as Map);
+    return _decode(jsonDecode(body));
   }
 
   static Future<WzEstimate> postEstimate(
@@ -107,7 +126,7 @@ abstract class WizardSwapApi {
       "api_key": apiKey,
     });
 
-    final map = Map<String, dynamic>.from(jsonDecode(body) as Map);
+    final map = _decode(jsonDecode(body));
 
     // sometimes this json value will contain an error message lol...
     final amount = Decimal.tryParse(map["estimated_amount"].toString());
@@ -143,7 +162,7 @@ abstract class WizardSwapApi {
       if (refundExtraId != null) "refund_extra_id": refundExtraId,
       "api_key": apiKey,
     });
-    return Map<String, dynamic>.from(jsonDecode(body) as Map);
+    return _decode(jsonDecode(body));
   }
 }
 

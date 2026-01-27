@@ -64,7 +64,7 @@ import 'pages/churning/churning_view.dart';
 import 'pages/coin_control/coin_control_view.dart';
 import 'pages/coin_control/utxo_details_view.dart';
 import 'pages/epic_finalize_view/epic_finalize_view.dart';
-import 'pages/exchange_view/choose_from_stack_view.dart';
+import 'pages/exchange_view/choose_address_from_stack_view.dart';
 import 'pages/exchange_view/edit_trade_note_view.dart';
 import 'pages/exchange_view/exchange_step_views/step_1_view.dart';
 import 'pages/exchange_view/exchange_step_views/step_2_view.dart';
@@ -2104,11 +2104,11 @@ class RouteGenerator {
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
 
-      case ChooseFromStackView.routeName:
+      case ChooseAddressFromStackView.routeName:
         if (args is CryptoCurrency) {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
-            builder: (_) => ChooseFromStackView(coin: args),
+            builder: (_) => ChooseAddressFromStackView(coin: args),
             settings: RouteSettings(name: settings.name),
           );
         }

@@ -557,6 +557,10 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
         .valueIntStringEqualTo("0")
         .findAll();
 
+    if (coins.isEmpty) {
+      throw Exception("No spendable Spark coins found");
+    }
+
     final available = info.cachedBalanceTertiary.spendable;
 
     if (txAmount > available) {
@@ -577,10 +581,11 @@ mixin SparkInterface<T extends ElectrumXCurrencyInterface>
         )
         .toList();
 
-    final currentId = await electrumXClient.getSparkLatestCoinId();
+    final myCoinGroupIds = coins.map((e) => e.groupId).toSet();
+
     final List<Map<String, dynamic>> setMaps = [];
     final List<({int groupId, String blockHash})> idAndBlockHashes = [];
-    for (int i = 1; i <= currentId; i++) {
+    for (final i in myCoinGroupIds) {
       final resultSet = await FiroCacheCoordinator.getSetCoinsForGroupId(
         i,
         network: cryptoCurrency.network,

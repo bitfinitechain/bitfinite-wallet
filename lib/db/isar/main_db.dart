@@ -8,6 +8,8 @@
  *
  */
 
+import 'dart:io';
+
 import 'package:decimal/decimal.dart';
 import 'package:isar_community/isar.dart';
 import 'package:tuple/tuple.dart';
@@ -76,7 +78,7 @@ class MainDB {
       // inspector: kDebugMode,
       inspector: false,
       name: "wallet_data",
-      maxSizeMiB: 512,
+      maxSizeMiB: Platform.isWindows ? 1024 : 512,
     );
     return true;
   }

@@ -202,7 +202,7 @@ class PriceAPI {
 
   static Future<List<String>?> availableBaseCurrencies() async {
     final externalCalls = Prefs.instance.externalCalls;
-    final HTTP client = HTTP();
+    const client = HTTP();
 
     if ((!Util.isTestEnv && !externalCalls) ||
         !(await Prefs.instance.isExternalCallsSet())) {

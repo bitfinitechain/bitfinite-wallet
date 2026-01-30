@@ -131,9 +131,11 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
 
     _subscription = _query.watch().listen((event) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        setState(() {
-          _transactions = event;
-        });
+        if (mounted) {
+          setState(() {
+            _transactions = event;
+          });
+        }
       });
     });
 

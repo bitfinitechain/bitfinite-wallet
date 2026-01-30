@@ -447,18 +447,16 @@ class MainDB {
 
   //
   Future<void> deleteWalletBlockchainData(String walletId) async {
-    final transactionCount = await getTransactions(walletId).count();
-    final transactionCountV2 = await isar.transactionV2s
-        .where()
-        .walletIdEqualTo(walletId)
-        .count();
-    final addressCount = await getAddresses(walletId).count();
-    final utxoCount = await getUTXOs(walletId).count();
-    // final lelantusCoinCount =
-    //     await isar.lelantusCoins.where().walletIdEqualTo(walletId).count();
-
     await isar.writeTxn(() async {
-      const paginateLimit = 50;
+      final transactionCount = await getTransactions(walletId).count();
+      final transactionCountV2 = await isar.transactionV2s
+          .where()
+          .walletIdEqualTo(walletId)
+          .count();
+      final addressCount = await getAddresses(walletId).count();
+      final utxoCount = await getUTXOs(walletId).count();
+
+      const paginateLimit = 100;
 
       // transactions
       for (int i = 0; i < transactionCount; i += paginateLimit) {

@@ -49,6 +49,7 @@ Future<bool> checkElectrumServer({
           port: port,
           useSSL: useSSL && !host.endsWith('.onion'),
           proxyInfo: proxyInfo,
+          acceptUnverified: false,
         ).timeout(
           Duration(seconds: (proxyInfo == null ? 5 : 30)),
           onTimeout: () => throw Exception(

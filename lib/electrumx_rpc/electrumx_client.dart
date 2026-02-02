@@ -289,7 +289,7 @@ class ElectrumXClient {
       port: usePort,
       connectionTimeout: connectionTimeoutForSpecialCaseJsonRPCClients,
       aliveTimerDuration: connectionTimeoutForSpecialCaseJsonRPCClients,
-      acceptUnverified: true,
+      acceptUnverified: false,
       useSSL: useUseSSL,
       proxyInfo: proxyInfo,
     );

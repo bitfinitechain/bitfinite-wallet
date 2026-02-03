@@ -193,7 +193,7 @@ class _EpicBoxCardState extends ConsumerState<EpicBoxCard> {
                 enabled: !_testing,
                 onTap: _testConnection,
               ),
-              const SizedBox(width: 24),
+              const SizedBox(width: 48),
               CustomTextButton(
                 text: "Connect",
                 enabled: !isPrimary,

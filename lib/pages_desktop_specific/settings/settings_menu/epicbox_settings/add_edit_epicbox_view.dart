@@ -416,7 +416,7 @@ class _AddEditEpicBoxViewState extends ConsumerState<AddEditEpicBoxView> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 36),
+                const SizedBox(height: 78),
                 Row(
                   children: [
                     Expanded(

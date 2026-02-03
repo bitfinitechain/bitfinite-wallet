@@ -110,7 +110,7 @@ class _DesktopManageEpicBoxDialogState
     final customBoxes = epicBoxes.where((e) => !e.isDefault).toList();
 
     return DesktopDialog(
-      maxHeight: null,
+      maxHeight: double.infinity,
       maxWidth: 580,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -141,7 +141,7 @@ class _DesktopManageEpicBoxDialogState
           const SizedBox(height: 12),
           Flexible(
             child: Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+              padding: const EdgeInsets.only(left: 32, right: 32, bottom: 32),
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

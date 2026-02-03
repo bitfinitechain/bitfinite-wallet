@@ -39,6 +39,7 @@ import 'models/exchange/response_objects/trade.dart';
 import 'models/models.dart';
 import 'models/node_model.dart';
 import 'models/notification_model.dart';
+import 'models/epicbox_server_model.dart';
 import 'models/trade_wallet_lookup.dart';
 import 'pages/campfire_migrate_view.dart';
 import 'pages/home_view/home_view.dart';
@@ -154,6 +155,9 @@ void main(List<String> args) async {
 
   // node model adapter
   DB.instance.hive.registerAdapter(NodeModelAdapter());
+
+  // epicbox server model adapter
+  DB.instance.hive.registerAdapter(EpicBoxServerModelAdapter());
 
   if (!DB.instance.hive.isAdapterRegistered(
     lib_monero_compat.WalletInfoAdapter().typeId,

@@ -3,22 +3,31 @@ import 'dart:io';
 import 'logger.dart';
 
 Future<bool> _testEpicBoxConnection(String host, int port, bool useSSL) async {
+  final client = HttpClient();
   try {
     final protocol = useSSL ? 'https' : 'http';
-    final client = HttpClient();
+
     client.connectionTimeout = const Duration(seconds: 5);
 
     final request = await client.getUrl(Uri.parse('$protocol://$host:$port'));
     final response = await request.close();
-    final body = await response.transform(const SystemEncoding().decoder).join();
+    final body = await response
+        .transform(const SystemEncoding().decoder)
+        .join();
 
     client.close();
 
     // epicbox servers return an HTML page containing "Epicbox"
     return response.statusCode == 200 && body.contains('Epicbox');
-  } catch (e) {
-    Logging.instance.i("_testEpicBoxConnection failed on \"$host:$port\": $e");
+  } catch (e, s) {
+    Logging.instance.e(
+      "_testEpicBoxConnection failed on \"$host:$port\"",
+      error: e,
+      stackTrace: s,
+    );
     return false;
+  } finally {
+    client.close(force: true);
   }
 }
 

@@ -8,6 +8,7 @@ import 'package:mutex/mutex.dart';
 import 'package:stack_wallet_backup/generate_password.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../../../exceptions/main_db/main_db_exception.dart';
 import '../../../exceptions/wallet/node_tor_mismatch_config_exception.dart';
 import '../../../models/balance.dart';
 import '../../../models/epic_slatepack_models.dart';
@@ -120,10 +121,12 @@ class EpiccashWallet extends Bip39Wallet {
       "epicbox_address_index": 0,
     });
     await secureStorageInterface.write(
-      key: '${walletId}_epicboxConfig',
+      key: '${walletId}_epicboxConfigNewNewNew',
       value: stringConfig,
     );
     libEpic.updateEpicboxConfig(wallet: _wallet!, epicBoxConfig: stringConfig);
+
+    await _generateAndStoreReceivingAddressForIndex(0);
     // TODO: refresh anything that needs to be refreshed/updated due to epicbox info changed
   }
 
@@ -150,14 +153,21 @@ class EpiccashWallet extends Bip39Wallet {
   Future<EpicBoxConfigModel> getEpicBoxConfig() async {
     // check for user-configured epicbox first
     final storedConfig = await secureStorageInterface.read(
-      key: '${walletId}_epicboxConfig',
+      key: '${walletId}_epicboxConfigNewNewNew',
     );
     if (storedConfig != null && storedConfig.isNotEmpty) {
       try {
         return EpicBoxConfigModel.fromString(storedConfig);
-      } catch (e) {
-        Logging.instance.w("Failed to parse stored epicbox config: $e");
+      } catch (e, s) {
+        Logging.instance.e(
+          "Failed to parse stored epicbox config $storedConfig."
+          " Falling back to default.",
+          error: e,
+          stackTrace: s,
+        );
       }
+    } else {
+      Logging.instance.i("No stored epic box config. Falling back to default.");
     }
 
     // fall back to default
@@ -558,7 +568,7 @@ class EpiccashWallet extends Bip39Wallet {
       return response is String && response.contains("Challenge");
     } catch (e, s) {
       Logging.instance.w(
-        "_testEpicBoxConnection failed on \"$host:$port\"",
+        "_testEpicboxServer failed on \"$host:$port\"",
         error: e,
         stackTrace: s,
       );
@@ -605,8 +615,33 @@ class EpiccashWallet extends Bip39Wallet {
     }
   }
 
+  Future<void> _updateAddressInDB(Address address) async {
+    try {
+      final storedAddress = await getCurrentReceivingAddress();
+      await mainDB.isar.writeTxn(() async {
+        if (storedAddress == null) {
+          await mainDB.isar.addresses.put(address);
+        } else {
+          address.id = storedAddress.id;
+          await storedAddress.transactions.load();
+          final txns = storedAddress.transactions.toList();
+          await mainDB.isar.addresses.delete(storedAddress.id);
+          await mainDB.isar.addresses.put(address);
+          address.transactions.addAll(txns);
+          await address.transactions.save();
+        }
+      });
+    } catch (e) {
+      throw MainDBException("failed _updateAddressInDB: $address", e);
+    }
+  }
+
   /// Only index 0 is currently used in stack wallet.
   Future<Address> _generateAndStoreReceivingAddressForIndex(int index) async {
+    if (_wallet == null) {
+      throw Exception('Wallet not opened. Call open() first.');
+    }
+
     // Since only 0 is a valid index in stack wallet at this time, lets just
     // throw is not zero
     if (index != 0) {
@@ -614,29 +649,10 @@ class EpiccashWallet extends Bip39Wallet {
     }
 
     final epicBoxConfig = await getEpicBoxConfig();
-    final address = await thisWalletAddress(index, epicBoxConfig);
-
-    if (info.cachedReceivingAddress != address.value) {
-      await info.updateReceivingAddress(
-        newAddress: address.value,
-        isar: mainDB.isar,
-      );
-    }
-    return address;
-  }
-
-  Future<Address> thisWalletAddress(
-    int index,
-    EpicBoxConfigModel epicboxConfig,
-  ) async {
-    if (_wallet == null) {
-      throw Exception('Wallet not opened. Call open() first.');
-    }
-
     final walletAddress = await libEpic.getAddressInfo(
       wallet: _wallet!,
       index: index,
-      epicboxConfig: epicboxConfig.toString(),
+      epicboxConfig: epicBoxConfig.toString(),
     );
 
     Logging.instance.d("WALLET_ADDRESS_IS $walletAddress");
@@ -650,7 +666,14 @@ class EpiccashWallet extends Bip39Wallet {
       subType: AddressSubType.receiving,
       publicKey: [], // ??
     );
-    await mainDB.updateOrPutAddresses([address]);
+    await _updateAddressInDB(address);
+    if (info.cachedReceivingAddress != address.value) {
+      await info.updateReceivingAddress(
+        newAddress: address.value,
+        isar: mainDB.isar,
+      );
+    }
+
     return address;
   }
 
@@ -833,7 +856,7 @@ class EpiccashWallet extends Bip39Wallet {
           value: password,
         );
         await secureStorageInterface.write(
-          key: '${walletId}_epicboxConfig',
+          key: '${walletId}_epicboxConfigNewNewNew',
           value: epicboxConfig.toString(),
         );
 
@@ -889,6 +912,9 @@ class EpiccashWallet extends Bip39Wallet {
           ); // Spawns worker isolate
 
           await updateNode();
+
+          // ensure address  is up to date with epic box uri
+          await _generateAndStoreReceivingAddressForIndex(0);
 
           await _listenToEpicbox();
         } catch (e, s) {
@@ -1100,6 +1126,10 @@ class EpiccashWallet extends Bip39Wallet {
             epicBoxConfig: epicboxConfig.toString(),
           );
 
+          await _generateAndStoreReceivingAddressForIndex(
+            info.epicData?.receivingIndex ?? 0,
+          );
+
           await _listenToEpicbox();
 
           highestPercent = 0;
@@ -1121,7 +1151,7 @@ class EpiccashWallet extends Bip39Wallet {
           );
 
           await secureStorageInterface.write(
-            key: '${walletId}_epicboxConfig',
+            key: '${walletId}_epicboxConfigNewNewNew',
             value: epicboxConfig.toString(),
           );
 
@@ -1200,10 +1230,6 @@ class EpiccashWallet extends Bip39Wallet {
       //   await info.updateExtraEpiccashWalletInfo(epicData: inf, isar: isar)
       //   await epicUpdateCreationHeight(await chainHeight);
       // }
-
-      // this will always be zero????
-      final int curAdd = await _getCurrentIndex();
-      await _generateAndStoreReceivingAddressForIndex(curAdd);
 
       if (_wallet == null) {
         throw Exception('Wallet not opened. Call open() first.');

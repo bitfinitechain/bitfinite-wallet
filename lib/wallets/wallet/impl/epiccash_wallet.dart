@@ -148,34 +148,20 @@ class EpiccashWallet extends Bip39Wallet {
   }
 
   Future<EpicBoxConfigModel> getEpicBoxConfig() async {
-    final EpicBoxConfigModel _epicBoxConfig = EpicBoxConfigModel.fromServer(
-      DefaultEpicBoxes.defaultEpicBoxServer,
+    // check for user-configured epicbox first
+    final storedConfig = await secureStorageInterface.read(
+      key: '${walletId}_epicboxConfig',
     );
+    if (storedConfig != null && storedConfig.isNotEmpty) {
+      try {
+        return EpicBoxConfigModel.fromString(storedConfig);
+      } catch (e) {
+        Logging.instance.w("Failed to parse stored epicbox config: $e");
+      }
+    }
 
-    //Get the default Epicbox server and check if it's conected
-    // bool isEpicboxConnected = await _testEpicboxServer(
-    //     DefaultEpicBoxes.defaultEpicBoxServer.host,
-    //     DefaultEpicBoxes.defaultEpicBoxServer.port ?? 443);
-
-    // if (isEpicboxConnected) {
-    //Use default server for as Epicbox config
-
-    // }
-    // else {
-    //   //Use Europe config
-    //   _epicBoxConfig = EpicBoxConfigModel.fromServer(DefaultEpicBoxes.europe);
-    // }
-    //   // example of selecting another random server from the default list
-    //   // alternative servers: copy list of all default EB servers but remove the default default
-    //   // List<EpicBoxServerModel> alternativeServers = DefaultEpicBoxes.all;
-    //   // alternativeServers.removeWhere((opt) => opt.name == DefaultEpicBoxes.defaultEpicBoxServer.name);
-    //   // alternativeServers.shuffle(); // randomize which server is used
-    //   // _epicBoxConfig = EpicBoxConfigModel.fromServer(alternativeServers.first);
-    //
-    //   // TODO test this connection before returning it
-    // }
-
-    return _epicBoxConfig;
+    // fall back to default
+    return EpicBoxConfigModel.fromServer(DefaultEpicBoxes.defaultEpicBoxServer);
   }
 
   Future<void> updateRestoreHeight(int height) async {

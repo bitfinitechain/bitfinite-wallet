@@ -394,6 +394,7 @@ class _MaterialAppWithThemeState extends ConsumerState<MaterialAppWithTheme>
       unawaited(ref.read(baseCurrenciesProvider).update());
 
       await _nodeService.updateDefaults();
+      await _nodeService.updateDefaultEpicBoxes();
       await _notificationsService.init(
         nodeService: _nodeService,
         tradesService: _tradesService,

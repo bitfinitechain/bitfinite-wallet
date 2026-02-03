@@ -168,15 +168,14 @@ class NodeService extends ChangeNotifier {
   }
 
   List<NodeModel> getNodesFor(CryptoCurrency coin) {
-    final list =
-        DB.instance
-            .values<NodeModel>(boxName: DB.boxNameNodeModels)
-            .where(
-              (e) =>
-                  e.coinName == coin.identifier &&
-                  !e.id.startsWith(DefaultNodes.defaultNodeIdPrefix),
-            )
-            .toList();
+    final list = DB.instance
+        .values<NodeModel>(boxName: DB.boxNameNodeModels)
+        .where(
+          (e) =>
+              e.coinName == coin.identifier &&
+              !e.id.startsWith(DefaultNodes.defaultNodeIdPrefix),
+        )
+        .toList();
 
     // add default to end of list
     list.addAll(
@@ -272,8 +271,10 @@ class NodeService extends ChangeNotifier {
     bool enabled,
     bool shouldNotifyListeners,
   ) async {
-    final model =
-        DB.instance.get<NodeModel>(boxName: DB.boxNameNodeModels, key: id)!;
+    final model = DB.instance.get<NodeModel>(
+      boxName: DB.boxNameNodeModels,
+      key: id,
+    )!;
     await DB.instance.put<NodeModel>(
       boxName: DB.boxNameNodeModels,
       key: model.id,

@@ -321,6 +321,11 @@ class NodeService extends ChangeNotifier {
         );
       }
     }
+
+    // set default primary if none exists
+    if (getPrimaryEpicBox() == null) {
+      await setPrimaryEpicBox(epicBox: DefaultEpicBoxes.defaultEpicBoxServer);
+    }
   }
 
   Future<void> setPrimaryEpicBox({

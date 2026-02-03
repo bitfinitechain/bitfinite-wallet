@@ -2353,7 +2353,7 @@ class _SendViewState extends ConsumerState<SendView> {
                             const SizedBox(height: 12),
                             if (coin is Epiccash)
                               Text(
-                                "On chain Note (optional)",
+                                "On chain Note",
                                 style: STextStyles.smallMed12(context),
                                 textAlign: TextAlign.left,
                               ),

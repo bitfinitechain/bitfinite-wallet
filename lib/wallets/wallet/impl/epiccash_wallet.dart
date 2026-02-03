@@ -1409,7 +1409,7 @@ class EpiccashWallet extends Bip39Wallet {
         OutputV2 output = OutputV2.isarCantDoRequiredInDefaultConstructor(
           scriptPubKeyHex: "00",
           valueStringSats: credit.toString(),
-          addresses: [if (addressFrom != null) addressFrom],
+          addresses: [if (addressTo != null) addressTo],
           walletOwns: true,
         );
         final InputV2 input = InputV2.isarCantDoRequiredInDefaultConstructor(
@@ -1417,7 +1417,7 @@ class EpiccashWallet extends Bip39Wallet {
           scriptSigAsm: null,
           sequence: null,
           outpoint: null,
-          addresses: [if (addressTo != null) addressTo],
+          addresses: [if (addressFrom != null) addressFrom],
           valueStringSats: debit.toString(),
           witness: null,
           innerRedeemScriptAsm: null,

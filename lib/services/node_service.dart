@@ -294,33 +294,33 @@ class NodeService extends ChangeNotifier {
   //============================================================================
 
   Future<void> updateDefaultEpicBoxes() async {
-    final primaryEpicBox = getPrimaryEpicBox();
-
-    for (final defaultEpicBox in DefaultEpicBoxes.all) {
-      final savedEpicBox = DB.instance.get<EpicBoxServerModel>(
-        boxName: DB.boxNameEpicBoxModels,
-        key: defaultEpicBox.id,
-      );
-      if (savedEpicBox == null) {
-        await DB.instance.put<EpicBoxServerModel>(
-          boxName: DB.boxNameEpicBoxModels,
-          key: defaultEpicBox.id,
-          value: defaultEpicBox,
-        );
-      } else {
-        await DB.instance.put<EpicBoxServerModel>(
-          boxName: DB.boxNameEpicBoxModels,
-          key: savedEpicBox.id,
-          value: defaultEpicBox.copyWith(enabled: savedEpicBox.enabled),
-        );
-      }
-
-      if (primaryEpicBox != null && primaryEpicBox.id == defaultEpicBox.id) {
-        await setPrimaryEpicBox(
-          epicBox: defaultEpicBox.copyWith(enabled: primaryEpicBox.enabled),
-        );
-      }
-    }
+    // final primaryEpicBox = getPrimaryEpicBox();
+    //
+    // for (final defaultEpicBox in DefaultEpicBoxes.all) {
+    //   final savedEpicBox = DB.instance.get<EpicBoxServerModel>(
+    //     boxName: DB.boxNameEpicBoxModels,
+    //     key: defaultEpicBox.id,
+    //   );
+    //   if (savedEpicBox == null) {
+    //     await DB.instance.put<EpicBoxServerModel>(
+    //       boxName: DB.boxNameEpicBoxModels,
+    //       key: defaultEpicBox.id,
+    //       value: defaultEpicBox,
+    //     );
+    //   } else {
+    //     await DB.instance.put<EpicBoxServerModel>(
+    //       boxName: DB.boxNameEpicBoxModels,
+    //       key: savedEpicBox.id,
+    //       value: defaultEpicBox.copyWith(enabled: savedEpicBox.enabled),
+    //     );
+    //   }
+    //
+    //   if (primaryEpicBox != null && primaryEpicBox.id == defaultEpicBox.id) {
+    //     await setPrimaryEpicBox(
+    //       epicBox: defaultEpicBox.copyWith(enabled: primaryEpicBox.enabled),
+    //     );
+    //   }
+    // }
 
     // set default primary if none exists
     if (getPrimaryEpicBox() == null) {

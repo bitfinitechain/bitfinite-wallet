@@ -1444,9 +1444,7 @@ class RouteGenerator {
         if (args is String) {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
-            builder: (_) => ManageEpicboxView(
-              walletId: args,
-            ),
+            builder: (_) => ManageEpicboxView(walletId: args),
             settings: RouteSettings(name: settings.name),
           );
         }
@@ -1457,12 +1455,14 @@ class RouteGenerator {
             is ({
               AddEditEpicboxMobileViewType viewType,
               String? epicBoxId,
+              String routeOnSuccessOrDelete,
             })) {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => AddEditEpicboxMobileView(
               viewType: args.viewType,
               epicBoxId: args.epicBoxId,
+              routeOnSuccessOrDelete: args.routeOnSuccessOrDelete,
             ),
             settings: RouteSettings(name: settings.name),
           );

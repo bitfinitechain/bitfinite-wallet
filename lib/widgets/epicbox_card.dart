@@ -5,6 +5,7 @@ import 'package:flutter_svg/svg.dart';
 import '../providers/global/node_service_provider.dart';
 import '../themes/stack_colors.dart';
 import '../utilities/assets.dart';
+import '../utilities/default_epicboxes.dart';
 import '../utilities/test_epicbox_server_connection.dart';
 import '../utilities/text_styles.dart';
 import '../utilities/util.dart';
@@ -55,10 +56,11 @@ class _EpicBoxCardState extends ConsumerState<EpicBoxCard> {
   }
 
   Future<void> _testConnection() async {
-    final epicBox = ref
-        .read(nodeServiceChangeNotifierProvider)
-        .getEpicBoxById(id: widget.epicBoxId);
-    if (epicBox == null) return;
+    final epicBox =
+        ref
+            .read(nodeServiceChangeNotifierProvider)
+            .getEpicBoxById(id: widget.epicBoxId) ??
+        DefaultEpicBoxes.all.firstWhere((e) => e.id == widget.epicBoxId);
 
     setState(() {
       _testing = true;
@@ -82,15 +84,13 @@ class _EpicBoxCardState extends ConsumerState<EpicBoxCard> {
 
   @override
   Widget build(BuildContext context) {
-    final epicBox = ref.watch(
-      nodeServiceChangeNotifierProvider.select(
-        (value) => value.getEpicBoxById(id: widget.epicBoxId),
-      ),
-    );
-
-    if (epicBox == null) {
-      return const SizedBox.shrink();
-    }
+    final epicBox =
+        ref.watch(
+          nodeServiceChangeNotifierProvider.select(
+            (value) => value.getEpicBoxById(id: widget.epicBoxId),
+          ),
+        ) ??
+        DefaultEpicBoxes.all.firstWhere((e) => e.id == widget.epicBoxId);
 
     final primaryEpicBox = ref.watch(
       nodeServiceChangeNotifierProvider.select(
@@ -107,14 +107,18 @@ class _EpicBoxCardState extends ConsumerState<EpicBoxCard> {
       status = "Testing...";
     } else if (_testResult == true) {
       status = isPrimary ? "Connected" : "Reachable";
-      statusColor = Theme.of(context).extension<StackColors>()!.accentColorGreen;
+      statusColor = Theme.of(
+        context,
+      ).extension<StackColors>()!.accentColorGreen;
     } else if (_testResult == false) {
       status = "Unreachable";
       statusColor = Theme.of(context).extension<StackColors>()!.accentColorRed;
     } else {
       status = isPrimary ? "Selected" : "";
       if (isPrimary) {
-        statusColor = Theme.of(context).extension<StackColors>()!.accentColorBlue;
+        statusColor = Theme.of(
+          context,
+        ).extension<StackColors>()!.accentColorBlue;
       }
     }
 

@@ -3,18 +3,21 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../../models/epicbox_server_model.dart';
 import '../../../../notifications/show_flush_bar.dart';
 import '../../../../providers/global/node_service_provider.dart';
 import '../../../../themes/stack_colors.dart';
+import '../../../../utilities/assets.dart';
 import '../../../../utilities/constants.dart';
 import '../../../../utilities/test_epicbox_server_connection.dart';
 import '../../../../utilities/text_styles.dart';
 import '../../../../widgets/background.dart';
 import '../../../../widgets/custom_buttons/app_bar_icon_button.dart';
-import '../../../../widgets/custom_buttons/blue_text_button.dart';
+import '../../../../widgets/desktop/primary_button.dart';
+import '../../../../widgets/desktop/secondary_button.dart';
 import '../../../../widgets/icon_widgets/x_icon.dart';
 import '../../../../widgets/stack_text_field.dart';
 import '../../../../widgets/textfield_icon_button.dart';
@@ -26,12 +29,17 @@ class AddEditEpicboxMobileView extends ConsumerStatefulWidget {
     super.key,
     required this.viewType,
     this.epicBoxId,
-  });
+    required this.routeOnSuccessOrDelete,
+  }) : assert(
+         (viewType == .edit && epicBoxId != null) ||
+             viewType == .add && epicBoxId == null,
+       );
 
   static const routeName = "/addEditEpicboxMobile";
 
   final AddEditEpicboxMobileViewType viewType;
   final String? epicBoxId;
+  final String routeOnSuccessOrDelete;
 
   @override
   ConsumerState<AddEditEpicboxMobileView> createState() =>
@@ -111,14 +119,15 @@ class _AddEditEpicboxMobileViewState
           title: const Text("Server currently unreachable"),
           content: const Text("Would you like to save this server anyways?"),
           actions: [
+            // todo both pop until routeOnSuccessOrDelete ?
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
               child: Text(
                 "Cancel",
                 style: STextStyles.button(context).copyWith(
-                  color: Theme.of(context)
-                      .extension<StackColors>()!
-                      .accentColorDark,
+                  color: Theme.of(
+                    context,
+                  ).extension<StackColors>()!.accentColorDark,
                 ),
               ),
             ),
@@ -127,9 +136,9 @@ class _AddEditEpicboxMobileViewState
               child: Text(
                 "Save",
                 style: STextStyles.button(context).copyWith(
-                  color: Theme.of(context)
-                      .extension<StackColors>()!
-                      .accentColorDark,
+                  color: Theme.of(
+                    context,
+                  ).extension<StackColors>()!.accentColorDark,
                 ),
               ),
             ),
@@ -162,6 +171,8 @@ class _AddEditEpicboxMobileViewState
     }
   }
 
+  late final bool canDelete;
+
   @override
   void initState() {
     super.initState();
@@ -169,20 +180,25 @@ class _AddEditEpicboxMobileViewState
     _hostController = TextEditingController();
     _portController = TextEditingController();
 
-    if (widget.epicBoxId != null) {
-      final epicBox = ref
-          .read(nodeServiceChangeNotifierProvider)
-          .getEpicBoxById(id: widget.epicBoxId!);
-      if (epicBox != null) {
+    switch (widget.viewType) {
+      case .add:
+        _portController.text = "443";
+        port = 443;
+        canDelete = false;
+        break;
+
+      case .edit:
+        final epicBox = ref
+            .read(nodeServiceChangeNotifierProvider)
+            .getEpicBoxById(id: widget.epicBoxId!)!;
+
         _nameController.text = epicBox.name;
         _hostController.text = epicBox.host;
         _portController.text = (epicBox.port ?? 443).toString();
         _useSSL = epicBox.useSSL ?? true;
         port = epicBox.port ?? 443;
-      }
-    } else {
-      _portController.text = "443";
-      port = 443;
+        canDelete = !epicBox.isDefault;
+        break;
     }
   }
 
@@ -214,196 +230,231 @@ class _AddEditEpicboxMobileViewState
                 : "Edit Epicbox Server",
             style: STextStyles.navBarTitle(context),
           ),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(
-                          Constants.size.circularBorderRadius,
-                        ),
-                        child: TextField(
-                          autocorrect: false,
-                          enableSuggestions: false,
-                          controller: _nameController,
-                          focusNode: _nameFocusNode,
-                          style: STextStyles.field(context),
-                          decoration: standardInputDecoration(
-                            "Server name",
-                            _nameFocusNode,
-                            context,
-                          ).copyWith(
-                            suffixIcon: _nameController.text.isNotEmpty
-                                ? Padding(
-                                    padding: const EdgeInsets.only(right: 0),
-                                    child: UnconstrainedBox(
-                                      child: TextFieldIconButton(
-                                        child: const XIcon(),
-                                        onTap: () {
-                                          _nameController.clear();
-                                          setState(() {});
-                                        },
-                                      ),
-                                    ),
-                                  )
-                                : null,
-                          ),
-                          onChanged: (_) => setState(() {}),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(
-                          Constants.size.circularBorderRadius,
-                        ),
-                        child: TextField(
-                          autocorrect: false,
-                          enableSuggestions: false,
-                          controller: _hostController,
-                          focusNode: _hostFocusNode,
-                          style: STextStyles.field(context),
-                          decoration: standardInputDecoration(
-                            "Host",
-                            _hostFocusNode,
-                            context,
-                          ).copyWith(
-                            suffixIcon: _hostController.text.isNotEmpty
-                                ? Padding(
-                                    padding: const EdgeInsets.only(right: 0),
-                                    child: UnconstrainedBox(
-                                      child: TextFieldIconButton(
-                                        child: const XIcon(),
-                                        onTap: () {
-                                          _hostController.clear();
-                                          setState(() {});
-                                        },
-                                      ),
-                                    ),
-                                  )
-                                : null,
-                          ),
-                          onChanged: (_) => setState(() {}),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(
-                          Constants.size.circularBorderRadius,
-                        ),
-                        child: TextField(
-                          autocorrect: false,
-                          enableSuggestions: false,
-                          controller: _portController,
-                          focusNode: _portFocusNode,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                          ],
-                          keyboardType: TextInputType.number,
-                          style: STextStyles.field(context),
-                          decoration: standardInputDecoration(
-                            "Port",
-                            _portFocusNode,
-                            context,
-                          ).copyWith(
-                            suffixIcon: _portController.text.isNotEmpty
-                                ? Padding(
-                                    padding: const EdgeInsets.only(right: 0),
-                                    child: UnconstrainedBox(
-                                      child: TextFieldIconButton(
-                                        child: const XIcon(),
-                                        onTap: () {
-                                          _portController.clear();
-                                          setState(() {});
-                                        },
-                                      ),
-                                    ),
-                                  )
-                                : null,
-                          ),
-                          onChanged: (value) {
-                            port = int.tryParse(value);
-                            setState(() {});
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _useSSL = !_useSSL;
-                              });
-                            },
-                            child: Container(
-                              color: Colors.transparent,
-                              child: Row(
-                                children: [
-                                  SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: Checkbox(
-                                      materialTapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                      value: _useSSL,
-                                      onChanged: (newValue) {
-                                        setState(() {
-                                          _useSSL = newValue!;
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    "Use SSL",
-                                    style: STextStyles.itemSubtitle12(context),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+          actions: [
+            if (canDelete)
+              Padding(
+                padding: const EdgeInsets.only(top: 10, bottom: 10, right: 10),
+                child: AspectRatio(
+                  aspectRatio: 1,
+                  child: AppBarIconButton(
+                    key: const Key("deleteNodeAppBarButtonKey"),
+                    size: 36,
+                    shadows: const [],
+                    color: Theme.of(
+                      context,
+                    ).extension<StackColors>()!.background,
+                    icon: SvgPicture.asset(
+                      Assets.svg.trash,
+                      color: Theme.of(
+                        context,
+                      ).extension<StackColors>()!.accentColorDark,
+                      width: 20,
+                      height: 20,
+                    ),
+                    onPressed: () async {
+                      Navigator.popUntil(
+                        context,
+                        ModalRoute.withName(widget.routeOnSuccessOrDelete),
+                      );
+                      await ref
+                          .read(nodeServiceChangeNotifierProvider)
+                          .deleteEpicBox(widget.epicBoxId!, true);
+                    },
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: CustomTextButton(
-                      text: "Test connection",
-                      enabled: canTestConnection,
-                      onTap: canTestConnection ? _testConnection : null,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: TextButton(
-                      onPressed: canSave ? _attemptSave : null,
-                      style: canSave
-                          ? Theme.of(context)
-                              .extension<StackColors>()!
-                              .getPrimaryEnabledButtonStyle(context)
-                          : Theme.of(context)
-                              .extension<StackColors>()!
-                              .getPrimaryDisabledButtonStyle(context),
-                      child: Text(
-                        "Save",
-                        style: STextStyles.button(context),
+          ],
+        ),
+        body: SafeArea(
+          child: LayoutBuilder(
+            builder: (builderContext, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                              Constants.size.circularBorderRadius,
+                            ),
+                            child: TextField(
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              controller: _nameController,
+                              focusNode: _nameFocusNode,
+                              style: STextStyles.field(context),
+                              decoration:
+                                  standardInputDecoration(
+                                    "Server name",
+                                    _nameFocusNode,
+                                    context,
+                                  ).copyWith(
+                                    suffixIcon: _nameController.text.isNotEmpty
+                                        ? Padding(
+                                            padding: const EdgeInsets.only(
+                                              right: 0,
+                                            ),
+                                            child: UnconstrainedBox(
+                                              child: TextFieldIconButton(
+                                                child: const XIcon(),
+                                                onTap: () {
+                                                  _nameController.clear();
+                                                  setState(() {});
+                                                },
+                                              ),
+                                            ),
+                                          )
+                                        : null,
+                                  ),
+                              onChanged: (_) => setState(() {}),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                              Constants.size.circularBorderRadius,
+                            ),
+                            child: TextField(
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              controller: _hostController,
+                              focusNode: _hostFocusNode,
+                              style: STextStyles.field(context),
+                              decoration:
+                                  standardInputDecoration(
+                                    "Host",
+                                    _hostFocusNode,
+                                    context,
+                                  ).copyWith(
+                                    suffixIcon: _hostController.text.isNotEmpty
+                                        ? Padding(
+                                            padding: const EdgeInsets.only(
+                                              right: 0,
+                                            ),
+                                            child: UnconstrainedBox(
+                                              child: TextFieldIconButton(
+                                                child: const XIcon(),
+                                                onTap: () {
+                                                  _hostController.clear();
+                                                  setState(() {});
+                                                },
+                                              ),
+                                            ),
+                                          )
+                                        : null,
+                                  ),
+                              onChanged: (_) => setState(() {}),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                              Constants.size.circularBorderRadius,
+                            ),
+                            child: TextField(
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              controller: _portController,
+                              focusNode: _portFocusNode,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
+                              keyboardType: TextInputType.number,
+                              style: STextStyles.field(context),
+                              decoration:
+                                  standardInputDecoration(
+                                    "Port",
+                                    _portFocusNode,
+                                    context,
+                                  ).copyWith(
+                                    suffixIcon: _portController.text.isNotEmpty
+                                        ? Padding(
+                                            padding: const EdgeInsets.only(
+                                              right: 0,
+                                            ),
+                                            child: UnconstrainedBox(
+                                              child: TextFieldIconButton(
+                                                child: const XIcon(),
+                                                onTap: () {
+                                                  _portController.clear();
+                                                  setState(() {});
+                                                },
+                                              ),
+                                            ),
+                                          )
+                                        : null,
+                                  ),
+                              onChanged: (value) {
+                                port = int.tryParse(value);
+                                setState(() {});
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _useSSL = !_useSSL;
+                                  });
+                                },
+                                child: Container(
+                                  color: Colors.transparent,
+                                  child: Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: Checkbox(
+                                          materialTapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                          value: _useSSL,
+                                          onChanged: (newValue) {
+                                            setState(() {
+                                              _useSSL = newValue!;
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        "Use SSL",
+                                        style: STextStyles.itemSubtitle12(
+                                          context,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const Spacer(),
+                          const SizedBox(height: 16),
+                          SecondaryButton(
+                            label: "Test connection",
+                            enabled: canTestConnection,
+                            onPressed: canTestConnection
+                                ? _testConnection
+                                : null,
+                          ),
+                          const SizedBox(height: 16),
+                          PrimaryButton(
+                            label: "Save",
+                            onPressed: canSave ? _attemptSave : null,
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ],
-              ),
-            ],
+                ),
+              );
+            },
           ),
         ),
       ),

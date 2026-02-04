@@ -7,6 +7,7 @@ import '../../../../notifications/show_flush_bar.dart';
 import '../../../../providers/providers.dart';
 import '../../../../themes/stack_colors.dart';
 import '../../../../utilities/assets.dart';
+import '../../../../utilities/default_epicboxes.dart';
 import '../../../../utilities/test_epicbox_server_connection.dart';
 import '../../../../utilities/text_styles.dart';
 import '../../../../wallets/wallet/impl/epiccash_wallet.dart';
@@ -29,11 +30,11 @@ class DesktopManageEpicBoxDialog extends ConsumerStatefulWidget {
 class _DesktopManageEpicBoxDialogState
     extends ConsumerState<DesktopManageEpicBoxDialog> {
   Future<void> _onConnect(String epicBoxId) async {
-    final epicBox = ref
-        .read(nodeServiceChangeNotifierProvider)
-        .getEpicBoxById(id: epicBoxId);
-
-    if (epicBox == null) return;
+    final epicBox =
+        ref
+            .read(nodeServiceChangeNotifierProvider)
+            .getEpicBoxById(id: epicBoxId) ??
+        DefaultEpicBoxes.all.firstWhere((e) => e.id == epicBoxId);
 
     final data = EpicBoxFormData()
       ..host = epicBox.host
@@ -106,9 +107,6 @@ class _DesktopManageEpicBoxDialogState
       ),
     );
 
-    final defaultBoxes = epicBoxes.where((e) => e.isDefault).toList();
-    final customBoxes = epicBoxes.where((e) => !e.isDefault).toList();
-
     return DesktopDialog(
       maxHeight: double.infinity,
       maxWidth: 580,
@@ -146,35 +144,33 @@ class _DesktopManageEpicBoxDialogState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (defaultBoxes.isNotEmpty) ...[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        child: Text(
-                          "Default servers",
-                          style: STextStyles.smallMed12(context).copyWith(
-                            color: Theme.of(
-                              context,
-                            ).extension<StackColors>()!.textDark3,
-                          ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      child: Text(
+                        "Default servers",
+                        style: STextStyles.smallMed12(context).copyWith(
+                          color: Theme.of(
+                            context,
+                          ).extension<StackColors>()!.textDark3,
                         ),
                       ),
-                      ...defaultBoxes.map(
-                        (epicBox) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: EpicBoxCard(
-                            key: Key("${epicBox.id}_card_key"),
-                            epicBoxId: epicBox.id,
-                            onConnect: () => _onConnect(epicBox.id),
-                            onEdit: () => _onEdit(epicBox.id),
-                            testOnInit: primaryEpicBox?.id == epicBox.id,
-                          ),
+                    ),
+                    ...DefaultEpicBoxes.all.map(
+                      (epicBox) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: EpicBoxCard(
+                          key: Key("${epicBox.id}_card_key"),
+                          epicBoxId: epicBox.id,
+                          onConnect: () => _onConnect(epicBox.id),
+                          onEdit: () {}, // do nothing for defaults
+                          testOnInit: primaryEpicBox?.id == epicBox.id,
                         ),
                       ),
-                    ],
-                    if (customBoxes.isNotEmpty) ...[
+                    ),
+                    if (epicBoxes.isNotEmpty) ...[
                       Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
@@ -189,7 +185,7 @@ class _DesktopManageEpicBoxDialogState
                           ),
                         ),
                       ),
-                      ...customBoxes.map(
+                      ...epicBoxes.map(
                         (epicBox) => Padding(
                           padding: const EdgeInsets.symmetric(vertical: 4),
                           child: EpicBoxCard(

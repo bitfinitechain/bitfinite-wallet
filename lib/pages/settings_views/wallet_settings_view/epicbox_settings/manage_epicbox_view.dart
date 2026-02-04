@@ -7,6 +7,7 @@ import '../../../../notifications/show_flush_bar.dart';
 import '../../../../providers/providers.dart';
 import '../../../../themes/stack_colors.dart';
 import '../../../../utilities/assets.dart';
+import '../../../../utilities/default_epicboxes.dart';
 import '../../../../utilities/test_epicbox_server_connection.dart';
 import '../../../../utilities/text_styles.dart';
 import '../../../../wallets/wallet/impl/epiccash_wallet.dart';
@@ -28,11 +29,11 @@ class ManageEpicboxView extends ConsumerStatefulWidget {
 
 class _ManageEpicboxViewState extends ConsumerState<ManageEpicboxView> {
   Future<void> _onConnect(String epicBoxId) async {
-    final epicBox = ref
-        .read(nodeServiceChangeNotifierProvider)
-        .getEpicBoxById(id: epicBoxId);
-
-    if (epicBox == null) return;
+    final epicBox =
+        ref
+            .read(nodeServiceChangeNotifierProvider)
+            .getEpicBoxById(id: epicBoxId) ??
+        DefaultEpicBoxes.all.firstWhere((e) => e.id == epicBoxId);
 
     final data = EpicBoxFormData()
       ..host = epicBox.host
@@ -79,6 +80,7 @@ class _ManageEpicboxViewState extends ConsumerState<ManageEpicboxView> {
       arguments: (
         viewType: AddEditEpicboxMobileViewType.edit,
         epicBoxId: epicBoxId,
+        routeOnSuccessOrDelete: ManageEpicboxView.routeName,
       ),
     );
   }
@@ -89,6 +91,7 @@ class _ManageEpicboxViewState extends ConsumerState<ManageEpicboxView> {
       arguments: (
         viewType: AddEditEpicboxMobileViewType.add,
         epicBoxId: null,
+        routeOnSuccessOrDelete: ManageEpicboxView.routeName,
       ),
     );
   }
@@ -103,9 +106,6 @@ class _ManageEpicboxViewState extends ConsumerState<ManageEpicboxView> {
         (value) => value.getPrimaryEpicBox(),
       ),
     );
-
-    final defaultBoxes = epicBoxes.where((e) => e.isDefault).toList();
-    final customBoxes = epicBoxes.where((e) => !e.isDefault).toList();
 
     return Background(
       child: Scaffold(
@@ -132,9 +132,9 @@ class _ManageEpicboxViewState extends ConsumerState<ManageEpicboxView> {
                     child: Center(
                       child: Icon(
                         Icons.add,
-                        color: Theme.of(context)
-                            .extension<StackColors>()!
-                            .topNavIconPrimary,
+                        color: Theme.of(
+                          context,
+                        ).extension<StackColors>()!.topNavIconPrimary,
                         size: 20,
                       ),
                     ),
@@ -151,7 +151,7 @@ class _ManageEpicboxViewState extends ConsumerState<ManageEpicboxView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (defaultBoxes.isNotEmpty) ...[
+                ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -166,20 +166,20 @@ class _ManageEpicboxViewState extends ConsumerState<ManageEpicboxView> {
                       ),
                     ),
                   ),
-                  ...defaultBoxes.map(
+                  ...DefaultEpicBoxes.all.map(
                     (epicBox) => Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4),
                       child: EpicBoxCard(
                         key: Key("${epicBox.id}_card_key"),
                         epicBoxId: epicBox.id,
                         onConnect: () => _onConnect(epicBox.id),
-                        onEdit: () => _onEdit(epicBox.id),
+                        onEdit: () {},
                         testOnInit: primaryEpicBox?.id == epicBox.id,
                       ),
                     ),
                   ),
                 ],
-                if (customBoxes.isNotEmpty) ...[
+                if (epicBoxes.isNotEmpty) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -194,7 +194,7 @@ class _ManageEpicboxViewState extends ConsumerState<ManageEpicboxView> {
                       ),
                     ),
                   ),
-                  ...customBoxes.map(
+                  ...epicBoxes.map(
                     (epicBox) => Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4),
                       child: EpicBoxCard(

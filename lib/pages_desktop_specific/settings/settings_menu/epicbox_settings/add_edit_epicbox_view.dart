@@ -12,6 +12,7 @@ import '../../../../utilities/constants.dart';
 import '../../../../utilities/test_epicbox_server_connection.dart';
 import '../../../../utilities/text_styles.dart';
 import '../../../../widgets/custom_buttons/app_bar_icon_button.dart';
+import '../../../../widgets/desktop/delete_button.dart';
 import '../../../../widgets/desktop/desktop_dialog.dart';
 import '../../../../widgets/desktop/primary_button.dart';
 import '../../../../widgets/desktop/secondary_button.dart';
@@ -27,7 +28,10 @@ class AddEditEpicBoxView extends ConsumerStatefulWidget {
     required this.viewType,
     this.epicBoxId,
     required this.onSave,
-  });
+  }) : assert(
+         (viewType == .edit && epicBoxId != null) ||
+             viewType == .add && epicBoxId == null,
+       );
 
   final AddEditEpicBoxViewType viewType;
   final String? epicBoxId;
@@ -198,6 +202,8 @@ class _AddEditEpicBoxViewState extends ConsumerState<AddEditEpicBoxView> {
     }
   }
 
+  late final bool canDelete;
+
   @override
   void initState() {
     super.initState();
@@ -205,20 +211,25 @@ class _AddEditEpicBoxViewState extends ConsumerState<AddEditEpicBoxView> {
     _hostController = TextEditingController();
     _portController = TextEditingController();
 
-    if (widget.epicBoxId != null) {
-      final epicBox = ref
-          .read(nodeServiceChangeNotifierProvider)
-          .getEpicBoxById(id: widget.epicBoxId!);
-      if (epicBox != null) {
+    switch (widget.viewType) {
+      case .add:
+        _portController.text = "443";
+        port = 443;
+        canDelete = false;
+        break;
+
+      case .edit:
+        final epicBox = ref
+            .read(nodeServiceChangeNotifierProvider)
+            .getEpicBoxById(id: widget.epicBoxId!)!;
+
         _nameController.text = epicBox.name;
         _hostController.text = epicBox.host;
         _portController.text = (epicBox.port ?? 443).toString();
         _useSSL = epicBox.useSSL ?? true;
         port = epicBox.port ?? 443;
-      }
-    } else {
-      _portController.text = "443";
-      port = 443;
+        canDelete = !epicBox.isDefault;
+        break;
     }
   }
 
@@ -416,7 +427,30 @@ class _AddEditEpicBoxViewState extends ConsumerState<AddEditEpicBoxView> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 78),
+                const SizedBox(height: 22),
+                if (canDelete)
+                  SizedBox(
+                    height: 56,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: DeleteButton(
+                            label: "Delete node",
+                            desktopMed: true,
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              ref
+                                  .read(nodeServiceChangeNotifierProvider)
+                                  .deleteEpicBox(widget.epicBoxId!, true);
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        const Spacer(),
+                      ],
+                    ),
+                  ),
+                if (canDelete) const SizedBox(height: 45),
                 Row(
                   children: [
                     Expanded(

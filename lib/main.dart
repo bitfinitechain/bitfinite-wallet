@@ -33,6 +33,7 @@ import 'db/hive/db.dart';
 import 'db/isar/main_db.dart';
 import 'db/special_migrations.dart';
 import 'db/sqlite/firo_cache.dart';
+import 'models/epicbox_server_model.dart';
 import 'models/exchange/change_now/exchange_transaction.dart';
 import 'models/exchange/change_now/exchange_transaction_status.dart';
 import 'models/exchange/response_objects/trade.dart';
@@ -154,6 +155,9 @@ void main(List<String> args) async {
 
   // node model adapter
   DB.instance.hive.registerAdapter(NodeModelAdapter());
+
+  // epicbox server model adapter
+  DB.instance.hive.registerAdapter(EpicBoxServerModelAdapter());
 
   if (!DB.instance.hive.isAdapterRegistered(
     lib_monero_compat.WalletInfoAdapter().typeId,
@@ -390,6 +394,7 @@ class _MaterialAppWithThemeState extends ConsumerState<MaterialAppWithTheme>
       unawaited(ref.read(baseCurrenciesProvider).update());
 
       await _nodeService.updateDefaults();
+      await _nodeService.updateDefaultEpicBoxes();
       await _notificationsService.init(
         nodeService: _nodeService,
         tradesService: _tradesService,

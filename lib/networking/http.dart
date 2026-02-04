@@ -26,8 +26,12 @@ class HTTP {
     required Uri url,
     Map<String, String>? headers,
     required ({InternetAddress host, int port})? proxyInfo,
+    Duration? connectionTimeout,
   }) async {
     final httpClient = HttpClient();
+    if (connectionTimeout != null) {
+      httpClient.connectionTimeout = connectionTimeout;
+    }
     try {
       if (proxyInfo != null) {
         SocksTCPClient.assignToHttpClient(httpClient, [

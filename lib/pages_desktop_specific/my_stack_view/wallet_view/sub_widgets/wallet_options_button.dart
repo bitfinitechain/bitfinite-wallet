@@ -38,6 +38,7 @@ import '../../../../wallets/wallet/wallet_mixin_interfaces/spark_interface.dart'
 import '../../../../wallets/wallet/wallet_mixin_interfaces/view_only_option_interface.dart';
 import '../../../addresses/desktop_wallet_addresses_view.dart';
 import '../../../password/request_desktop_auth_dialog.dart';
+import '../../../settings/settings_menu/epicbox_settings/desktop_manage_epicbox_dialog.dart';
 import 'desktop_delete_wallet_dialog.dart';
 
 enum _WalletOptions {
@@ -47,7 +48,8 @@ enum _WalletOptions {
   showXpub,
   frostOptions,
   refreshFromHeight,
-  showSparkKey;
+  showSparkKey,
+  epicBoxSettings;
 
   String get prettyName {
     switch (this) {
@@ -65,6 +67,8 @@ enum _WalletOptions {
         return "Refresh height";
       case _WalletOptions.showSparkKey:
         return "Show Spark View Key";
+      case _WalletOptions.epicBoxSettings:
+        return "Epic Box settings";
     }
   }
 }
@@ -124,6 +128,9 @@ class WalletOptionsButton extends ConsumerWidget {
               },
               onRefreshHeightPressed: () async {
                 Navigator.of(context).pop(_WalletOptions.refreshFromHeight);
+              },
+              onEpicBoxSettingsPressed: () async {
+                Navigator.of(context).pop(_WalletOptions.epicBoxSettings);
               },
               walletId: walletId,
             );
@@ -296,6 +303,16 @@ class WalletOptionsButton extends ConsumerWidget {
                 );
               }
               break;
+
+            case _WalletOptions.epicBoxSettings:
+              unawaited(
+                showDialog(
+                  context: context,
+                  builder: (context) =>
+                      DesktopManageEpicBoxDialog(walletId: walletId),
+                ),
+              );
+              break;
           }
         }
       },
@@ -327,6 +344,7 @@ class WalletOptionsPopupMenu extends ConsumerWidget {
     required this.onChangeRepPressed,
     required this.onFrostMSWalletOptionsPressed,
     required this.onRefreshHeightPressed,
+    required this.onEpicBoxSettingsPressed,
     required this.walletId,
   });
 
@@ -336,6 +354,7 @@ class WalletOptionsPopupMenu extends ConsumerWidget {
   final VoidCallback onChangeRepPressed;
   final VoidCallback onFrostMSWalletOptionsPressed;
   final VoidCallback onRefreshHeightPressed;
+  final VoidCallback onEpicBoxSettingsPressed;
   final String walletId;
 
   @override
@@ -501,6 +520,41 @@ class WalletOptionsPopupMenu extends ConsumerWidget {
                             Expanded(
                               child: Text(
                                 _WalletOptions.refreshFromHeight.prettyName,
+                                style:
+                                    STextStyles.desktopTextExtraExtraSmall(
+                                      context,
+                                    ).copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).extension<StackColors>()!.textDark,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  if (wallet is EpiccashWallet) const SizedBox(height: 8),
+                  if (wallet is EpiccashWallet)
+                    TransparentButton(
+                      onPressed: onEpicBoxSettingsPressed,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            SvgPicture.asset(
+                              Assets.svg.node,
+                              width: 20,
+                              height: 20,
+                              color: Theme.of(context)
+                                  .extension<StackColors>()!
+                                  .textFieldActiveSearchIconLeft,
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Text(
+                                _WalletOptions.epicBoxSettings.prettyName,
                                 style:
                                     STextStyles.desktopTextExtraExtraSmall(
                                       context,

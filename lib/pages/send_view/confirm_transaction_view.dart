@@ -1181,7 +1181,7 @@ class _ConfirmTransactionViewState
                   children: [
                     if (coin is Epiccash || coin is Mimblewimblecoin)
                       Text(
-                        "On chain Note (optional)",
+                        "On chain Note",
                         style: STextStyles.smallMed12(context),
                         textAlign: TextAlign.left,
                       ),

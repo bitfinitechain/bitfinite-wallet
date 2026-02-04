@@ -144,6 +144,8 @@ import 'pages/settings_views/global_settings_view/syncing_preferences_views/sync
 import 'pages/settings_views/global_settings_view/syncing_preferences_views/syncing_preferences_view.dart';
 import 'pages/settings_views/global_settings_view/syncing_preferences_views/wallet_syncing_options_view.dart';
 import 'pages/settings_views/global_settings_view/tor_settings/tor_settings_view.dart';
+import 'pages/settings_views/wallet_settings_view/epicbox_settings/add_edit_epicbox_mobile_view.dart';
+import 'pages/settings_views/wallet_settings_view/epicbox_settings/manage_epicbox_view.dart';
 import 'pages/settings_views/wallet_settings_view/frost_ms/frost_ms_options_view.dart';
 import 'pages/settings_views/wallet_settings_view/frost_ms/frost_participants_view.dart';
 import 'pages/settings_views/wallet_settings_view/frost_ms/initiate_resharing/complete_reshare_config_view.dart';
@@ -1432,6 +1434,35 @@ class RouteGenerator {
               walletId: args.item1,
               initialSyncStatus: args.item2,
               initialNodeStatus: args.item3,
+            ),
+            settings: RouteSettings(name: settings.name),
+          );
+        }
+        return _routeError("${settings.name} invalid args: ${args.toString()}");
+
+      case ManageEpicboxView.routeName:
+        if (args is String) {
+          return getRoute(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => ManageEpicboxView(walletId: args),
+            settings: RouteSettings(name: settings.name),
+          );
+        }
+        return _routeError("${settings.name} invalid args: ${args.toString()}");
+
+      case AddEditEpicboxMobileView.routeName:
+        if (args
+            is ({
+              AddEditEpicboxMobileViewType viewType,
+              String? epicBoxId,
+              String routeOnSuccessOrDelete,
+            })) {
+          return getRoute(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => AddEditEpicboxMobileView(
+              viewType: args.viewType,
+              epicBoxId: args.epicBoxId,
+              routeOnSuccessOrDelete: args.routeOnSuccessOrDelete,
             ),
             settings: RouteSettings(name: settings.name),
           );

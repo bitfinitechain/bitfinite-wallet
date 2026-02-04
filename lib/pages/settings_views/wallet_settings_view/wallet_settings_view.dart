@@ -55,6 +55,7 @@ import '../../home_view/home_view.dart';
 import '../../pinpad_views/lock_screen_view.dart';
 import '../global_settings_view/syncing_preferences_views/syncing_preferences_view.dart';
 import '../sub_widgets/settings_list_button.dart';
+import 'epicbox_settings/manage_epicbox_view.dart';
 import 'frost_ms/frost_ms_options_view.dart';
 import 'wallet_backup_views/wallet_backup_view.dart';
 import 'wallet_network_settings_view/wallet_network_settings_view.dart';
@@ -409,6 +410,19 @@ class _WalletSettingsViewState extends ConsumerState<WalletSettingsView> {
                 );
               },
             ),
+            if (wallet is EpiccashWallet) const SizedBox(height: 8),
+            if (wallet is EpiccashWallet)
+              SettingsListButton(
+                iconAssetName: Assets.svg.node,
+                iconSize: 16,
+                title: "Epicbox Servers",
+                onPressed: () {
+                  Navigator.of(context).pushNamed(
+                    ManageEpicboxView.routeName,
+                    arguments: walletId,
+                  );
+                },
+              ),
             if (canBackup) const SizedBox(height: 8),
             if (canBackup)
               Consumer(

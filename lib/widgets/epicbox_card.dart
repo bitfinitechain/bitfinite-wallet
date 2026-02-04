@@ -43,6 +43,17 @@ class _EpicBoxCardState extends ConsumerState<EpicBoxCard> {
     }
   }
 
+  @override
+  void didUpdateWidget(EpicBoxCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Auto-test when testOnInit changes from false to true
+    if (widget.testOnInit && !oldWidget.testOnInit && _testResult == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _testConnection();
+      });
+    }
+  }
+
   Future<void> _testConnection() async {
     final epicBox = ref
         .read(nodeServiceChangeNotifierProvider)

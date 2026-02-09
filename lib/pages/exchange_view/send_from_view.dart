@@ -305,7 +305,17 @@ class _SendFromCardState extends ConsumerState<SendFromCard> {
         } else {
           txDataFuture = firoWallet.prepareSendSpark(
             txData: TxData(
-              recipients: [recipient],
+              recipients: recipient.addressType == .spark ? null : [recipient],
+              sparkRecipients: recipient.addressType == .spark
+                  ? [
+                      (
+                        address: recipient.address,
+                        amount: recipient.amount,
+                        memo: "",
+                        isChange: false,
+                      ),
+                    ]
+                  : null,
               // feeRateType: FeeRateType.average,
             ),
           );

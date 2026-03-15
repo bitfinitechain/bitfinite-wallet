@@ -16,8 +16,8 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-
-import '../../models/isar/models/transaction_note.dart';
+import 'package:isar_community/isar.dart';
+import '../../models/isar/models/isar_models.dart';
 import '../../notifications/show_flush_bar.dart';
 import '../../pages_desktop_specific/coin_control/desktop_coin_control_use_dialog.dart';
 import '../../pages_desktop_specific/my_stack_view/wallet_view/sub_widgets/desktop_auth_send.dart';
@@ -45,6 +45,7 @@ import '../../wallets/wallet/impl/firo_wallet.dart';
 import '../../wallets/wallet/impl/mimblewimblecoin_wallet.dart';
 import '../../wallets/wallet/impl/solana_wallet.dart';
 import '../../wallets/wallet/wallet_mixin_interfaces/paynym_interface.dart';
+import '../masternodes/create_masternode_view.dart';
 import '../../widgets/background.dart';
 import '../../widgets/conditional_parent.dart';
 import '../../widgets/custom_buttons/app_bar_icon_button.dart';
@@ -268,6 +269,79 @@ class _ConfirmTransactionViewState
     }
   }
 
+  Future<int?> _resolveFiroCollateralVout({
+    required FiroWallet wallet,
+    required String txid,
+    required String recipientAddress,
+    required Amount amount,
+  }) async {
+    try {
+      final tx = await wallet.electrumXClient.getTransaction(txHash: txid);
+      final outputs = tx['vout'];
+      if (outputs is! List) {
+        return null;
+      }
+
+      for (final output in outputs) {
+        if (output is! Map) {
+          continue;
+        }
+        final outputMap = Map<String, dynamic>.from(output);
+        final n = outputMap['n'];
+        final outputIndex = switch (n) {
+          int value => value,
+          String value => int.tryParse(value),
+          _ => null,
+        };
+        if (outputIndex == null) {
+          continue;
+        }
+
+        final valueDecimal = Decimal.tryParse(outputMap['value'].toString());
+        if (valueDecimal == null) {
+          continue;
+        }
+        final outputAmount = Amount.fromDecimal(
+          valueDecimal,
+          fractionDigits: wallet.cryptoCurrency.fractionDigits,
+        );
+        if (outputAmount != amount) {
+          continue;
+        }
+
+        final scriptPubKey = outputMap['scriptPubKey'];
+        if (scriptPubKey is! Map) {
+          continue;
+        }
+
+        final recipientAddresses = <String>{};
+        final addresses = scriptPubKey['addresses'];
+        if (addresses is List) {
+          recipientAddresses.addAll(
+            addresses.whereType<String>(),
+          );
+        }
+
+        final address = scriptPubKey['address'];
+        if (address is String) {
+          recipientAddresses.add(address);
+        }
+
+        if (recipientAddresses.contains(recipientAddress)) {
+          return outputIndex;
+        }
+      }
+    } catch (e, s) {
+      Logging.instance.w(
+        "Failed to resolve collateral vout for txid=$txid: $e",
+        error: e,
+        stackTrace: s,
+      );
+    }
+
+    return null;
+  }
+
   Future<void> _attemptSend(BuildContext context) async {
     final wallet = ref.read(pWallets).getWallet(walletId);
     final coin = wallet.info.coin;
@@ -385,15 +459,15 @@ class _ConfirmTransactionViewState
       }
 
       final results = await Future.wait([txDataFuture, time]);
+      final confirmedTx = results.first as TxData;
 
       sendProgressController.triggerSuccess?.call();
       await Future<void>.delayed(const Duration(seconds: 5));
 
-      if (wallet is FiroWallet &&
-          (results.first as TxData).sparkMints != null) {
-        txids.addAll((results.first as TxData).sparkMints!.map((e) => e.txid!));
+      if (wallet is FiroWallet && confirmedTx.sparkMints != null) {
+        txids.addAll(confirmedTx.sparkMints!.map((e) => e.txid!));
       } else {
-        txids.add((results.first as TxData).txid!);
+        txids.add(confirmedTx.txid!);
       }
       if (coin is! Ethereum) {
         ref.refresh(desktopUseUTXOs);
@@ -415,13 +489,147 @@ class _ConfirmTransactionViewState
           unawaited(ref.read(pCurrentTokenWallet)!.refresh());
         }
       } else {
-        unawaited(wallet.refresh());
+        if (wallet is FiroWallet) {
+          try {
+            await wallet.refresh();
+          } catch (e, s) {
+            Logging.instance.w(
+              "Post-send wallet refresh failed: $e",
+              error: e,
+              stackTrace: s,
+            );
+          }
+        } else {
+          unawaited(wallet.refresh());
+        }
       }
 
       widget.onSuccess.call();
 
-      // pop back to wallet
-      if (context.mounted) {
+      // Check for 1000 FIRO transparent self-send → prompt MN registration
+      bool navigatedToMN = false;
+      if (wallet is FiroWallet &&
+          confirmedTx.recipients != null &&
+          confirmedTx.sparkMints == null &&
+          txids.isNotEmpty &&
+          context.mounted) {
+        try {
+          final masternodeAmount = Amount.fromDecimal(
+            kMasterNodeValue,
+            fractionDigits: wallet.cryptoCurrency.fractionDigits,
+          );
+          final txFeeRaw = confirmedTx.fee?.raw ?? BigInt.zero;
+
+          final mnRecipient = confirmedTx.recipients!
+              .where((r) => !r.isChange && r.amount == masternodeAmount)
+              .firstOrNull;
+
+          if (mnRecipient != null && confirmedTx.txid != null) {
+            final ownAddress =
+                await ref
+                    .read(mainDBProvider)
+                    .getAddresses(walletId)
+                    .filter()
+                    .valueEqualTo(mnRecipient.address)
+                    .findFirst();
+
+            if (ownAddress != null && context.mounted) {
+              final collateralVout = await _resolveFiroCollateralVout(
+                wallet: wallet,
+                txid: confirmedTx.txid!,
+                recipientAddress: mnRecipient.address,
+                amount: masternodeAmount,
+              );
+              if (!context.mounted) {
+                return;
+              }
+
+              if (collateralVout == null) {
+                unawaited(
+                  showFloatingFlushBar(
+                    type: FlushBarType.warning,
+                    message:
+                        "Unable to determine collateral output index "
+                        "automatically. Open Masternodes and select your "
+                        "1000 FIRO UTXO manually.",
+                    context: context,
+                  ),
+                );
+              } else {
+                navigatedToMN = true;
+                final navigator = Navigator.of(context);
+                navigator.popUntil(
+                  ModalRoute.withName(routeOnSuccessName),
+                );
+                unawaited(
+                  navigator.pushNamed(
+                    CreateMasternodeView.routeName,
+                    arguments: {
+                      'walletId': walletId,
+                      'collateralTxid': confirmedTx.txid!,
+                      'collateralVout': collateralVout,
+                      'collateralAddress': mnRecipient.address,
+                    },
+                  ),
+                );
+              }
+            }
+          } else if (mnRecipient != null &&
+              confirmedTx.txid == null &&
+              context.mounted) {
+            unawaited(
+              showFloatingFlushBar(
+                type: FlushBarType.warning,
+                message:
+                    "Could not determine transaction id for collateral "
+                    "auto-detection. Register from the Masternodes screen "
+                    "once the transaction appears.",
+                context: context,
+              ),
+            );
+          } else {
+            // If fee was subtracted from the recipient, users can enter 1000 but
+            // end up with ~999.99... output which is not valid MN collateral.
+            final nearMnRecipient = confirmedTx.recipients!
+                .where((r) => !r.isChange && r.amount.raw < masternodeAmount.raw)
+                .where((r) => (masternodeAmount.raw - r.amount.raw) <= txFeeRaw)
+                .toList()
+              ..sort((a, b) => b.amount.raw.compareTo(a.amount.raw));
+
+            if (nearMnRecipient.isNotEmpty) {
+              final maybeOwnAddress =
+                  await ref
+                      .read(mainDBProvider)
+                      .getAddresses(walletId)
+                      .filter()
+                      .valueEqualTo(nearMnRecipient.first.address)
+                      .findFirst();
+
+              if (maybeOwnAddress != null && context.mounted) {
+                unawaited(
+                  showFloatingFlushBar(
+                    type: FlushBarType.warning,
+                    message:
+                        "Masternode collateral requires one exact 1000 FIRO "
+                        "transparent output. Fee appears to have been "
+                        "subtracted from the recipient amount. Send 1000 "
+                        "to yourself again with fee paid on top.",
+                    context: context,
+                  ),
+                );
+              }
+            }
+          }
+        } catch (e, s) {
+          Logging.instance.w(
+            "Skipping masternode collateral auto-detection: $e",
+            error: e,
+            stackTrace: s,
+          );
+        }
+      }
+
+      if (!navigatedToMN && context.mounted) {
         if (widget.onSuccessInsteadOfRouteOnSuccess == null) {
           Navigator.of(
             context,

@@ -14,12 +14,18 @@ class CreateMasternodeView extends ConsumerStatefulWidget {
   const CreateMasternodeView({
     super.key,
     required this.firoWalletId,
+    required this.collateralTxid,
+    required this.collateralVout,
+    required this.collateralAddress,
     this.popTxidOnSuccess = true,
   });
 
   static const routeName = "/createMasternodeView";
 
   final String firoWalletId;
+  final String collateralTxid;
+  final int collateralVout;
+  final String collateralAddress;
   final bool popTxidOnSuccess;
 
   @override
@@ -32,32 +38,40 @@ class _CreateMasternodeDialogState extends ConsumerState<CreateMasternodeView> {
   Widget build(BuildContext context) {
     return ConditionalParent(
       condition: Util.isDesktop,
-      builder: (child) => SizedBox(
-        width: 660,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: .spaceBetween,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 32),
-                  child: Text(
-                    "Create masternode",
-                    style: STextStyles.desktopH3(context),
+      builder: (child) => Material(
+        color: Theme.of(context).extension<StackColors>()!.popupBG,
+        borderRadius: BorderRadius.circular(20),
+        child: SizedBox(
+          width: 660,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 32),
+                    child: Text(
+                      "Create masternode",
+                      style: STextStyles.desktopH3(context),
+                    ),
                   ),
-                ),
-                const DesktopDialogCloseButton(),
-              ],
-            ),
-            Flexible(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 32, bottom: 32, right: 32),
-                child: child,
+                  const DesktopDialogCloseButton(),
+                ],
               ),
-            ),
-          ],
+              Flexible(
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: 32,
+                    bottom: 32,
+                    right: 32,
+                  ),
+                  child: child,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       child: ConditionalParent(
@@ -107,6 +121,9 @@ class _CreateMasternodeDialogState extends ConsumerState<CreateMasternodeView> {
         ),
         child: RegisterMasternodeForm(
           firoWalletId: widget.firoWalletId,
+          collateralTxid: widget.collateralTxid,
+          collateralVout: widget.collateralVout,
+          collateralAddress: widget.collateralAddress,
           onRegistrationSuccess: (txid) {
             if (widget.popTxidOnSuccess && mounted) {
               Navigator.of(context, rootNavigator: Util.isDesktop).pop(txid);

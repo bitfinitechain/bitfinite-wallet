@@ -490,19 +490,7 @@ class _ConfirmTransactionViewState
           unawaited(ref.read(pCurrentTokenWallet)!.refresh());
         }
       } else {
-        if (wallet is FiroWallet) {
-          try {
-            await wallet.refresh();
-          } catch (e, s) {
-            Logging.instance.w(
-              "Post-send wallet refresh failed: $e",
-              error: e,
-              stackTrace: s,
-            );
-          }
-        } else {
-          unawaited(wallet.refresh());
-        }
+        unawaited(wallet.refresh());
       }
 
       widget.onSuccess.call();
@@ -558,36 +546,41 @@ class _ConfirmTransactionViewState
                 );
               } else {
                 navigatedToMN = true;
-                final navigator = Navigator.of(context);
-                navigator.popUntil(
-                  ModalRoute.withName(routeOnSuccessName),
-                );
-                final dialogContext = navigator.context;
-                if (!dialogContext.mounted) {
-                  return;
-                }
-                if (Util.isDesktop) {
-                  await showDialog<Object>(
-                    context: dialogContext,
-                    barrierDismissible: true,
-                    builder: (ctx) => SDialog(
-                      child: CreateMasternodeView(
-                        firoWalletId: walletId,
-                        collateralTxid: confirmedTx.txid!,
-                        collateralVout: collateralVout,
-                        collateralAddress: mnRecipient.address,
-                      ),
-                    ),
+                if (isDesktop) {
+                  Navigator.of(context).popUntil(
+                    ModalRoute.withName(routeOnSuccessName),
                   );
+                  if (context.mounted) {
+                    unawaited(
+                      showDialog<void>(
+                        context: context,
+                        barrierDismissible: true,
+                        builder: (_) => SDialog(
+                          child: CreateMasternodeView(
+                            firoWalletId: walletId,
+                            collateralTxid: confirmedTx.txid!,
+                            collateralVout: collateralVout,
+                            collateralAddress: mnRecipient.address,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
                 } else {
-                  await navigator.pushNamed(
-                    CreateMasternodeView.routeName,
-                    arguments: {
-                      'walletId': walletId,
-                      'collateralTxid': confirmedTx.txid!,
-                      'collateralVout': collateralVout,
-                      'collateralAddress': mnRecipient.address,
-                    },
+                  final navigator = Navigator.of(context);
+                  navigator.popUntil(
+                    ModalRoute.withName(routeOnSuccessName),
+                  );
+                  unawaited(
+                    navigator.pushNamed(
+                      CreateMasternodeView.routeName,
+                      arguments: {
+                        'walletId': walletId,
+                        'collateralTxid': confirmedTx.txid!,
+                        'collateralVout': collateralVout,
+                        'collateralAddress': mnRecipient.address,
+                      },
+                    ),
                   );
                 }
               }

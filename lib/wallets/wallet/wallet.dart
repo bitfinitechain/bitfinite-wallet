@@ -30,6 +30,7 @@ import 'impl/banano_wallet.dart';
 import 'impl/bitcoin_frost_wallet.dart';
 import 'impl/bitcoin_wallet.dart';
 import 'impl/bitcoincash_wallet.dart';
+import 'impl/bitfinite_wallet.dart';
 import 'impl/cardano_wallet.dart';
 import 'impl/dash_wallet.dart';
 import 'impl/dogecoin_wallet.dart';
@@ -362,6 +363,9 @@ abstract class Wallet<T extends CryptoCurrency> {
 
       case const (Bitcoincash):
         return BitcoincashWallet(net);
+
+      case const (Bitfinite):
+        return BitfiniteWallet(net);
 
       case const (Cardano):
         return CardanoWallet(net);

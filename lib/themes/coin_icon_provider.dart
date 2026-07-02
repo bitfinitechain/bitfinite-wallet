@@ -25,6 +25,9 @@ final coinIconProvider = Provider.family<String, CryptoCurrency>((ref, coin) {
         return assets.litecoin;
       case const (Bitcoincash):
         return assets.bitcoincash;
+      // TODO(bfx): ship a dedicated BitFinite icon per theme; BCH icon as placeholder.
+      case const (Bitfinite):
+        return assets.bitcoincash;
       case const (Dogecoin):
         return assets.dogecoin;
       case const (Epiccash):
@@ -45,8 +48,14 @@ final coinIconProvider = Provider.family<String, CryptoCurrency>((ref, coin) {
         return assets.stackIcon;
     }
   } else if (assets is ThemeAssetsV2) {
-    return (assets).coinIcons[coin.mainNetId]!;
+    // Fall back (BFX has no per-theme icon yet) instead of crashing on `!`.
+    return (assets).coinIcons[coin.mainNetId] ??
+        (assets).coinIcons["bitcoincash"] ??
+        (assets).coinIcons.values.first;
   } else {
-    return (assets as ThemeAssetsV3).coinIcons[coin.mainNetId]!;
+    final a = assets as ThemeAssetsV3;
+    return a.coinIcons[coin.mainNetId] ??
+        a.coinIcons["bitcoincash"] ??
+        a.coinIcons.values.first;
   }
 });

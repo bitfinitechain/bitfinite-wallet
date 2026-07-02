@@ -5,7 +5,7 @@ set -e
 source ./env.sh
 
 APP_PLATFORMS=("android" "ios" "macos" "linux" "windows")
-APP_NAMED_IDS=("stack_wallet" "stack_duo" "campfire")
+APP_NAMED_IDS=("stack_wallet" "stack_duo" "campfire" "bitfinite")
 
 # Function to display usage.
 usage() {

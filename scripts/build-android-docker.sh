@@ -63,8 +63,9 @@ docker run --rm \
     ( cd scripts && ./prebuild.sh )
 
     # configure the flavor (app_config.g.dart, pubspec, assets, launcher icons).
+    # build_app.sh sources ./env.sh relatively, so it MUST run from scripts/.
     # download_all.sh is a no-op for the bitfinite app, so -d is safe.
-    echo yes | ./scripts/build_app.sh -v "$VERSION" -b "$BUILD_NUM" -p android -a "$APP" -d -s
+    ( cd scripts && echo yes | ./build_app.sh -v "$VERSION" -b "$BUILD_NUM" -p android -a "$APP" -d -s )
 
     flutter pub get
 

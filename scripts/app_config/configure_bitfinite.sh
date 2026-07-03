@@ -69,8 +69,8 @@ const Set<AppFeature> _features = {
   AppFeature.tor,
 };
 
-# PoC: no in-app logo asset yet (app_icon.dart null-checks this and falls back).
-# TODO(bfx): add assets/in_app_logo_icons/bitfinite-icon_{light,dark}.svg from Brandkit.
+// PoC: no in-app logo asset yet (app_icon.dart null-checks this and falls back).
+// TODO(bfx): add assets/in_app_logo_icons/bitfinite-icon_light/dark.svg from Brandkit.
 const ({String light, String dark})? _appIconAsset = null;
 
 final List<CryptoCurrency> _supportedCoins = List.unmodifiable([

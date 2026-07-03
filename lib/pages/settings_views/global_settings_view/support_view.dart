@@ -84,14 +84,6 @@ class SupportView extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           AboutItem(
-            linkUrl: "https://www.reddit.com/r/bitfinitechain/",
-            label: "Reddit",
-            buttonText: "r/bitfinitechain",
-            iconAsset: Assets.socials.reddit,
-            isDesktop: isDesktop,
-          ),
-          const SizedBox(height: 8),
-          AboutItem(
             linkUrl: "https://x.com/bitfinitechain",
             label: "X",
             buttonText: "@bitfinitechain",

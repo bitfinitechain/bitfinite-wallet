@@ -64,10 +64,6 @@ import 'wallet_mixin_interfaces/spark_interface.dart';
 import 'wallet_mixin_interfaces/view_only_option_interface.dart';
 
 abstract class Wallet<T extends CryptoCurrency> {
-  // BFX DEBUG: last exception thrown from refresh(), surfaced on the Network
-  // screen when sync fails. Remove once the sync issue is resolved.
-  static String? lastRefreshError;
-
   // default to Transaction class. For TransactionV2 set to 2
   int get isarTransactionVersion => 1;
 
@@ -597,8 +593,6 @@ abstract class Wallet<T extends CryptoCurrency> {
             ),
           );
         }
-        // BFX DEBUG: surface the real error on the Network screen.
-        Wallet.lastRefreshError = "$e";
         Logging.instance.e(
           "Caught exception in refreshWalletData()",
           error: e,

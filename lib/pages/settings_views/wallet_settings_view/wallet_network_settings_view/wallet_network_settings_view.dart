@@ -44,6 +44,7 @@ import '../../../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../../../wallets/wallet/impl/epiccash_wallet.dart';
 import '../../../../wallets/wallet/impl/mimblewimblecoin_wallet.dart';
 import '../../../../wallets/wallet/intermediate/cryptonote_wallet.dart';
+import '../../../../wallets/wallet/wallet.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/electrumx_interface.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/mweb_interface.dart';
 import '../../../../widgets/animated_text.dart';
@@ -767,7 +768,9 @@ class _WalletNetworkSettingsViewState
                   context,
                 ).extension<StackColors>()!.warningBackground,
                 child: Text(
-                  "Please check your internet connection and make sure your current node is not having issues.",
+                  Wallet.lastRefreshError != null
+                      ? "SYNC ERROR: ${Wallet.lastRefreshError}"
+                      : "Please check your internet connection and make sure your current node is not having issues.",
                   style: STextStyles.baseXS(context).copyWith(
                     color: Theme.of(
                       context,

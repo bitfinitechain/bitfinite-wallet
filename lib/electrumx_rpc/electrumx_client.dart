@@ -1412,6 +1412,20 @@ class ElectrumXClient {
         throw Exception(msg);
       }
     } catch (e) {
+      // BFX: electr-bfx does not implement blockchain.estimatefee (returns
+      // "Method not found"), so the request throws. Fall back to the coin's
+      // default fee rate instead of failing the whole send/fee flow — same
+      // behaviour as the response == -1 case above.
+      if (cryptoCurrency is ElectrumXCurrencyInterface) {
+        Logging.instance.w(
+          "estimateFee failed ($e); falling back to defaultFeeRate",
+        );
+        return Amount(
+          rawValue:
+              (cryptoCurrency as ElectrumXCurrencyInterface).defaultFeeRate,
+          fractionDigits: cryptoCurrency.fractionDigits,
+        ).decimal;
+      }
       rethrow;
     }
   }

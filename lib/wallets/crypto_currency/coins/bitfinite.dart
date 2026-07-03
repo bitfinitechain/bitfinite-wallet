@@ -266,13 +266,13 @@ class Bitfinite extends Bip39HDCurrency with ElectrumXCurrencyInterface {
   NodeModel defaultNode({required bool isPrimary}) {
     switch (network) {
       case CryptoCurrencyNetwork.main:
-        // Stack connects over RAW ElectrumX TCP/SSL (not the wss bridge the
-        // browser wallet uses). Dedicated host `electr.bitfinitechain.org:50002`
-        // = nginx `stream` TLS terminator (LE cert) -> 127.0.0.1:50001 electrs.
-        // See POC.md / electrum-ssl-runbook.md.
+        // Raw ElectrumX TCP/SSL on the carrier-safe port 443 (mobile carriers
+        // block :50002). nginx `stream` + `ssl_preread` on 443 routes
+        // electr.bitfinitechain.org -> electrs, other SNI -> web vhosts.
+        // (:50002 still works on networks that allow it.)
         return NodeModel(
           host: "electr.bitfinitechain.org",
-          port: 50002,
+          port: 443,
           name: DefaultNodes.defaultName,
           id: DefaultNodes.buildId(this),
           useSSL: true,

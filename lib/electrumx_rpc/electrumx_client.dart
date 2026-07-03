@@ -321,7 +321,14 @@ class ElectrumXClient {
           );
         }
 
-        await newClient.request('server.version');
+        // BFX: electr-bfx (romanz/electrs) requires server.version params and
+        // negotiates PROTOCOL_VERSION "1.5"; an empty-params call returns
+        // "invalid params" and this await throws, aborting the connection.
+        // Send a [min,max] range that brackets both 1.4 servers and electr-bfx's 1.5.
+        await newClient.request('server.version', [
+          'Stack Wallet',
+          ['1.4', '1.5'],
+        ]);
 
         await ClientManager.sharedInstance.addClient(
           newClient,

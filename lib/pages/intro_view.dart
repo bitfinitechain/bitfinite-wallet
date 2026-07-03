@@ -208,7 +208,7 @@ class PrivacyAndTOSText extends StatelessWidget {
                   ..onTap = () {
                     launchUrl(
                       Uri.parse(
-                        "https://stackwallet.com/terms-of-service.html",
+                        "https://bitfinitechain.org",
                       ),
                       mode: LaunchMode.externalApplication,
                     );
@@ -222,7 +222,7 @@ class PrivacyAndTOSText extends StatelessWidget {
                 TapGestureRecognizer()
                   ..onTap = () {
                     launchUrl(
-                      Uri.parse("https://stackwallet.com/privacy-policy.html"),
+                      Uri.parse("https://bitfinitechain.org"),
                       mode: LaunchMode.externalApplication,
                     );
                   },

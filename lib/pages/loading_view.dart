@@ -58,10 +58,16 @@ class LoadingView extends ConsumerWidget {
                   child:
                       assetPath != null
                           ? Image.file(File(assetPath))
-                          : Lottie.asset(
-                            Assets.lottie.test2,
-                            animate: true,
-                            repeat: true,
+                          // BFX: no Stack lottie — plain brand-blue spinner.
+                          : const Center(
+                            child: SizedBox(
+                              width: 56,
+                              height: 56,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 4,
+                                color: Color(0xFF0644F1),
+                              ),
+                            ),
                           ),
                 ),
               ),

@@ -317,10 +317,10 @@ class AboutView extends ConsumerWidget {
                                 ),
                                 const SizedBox(height: 4),
                                 CustomTextButton(
-                                  text: "https://stackwallet.com",
+                                  text: "https://bitfinitechain.org",
                                   onTap: () {
                                     launchUrl(
-                                      Uri.parse("https://stackwallet.com"),
+                                      Uri.parse("https://bitfinitechain.org"),
                                       mode: LaunchMode.externalApplication,
                                     );
                                   },
@@ -341,10 +341,10 @@ class AboutView extends ConsumerWidget {
                                   ),
                                   const SizedBox(height: 4),
                                   CustomTextButton(
-                                    text: "https://stackwallet.com",
+                                    text: "https://bitfinitechain.org",
                                     onTap: () {
                                       launchUrl(
-                                        Uri.parse("https://stackwallet.com"),
+                                        Uri.parse("https://bitfinitechain.org"),
                                         mode: LaunchMode.externalApplication,
                                       );
                                     },
@@ -395,7 +395,7 @@ class AboutView extends ConsumerWidget {
                                         ..onTap = () {
                                           launchUrl(
                                             Uri.parse(
-                                              "https://stackwallet.com/terms-of-service.html",
+                                              "https://bitfinitechain.org",
                                             ),
                                             mode:
                                                 LaunchMode.externalApplication,
@@ -411,7 +411,7 @@ class AboutView extends ConsumerWidget {
                                         ..onTap = () {
                                           launchUrl(
                                             Uri.parse(
-                                              "https://stackwallet.com/privacy-policy.html",
+                                              "https://bitfinitechain.org",
                                             ),
                                             mode:
                                                 LaunchMode.externalApplication,

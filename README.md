@@ -1,50 +1,44 @@
-[![codecov](https://codecov.io/gh/cypherstack/stack_wallet/branch/main/graph/badge.svg?token=PM1N56UTEW)](https://codecov.io/gh/cypherstack/stack_wallet)
+# BitFinite Wallet
 
-# Stack Wallet
-Stack Wallet is a fully open source cryptocurrency wallet. With an easy to use user interface and quick and speedy transactions, this wallet is ideal for anyone no matter how much they know about the cryptocurrency space. The app is actively maintained to provide new user friendly features.
+**BitFinite Wallet** is a free, open-source, **non-custodial** mobile wallet for
+[BitFinite (BFX)](https://bitfinitechain.org) — a fair-launch, fixed-supply,
+SHA-256 proof-of-work cryptocurrency. Your keys and recovery phrase never leave
+your device.
 
-<a href="https://play.google.com/store/apps/details?id=com.cypherstack.stackwallet">
-<img width="250px" src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"></img>
-</a>
+- 🌐 Website & whitepaper: https://bitfinitechain.org
+- 🔎 Block explorer: https://explorer.bitfinitechain.org
+- 👛 Web wallet (PWA): https://wallet.bitfinitechain.org
+- 💬 Telegram: https://t.me/bitfinitechain · X: https://x.com/bitfinitechain
 
-## Feature List
+## Features
 
-Highlights include:
-- 23 Different cryptocurrencies:
-    - [Bitcoin](https://bitcoin.org/en/)
-    - Bitcoin Frost
-    - [Bitcoin Cash](https://bch.info/en/)
-    - [Banano](https://banano.cc/)
-    - [Cardano](https://cardano.org/)
-    - [Dash](https://www.dash.org/)
-    - [Dogecoin](https://dogecoin.com/)
-    - [Epic Cash](https://linktr.ee/epiccash)
-    - [MimbleWimbleCoin](https://mwc.mw)
-    - [Ethereum](https://ethereum.org/en/)
-    - [Ecash](https://e.cash/)
-    - [Fact0rn](https://www.fact0rn.io/)
-    - [Firo](https://firo.org/)
-    - [Litecoin](https://litecoin.org/)
-    - [Monero](https://www.getmonero.org/)
-    - [Nano](https://nano.org/)
-    - [Namecoin](https://www.namecoin.org/)
-    - [Particl](https://particl.io/)
-    - [Peercoin](https://www.peercoin.net/)
-    - [Salvium](https://salvium.io/)
-    - [Solana](https://solana.com/)
-    - [Stellar](https://stellar.org/)
-    - [Tezos](https://tezos.com/)
-    - [Wownero](https://wownero.org/)
-    - [Xelis](https://xelis.org/)
-- All private keys and seeds stay on device and are never shared.
-- Easy backup and restore feature to save all the information that's important to you.
-- Trading cryptocurrencies through our partners.
-- Custom address book
-- Favorite wallets with fast syncing
-- Custom Nodes.
-- Open source software.
-- No ads.
+- **Non-custodial** — private keys and seed stay on device, encrypted at rest.
+- **Light wallet** — connects to the BitFinite Electrum server; no full node
+  required to send, receive, and check balances.
+- **BFX-native** — BitFinite's CashAddr format (`bfx:` addresses) and consensus.
+- **Send / receive / QR**, transaction history, address book, and custom nodes.
+- **Open source. No ads. No tracking.**
 
 ## Building
 
-You can look at the [build instructions](docs/building.md) for more details.
+BitFinite Wallet builds with a Dockerized toolchain (no host SDK required):
+
+```bash
+scripts/build-android-docker.sh           # debug Android APK
+scripts/build-android-docker.sh release   # split-per-abi release APKs
+```
+
+By default it pulls a prebuilt CI image; set `BUILD_IMAGE=1` to build the image
+locally from the `Dockerfile`. See [docs/building.md](docs/building.md) for the
+underlying Flutter / `build_app.sh` details and other platforms.
+
+## Credits
+
+BitFinite Wallet is a fork of **[Stack Wallet](https://github.com/cypherstack/stack_wallet)**
+by **Cypher Stack**, adapted into a single-coin BitFinite wallet. Huge thanks to
+the Stack Wallet team for their excellent, audited, open-source foundation.
+Upstream copyright notices and file headers are preserved as required by the license.
+
+## License
+
+Released under the **GPLv3** (inherited from Stack Wallet). See [LICENSE](LICENSE).

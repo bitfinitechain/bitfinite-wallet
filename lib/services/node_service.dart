@@ -76,6 +76,43 @@ class NodeService extends ChangeNotifier {
       }
     }
 
+    // BFX: seed seed-3's Electrum server as a second failover / selectable node.
+    // Stack auto-fails-over across every stored node with isFailover:true; the
+    // primary default already has that flag, so this gives it something to fail
+    // over to (and it shows up selectable in Manage Nodes). id-guarded so it
+    // seeds on both fresh and existing installs, and won't clobber user edits.
+    if (AppConfig.coins.where((e) => e.identifier == "bitfinite").isNotEmpty) {
+      const _id = "default_bitfinite_2";
+
+      final existing = DB.instance.get<NodeModel>(
+        boxName: DB.boxNameNodeModels,
+        key: _id,
+      );
+
+      if (existing == null) {
+        final node = NodeModel(
+          host: "electrum2.bitfinitechain.org",
+          port: 443,
+          name: "BitFinite (seed-3)",
+          id: _id,
+          useSSL: true,
+          enabled: true,
+          coinName: "bitfinite",
+          isFailover: true,
+          isDown: false,
+          torEnabled: true,
+          clearnetEnabled: true,
+          isPrimary: false,
+        );
+
+        await DB.instance.put<NodeModel>(
+          boxName: DB.boxNameNodeModels,
+          key: _id,
+          value: node,
+        );
+      }
+    }
+
     for (final defaultNode in AppConfig.coins.map(
       (e) => e.defaultNode(isPrimary: true),
     )) {

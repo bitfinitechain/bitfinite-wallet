@@ -1071,18 +1071,20 @@ class _TransactionV2DetailsViewState
                                       : const EdgeInsets.all(12),
                                   child: Builder(
                                     builder: (context) {
-                                      final String feeString = showFeePending
-                                          ? _transaction.isConfirmed(
-                                                  currentHeight,
-                                                  minConfirms,
-                                                  coin.minCoinbaseConfirms,
-                                                )
-                                                ? ref
-                                                      .watch(
-                                                        pAmountFormatter(coin),
-                                                      )
-                                                      .format(fee)
-                                                : "Pending"
+                                      final bool feePending =
+                                          showFeePending &&
+                                          !_transaction.isConfirmed(
+                                            currentHeight,
+                                            minConfirms,
+                                            coin.minCoinbaseConfirms,
+                                          );
+                                      // BFX fees are sub-0.0001 BFX and would
+                                      // round to "~0.0000" at the display
+                                      // precision, so show them in sats.
+                                      final String feeString = feePending
+                                          ? "Pending"
+                                          : widget.coin is Bitfinite
+                                          ? "${fee.raw} sats"
                                           : ref
                                                 .watch(pAmountFormatter(coin))
                                                 .format(fee);
@@ -1140,6 +1142,7 @@ class _TransactionV2DetailsViewState
                                       .getConfirmations(currentHeight);
 
                                   if (widget.coin is Bitcoincash ||
+                                      widget.coin is Bitfinite ||
                                       widget.coin is Ecash) {
                                     height =
                                         _transaction.height != null &&

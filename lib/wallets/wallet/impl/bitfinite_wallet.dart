@@ -12,8 +12,11 @@ import '../../../services/coins/bitcoincash/bch_utils.dart';
 import '../../../services/coins/bitcoincash/cashtokens.dart' as cash_tokens;
 import '../../../utilities/amount/amount.dart';
 import '../../../utilities/bfx_cashaddr.dart';
+import '../../../models/notification_model.dart';
+import '../../../services/notifications_service.dart';
 import '../../../utilities/extensions/extensions.dart';
 import '../../../utilities/logger.dart';
+import '../../../utilities/prefs.dart';
 import '../../crypto_currency/crypto_currency.dart';
 import '../../crypto_currency/interfaces/electrumx_currency_interface.dart';
 import '../intermediate/bip39_hd_wallet.dart';
@@ -296,7 +299,78 @@ class BitfiniteWallet<T extends ElectrumXCurrencyInterface>
       txns.add(tx);
     }
 
+    await _fireNewTxNotifications(txns);
+
     await mainDB.updateOrPutTransactionV2s(txns);
+  }
+
+  /// Fire in-app + OS notifications for newly-seen transactions (incoming and
+  /// outgoing) so the notification bell badge updates.
+  ///
+  /// Upstream Stack Wallet never re-wired transaction notifications into the new
+  /// wallet architecture — the old TransactionNotificationTracker is commented
+  /// out in services/wallets.dart and nothing else fires CryptoNotificationEvent
+  /// — so without this the bell never shows new-transaction notifications.
+  ///
+  /// A tx notifies at most once: after it is first discovered it is persisted,
+  /// so subsequent syncs find it in [knownTxids] and skip it. To avoid a
+  /// restore/initial sync spamming the whole history, only *fresh* activity is
+  /// announced (still pending, or confirmed within the last couple of hours);
+  /// old confirmed history is seeded silently.
+  Future<void> _fireNewTxNotifications(List<TransactionV2> txns) async {
+    try {
+      final knownTxids = (await mainDB.isar.transactionV2s
+              .where()
+              .walletIdEqualTo(walletId)
+              .txidProperty()
+              .findAll())
+          .toSet();
+
+      final nowSecs = DateTime.timestamp().millisecondsSinceEpoch ~/ 1000;
+      const freshnessWindowSecs = 2 * 60 * 60; // 2h
+
+      var fired = 0;
+      for (final tx in txns) {
+        if (knownTxids.contains(tx.txid)) continue; // already seen in a prior sync
+
+        final isPending = tx.height == null || tx.height == 0;
+        final isFresh = isPending || (nowSecs - tx.timestamp) < freshnessWindowSecs;
+        if (!isFresh) continue; // silently seed old history
+
+        final incoming = tx.type == TransactionType.incoming;
+
+        // Write the in-app notification directly to the shared
+        // NotificationsService singleton (which notificationsProvider watches),
+        // rather than firing CryptoNotificationEvent. That event bus is a
+        // separate instance with no reliably-attached listener, so fires were
+        // silently dropped and the bell badge never updated.
+        await Prefs.instance.incrementCurrentNotificationIndex();
+        final model = NotificationModel(
+          id: Prefs.instance.currentNotificationId,
+          title: incoming ? "Received transaction" : "Sent transaction",
+          description: info.name,
+          iconAssetName: "",
+          date: DateTime.fromMillisecondsSinceEpoch(tx.timestamp * 1000),
+          walletId: walletId,
+          read: false,
+          shouldWatchForUpdates: false,
+          coinName: cryptoCurrency.identifier,
+          txid: tx.txid,
+        );
+        await NotificationsService.instance.add(model, true);
+        fired++;
+      }
+
+      if (fired > 0) {
+        Logging.instance.i("BFX tx notifications stored: $fired");
+      }
+    } catch (e, s) {
+      Logging.instance.w(
+        "fireNewTxNotifications failed",
+        error: e,
+        stackTrace: s,
+      );
+    }
   }
 
   @override

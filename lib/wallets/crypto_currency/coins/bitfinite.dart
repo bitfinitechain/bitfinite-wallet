@@ -334,5 +334,11 @@ class Bitfinite extends Bip39HDCurrency with ElectrumXCurrencyInterface {
   int get transactionVersion => 2;
 
   @override
-  BigInt get defaultFeeRate => BigInt.from(1000);
+  // sats/kB. BFX electrum servers don't implement `estimatefee` (JSON-RPC
+  // "Method not found"), so the wallet always falls back to this default. At
+  // exactly 1000 (1 sat/vByte) coinlib's ~1-byte size underestimate per input
+  // leaves the fee 1 sat below vSize, and prepareSend rejects it
+  // ("Transaction fee cannot be less than vSize"). 1200 (1.2 sat/vByte) keeps a
+  // margin above the 1 sat/vByte floor while staying negligibly cheap on BFX.
+  BigInt get defaultFeeRate => BigInt.from(1200);
 }

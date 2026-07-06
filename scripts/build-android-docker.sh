@@ -48,12 +48,17 @@ fi
 
 # 2) Build inside the container ------------------------------------------------
 # Named volumes cache pub + gradle across runs; repo is bind-mounted so the APK
-# lands on the host. Runs as root (image expects writable dirs), then chowns the
-# outputs back to the invoking user.
+# lands on the host. The bfx-android-config volume persists /root/.android so the
+# debug keystore is STABLE across builds — otherwise every rebuild signs the
+# debug APK with a fresh key and `adb install -r` fails with
+# INSTALL_FAILED_UPDATE_INCOMPATIBLE (forcing an uninstall that wipes wallet data).
+# Runs as root (image expects writable dirs), then chowns the outputs back to the
+# invoking user.
 docker run --rm \
   -v "$REPO":/work -w /work \
   -v bfx-pub-cache:/root/.pub-cache \
   -v bfx-gradle:/root/.gradle \
+  -v bfx-android-config:/root/.android \
   -e APP="$APP" -e VERSION="$VERSION" -e BUILD_NUM="$BUILD_NUM" -e MODE="$MODE" \
   -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" \
   "$IMAGE" bash -euxo pipefail -c '

@@ -13,6 +13,7 @@ import 'dart:async';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../models/notification_model.dart';
+import '../utilities/logger.dart';
 import '../utilities/prefs.dart';
 import 'notifications_service.dart';
 
@@ -98,7 +99,6 @@ abstract final class NotificationApi {
     String? changeNowId,
     String? payload,
   }) async {
-    await init();
     await prefs.incrementCurrentNotificationIndex();
     final id = prefs.currentNotificationId;
 
@@ -123,15 +123,31 @@ abstract final class NotificationApi {
       changeNowId: changeNowId,
     );
 
-    await Future.wait([
-      _notifications.show(
+    // Persist the in-app notification FIRST and independently so the bell badge
+    // always updates. The OS-level notification below can fail on Android 13+
+    // (e.g. missing POST_NOTIFICATIONS runtime permission or notification
+    // channel), and it must never prevent the in-app notification from being
+    // stored — previously both shared one Future.wait, so an OS-show failure
+    // silently dropped the in-app notification too.
+    await notificationsService.add(model, true);
+
+    // Best-effort OS notification; swallow failures so they can't affect the
+    // in-app notification that was already stored above.
+    try {
+      await init();
+      await _notifications.show(
         id,
         title,
         body,
         await _notificationDetails(),
         payload: payload,
-      ),
-      notificationsService.add(model, true),
-    ]);
+      );
+    } catch (e, s) {
+      Logging.instance.w(
+        "OS notification show failed (in-app notification still stored)",
+        error: e,
+        stackTrace: s,
+      );
+    }
   }
 }

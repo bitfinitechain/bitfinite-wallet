@@ -14,6 +14,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:lottie/lottie.dart';
 
 import '../app_config.dart';
 import '../db/hive/db.dart';
@@ -336,11 +337,6 @@ class _PrivacyToggleState extends ConsumerState<PrivacyToggle> {
 
   @override
   Widget build(BuildContext context) {
-    final easyFile =
-        ref.watch(themeProvider.select((value) => value.assets.personaEasy));
-    final incognitoFile = ref
-        .watch(themeProvider.select((value) => value.assets.personaIncognito));
-
     return Row(
       children: [
         Expanded(
@@ -377,19 +373,12 @@ class _PrivacyToggleState extends ConsumerState<PrivacyToggle> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      (easyFile.endsWith(".png"))
-                          ? Image.file(
-                              File(
-                                easyFile,
-                              ),
-                            )
-                          : SvgPicture.file(
-                              File(
-                                easyFile,
-                              ),
-                              width: 140,
-                              height: 140,
-                            ),
+                      Lottie.asset(
+                        Assets.lottie.persona,
+                        width: 140,
+                        height: 140,
+                        repeat: true,
+                      ),
                       Center(
                         child: Text(
                           "Easy Crypto",
@@ -486,19 +475,12 @@ class _PrivacyToggleState extends ConsumerState<PrivacyToggle> {
                         const SizedBox(
                           height: 10,
                         ),
-                      (incognitoFile.endsWith(".png"))
-                          ? Image.file(
-                              File(
-                                incognitoFile,
-                              ),
-                            )
-                          : SvgPicture.file(
-                              File(
-                                incognitoFile,
-                              ),
-                              width: 140,
-                              height: 140,
-                            ),
+                      Lottie.asset(
+                        Assets.lottie.persona,
+                        width: 140,
+                        height: 140,
+                        repeat: true,
+                      ),
                       // SvgPicture.asset(
                       //   Assets.svg.personaIncognito(context),
                       //   width: 140,

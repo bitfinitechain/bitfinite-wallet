@@ -261,6 +261,7 @@ class _ANIMATIONS {
   String get loaderAndCheckmark => "assets/lottie/loader_and_checkmark.json";
   String get arrowRotate => "assets/lottie/arrow_rotate.json";
   String get onionTor => "assets/lottie/onion_animation.json";
+  String get persona => "assets/lottie/persona.json";
 }
 
 class _GIF {

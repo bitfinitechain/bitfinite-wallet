@@ -326,18 +326,53 @@ class BitfiniteWallet<T extends ElectrumXCurrencyInterface>
               .findAll())
           .toSet();
 
+      // Existing tx notifications for this wallet, keyed by txid, so a pending
+      // one can be flipped to confirmed once its tx is mined into a block.
+      final existingByTxid = <String, NotificationModel>{};
+      for (final n in NotificationsService.instance.notifications) {
+        if (n.walletId == walletId && n.txid != null) {
+          existingByTxid[n.txid!] = n;
+        }
+      }
+
       final nowSecs = DateTime.timestamp().millisecondsSinceEpoch ~/ 1000;
       const freshnessWindowSecs = 2 * 60 * 60; // 2h
+      const pendingSuffix = " (pending)";
 
       var fired = 0;
+      var confirmed = 0;
       for (final tx in txns) {
-        if (knownTxids.contains(tx.txid)) continue; // already seen in a prior sync
-
         final isPending = tx.height == null || tx.height == 0;
-        final isFresh = isPending || (nowSecs - tx.timestamp) < freshnessWindowSecs;
+
+        final existing = existingByTxid[tx.txid];
+        if (existing != null) {
+          // Already announced. When a pending tx lands in a block, flip its
+          // notification from "(pending)" to confirmed. BFX is zeroconf, so
+          // "confirmed" here means mined (has a block height), not a
+          // minConfirms count. Preserve read state so it doesn't re-badge.
+          if (!isPending && existing.title.endsWith(pendingSuffix)) {
+            await NotificationsService.instance.add(
+              existing.copyWith(
+                title: existing.title.substring(
+                  0,
+                  existing.title.length - pendingSuffix.length,
+                ),
+              ),
+              true,
+            );
+            confirmed++;
+          }
+          continue;
+        }
+
+        if (knownTxids.contains(tx.txid)) continue; // seeded silently, don't announce
+
+        final isFresh =
+            isPending || (nowSecs - tx.timestamp) < freshnessWindowSecs;
         if (!isFresh) continue; // silently seed old history
 
         final incoming = tx.type == TransactionType.incoming;
+        final base = incoming ? "Received transaction" : "Sent transaction";
 
         // Write the in-app notification directly to the shared
         // NotificationsService singleton (which notificationsProvider watches),
@@ -347,7 +382,7 @@ class BitfiniteWallet<T extends ElectrumXCurrencyInterface>
         await Prefs.instance.incrementCurrentNotificationIndex();
         final model = NotificationModel(
           id: Prefs.instance.currentNotificationId,
-          title: incoming ? "Received transaction" : "Sent transaction",
+          title: isPending ? "$base$pendingSuffix" : base,
           description: info.name,
           iconAssetName: "",
           date: DateTime.fromMillisecondsSinceEpoch(tx.timestamp * 1000),
@@ -361,8 +396,10 @@ class BitfiniteWallet<T extends ElectrumXCurrencyInterface>
         fired++;
       }
 
-      if (fired > 0) {
-        Logging.instance.i("BFX tx notifications stored: $fired");
+      if (fired > 0 || confirmed > 0) {
+        Logging.instance.i(
+          "BFX tx notifications: $fired new, $confirmed confirmed",
+        );
       }
     } catch (e, s) {
       Logging.instance.w(

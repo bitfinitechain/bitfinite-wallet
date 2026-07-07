@@ -72,11 +72,12 @@ class WalletBalanceToggleSheet extends ConsumerWidget {
       child: LimitedBox(
         maxHeight: maxHeight,
         child: Padding(
-          padding: const EdgeInsets.only(
+          padding: EdgeInsets.only(
             left: 16,
             right: 16,
             top: 10,
-            bottom: 0,
+            // Keep content clear of the Android navigation bar.
+              bottom: MediaQuery.of(context).viewPadding.bottom + 16,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,

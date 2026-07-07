@@ -105,7 +105,8 @@ class _EmojiSelectSheetState extends ConsumerState<EmojiSelectSheet> {
               left: horizontalPadding,
               right: horizontalPadding,
               top: 10,
-              bottom: 0,
+              // Keep content clear of the Android navigation bar.
+              bottom: MediaQuery.of(context).viewPadding.bottom + 16,
             ),
             child: child,
           ),

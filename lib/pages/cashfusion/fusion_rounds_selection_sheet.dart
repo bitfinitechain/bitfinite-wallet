@@ -46,11 +46,12 @@ class FusionRoundCountSelectSheet extends HookWidget {
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.only(
+          padding: EdgeInsets.only(
             left: 24,
             right: 24,
             top: 10,
-            bottom: 0,
+            // Keep content clear of the Android navigation bar.
+              bottom: MediaQuery.of(context).viewPadding.bottom + 16,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,

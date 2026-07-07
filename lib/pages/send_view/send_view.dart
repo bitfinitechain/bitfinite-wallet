@@ -162,10 +162,25 @@ class _SendViewState extends ConsumerState<SendView> {
 
   Set<StandardInput> selectedUTXOs = {};
 
+  /// BFX pastes/scans lose their "bfx:" prefix because parsePaymentUri strips
+  /// the URI scheme. Restore it for display; the send flow accepts the prefixed
+  /// form (validateAddress goes through BfxCashAddr, and prepareSend runs
+  /// normalizeAddress which converts it back to base58 for coinlib).
+  String _restoreAddressPrefix(String address) {
+    final scheme = coin.uriScheme;
+    if (coin is Bitfinite &&
+        address.isNotEmpty &&
+        !address.startsWith("$scheme:") &&
+        coin.validateAddress("$scheme:$address")) {
+      return "$scheme:$address";
+    }
+    return address;
+  }
+
   void _applyUri(PaymentUriData paymentData) {
     try {
       // auto fill address
-      _address = paymentData.address.trim();
+      _address = _restoreAddressPrefix(paymentData.address.trim());
 
       // autofill notes field
       if (paymentData.message != null) {
@@ -268,8 +283,9 @@ class _SendViewState extends ConsumerState<SendView> {
             content = AddressUtils().formatEpicCashAddress(content);
           }
 
-          sendToController.text = content;
-          _address = content;
+          sendToController.text = _restoreAddressPrefix(content);
+
+          _address = _restoreAddressPrefix(content);
 
           _setValidAddressProviders(_address);
           setState(() {
@@ -386,8 +402,8 @@ class _SendViewState extends ConsumerState<SendView> {
       return;
     }
 
-    _address = selectedAddress;
-    sendToController.text = selectedAddress;
+    _address = _restoreAddressPrefix(selectedAddress);
+    sendToController.text = _address!;
     _setValidAddressProviders(_address);
     setState(() {
       _addressToggleFlag = true;
@@ -430,7 +446,9 @@ class _SendViewState extends ConsumerState<SendView> {
         _applyUri(paymentData);
       } else {
         _setOpReturnData(null);
-        _address = qrResult.rawContent!.split("\n").first.trim();
+        _address = _restoreAddressPrefix(
+          qrResult.rawContent!.split("\n").first.trim(),
+        );
         sendToController.text = _address ?? "";
 
         _setValidAddressProviders(_address);
@@ -1393,8 +1411,8 @@ class _SendViewState extends ConsumerState<SendView> {
         _applyUri(parsed);
       } else {
         _setOpReturnData(null);
-        sendToController.text = content;
-        _address = content;
+        sendToController.text = _restoreAddressPrefix(content);
+        _address = _restoreAddressPrefix(content);
 
         _setValidAddressProviders(_address);
 
@@ -1506,7 +1524,7 @@ class _SendViewState extends ConsumerState<SendView> {
             .format(amount, withUnitName: false);
       }
       sendToController.text = _data.contactLabel;
-      _address = _data.address.trim();
+      _address = _restoreAddressPrefix(_data.address.trim());
       _addressToggleFlag = true;
 
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {

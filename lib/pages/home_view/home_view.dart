@@ -14,6 +14,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../app_config.dart';
 import '../../providers/global/notifications_provider.dart';
@@ -27,6 +28,7 @@ import '../../themes/theme_providers.dart';
 import '../../utilities/assets.dart';
 import '../../utilities/constants.dart';
 import '../../utilities/idle_monitor.dart';
+import '../stack_privacy_calls.dart';
 import '../../utilities/prefs.dart';
 import '../../utilities/text_styles.dart';
 import '../../utilities/util.dart';
@@ -304,18 +306,20 @@ class _HomeViewState extends ConsumerState<HomeView> {
             title: Row(
               children: [
                 GestureDetector(
-                  onTap: _hiddenOptions,
-                  child: RotateIcon(
-                    icon: const AppIcon(width: 24, height: 24),
-                    curve: Curves.easeInOutCubic,
-                    rotationPercent: 1.0,
-                    controller: _rotateIconController,
+                  onTap: () => Navigator.of(context).pushNamed(
+                    StackPrivacyCalls.routeName,
+                    arguments: true,
                   ),
+                  child: const _HeaderPersona(),
                 ),
                 const SizedBox(width: 16),
-                Text(
-                  "My ${AppConfig.prefix}",
-                  style: STextStyles.navBarTitle(context),
+                GestureDetector(
+                  // Keep the hidden-settings easter egg (tap the title 5x fast).
+                  onTap: _hiddenOptions,
+                  child: Text(
+                    "My ${AppConfig.prefix}",
+                    style: STextStyles.navBarTitle(context),
+                  ),
                 ),
               ],
             ),
@@ -522,6 +526,29 @@ class _HomeViewState extends ConsumerState<HomeView> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Small persona avatar in the home header. Shows the active mode's mascot
+/// (Miso the cat = Easy Crypto, Ollie the owl = Incognito) so users can tell
+/// which persona they're in at a glance; tapping it (handled by the caller)
+/// opens the persona switcher.
+class _HeaderPersona extends ConsumerWidget {
+  const _HeaderPersona();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final easy = ref.watch(
+      prefsChangeNotifierProvider.select((value) => value.externalCalls),
+    );
+    return SizedBox(
+      width: 34,
+      height: 34,
+      child: Lottie.asset(
+        easy ? Assets.lottie.misoIdle : Assets.lottie.ollieIdle,
+        fit: BoxFit.contain,
       ),
     );
   }

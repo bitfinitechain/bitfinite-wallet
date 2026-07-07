@@ -261,7 +261,13 @@ class _ANIMATIONS {
   String get loaderAndCheckmark => "assets/lottie/loader_and_checkmark.json";
   String get arrowRotate => "assets/lottie/arrow_rotate.json";
   String get onionTor => "assets/lottie/onion_animation.json";
-  String get persona => "assets/lottie/persona.json";
+  // BitFinite persona avatars (privacy-mode screen).
+  String get misoIdle => "assets/lottie/miso-idle.json";
+  String get misoRest => "assets/lottie/miso-rest.json";
+  String get misoSelected => "assets/lottie/miso-selected.json";
+  String get ollieIdle => "assets/lottie/ollie-idle.json";
+  String get ollieRest => "assets/lottie/ollie-rest.json";
+  String get ollieSelected => "assets/lottie/ollie-selected.json";
 }
 
 class _GIF {

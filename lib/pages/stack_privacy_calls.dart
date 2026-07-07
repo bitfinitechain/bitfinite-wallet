@@ -373,11 +373,11 @@ class _PrivacyToggleState extends ConsumerState<PrivacyToggle> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Lottie.asset(
-                        Assets.lottie.persona,
-                        width: 140,
-                        height: 140,
-                        repeat: true,
+                      _PersonaAnim(
+                        selected: externalCallsEnabled,
+                        rest: Assets.lottie.misoRest,
+                        react: Assets.lottie.misoSelected,
+                        idle: Assets.lottie.misoIdle,
                       ),
                       Center(
                         child: Text(
@@ -475,11 +475,11 @@ class _PrivacyToggleState extends ConsumerState<PrivacyToggle> {
                         const SizedBox(
                           height: 10,
                         ),
-                      Lottie.asset(
-                        Assets.lottie.persona,
-                        width: 140,
-                        height: 140,
-                        repeat: true,
+                      _PersonaAnim(
+                        selected: !externalCallsEnabled,
+                        rest: Assets.lottie.ollieRest,
+                        react: Assets.lottie.ollieSelected,
+                        idle: Assets.lottie.ollieIdle,
                       ),
                       // SvgPicture.asset(
                       //   Assets.svg.personaIncognito(context),
@@ -546,6 +546,84 @@ class _PrivacyToggleState extends ConsumerState<PrivacyToggle> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Persona avatar that reacts to selection: it loops [rest] while unselected,
+/// plays the one-shot [react] animation when it becomes selected, then settles
+/// into the [idle] loop.
+class _PersonaAnim extends StatefulWidget {
+  const _PersonaAnim({
+    required this.selected,
+    required this.rest,
+    required this.react,
+    required this.idle,
+    this.size = 140,
+  });
+
+  final bool selected;
+  final String rest;
+  final String react;
+  final String idle;
+  final double size;
+
+  @override
+  State<_PersonaAnim> createState() => _PersonaAnimState();
+}
+
+class _PersonaAnimState extends State<_PersonaAnim>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(vsync: this);
+  late String _asset = widget.selected ? widget.react : widget.rest;
+  late bool _reacting = widget.selected;
+
+  @override
+  void didUpdateWidget(covariant _PersonaAnim oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selected && !oldWidget.selected) {
+      setState(() {
+        _asset = widget.react;
+        _reacting = true;
+      });
+    } else if (!widget.selected && oldWidget.selected) {
+      setState(() {
+        _asset = widget.rest;
+        _reacting = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Lottie.asset(
+      _asset,
+      key: ValueKey(_asset),
+      controller: _controller,
+      width: widget.size,
+      height: widget.size,
+      onLoaded: (composition) {
+        _controller.duration = composition.duration;
+        if (_reacting) {
+          // Play the selection reaction once, then settle into the idle loop.
+          _controller.forward(from: 0).whenComplete(() {
+            if (mounted && widget.selected) {
+              setState(() {
+                _asset = widget.idle;
+                _reacting = false;
+              });
+            }
+          });
+        } else {
+          _controller.repeat();
+        }
+      },
     );
   }
 }

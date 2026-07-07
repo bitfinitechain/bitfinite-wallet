@@ -326,7 +326,7 @@ class ElectrumXClient {
         // "invalid params" and this await throws, aborting the connection.
         // Send a [min,max] range that brackets both 1.4 servers and electr-bfx's 1.5.
         await newClient.request('server.version', [
-          'Stack Wallet',
+          'BitFinite Wallet',
           ['1.4', '1.5'],
         ]);
 

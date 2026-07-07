@@ -12,9 +12,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lottie/lottie.dart';
 import '../themes/theme_providers.dart';
-import '../utilities/assets.dart';
 
 class LoadingIndicator extends ConsumerWidget {
   const LoadingIndicator({
@@ -44,10 +42,16 @@ class LoadingIndicator extends ConsumerWidget {
                     assetPath,
                   ),
                 )
-              : Lottie.asset(
-                  Assets.lottie.test2,
-                  animate: true,
-                  repeat: true,
+              // BFX: no Stack lottie — plain brand-blue spinner.
+              : const Center(
+                  child: SizedBox(
+                    width: 56,
+                    height: 56,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 4,
+                      color: Color(0xFF0644F1),
+                    ),
+                  ),
                 ),
         ),
       ),

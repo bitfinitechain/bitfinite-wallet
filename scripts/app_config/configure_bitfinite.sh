@@ -67,6 +67,9 @@ const _mwebdExeHash = "";
 
 const Set<AppFeature> _features = {
   AppFeature.tor,
+  // Enables the Appearance settings entry + installs the dark theme, so users
+  // can switch between the BitFinite light/dark themes (and system-brightness).
+  AppFeature.themeSelection,
 };
 
 // PoC: no in-app logo asset yet (app_icon.dart null-checks this and falls back).

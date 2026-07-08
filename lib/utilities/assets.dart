@@ -268,6 +268,9 @@ class _ANIMATIONS {
   String get ollieIdle => "assets/lottie/ollie-idle.json";
   String get ollieRest => "assets/lottie/ollie-rest.json";
   String get ollieSelected => "assets/lottie/ollie-selected.json";
+  // BitFinite duo (Miso + Ollie) loading animation — light + dark.
+  String get duoLoadingLight => "assets/lottie/duo-loading-light.json";
+  String get duoLoadingDark => "assets/lottie/duo-loading-dark.json";
 }
 
 class _GIF {

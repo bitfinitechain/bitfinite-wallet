@@ -58,15 +58,18 @@ class LoadingView extends ConsumerWidget {
                   child:
                       assetPath != null
                           ? Image.file(File(assetPath))
-                          // BFX: no Stack lottie — plain brand-blue spinner.
-                          : const Center(
-                            child: SizedBox(
-                              width: 56,
-                              height: 56,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 4,
-                                color: Color(0xFF0644F1),
-                              ),
+                          // BFX: the Miso + Ollie duo mascot as the loader.
+                          : Center(
+                            child: Lottie.asset(
+                              Theme.of(context)
+                                          .extension<StackColors>()!
+                                          .brightness ==
+                                      Brightness.dark
+                                  ? Assets.lottie.duoLoadingDark
+                                  : Assets.lottie.duoLoadingLight,
+                              width: width,
+                              height: width,
+                              fit: BoxFit.contain,
                             ),
                           ),
                 ),

@@ -423,6 +423,8 @@ flutter:
     - assets/lottie/ollie-idle.json
     - assets/lottie/ollie-rest.json
     - assets/lottie/ollie-selected.json
+    - assets/lottie/duo-loading-light.json
+    - assets/lottie/duo-loading-dark.json
 
     # default themes_testing
     - assets/default_themes/

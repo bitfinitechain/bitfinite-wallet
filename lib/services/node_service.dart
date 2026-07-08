@@ -149,6 +149,24 @@ class NodeService extends ChangeNotifier {
         );
       }
     }
+
+    // Seed any extra built-in failover nodes (e.g. BFX electrum2). Added only
+    // when absent so a user's edits/removals are never clobbered.
+    for (final extra in AppConfig.coins.expand(
+      (e) => e.additionalDefaultNodes,
+    )) {
+      final saved = DB.instance.get<NodeModel>(
+        boxName: DB.boxNameNodeModels,
+        key: extra.id,
+      );
+      if (saved == null) {
+        await DB.instance.put<NodeModel>(
+          boxName: DB.boxNameNodeModels,
+          key: extra.id,
+          value: extra,
+        );
+      }
+    }
   }
 
   Future<void> setPrimaryNodeFor({

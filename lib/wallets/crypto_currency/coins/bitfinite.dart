@@ -292,6 +292,30 @@ class Bitfinite extends Bip39HDCurrency with ElectrumXCurrencyInterface {
   }
 
   @override
+  List<NodeModel> get additionalDefaultNodes =>
+      network == CryptoCurrencyNetwork.main
+          ? [
+            // Secondary public Electrum server (raw ElectrumX SSL on the
+            // carrier-safe port 443). isFailover:true → the wallet auto-fails
+            // over here when electr.bitfinitechain.org is unreachable.
+            NodeModel(
+              host: "electrum2.bitfinitechain.org",
+              port: 443,
+              name: "BitFinite Electrum 2",
+              id: "${DefaultNodes.defaultNodeIdPrefix}${identifier}_electrum2",
+              useSSL: true,
+              enabled: true,
+              coinName: identifier,
+              isFailover: true,
+              isDown: false,
+              torEnabled: true,
+              clearnetEnabled: true,
+              isPrimary: false,
+            ),
+          ]
+          : const [];
+
+  @override
   int get defaultSeedPhraseLength => 12;
 
   @override

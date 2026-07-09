@@ -76,7 +76,6 @@ class NodeService extends ChangeNotifier {
       }
     }
 
-    // BFX: seed seed-3's Electrum server as a second failover / selectable node.
     // Remove the legacy duplicate/confusingly-named "BitFinite (seed-3)" seed
     // node (id default_bitfinite_2). It's superseded by the "BitFinite Electrum
     // 2" failover default (same electrum2.bitfinitechain.org host) seeded from

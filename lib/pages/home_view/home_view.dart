@@ -543,11 +543,16 @@ class _HeaderPersona extends ConsumerWidget {
     final easy = ref.watch(
       prefsChangeNotifierProvider.select((value) => value.externalCalls),
     );
+    final isDark =
+        Theme.of(context).extension<StackColors>()!.brightness ==
+            Brightness.dark;
     return SizedBox(
       width: 34,
       height: 34,
       child: Lottie.asset(
-        easy ? Assets.lottie.misoIdle : Assets.lottie.ollieIdle,
+        easy
+            ? (isDark ? Assets.lottie.misoIdleDark : Assets.lottie.misoIdle)
+            : (isDark ? Assets.lottie.ollieIdleDark : Assets.lottie.ollieIdle),
         fit: BoxFit.contain,
       ),
     );

@@ -423,6 +423,12 @@ flutter:
     - assets/lottie/ollie-idle.json
     - assets/lottie/ollie-rest.json
     - assets/lottie/ollie-selected.json
+    - assets/lottie/miso-idle-dark.json
+    - assets/lottie/miso-rest-dark.json
+    - assets/lottie/miso-selected-dark.json
+    - assets/lottie/ollie-idle-dark.json
+    - assets/lottie/ollie-rest-dark.json
+    - assets/lottie/ollie-selected-dark.json
     - assets/lottie/duo-loading-light.json
     - assets/lottie/duo-loading-dark.json
 

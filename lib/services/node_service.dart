@@ -77,40 +77,20 @@ class NodeService extends ChangeNotifier {
     }
 
     // BFX: seed seed-3's Electrum server as a second failover / selectable node.
-    // Stack auto-fails-over across every stored node with isFailover:true; the
-    // primary default already has that flag, so this gives it something to fail
-    // over to (and it shows up selectable in Manage Nodes). id-guarded so it
-    // seeds on both fresh and existing installs, and won't clobber user edits.
-    if (AppConfig.coins.where((e) => e.identifier == "bitfinite").isNotEmpty) {
-      const _id = "default_bitfinite_2";
-
-      final existing = DB.instance.get<NodeModel>(
-        boxName: DB.boxNameNodeModels,
-        key: _id,
-      );
-
-      if (existing == null) {
-        final node = NodeModel(
-          host: "electrum2.bitfinitechain.org",
-          port: 443,
-          name: "BitFinite (seed-3)",
-          id: _id,
-          useSSL: true,
-          enabled: true,
-          coinName: "bitfinite",
-          isFailover: true,
-          isDown: false,
-          torEnabled: true,
-          clearnetEnabled: true,
-          isPrimary: false,
-        );
-
-        await DB.instance.put<NodeModel>(
+    // Remove the legacy duplicate/confusingly-named "BitFinite (seed-3)" seed
+    // node (id default_bitfinite_2). It's superseded by the "BitFinite Electrum
+    // 2" failover default (same electrum2.bitfinitechain.org host) seeded from
+    // additionalDefaultNodes below. Guarded to the old built-in id so it never
+    // touches a user-added node.
+    if (DB.instance.get<NodeModel>(
           boxName: DB.boxNameNodeModels,
-          key: _id,
-          value: node,
-        );
-      }
+          key: "default_bitfinite_2",
+        ) !=
+        null) {
+      await DB.instance.delete<NodeModel>(
+        key: "default_bitfinite_2",
+        boxName: DB.boxNameNodeModels,
+      );
     }
 
     for (final defaultNode in AppConfig.coins.map(

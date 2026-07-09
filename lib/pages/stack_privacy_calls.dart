@@ -337,6 +337,9 @@ class _PrivacyToggleState extends ConsumerState<PrivacyToggle> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark =
+        Theme.of(context).extension<StackColors>()!.brightness ==
+            Brightness.dark;
     return Row(
       children: [
         Expanded(
@@ -375,9 +378,15 @@ class _PrivacyToggleState extends ConsumerState<PrivacyToggle> {
                     children: [
                       _PersonaAnim(
                         selected: externalCallsEnabled,
-                        rest: Assets.lottie.misoRest,
-                        react: Assets.lottie.misoSelected,
-                        idle: Assets.lottie.misoIdle,
+                        rest: isDark
+                            ? Assets.lottie.misoRestDark
+                            : Assets.lottie.misoRest,
+                        react: isDark
+                            ? Assets.lottie.misoSelectedDark
+                            : Assets.lottie.misoSelected,
+                        idle: isDark
+                            ? Assets.lottie.misoIdleDark
+                            : Assets.lottie.misoIdle,
                       ),
                       Center(
                         child: Text(
@@ -477,9 +486,15 @@ class _PrivacyToggleState extends ConsumerState<PrivacyToggle> {
                         ),
                       _PersonaAnim(
                         selected: !externalCallsEnabled,
-                        rest: Assets.lottie.ollieRest,
-                        react: Assets.lottie.ollieSelected,
-                        idle: Assets.lottie.ollieIdle,
+                        rest: isDark
+                            ? Assets.lottie.ollieRestDark
+                            : Assets.lottie.ollieRest,
+                        react: isDark
+                            ? Assets.lottie.ollieSelectedDark
+                            : Assets.lottie.ollieSelected,
+                        idle: isDark
+                            ? Assets.lottie.ollieIdleDark
+                            : Assets.lottie.ollieIdle,
                       ),
                       // SvgPicture.asset(
                       //   Assets.svg.personaIncognito(context),

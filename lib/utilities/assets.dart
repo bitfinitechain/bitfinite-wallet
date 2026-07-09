@@ -268,6 +268,13 @@ class _ANIMATIONS {
   String get ollieIdle => "assets/lottie/ollie-idle.json";
   String get ollieRest => "assets/lottie/ollie-rest.json";
   String get ollieSelected => "assets/lottie/ollie-selected.json";
+  // Dark-theme persona variants.
+  String get misoIdleDark => "assets/lottie/miso-idle-dark.json";
+  String get misoRestDark => "assets/lottie/miso-rest-dark.json";
+  String get misoSelectedDark => "assets/lottie/miso-selected-dark.json";
+  String get ollieIdleDark => "assets/lottie/ollie-idle-dark.json";
+  String get ollieRestDark => "assets/lottie/ollie-rest-dark.json";
+  String get ollieSelectedDark => "assets/lottie/ollie-selected-dark.json";
   // BitFinite duo (Miso + Ollie) loading animation — light + dark.
   String get duoLoadingLight => "assets/lottie/duo-loading-light.json";
   String get duoLoadingDark => "assets/lottie/duo-loading-dark.json";

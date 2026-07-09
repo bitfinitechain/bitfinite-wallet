@@ -57,8 +57,14 @@ Future<bool> checkElectrumServer({
           ),
         );
 
+    // BFX: electr-bfx (romanz/electrs) rejects a param-less server.version with
+    // "invalid params". Send the same handshake params as the live client
+    // (electrumx_client.dart) so a working server actually passes the test.
     await client
-        .request('server.version')
+        .request('server.version', [
+          'BitFinite Wallet',
+          ['1.4', '1.5'],
+        ])
         .timeout(Duration(seconds: (proxyInfo == null ? 5 : 30)));
 
     return true;

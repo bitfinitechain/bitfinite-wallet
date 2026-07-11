@@ -818,7 +818,7 @@ class _WalletViewState extends ConsumerState<WalletView> {
                                 maxHeight:
                                     MediaQuery.of(context).orientation ==
                                         Orientation.landscape
-                                    ? 240.0
+                                    ? 180.0
                                     : double.infinity,
                               ),
                               child: WalletSummary(

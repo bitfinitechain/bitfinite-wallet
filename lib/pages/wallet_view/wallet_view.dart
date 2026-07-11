@@ -810,10 +810,17 @@ class _WalletViewState extends ConsumerState<WalletView> {
                         Center(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
-                            // Cap width so the aspect-ratio card doesn't balloon
-                            // (and overflow) on wide / landscape screens.
+                            // Cap the card height in landscape so the
+                            // aspect-ratio card can't balloon and overflow the
+                            // column; portrait keeps its natural full-width size.
                             child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 480),
+                              constraints: BoxConstraints(
+                                maxHeight:
+                                    MediaQuery.of(context).orientation ==
+                                        Orientation.landscape
+                                    ? 240.0
+                                    : double.infinity,
+                              ),
                               child: WalletSummary(
                                 walletId: walletId,
                                 aspectRatio: 1.75,

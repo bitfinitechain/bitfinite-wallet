@@ -288,11 +288,14 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                "Enable biometric authentication",
-                                style: STextStyles.titleBold12(context),
-                                textAlign: TextAlign.left,
+                              Expanded(
+                                child: Text(
+                                  "Enable biometric authentication",
+                                  style: STextStyles.titleBold12(context),
+                                  textAlign: TextAlign.left,
+                                ),
                               ),
+                              const SizedBox(width: 8),
                               SizedBox(
                                 height: 20,
                                 width: 40,

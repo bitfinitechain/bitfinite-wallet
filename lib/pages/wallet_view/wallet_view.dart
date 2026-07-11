@@ -810,17 +810,22 @@ class _WalletViewState extends ConsumerState<WalletView> {
                         Center(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: WalletSummary(
-                              walletId: walletId,
-                              aspectRatio: 1.75,
-                              initialSyncStatus:
-                                  ref
-                                      .watch(pWallets)
-                                      .getWallet(walletId)
-                                      .refreshMutex
-                                      .isLocked
-                                  ? WalletSyncStatus.syncing
-                                  : WalletSyncStatus.synced,
+                            // Cap width so the aspect-ratio card doesn't balloon
+                            // (and overflow) on wide / landscape screens.
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 480),
+                              child: WalletSummary(
+                                walletId: walletId,
+                                aspectRatio: 1.75,
+                                initialSyncStatus:
+                                    ref
+                                        .watch(pWallets)
+                                        .getWallet(walletId)
+                                        .refreshMutex
+                                        .isLocked
+                                    ? WalletSyncStatus.syncing
+                                    : WalletSyncStatus.synced,
+                              ),
                             ),
                           ),
                         ),

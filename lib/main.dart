@@ -96,6 +96,16 @@ void main(List<String> args) async {
   }
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Mobile UI is designed for portrait only (like upstream Stack Wallet);
+  // lock orientation so screens don't overflow in landscape. Desktop is
+  // unaffected (window-based, not orientation-locked).
+  if (!Util.isDesktop) {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
+
   if (Util.isDesktop && args.length == 2 && args.first == "-d") {
     StackFileSystem.setDesktopOverrideDir(args.last);
   }

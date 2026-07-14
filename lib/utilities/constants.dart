@@ -15,7 +15,7 @@ import 'util.dart';
 class _LayoutSizing {
   const _LayoutSizing();
 
-  double get circularBorderRadius => 8.0;
+  double get circularBorderRadius => 12.0;
   double get checkboxBorderRadius => 4.0;
 
   double get standardPadding => 16.0;

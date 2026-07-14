@@ -14,6 +14,7 @@ import 'dart:io';
 
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:isar_community/isar.dart';
@@ -311,6 +312,8 @@ class _ConfirmTransactionViewState
   }
 
   Future<void> _attemptSend(BuildContext context) async {
+    // Physical feedback: committing real money deserves a firmer tap.
+    unawaited(HapticFeedback.mediumImpact());
     final wallet = ref.read(pWallets).getWallet(walletId);
     final coin = wallet.info.coin;
 
@@ -445,6 +448,7 @@ class _ConfirmTransactionViewState
       final confirmedTx = results.first as TxData;
 
       sendProgressController.triggerSuccess?.call();
+      unawaited(HapticFeedback.heavyImpact());
       await Future<void>.delayed(const Duration(seconds: 5));
 
       if (wallet is FiroWallet && confirmedTx.sparkMints != null) {

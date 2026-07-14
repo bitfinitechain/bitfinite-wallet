@@ -83,7 +83,7 @@ class CoinCard extends ConsumerWidget {
                     colors: [base, deep],
                   ),
                   borderRadius: BorderRadius.circular(
-                    Constants.size.circularBorderRadius * 2,
+                    Constants.size.circularBorderRadius + 4,
                   ),
                 ),
               );

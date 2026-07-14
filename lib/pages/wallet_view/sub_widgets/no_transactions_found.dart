@@ -1,6 +1,6 @@
-/* 
+/*
  * This file is part of Stack Wallet.
- * 
+ *
  * Copyright (c) 2023 Cypher Stack
  * All Rights Reserved.
  * The code is distributed under GPLv3 license, see LICENSE file for details.
@@ -8,28 +8,45 @@
  *
  */
 
-import 'package:flutter/cupertino.dart';
-import '../../../utilities/text_styles.dart';
-import '../../../widgets/rounded_white_container.dart';
+import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
+import '../../../themes/stack_colors.dart';
+import '../../../utilities/assets.dart';
+import '../../../utilities/text_styles.dart';
+
+/// Empty transaction list — Miso at rest instead of a bare text row.
 class NoTransActionsFound extends StatelessWidget {
   const NoTransActionsFound({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        RoundedWhiteContainer(
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              "Transactions will appear here",
-              style: STextStyles.itemSubtitle(context),
-            ),
+    final colors = Theme.of(context).extension<StackColors>()!;
+    final isDark = colors.brightness == Brightness.dark;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      child: Column(
+        children: [
+          Lottie.asset(
+            isDark ? Assets.lottie.misoRestDark : Assets.lottie.misoRest,
+            width: 130,
+            height: 130,
+            fit: BoxFit.contain,
           ),
-        ),
-      ],
+          const SizedBox(height: 12),
+          Text(
+            "No transactions yet",
+            style: STextStyles.titleBold12(context),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            "Once you receive or send funds,\nthey'll show up here.",
+            textAlign: TextAlign.center,
+            style: STextStyles.itemSubtitle(context),
+          ),
+        ],
+      ),
     );
   }
 }

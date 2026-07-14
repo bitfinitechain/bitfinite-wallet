@@ -31,7 +31,7 @@ final pThemeService = Provider<ThemeService>((ref) {
 });
 
 class ThemeService {
-  static const _currentDefaultThemeVersion = 22;
+  static const _currentDefaultThemeVersion = 23;
   ThemeService._();
   static ThemeService? _instance;
   static ThemeService get instance => _instance ??= ThemeService._();

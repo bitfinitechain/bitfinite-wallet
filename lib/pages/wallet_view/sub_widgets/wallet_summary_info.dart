@@ -127,6 +127,38 @@ class WalletSummaryInfo extends ConsumerWidget {
               .getMonkeyImageBytes();
     }
 
+    // Hero balance: split the formatted amount into a full-weight part and
+    // de-emphasized trailing "dust" decimals (locale-safe: the decimal
+    // separator is whatever [.,] appears last in the numeric string).
+    final formatter = ref.watch(pAmountFormatter(coin));
+    final String fullStr = formatter.format(balanceToShow);
+    final String numStr = formatter.format(balanceToShow, withUnitName: false);
+    final String unitStr =
+        fullStr.startsWith(numStr)
+            ? fullStr.substring(numStr.length).trim()
+            : coin.ticker;
+    String mainPart = numStr;
+    String dustPart = "";
+    final sepIdx = numStr.lastIndexOf(RegExp(r"[.,]"));
+    if (sepIdx > 0) {
+      final decimals = numStr.substring(sepIdx + 1);
+      if (decimals.length > 2) {
+        mainPart = numStr.substring(0, sepIdx + 3);
+        dustPart = decimals.substring(2);
+      }
+    }
+
+    final favText =
+        Theme.of(context).extension<StackColors>()!.textFavoriteCard;
+    final heroStyle = STextStyles.pageTitleH1(context).copyWith(
+      fontSize: 30,
+      fontWeight: FontWeight.w800,
+      height: 1.1,
+      letterSpacing: -0.5,
+      color: favText,
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
+
     return ConditionalParent(
       condition: imageBytes != null,
       builder:
@@ -139,13 +171,13 @@ class WalletSummaryInfo extends ConsumerWidget {
               child,
             ],
           ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GestureDetector(
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
                   onTap: () {
                     if (toggleBalance) {
                       if (ref.read(walletBalanceToggleStateProvider) ==
@@ -164,79 +196,90 @@ class WalletSummaryInfo extends ConsumerWidget {
                   },
                   child: Row(
                     children: [
-                      Text(
-                        title,
-                        style: STextStyles.subtitle500(context).copyWith(
-                          color:
-                              Theme.of(
-                                context,
-                              ).extension<StackColors>()!.textFavoriteCard,
+                      Flexible(
+                        child: Text(
+                          title.toUpperCase(),
+                          overflow: TextOverflow.ellipsis,
+                          style: STextStyles.subtitle500(context).copyWith(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 1.6,
+                            color: favText.withOpacity(0.8),
+                          ),
                         ),
                       ),
-                      if (!toggleBalance) ...[
-                        const SizedBox(width: 4),
-                        SvgPicture.asset(
-                          Assets.svg.chevronDown,
-                          color:
-                              Theme.of(
-                                context,
-                              ).extension<StackColors>()!.textFavoriteCard,
-                          width: 8,
-                          height: 4,
-                        ),
-                      ],
+                      const SizedBox(width: 5),
+                      SvgPicture.asset(
+                        Assets.svg.chevronDown,
+                        color: favText.withOpacity(0.8),
+                        width: 8,
+                        height: 4,
+                      ),
                     ],
                   ),
                 ),
-                const Spacer(),
-                if (ref.watch(pWalletInfo(walletId)).isViewOnly)
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: SelectableText(
-                      "(View only)",
-                      style: STextStyles.pageTitleH1(context).copyWith(
-                        fontSize: 18,
-                        color: Theme.of(context)
-                            .extension<StackColors>()!
-                            .textFavoriteCard
-                            .withOpacity(0.7),
-                      ),
-                    ),
-                  ),
-                const Spacer(),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: SelectableText(
-                    ref.watch(pAmountFormatter(coin)).format(balanceToShow),
-                    style: STextStyles.pageTitleH1(context).copyWith(
-                      fontSize: 24,
-                      color:
-                          Theme.of(
-                            context,
-                          ).extension<StackColors>()!.textFavoriteCard,
-                    ),
-                  ),
-                ),
-                if (price != null)
-                  Text(
-                    "${(price.value * balanceToShow.decimal).toAmount(fractionDigits: 2).fiatString(locale: locale)} $baseCurrency",
-                    style: STextStyles.subtitle500(context).copyWith(
-                      color:
-                          Theme.of(
-                            context,
-                          ).extension<StackColors>()!.textFavoriteCard,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          Column(
-            children: [
+              ),
+              const SizedBox(width: 8),
               SvgPicture.file(
                 File(ref.watch(coinIconProvider(coin))),
                 width: 24,
                 height: 24,
               ),
+            ],
+          ),
+          const Spacer(),
+          if (ref.watch(pWalletInfo(walletId)).isViewOnly)
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: SelectableText(
+                "(View only)",
+                style: STextStyles.pageTitleH1(
+                  context,
+                ).copyWith(fontSize: 18, color: favText.withOpacity(0.7)),
+              ),
+            ),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: SelectableText.rich(
+              TextSpan(
+                children: [
+                  TextSpan(text: mainPart, style: heroStyle),
+                  if (dustPart.isNotEmpty)
+                    TextSpan(
+                      text: dustPart,
+                      style: heroStyle.copyWith(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: favText.withOpacity(0.55),
+                      ),
+                    ),
+                  TextSpan(
+                    text: " $unitStr",
+                    style: heroStyle.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: favText.withOpacity(0.85),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Fiat is noise while no real price feed exists (provider returns 0
+          // for unlisted coins) — show it only when there's an actual price.
+          if (price != null && price.value > Decimal.zero)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                "${(price.value * balanceToShow.decimal).toAmount(fractionDigits: 2).fiatString(locale: locale)} $baseCurrency",
+                style: STextStyles.subtitle500(
+                  context,
+                ).copyWith(color: favText),
+              ),
+            ),
+          const Spacer(),
+          Row(
+            children: [
               const Spacer(),
               WalletRefreshButton(
                 walletId: walletId,

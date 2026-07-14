@@ -252,9 +252,15 @@ class _FavoriteCardState extends ConsumerState<FavoriteCard> {
                               ),
                             ),
                           ),
-                          if (externalCalls && price != null)
+                          // Hide the fiat line while no real price feed exists
+                          // (provider returns 0 for unlisted coins).
+                          if (externalCalls &&
+                              price != null &&
+                              price > Decimal.zero)
                             const SizedBox(height: 4),
-                          if (externalCalls && price != null)
+                          if (externalCalls &&
+                              price != null &&
+                              price > Decimal.zero)
                             Text(
                               "${fiatTotal.fiatString(locale: ref.watch(localeServiceChangeNotifierProvider.select((value) => value.locale)))} ${ref.watch(prefsChangeNotifierProvider.select((value) => value.currency))}",
                               style: STextStyles.itemSubtitle12(

@@ -64,15 +64,30 @@ class CoinCard extends ConsumerWidget {
             ),
           ),
         if (!hasCardImageBg)
-          Container(
-            width: width,
-            height: height,
-            decoration: BoxDecoration(
-              color: ref.watch(pCoinColor(coin)),
-              borderRadius: BorderRadius.circular(
-                Constants.size.circularBorderRadius,
-              ),
-            ),
+          Builder(
+            builder: (context) {
+              // Subtle diagonal gradient derived from the theme's coin color
+              // (token-driven, so re-themes keep working).
+              final base = ref.watch(pCoinColor(coin));
+              final deep = Color.alphaBlend(
+                Colors.black.withOpacity(0.30),
+                base,
+              );
+              return Container(
+                width: width,
+                height: height,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [base, deep],
+                  ),
+                  borderRadius: BorderRadius.circular(
+                    Constants.size.circularBorderRadius * 2,
+                  ),
+                ),
+              );
+            },
           ),
         if (!hasCardImageBg)
           Column(

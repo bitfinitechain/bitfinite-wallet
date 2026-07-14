@@ -836,185 +836,12 @@ class _WalletViewState extends ConsumerState<WalletView> {
                             ),
                           ),
                         ),
-                        if ((isSparkWallet ||
-                                ref
-                                    .watch(pWalletInfo(walletId))
-                                    .isMwebEnabled) &&
-                            !viewOnly)
-                          const SizedBox(height: 10),
-                        if ((isSparkWallet ||
-                                ref
-                                    .watch(pWalletInfo(walletId))
-                                    .isMwebEnabled) &&
-                            !viewOnly)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: TextButton(
-                                    style: Theme.of(context)
-                                        .extension<StackColors>()!
-                                        .getSecondaryEnabledButtonStyle(
-                                          context,
-                                        ),
-                                    onPressed: () async {
-                                      await showDialog<void>(
-                                        context: context,
-                                        builder: (context) => StackDialog(
-                                          title: "Attention!",
-                                          message:
-                                              "You're about to privatize all of your public funds.",
-                                          leftButton: TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                            child: Text(
-                                              "Cancel",
-                                              style: STextStyles.button(context)
-                                                  .copyWith(
-                                                    color: Theme.of(context)
-                                                        .extension<
-                                                          StackColors
-                                                        >()!
-                                                        .accentColorDark,
-                                                  ),
-                                            ),
-                                          ),
-                                          rightButton: TextButton(
-                                            onPressed: () async {
-                                              Navigator.of(context).pop();
-
-                                              unawaited(attemptAnonymize());
-                                            },
-                                            style: Theme.of(context)
-                                                .extension<StackColors>()!
-                                                .getPrimaryEnabledButtonStyle(
-                                                  context,
-                                                ),
-                                            child: Text(
-                                              "Continue",
-                                              style: STextStyles.button(
-                                                context,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    child: Text(
-                                      "Privatize funds",
-                                      style: STextStyles.button(context)
-                                          .copyWith(
-                                            color: Theme.of(context)
-                                                .extension<StackColors>()!
-                                                .buttonTextSecondary,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        const SizedBox(height: 20),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Transactions",
-                                style: STextStyles.itemSubtitle(context)
-                                    .copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).extension<StackColors>()!.textDark3,
-                                    ),
-                              ),
-                              CustomTextButton(
-                                text: "See all",
-                                onTap: () {
-                                  Navigator.of(context).pushNamed(
-                                    ref
-                                                .read(pWallets)
-                                                .getWallet(widget.walletId)
-                                                .isarTransactionVersion ==
-                                            2
-                                        ? AllTransactionsV2View.routeName
-                                        : AllTransactionsView.routeName,
-                                    arguments: walletId,
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(
-                                  Constants.size.circularBorderRadius,
-                                ),
-                                bottom: Radius.circular(
-                                  // WalletView.navBarHeight / 2.0,
-                                  Constants.size.circularBorderRadius,
-                                ),
-                              ),
-                              child: ShaderMask(
-                                blendMode: BlendMode.dstOut,
-                                shaderCallback: (Rect bounds) {
-                                  return const LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [
-                                      Colors.transparent,
-                                      Colors.transparent,
-                                      Colors.white,
-                                    ],
-                                    stops: [0.0, 0.8, 1.0],
-                                  ).createShader(bounds);
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.transparent,
-                                    borderRadius: BorderRadius.circular(
-                                      Constants.size.circularBorderRadius,
-                                    ),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: [
-                                      Expanded(
-                                        child:
-                                            ref
-                                                    .read(pWallets)
-                                                    .getWallet(widget.walletId)
-                                                    .isarTransactionVersion ==
-                                                2
-                                            ? TransactionsV2List(
-                                                walletId: widget.walletId,
-                                              )
-                                            : TransactionsList(
-                                                walletId: walletId,
-                                              ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  top: 12,
                 ),
-              ),
-              SafeArea(
                 child: WalletNavigationBar(
                   items: [
                     WalletNavigationBarItemData(
@@ -1393,6 +1220,184 @@ class _WalletViewState extends ConsumerState<WalletView> {
                         },
                       ),
                   ],
+                ),
+              ),
+                        if ((isSparkWallet ||
+                                ref
+                                    .watch(pWalletInfo(walletId))
+                                    .isMwebEnabled) &&
+                            !viewOnly)
+                          const SizedBox(height: 10),
+                        if ((isSparkWallet ||
+                                ref
+                                    .watch(pWalletInfo(walletId))
+                                    .isMwebEnabled) &&
+                            !viewOnly)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: TextButton(
+                                    style: Theme.of(context)
+                                        .extension<StackColors>()!
+                                        .getSecondaryEnabledButtonStyle(
+                                          context,
+                                        ),
+                                    onPressed: () async {
+                                      await showDialog<void>(
+                                        context: context,
+                                        builder: (context) => StackDialog(
+                                          title: "Attention!",
+                                          message:
+                                              "You're about to privatize all of your public funds.",
+                                          leftButton: TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Text(
+                                              "Cancel",
+                                              style: STextStyles.button(context)
+                                                  .copyWith(
+                                                    color: Theme.of(context)
+                                                        .extension<
+                                                          StackColors
+                                                        >()!
+                                                        .accentColorDark,
+                                                  ),
+                                            ),
+                                          ),
+                                          rightButton: TextButton(
+                                            onPressed: () async {
+                                              Navigator.of(context).pop();
+
+                                              unawaited(attemptAnonymize());
+                                            },
+                                            style: Theme.of(context)
+                                                .extension<StackColors>()!
+                                                .getPrimaryEnabledButtonStyle(
+                                                  context,
+                                                ),
+                                            child: Text(
+                                              "Continue",
+                                              style: STextStyles.button(
+                                                context,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      "Privatize funds",
+                                      style: STextStyles.button(context)
+                                          .copyWith(
+                                            color: Theme.of(context)
+                                                .extension<StackColors>()!
+                                                .buttonTextSecondary,
+                                          ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        const SizedBox(height: 20),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Transactions",
+                                style: STextStyles.itemSubtitle(context)
+                                    .copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).extension<StackColors>()!.textDark3,
+                                    ),
+                              ),
+                              CustomTextButton(
+                                text: "See all",
+                                onTap: () {
+                                  Navigator.of(context).pushNamed(
+                                    ref
+                                                .read(pWallets)
+                                                .getWallet(widget.walletId)
+                                                .isarTransactionVersion ==
+                                            2
+                                        ? AllTransactionsV2View.routeName
+                                        : AllTransactionsView.routeName,
+                                    arguments: walletId,
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(
+                                  Constants.size.circularBorderRadius,
+                                ),
+                                bottom: Radius.circular(
+                                  // WalletView.navBarHeight / 2.0,
+                                  Constants.size.circularBorderRadius,
+                                ),
+                              ),
+                              child: ShaderMask(
+                                blendMode: BlendMode.dstOut,
+                                shaderCallback: (Rect bounds) {
+                                  return const LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.transparent,
+                                      Colors.transparent,
+                                      Colors.white,
+                                    ],
+                                    stops: [0.0, 0.8, 1.0],
+                                  ).createShader(bounds);
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.transparent,
+                                    borderRadius: BorderRadius.circular(
+                                      Constants.size.circularBorderRadius,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Expanded(
+                                        child:
+                                            ref
+                                                    .read(pWallets)
+                                                    .getWallet(widget.walletId)
+                                                    .isarTransactionVersion ==
+                                                2
+                                            ? TransactionsV2List(
+                                                walletId: widget.walletId,
+                                              )
+                                            : TransactionsList(
+                                                walletId: walletId,
+                                              ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ],

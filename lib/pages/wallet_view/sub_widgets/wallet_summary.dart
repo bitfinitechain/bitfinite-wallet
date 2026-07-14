@@ -1,6 +1,6 @@
-/* 
+/*
  * This file is part of Stack Wallet.
- * 
+ *
  * Copyright (c) 2023 Cypher Stack
  * All Rights Reserved.
  * The code is distributed under GPLv3 license, see LICENSE file for details.
@@ -8,12 +8,20 @@
  *
  */
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
 import 'wallet_summary_info.dart';
 import '../../../services/event_bus/events/global/wallet_sync_status_changed_event.dart';
+import '../../../themes/coin_icon_provider.dart';
+import '../../../utilities/constants.dart';
+import '../../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../../widgets/coin_card.dart';
 
-class WalletSummary extends StatelessWidget {
+class WalletSummary extends ConsumerWidget {
   const WalletSummary({
     super.key,
     required this.walletId,
@@ -35,7 +43,9 @@ class WalletSummary extends StatelessWidget {
   final double maxWidth;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final coin = ref.watch(pWalletCoin(walletId));
+
     return AspectRatio(
       aspectRatio: aspectRatio,
       child: ConstrainedBox(
@@ -46,24 +56,43 @@ class WalletSummary extends StatelessWidget {
           maxWidth: minWidth,
         ),
         child: LayoutBuilder(
-          builder: (_, constraints) => Stack(
-            children: [
-              CoinCard(
-                walletId: walletId,
-                width: constraints.maxWidth,
-                height: constraints.maxHeight,
-                isFavorite: false,
-              ),
-              Positioned.fill(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: WalletSummaryInfo(
-                    walletId: walletId,
-                    initialSyncStatus: initialSyncStatus,
+          builder: (_, constraints) => ClipRRect(
+            // Clip the oversized watermark to the card's rounded corners.
+            borderRadius: BorderRadius.circular(
+              Constants.size.circularBorderRadius + 4,
+            ),
+            child: Stack(
+              children: [
+                CoinCard(
+                  walletId: walletId,
+                  width: constraints.maxWidth,
+                  height: constraints.maxHeight,
+                  isFavorite: false,
+                ),
+                // Ghosted coin-mark watermark, bottom-right (brand texture).
+                Positioned(
+                  right: -constraints.maxWidth * 0.04,
+                  bottom: -constraints.maxWidth * 0.08,
+                  child: Opacity(
+                    opacity: 0.08,
+                    child: SvgPicture.file(
+                      File(ref.watch(coinIconProvider(coin))),
+                      width: constraints.maxWidth * 0.42,
+                      height: constraints.maxWidth * 0.42,
+                    ),
                   ),
                 ),
-              ),
-            ],
+                Positioned.fill(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: WalletSummaryInfo(
+                      walletId: walletId,
+                      initialSyncStatus: initialSyncStatus,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

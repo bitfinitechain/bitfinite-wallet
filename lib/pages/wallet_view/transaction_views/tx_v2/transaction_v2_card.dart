@@ -88,15 +88,13 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
       unit = coin.ticker;
     }
 
-    if (Util.isDesktop) {
-      if (_transaction.type == TransactionType.outgoing &&
-          _transaction.subType != TransactionSubType.cashFusion) {
-        prefix = "-";
-      } else if (_transaction.type == TransactionType.incoming) {
-        prefix = "+";
-      } else {
-        prefix = "";
-      }
+    // Signed amounts on all platforms (was desktop-only) — part of the
+    // green-in / signed-out transaction grammar.
+    if (_transaction.type == TransactionType.outgoing &&
+        _transaction.subType != TransactionSubType.cashFusion) {
+      prefix = "-";
+    } else if (_transaction.type == TransactionType.incoming) {
+      prefix = "+";
     } else {
       prefix = "";
     }
@@ -279,7 +277,19 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
 
                                   return Text(
                                     "$prefix$formattedAmount",
-                                    style: STextStyles.itemSubtitle12(context),
+                                    style: STextStyles.itemSubtitle12(context)
+                                        .copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          color:
+                                              _transaction.type ==
+                                                      TransactionType.incoming
+                                                  ? Theme.of(context)
+                                                        .extension<
+                                                          StackColors
+                                                        >()!
+                                                        .accentColorGreen
+                                                  : null,
+                                        ),
                                   );
                                 },
                               ),

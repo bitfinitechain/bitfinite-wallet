@@ -8,19 +8,20 @@
  *
  */
 
-import 'dart:io';
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../notifications/show_flush_bar.dart';
 import '../../../providers/providers.dart';
 import '../../../providers/wallet/public_private_balance_state_provider.dart';
 import '../../../providers/wallet/wallet_balance_toggle_state_provider.dart';
 import '../../../services/event_bus/events/global/wallet_sync_status_changed_event.dart';
-import '../../../themes/coin_icon_provider.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/amount/amount.dart';
 import '../../../utilities/amount/amount_formatter.dart';
@@ -34,7 +35,7 @@ import '../../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../../wallets/wallet/impl/banano_wallet.dart';
 import '../../../widgets/conditional_parent.dart';
 import 'wallet_balance_toggle_sheet.dart';
-import 'wallet_refresh_button.dart';
+import 'wallet_sync_chip.dart';
 
 class WalletSummaryInfo extends ConsumerWidget {
   const WalletSummaryInfo({
@@ -150,6 +151,7 @@ class WalletSummaryInfo extends ConsumerWidget {
 
     final favText =
         Theme.of(context).extension<StackColors>()!.textFavoriteCard;
+    final receivingAddress = ref.watch(pWalletReceivingAddress(walletId));
     final heroStyle = STextStyles.pageTitleH1(context).copyWith(
       fontSize: 30,
       fontWeight: FontWeight.w800,
@@ -220,10 +222,9 @@ class WalletSummaryInfo extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              SvgPicture.file(
-                File(ref.watch(coinIconProvider(coin))),
-                width: 24,
-                height: 24,
+              WalletSyncChip(
+                walletId: walletId,
+                initialSyncStatus: initialSyncStatus,
               ),
             ],
           ),
@@ -265,6 +266,35 @@ class WalletSummaryInfo extends ConsumerWidget {
               ),
             ),
           ),
+          if (receivingAddress.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: GestureDetector(
+                onTap: () {
+                  unawaited(HapticFeedback.lightImpact());
+                  Clipboard.setData(ClipboardData(text: receivingAddress));
+                  unawaited(
+                    showFloatingFlushBar(
+                      type: FlushBarType.info,
+                      message: "Address copied to clipboard",
+                      iconAsset: Assets.svg.copy,
+                      context: context,
+                    ),
+                  );
+                },
+                child: Text(
+                  receivingAddress.length > 22
+                      ? "${receivingAddress.substring(0, 12)}…"
+                          "${receivingAddress.substring(receivingAddress.length - 6)}"
+                      : receivingAddress,
+                  style: STextStyles.subtitle500(context).copyWith(
+                    fontSize: 12,
+                    color: favText.withOpacity(0.65),
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ),
+            ),
           // Fiat is noise while no real price feed exists (provider returns 0
           // for unlisted coins) — show it only when there's an actual price.
           if (price != null && price.value > Decimal.zero)
@@ -278,15 +308,6 @@ class WalletSummaryInfo extends ConsumerWidget {
               ),
             ),
           const Spacer(),
-          Row(
-            children: [
-              const Spacer(),
-              WalletRefreshButton(
-                walletId: walletId,
-                initialSyncStatus: initialSyncStatus,
-              ),
-            ],
-          ),
         ],
       ),
     );

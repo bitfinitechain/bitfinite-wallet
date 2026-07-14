@@ -68,14 +68,6 @@ class SupportView extends StatelessWidget {
           ),
           isDesktop ? const SizedBox(height: 24) : const SizedBox(height: 12),
           AboutItem(
-            linkUrl: "https://t.me/bitfinitechain",
-            label: "Telegram",
-            buttonText: "@bitfinitechain",
-            iconAsset: Assets.socials.telegram,
-            isDesktop: isDesktop,
-          ),
-          const SizedBox(height: 8),
-          AboutItem(
             linkUrl: "https://discord.gg/bitfinitechain",
             label: "Discord",
             buttonText: AppConfig.appName,

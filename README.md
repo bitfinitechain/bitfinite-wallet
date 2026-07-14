@@ -8,7 +8,7 @@ your device.
 - 🌐 Website & whitepaper: https://bitfinitechain.org
 - 🔎 Block explorer: https://explorer.bitfinitechain.org
 - 👛 Web wallet (PWA): https://wallet.bitfinitechain.org
-- 💬 Telegram: https://t.me/bitfinitechain · X: https://x.com/bitfinitechain
+- 💬 X: https://x.com/bitfinitechain
 
 ## Features
 

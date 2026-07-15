@@ -278,6 +278,14 @@ class _ANIMATIONS {
   // BitFinite duo (Miso + Ollie) loading animation — light + dark.
   String get duoLoadingLight => "assets/lottie/duo-loading-light.json";
   String get duoLoadingDark => "assets/lottie/duo-loading-dark.json";
+  // Miso the Cat loading spinner — light + dark.
+  String get misoLoading => "assets/lottie/miso-loading.json";
+  String get misoLoadingDark => "assets/lottie/miso-loading-dark.json";
+  // Miso Tor status animations — connecting + connected, light + dark.
+  String get torConnecting => "assets/lottie/tor-connecting.json";
+  String get torConnectingDark => "assets/lottie/tor-connecting-dark.json";
+  String get torConnected => "assets/lottie/tor-connected.json";
+  String get torConnectedDark => "assets/lottie/tor-connected-dark.json";
 }
 
 class _GIF {

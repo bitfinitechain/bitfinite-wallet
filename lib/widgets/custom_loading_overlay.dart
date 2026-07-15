@@ -17,7 +17,7 @@ import '../themes/stack_colors.dart';
 import '../utilities/text_styles.dart';
 import '../utilities/util.dart';
 import 'conditional_parent.dart';
-import 'duo_loader.dart';
+import 'miso_loader.dart';
 import 'loading_indicator.dart';
 
 class CustomLoadingOverlay extends ConsumerStatefulWidget {
@@ -149,7 +149,7 @@ class _CustomLoadingOverlayState extends ConsumerState<CustomLoadingOverlay> {
               height: 64,
             ),
             const Center(
-              child: DuoLoader(
+              child: MisoLoader(
                 size: 140,
               ),
             ),

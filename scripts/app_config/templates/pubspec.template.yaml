@@ -431,6 +431,12 @@ flutter:
     - assets/lottie/ollie-selected-dark.json
     - assets/lottie/duo-loading-light.json
     - assets/lottie/duo-loading-dark.json
+    - assets/lottie/miso-loading.json
+    - assets/lottie/miso-loading-dark.json
+    - assets/lottie/tor-connecting.json
+    - assets/lottie/tor-connecting-dark.json
+    - assets/lottie/tor-connected.json
+    - assets/lottie/tor-connected-dark.json
 
     # default themes_testing
     - assets/default_themes/

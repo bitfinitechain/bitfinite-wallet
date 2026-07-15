@@ -204,13 +204,27 @@ class _TorAnimatedButton extends ConsumerStatefulWidget {
   ConsumerState<_TorAnimatedButton> createState() => _TorAnimatedButtonState();
 }
 
-class _TorAnimatedButtonState extends ConsumerState<_TorAnimatedButton>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController controller1;
-
+class _TorAnimatedButtonState extends ConsumerState<_TorAnimatedButton> {
   late TorConnectionStatus _status;
 
   bool _tapLock = false;
+
+  // New Miso Tor animations are one file per state (no marker segments):
+  // idle onion when disconnected, connecting loop, connected settle.
+  String _animation(TorConnectionStatus status, bool isDark) {
+    switch (status) {
+      case TorConnectionStatus.connecting:
+        return isDark
+            ? Assets.lottie.torConnectingDark
+            : Assets.lottie.torConnecting;
+      case TorConnectionStatus.connected:
+        return isDark
+            ? Assets.lottie.torConnectedDark
+            : Assets.lottie.torConnected;
+      case TorConnectionStatus.disconnected:
+        return isDark ? Assets.lottie.torStartDark : Assets.lottie.torStart;
+    }
+  }
 
   Future<void> onTap() async {
     if (_tapLock) {
@@ -241,106 +255,25 @@ class _TorAnimatedButtonState extends ConsumerState<_TorAnimatedButton>
     }
   }
 
-  Future<void> _playPlug() async {
-    await _play(from: "0.0", to: "connecting-start", repeat: false);
-  }
-
-  Future<void> _playConnecting({double? start}) async {
-    await _play(
-      from: start?.toString() ?? "connecting-start",
-      to: "connecting-end",
-      repeat: true,
-    );
-  }
-
-  Future<void> _playConnectingDone() async {
-    await _play(
-      from: "${controller1.value}",
-      to: "connected-start",
-      repeat: false,
-    );
-  }
-
-  Future<void> _playConnected() async {
-    await _play(from: "connected-start", to: "connected-end", repeat: true);
-  }
-
-  Future<void> _playDisconnect() async {
-    await _play(
-      from: "disconnection-start",
-      to: "disconnection-end",
-      repeat: false,
-    );
-    controller1.reset();
-  }
-
-  Future<void> _play({
-    required String from,
-    required String to,
-    required bool repeat,
-  }) async {
-    final composition = await _completer.future;
-    final start = double.tryParse(from) ?? composition.getMarker(from)!.start;
-    final end = composition.getMarker(to)!.start;
-
-    controller1.value = start;
-
-    if (repeat) {
-      await controller1.repeat(
-        min: start,
-        max: end,
-        period: composition.duration * (end - start),
-      );
-    } else {
-      await controller1.animateTo(
-        end,
-        duration: composition.duration * (end - start),
-      );
-    }
-  }
-
-  late Completer<LottieComposition> _completer;
-
   @override
   void initState() {
-    controller1 = AnimationController(vsync: this);
-
     _status = ref.read(pTorService).status;
-
-    _completer = Completer();
 
     super.initState();
   }
 
   @override
-  void dispose() {
-    controller1.dispose();
-
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width / 1.5;
+    final isDark =
+        Theme.of(context).extension<StackColors>()!.brightness ==
+            Brightness.dark;
 
     return TorSubscription(
-      onTorStatusChanged: (status) async {
-        _status = status;
-        switch (_status) {
-          case TorConnectionStatus.disconnected:
-            await _playDisconnect();
-            break;
-
-          case TorConnectionStatus.connected:
-            await _playConnectingDone();
-            await _playConnected();
-            break;
-
-          case TorConnectionStatus.connecting:
-            await _playPlug();
-            await _playConnecting();
-            break;
-        }
+      onTorStatusChanged: (status) {
+        setState(() {
+          _status = status;
+        });
       },
       child: ConditionalParent(
         condition: _status != TorConnectionStatus.connecting,
@@ -350,20 +283,10 @@ class _TorAnimatedButtonState extends ConsumerState<_TorAnimatedButton>
             SizedBox(
               width: width,
               child: Lottie.asset(
-                Assets.lottie.onionTor,
-                controller: controller1,
+                _animation(_status, isDark),
                 width: width,
-                // height: width,
-                onLoaded: (composition) {
-                  _completer.complete(composition);
-                  controller1.duration = composition.duration;
-
-                  if (_status == TorConnectionStatus.connected) {
-                    _playConnected();
-                  } else if (_status == TorConnectionStatus.connecting) {
-                    _playConnecting();
-                  }
-                },
+                // Only the connecting state loops; idle/connected settle.
+                repeat: _status == TorConnectionStatus.connecting,
               ),
             ),
             const _UpperCaseTorText(),

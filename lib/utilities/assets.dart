@@ -281,7 +281,11 @@ class _ANIMATIONS {
   // Miso the Cat loading spinner — light + dark.
   String get misoLoading => "assets/lottie/miso-loading.json";
   String get misoLoadingDark => "assets/lottie/miso-loading-dark.json";
-  // Miso Tor status animations — connecting + connected, light + dark.
+  // Miso Tor status animations — start/connecting/connected, light + dark.
+  String get torStart => "assets/lottie/tor-start.json";
+  String get torStartDark => "assets/lottie/tor-start-dark.json";
+  String get torStop => "assets/lottie/tor-stop.json";
+  String get torStopDark => "assets/lottie/tor-stop-dark.json";
   String get torConnecting => "assets/lottie/tor-connecting.json";
   String get torConnectingDark => "assets/lottie/tor-connecting-dark.json";
   String get torConnected => "assets/lottie/tor-connected.json";

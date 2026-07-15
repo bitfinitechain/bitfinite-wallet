@@ -433,6 +433,10 @@ flutter:
     - assets/lottie/duo-loading-dark.json
     - assets/lottie/miso-loading.json
     - assets/lottie/miso-loading-dark.json
+    - assets/lottie/tor-start.json
+    - assets/lottie/tor-start-dark.json
+    - assets/lottie/tor-stop.json
+    - assets/lottie/tor-stop-dark.json
     - assets/lottie/tor-connecting.json
     - assets/lottie/tor-connecting-dark.json
     - assets/lottie/tor-connected.json

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:lottie/lottie.dart';
 import '../pages/settings_views/global_settings_view/tor_settings/tor_settings_view.dart';
 import '../services/event_bus/events/global/tor_connection_status_changed_event.dart';
 import '../services/tor_service.dart';
@@ -20,38 +19,22 @@ class SmallTorIcon extends ConsumerStatefulWidget {
 class _SmallTorIconState extends ConsumerState<SmallTorIcon> {
   late TorConnectionStatus _status;
 
-  // Miso Tor status: animate while connecting and on connect; a static (grey)
-  // onion when disconnected.
-  Widget _icon(
+  // Header Tor icon stays the onion (grey disconnected / yellow connecting /
+  // green connected) — the Miso cat lives on the Tor settings page instead, so
+  // it isn't redundant with the app-bar avatar.
+  Color _color(
     TorConnectionStatus status,
     StackColors colors,
-    bool isDark,
   ) {
     switch (status) {
-      case TorConnectionStatus.connecting:
-        return Lottie.asset(
-          isDark ? Assets.lottie.torConnectingDark : Assets.lottie.torConnecting,
-          width: 20,
-          height: 20,
-          fit: BoxFit.contain,
-        );
+      case TorConnectionStatus.disconnected:
+        return colors.textSubtitle3;
 
       case TorConnectionStatus.connected:
-        return Lottie.asset(
-          isDark ? Assets.lottie.torConnectedDark : Assets.lottie.torConnected,
-          width: 20,
-          height: 20,
-          fit: BoxFit.contain,
-          repeat: false,
-        );
+        return colors.accentColorGreen;
 
-      case TorConnectionStatus.disconnected:
-        return SvgPicture.asset(
-          Assets.svg.tor,
-          color: colors.textSubtitle3,
-          width: 20,
-          height: 20,
-        );
+      case TorConnectionStatus.connecting:
+        return colors.accentColorYellow;
     }
   }
 
@@ -76,11 +59,14 @@ class _SmallTorIconState extends ConsumerState<SmallTorIcon> {
         size: 36,
         shadows: const [],
         color: Theme.of(context).extension<StackColors>()!.backgroundAppBar,
-        icon: _icon(
-          _status,
-          Theme.of(context).extension<StackColors>()!,
-          Theme.of(context).extension<StackColors>()!.brightness ==
-              Brightness.dark,
+        icon: SvgPicture.asset(
+          Assets.svg.tor,
+          color: _color(
+            _status,
+            Theme.of(context).extension<StackColors>()!,
+          ),
+          width: 20,
+          height: 20,
         ),
         onPressed: () {
           Navigator.of(context).pushNamed(TorSettingsView.routeName);

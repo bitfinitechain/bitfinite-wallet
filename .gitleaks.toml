@@ -1,0 +1,31 @@
+title = "BitFinite gitleaks config"
+
+[extend]
+useDefault = true
+
+# Catch DB/broker connection strings with embedded credentials (our actual leak type).
+[[rules]]
+id = "bfx-db-connection-string"
+description = "Connection string with embedded credentials"
+regex = '''(?i)\b(postgres(?:ql)?|mysql|mariadb|mongodb(?:\+srv)?|rediss?|amqp)://[a-z0-9._%+\-]+:[^@\s/'"`]{3,}@'''
+keywords = ["postgres","postgresql","mysql","mariadb","mongodb","redis","amqp"]
+
+# Catch hardcoded password/secret/token assignments in code/config.
+[[rules]]
+id = "bfx-hardcoded-secret"
+description = "Hardcoded password/secret/token assignment"
+regex = '''(?i)\b(rpcpassword|password|passwd|secret|access[_-]?token|auth[_-]?token|api[_-]?key|apikey|storepassword|keypassword)\b\s*[:=]\s*['"][^'"\s${}]{6,}['"]'''
+keywords = ["password","passwd","secret","token","apikey","api_key","api-key","rpcpassword","storepassword","keypassword"]
+
+[allowlist]
+description = "Placeholders, examples, docs, lockfiles, vendored/test code"
+paths = [
+  '''(^|/)\.env\.(example|sample|template)$''',
+  '''\.(example|sample|template|lock)$''',
+  '''(^|/)(package-lock\.json|pnpm-lock\.yaml|yarn\.lock|Cargo\.lock)$''',
+  '''(^|/)(test|tests|qa|contrib|depends|node_modules|__tests__|fuzz)/''',
+  '''\.md$''',
+]
+regexes = [
+  '''(?i)(YOUR_|CHANGE_?ME|EXAMPLE|PLACEHOLDER|dummy|<[a-z_.]+>|\$\{[^}]+\}|process\.env|import\.meta\.env|username:password|user:pass|USER:PASSWORD)''',
+]

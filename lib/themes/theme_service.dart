@@ -31,12 +31,12 @@ final pThemeService = Provider<ThemeService>((ref) {
 });
 
 class ThemeService {
-  static const _currentDefaultThemeVersion = 24;
+  static const _currentDefaultThemeVersion = 25;
   ThemeService._();
   static ThemeService? _instance;
   static ThemeService get instance => _instance ??= ThemeService._();
 
-  static const String baseServerUrl = "https://themes.stackwallet.com";
+  static const String baseServerUrl = "https://themes.bitfinitechain.org";
 
   MainDB? _db;
   MainDB get db => _db!;

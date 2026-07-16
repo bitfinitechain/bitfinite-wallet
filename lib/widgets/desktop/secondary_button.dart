@@ -143,7 +143,9 @@ class SecondaryButton extends StatelessWidget {
         case ButtonHeight.m:
           return 28;
         case ButtonHeight.l:
-          return 30;
+          // 32, not 30: the Inter label's line box is ~0.17px taller than a
+          // 30px box, which triggers a hairline bottom overflow on the label.
+          return 32;
         case ButtonHeight.xl:
           return 46;
         case ButtonHeight.xxl:

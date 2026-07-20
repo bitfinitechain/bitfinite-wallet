@@ -17,6 +17,7 @@ import '../../../providers/providers.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/assets.dart';
 import '../../../utilities/constants.dart';
+import '../../../utilities/currency_flag.dart';
 import '../../../utilities/text_styles.dart';
 import '../../../utilities/util.dart';
 import '../../../widgets/background.dart';
@@ -359,6 +360,18 @@ class _CurrencyViewState extends ConsumerState<BaseCurrencySettingsView> {
                                       ),
                                     ),
                                     const SizedBox(width: 12),
+                                    if (currencyFlagEmoji(
+                                          currenciesWithoutSelected[index],
+                                        ) !=
+                                        null) ...[
+                                      Text(
+                                        currencyFlagEmoji(
+                                          currenciesWithoutSelected[index],
+                                        )!,
+                                        style: const TextStyle(fontSize: 22),
+                                      ),
+                                      const SizedBox(width: 10),
+                                    ],
                                     Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,

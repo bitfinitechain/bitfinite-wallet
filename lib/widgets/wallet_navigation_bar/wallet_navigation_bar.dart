@@ -126,12 +126,12 @@ class WalletNavigationBar extends ConsumerWidget {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(999),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+              filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
               child: Container(
                 decoration: BoxDecoration(
-                  // Frosted-glass: low-opacity fill over a strong blur so the
-                  // content scrolls through, with a bright hairline edge.
-                  color: colors.bottomNavBack.withOpacity(0.55),
+                  // Frosted-glass: very low-opacity fill over a strong blur so
+                  // content clearly shows through, with a bright hairline edge.
+                  color: colors.bottomNavBack.withOpacity(0.28),
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(
                     color: Colors.white.withOpacity(0.14),
@@ -193,21 +193,20 @@ class _ActionButton extends StatelessWidget {
     if (floating) {
       return Material(
         color: highlighted ? colors.bottomNavIconBack : Colors.transparent,
-        borderRadius: BorderRadius.circular(18),
+        // Circular highlight (not a rounded rect) behind the active action.
+        shape: const CircleBorder(),
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
-          borderRadius: BorderRadius.circular(18),
+          customBorder: const CircleBorder(),
           highlightColor: colors.bottomNavIconBack,
           onTap: data.onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 22),
-            child: SizedBox(
-              width: 24,
-              height: 24,
-              child: Center(
-                child:
-                    iosNavIcon(data.label, colors.bottomNavIconIcon) ??
-                    SizedBox(width: 22, height: 22, child: data.icon),
-              ),
+          child: SizedBox(
+            width: 48,
+            height: 48,
+            child: Center(
+              child:
+                  iosNavIcon(data.label, colors.bottomNavIconIcon) ??
+                  SizedBox(width: 22, height: 22, child: data.icon),
             ),
           ),
         ),

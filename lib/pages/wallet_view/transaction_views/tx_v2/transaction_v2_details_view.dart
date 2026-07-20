@@ -1865,6 +1865,7 @@ class _TxidDetailItemState extends ConsumerState<_TxidDetailItem> {
             title: "Attention",
             message: warningMessage,
             icon: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Consumer(
                   builder: (_, ref, __) {
@@ -1886,9 +1887,11 @@ class _TxidDetailItemState extends ConsumerState<_TxidDetailItem> {
                     );
                   },
                 ),
-                Text(
-                  "Never show again",
-                  style: STextStyles.smallMed14(context),
+                Flexible(
+                  child: Text(
+                    "Never show again",
+                    style: STextStyles.smallMed14(context),
+                  ),
                 ),
               ],
             ),

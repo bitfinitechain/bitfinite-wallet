@@ -182,7 +182,7 @@ class StackOkDialog extends StatelessWidget {
                 Flexible(
                   child: Text(title, style: STextStyles.pageTitleH2(context)),
                 ),
-                icon != null ? icon! : Container(),
+                icon != null ? Flexible(child: icon!) : Container(),
               ],
             ),
           ),

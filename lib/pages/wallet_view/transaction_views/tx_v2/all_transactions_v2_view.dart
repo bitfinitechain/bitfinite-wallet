@@ -9,6 +9,7 @@
  */
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:decimal/decimal.dart';
 import 'package:flutter/foundation.dart';
@@ -529,6 +530,50 @@ class _AllTransactionsV2ViewState extends ConsumerState<AllTransactionsV2View> {
                         });
 
                         final monthlyList = groupTransactionsByMonth(searched);
+                        if (!isDesktop) {
+                          // Flatten month groups into a single lazy list so a
+                          // month with many transactions doesn't build every
+                          // card eagerly (this was the See-all lag).
+                          final List<Object> rows = [];
+                          for (final m in monthlyList) {
+                            rows.add(m.label);
+                            rows.addAll(m.transactions);
+                          }
+                          return ListView.builder(
+                            padding: Platform.isIOS
+                                ? const EdgeInsets.only(bottom: 92)
+                                : EdgeInsets.zero,
+                            itemCount: rows.length,
+                            itemBuilder: (_, index) {
+                              final row = rows[index];
+                              if (row is String) {
+                                return Padding(
+                                  padding: EdgeInsets.only(
+                                    left: 8,
+                                    right: 8,
+                                    top: index == 0 ? 4 : 20,
+                                    bottom: 8,
+                                  ),
+                                  child: Text(
+                                    row,
+                                    style: STextStyles.smallMed12(context),
+                                  ),
+                                );
+                              }
+                              final tx = row as TransactionV2;
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 3,
+                                ),
+                                child: TransactionCardV2(
+                                  key: Key("transactionCard_key_${tx.txid}"),
+                                  transaction: tx,
+                                ),
+                              );
+                            },
+                          );
+                        }
                         return ListView.builder(
                           primary: isDesktop ? false : null,
                           itemCount: monthlyList.length,

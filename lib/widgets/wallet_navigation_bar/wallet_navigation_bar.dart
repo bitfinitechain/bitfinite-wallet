@@ -126,13 +126,15 @@ class WalletNavigationBar extends ConsumerWidget {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(999),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
               child: Container(
                 decoration: BoxDecoration(
-                  color: colors.bottomNavBack.withOpacity(0.86),
+                  // Frosted-glass: low-opacity fill over a strong blur so the
+                  // content scrolls through, with a bright hairline edge.
+                  color: colors.bottomNavBack.withOpacity(0.55),
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(
-                    color: colors.bottomNavIconIcon.withOpacity(0.06),
+                    color: Colors.white.withOpacity(0.14),
                   ),
                   boxShadow: [
                     BoxShadow(

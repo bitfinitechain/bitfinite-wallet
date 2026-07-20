@@ -120,42 +120,44 @@ class WalletNavigationBar extends ConsumerWidget {
       return SafeArea(
         top: false,
         minimum: const EdgeInsets.only(bottom: 4),
-        child: Align(
-          alignment: Alignment.center,
-          heightFactor: 1.0,
+        // Stretch across the width (minus a margin) rather than hugging the
+        // icons, so the dock fills the left/right margins.
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(999),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+              filter: ImageFilter.blur(sigmaX: 45, sigmaY: 45),
               child: Container(
                 decoration: BoxDecoration(
-                  // Frosted-glass: very low-opacity fill over a strong blur so
-                  // content clearly shows through, with a bright hairline edge.
-                  color: colors.bottomNavBack.withOpacity(0.28),
+                  // Frosted-glass: a very light fill over a strong blur so the
+                  // content behind clearly reads through, plus a soft specular
+                  // sheen and a bright hairline edge.
+                  color: colors.bottomNavBack.withOpacity(0.16),
                   borderRadius: BorderRadius.circular(999),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white.withOpacity(0.16),
+                      Colors.white.withOpacity(0.03),
+                    ],
+                  ),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.14),
+                    color: Colors.white.withOpacity(0.22),
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.20),
+                      color: Colors.black.withOpacity(0.18),
                       blurRadius: 24,
                       offset: const Offset(0, 8),
                     ),
                   ],
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 6,
-                ),
+                padding: const EdgeInsets.symmetric(vertical: 6),
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (int i = 0; i < buttons.length; i++) ...[
-                      if (i > 0) const SizedBox(width: 20),
-                      buttons[i],
-                    ],
-                  ],
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [for (final b in buttons) b],
                 ),
               ),
             ),

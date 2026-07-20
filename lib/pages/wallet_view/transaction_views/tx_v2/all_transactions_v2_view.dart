@@ -13,6 +13,7 @@ import 'dart:io';
 
 import 'package:decimal/decimal.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -30,6 +31,7 @@ import '../../../../themes/stack_colors.dart';
 import '../../../../utilities/amount/amount.dart';
 import '../../../../utilities/amount/amount_formatter.dart';
 import '../../../../utilities/assets.dart';
+import '../../../../utilities/ios_icon.dart';
 import '../../../../utilities/constants.dart';
 import '../../../../utilities/format.dart';
 import '../../../../utilities/text_styles.dart';
@@ -354,13 +356,13 @@ class _AllTransactionsV2ViewState extends ConsumerState<AllTransactionsV2View> {
                       color: Theme.of(
                         context,
                       ).extension<StackColors>()!.background,
-                      icon: SvgPicture.asset(
+                      icon: adaptiveIcon(
                         Assets.svg.filter,
+                        CupertinoIcons.line_horizontal_3_decrease,
+                        size: 20,
                         color: Theme.of(
                           context,
                         ).extension<StackColors>()!.accentColorDark,
-                        width: 20,
-                        height: 20,
                       ),
                       onPressed: () {
                         Navigator.of(context).pushNamed(
@@ -427,10 +429,10 @@ class _AllTransactionsV2ViewState extends ConsumerState<AllTransactionsV2View> {
                                     horizontal: isDesktop ? 12 : 10,
                                     vertical: isDesktop ? 18 : 16,
                                   ),
-                                  child: SvgPicture.asset(
+                                  child: adaptiveIcon(
                                     Assets.svg.search,
-                                    width: isDesktop ? 20 : 16,
-                                    height: isDesktop ? 20 : 16,
+                                    CupertinoIcons.search,
+                                    size: isDesktop ? 20 : 16,
                                   ),
                                 ),
                                 suffixIcon: _searchController.text.isNotEmpty
@@ -466,13 +468,13 @@ class _AllTransactionsV2ViewState extends ConsumerState<AllTransactionsV2View> {
                       buttonHeight: ButtonHeight.l,
                       width: 200,
                       label: "Filter",
-                      icon: SvgPicture.asset(
+                      icon: adaptiveIcon(
                         Assets.svg.filter,
+                        CupertinoIcons.line_horizontal_3_decrease,
+                        size: 20,
                         color: Theme.of(
                           context,
                         ).extension<StackColors>()!.accentColorDark,
-                        width: 20,
-                        height: 20,
                       ),
                       onPressed: () {
                         if (isDesktop) {

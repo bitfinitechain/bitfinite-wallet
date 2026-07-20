@@ -364,15 +364,27 @@ class _CurrencyViewState extends ConsumerState<BaseCurrencySettingsView> {
                                           currenciesWithoutSelected[index],
                                         ) !=
                                         null) ...[
-                                      Text(
-                                        currencyFlagEmoji(
-                                          currenciesWithoutSelected[index],
-                                        )!,
-                                        style: const TextStyle(fontSize: 22),
+                                      // Constrain to the selector's height so
+                                      // the flag lines up with the radio and
+                                      // the currency code, not the row centre.
+                                      SizedBox(
+                                        height: 20,
+                                        child: Center(
+                                          child: Text(
+                                            currencyFlagEmoji(
+                                              currenciesWithoutSelected[index],
+                                            )!,
+                                            style: const TextStyle(
+                                              fontSize: 18,
+                                              height: 1.0,
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                       const SizedBox(width: 10),
                                     ],
-                                    Column(
+                                    Expanded(
+                                      child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
@@ -409,6 +421,7 @@ class _CurrencyViewState extends ConsumerState<BaseCurrencySettingsView> {
                                           ),
                                         ),
                                       ],
+                                    ),
                                     ),
                                   ],
                                 ),

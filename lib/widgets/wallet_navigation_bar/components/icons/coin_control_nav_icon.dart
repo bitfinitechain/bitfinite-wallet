@@ -8,9 +8,11 @@
  *
  */
 
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../themes/stack_colors.dart';
+import '../../../../utilities/ios_icon.dart';
 import '../../../../utilities/assets.dart';
 
 class CoinControlNavIcon extends StatelessWidget {
@@ -18,10 +20,10 @@ class CoinControlNavIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SvgPicture.asset(
+    return adaptiveIcon(
       Assets.svg.coinControl.gamePad,
-      height: 20,
-      width: 20,
+      CupertinoIcons.square_grid_2x2,
+      size: 20,
       color: Theme.of(context).extension<StackColors>()!.bottomNavIconIcon,
     );
   }

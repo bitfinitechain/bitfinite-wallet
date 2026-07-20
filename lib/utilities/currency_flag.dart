@@ -5,8 +5,30 @@
 /// regional-indicator code points that render as a flag. Returns null for codes
 /// that have no country (X-prefixed metals/special drawing rights such as XAU,
 /// XAG, XDR) so callers can fall back gracefully.
+/// Crypto / non-country units that appear in the base-currency list. Their
+/// first two letters collide with real country codes (BTC -> BT Bhutan,
+/// ETH -> ET Ethiopia, LTC -> LT Lithuania, BNB -> BN Brunei, DOT -> DO
+/// Dominican Republic, LINK -> LI Liechtenstein), so they must be excluded
+/// rather than flagged.
+const Set<String> _nonCountryCodes = {
+  "BTC",
+  "ETH",
+  "LTC",
+  "BCH",
+  "BNB",
+  "EOS",
+  "XRP",
+  "XLM",
+  "LINK",
+  "DOT",
+  "YFI",
+  "SATS",
+};
+
 String? currencyFlagEmoji(String currencyCode) {
   if (currencyCode.length < 2) return null;
+
+  if (_nonCountryCodes.contains(currencyCode.toUpperCase())) return null;
 
   final code = currencyCode.substring(0, 2).toUpperCase();
 

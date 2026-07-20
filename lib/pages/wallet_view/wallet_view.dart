@@ -668,10 +668,10 @@ class _WalletViewState extends ConsumerState<WalletView> {
                       ),
                     if (wallet is SignVerifyInterface && !viewOnly)
                       WalletNavigationBarItemData(
-                        icon: SvgPicture.asset(
+                        icon: adaptiveIcon(
                           Assets.svg.pencil,
-                          height: 20,
-                          width: 20,
+                          CupertinoIcons.pencil,
+                          size: 20,
                           color: Theme.of(
                             context,
                           ).extension<StackColors>()!.bottomNavIconIcon,

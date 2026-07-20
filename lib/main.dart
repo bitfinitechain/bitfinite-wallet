@@ -453,18 +453,6 @@ class _MaterialAppWithThemeState extends ConsumerState<MaterialAppWithTheme>
 
       unawaited(ref.read(baseCurrenciesProvider).update());
 
-      // Kick wallet loading off in parallel with the node/notification setup
-      // below (independent work) so the wallet appears sooner on launch.
-      final Future<void> walletLoadFuture = loadWallets
-          ? ref
-                .read(pWallets)
-                .load(
-                  ref.read(prefsChangeNotifierProvider),
-                  ref.read(mainDBProvider),
-                  false,
-                )
-          : Future<void>.value();
-
       await _nodeService.updateDefaults();
       await _nodeService.updateDefaultEpicBoxes();
       await _notificationsService.init(
@@ -473,8 +461,15 @@ class _MaterialAppWithThemeState extends ConsumerState<MaterialAppWithTheme>
         prefs: ref.read(prefsChangeNotifierProvider),
       );
       ref.read(priceAnd24hChangeNotifierProvider).start(true);
-
-      await walletLoadFuture;
+      if (loadWallets) {
+        await ref
+            .read(pWallets)
+            .load(
+              ref.read(prefsChangeNotifierProvider),
+              ref.read(mainDBProvider),
+              false,
+            );
+      }
       loadingCompleter.complete();
       // TODO: this should probably run unawaited. Keep commented out for now as proper community nodes ui hasn't been implemented yet
       //  unawaited(_nodeService.updateCommunityNodes());

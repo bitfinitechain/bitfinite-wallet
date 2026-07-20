@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/constants.dart';
+import '../../../utilities/ios_icon.dart';
 import '../../../utilities/text_styles.dart';
 
 class SettingsListButton extends StatelessWidget {
@@ -63,14 +64,22 @@ class SettingsListButton extends StatelessWidget {
                   width: 24,
                   height: 24,
                   child: Center(
-                    child: SvgPicture.asset(
-                      iconAssetName,
-                      color: Theme.of(context)
-                          .extension<StackColors>()!
-                          .accentColorDark,
-                      width: iconSize,
-                      height: iconSize,
-                    ),
+                    child: cupertinoForSettingAsset(iconAssetName) != null
+                        ? Icon(
+                            cupertinoForSettingAsset(iconAssetName),
+                            size: iconSize,
+                            color: Theme.of(context)
+                                .extension<StackColors>()!
+                                .accentColorDark,
+                          )
+                        : SvgPicture.asset(
+                            iconAssetName,
+                            color: Theme.of(context)
+                                .extension<StackColors>()!
+                                .accentColorDark,
+                            width: iconSize,
+                            height: iconSize,
+                          ),
                   ),
                 ),
               ),

@@ -11,10 +11,13 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:lottie/lottie.dart';
+
+import '../../utilities/ios_icon.dart';
 
 import '../../app_config.dart';
 import '../../providers/global/notifications_provider.dart';
@@ -342,8 +345,21 @@ class _HomeViewState extends ConsumerState<HomeView> {
                     color: Theme.of(
                       context,
                     ).extension<StackColors>()!.backgroundAppBar,
-                    icon:
-                        ref.watch(
+                    icon: Platform.isIOS
+                        ? Icon(
+                            ref.watch(
+                                  notificationsProvider.select(
+                                    (value) => value.hasUnreadNotifications,
+                                  ),
+                                )
+                                ? CupertinoIcons.bell_fill
+                                : CupertinoIcons.bell,
+                            size: 20,
+                            color: Theme.of(
+                              context,
+                            ).extension<StackColors>()!.topNavIconPrimary,
+                          )
+                        : ref.watch(
                           notificationsProvider.select(
                             (value) => value.hasUnreadNotifications,
                           ),
@@ -436,13 +452,13 @@ class _HomeViewState extends ConsumerState<HomeView> {
                     color: Theme.of(
                       context,
                     ).extension<StackColors>()!.backgroundAppBar,
-                    icon: SvgPicture.asset(
+                    icon: adaptiveIcon(
                       Assets.svg.gear,
+                      CupertinoIcons.gear_solid,
+                      size: 20,
                       color: Theme.of(
                         context,
                       ).extension<StackColors>()!.topNavIconPrimary,
-                      width: 20,
-                      height: 20,
                     ),
                     onPressed: () {
                       //todo: check if print needed

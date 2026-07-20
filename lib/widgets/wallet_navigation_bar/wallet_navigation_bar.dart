@@ -8,6 +8,9 @@
  *
  */
 
+import 'dart:ui' show ImageFilter;
+
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -19,6 +22,21 @@ import 'components/wallet_navigation_bar_item.dart';
 
 final walletNavBarMore = StateProvider.autoDispose((ref) => false);
 
+/// Native iOS (SF Symbols via CupertinoIcons) glyphs for the floating dock,
+/// keyed by action label. Returns null for labels without a mapping (caller
+/// falls back to the app's classic icon).
+const Map<String, IconData> _iosNavIcons = <String, IconData>{
+  "Receive": CupertinoIcons.arrow_down_left,
+  "Send": CupertinoIcons.arrow_up_right,
+  "More": CupertinoIcons.ellipsis,
+};
+
+Widget? iosNavIcon(String? label, Color color) {
+  final icon = _iosNavIcons[label];
+  if (icon == null) return null;
+  return Icon(icon, size: 24, color: color);
+}
+
 /// Wallet actions as first-class in-flow buttons (Receive / Send / …) with a
 /// "More" button that opens the remaining actions in a bottom sheet.
 /// Replaces the old floating bottom dock.
@@ -27,10 +45,15 @@ class WalletNavigationBar extends ConsumerWidget {
     super.key,
     required this.items,
     required this.moreItems,
+    this.floating = false,
   });
 
   final List<WalletNavigationBarItemData> items;
   final List<WalletNavigationBarItemData> moreItems;
+
+  /// When true, renders as a frosted, rounded "pill" dock (iOS style) that
+  /// hugs its content, instead of the full-width in-flow button row.
+  final bool floating;
 
   void _showMoreSheet(BuildContext context) {
     showModalBottomSheet<void>(
@@ -71,9 +94,15 @@ class WalletNavigationBar extends ConsumerWidget {
     final hasMore = moreItems.isNotEmpty;
 
     final buttons = <Widget>[
-      for (final item in items) _ActionButton(data: item),
+      for (int i = 0; i < items.length; i++)
+        _ActionButton(
+          data: items[i],
+          floating: floating,
+          highlighted: floating && i == 0,
+        ),
       if (hasMore)
         _ActionButton(
+          floating: floating,
           data: WalletNavigationBarItemData(
             label: "More",
             icon: SvgPicture.asset(
@@ -87,6 +116,49 @@ class WalletNavigationBar extends ConsumerWidget {
         ),
     ];
 
+    if (floating) {
+      return SafeArea(
+        top: false,
+        minimum: const EdgeInsets.only(bottom: 4),
+        child: Align(
+          alignment: Alignment.center,
+          heightFactor: 1.0,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: colors.bottomNavBack.withOpacity(0.86),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: colors.bottomNavIconIcon.withOpacity(0.06),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.20),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (int i = 0; i < buttons.length; i++) ...[
+                      if (i > 0) const SizedBox(width: 6),
+                      buttons[i],
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Row(
       children: [
         for (int i = 0; i < buttons.length; i++) ...[
@@ -99,13 +171,46 @@ class WalletNavigationBar extends ConsumerWidget {
 }
 
 class _ActionButton extends StatelessWidget {
-  const _ActionButton({required this.data});
+  const _ActionButton({
+    required this.data,
+    this.floating = false,
+    this.highlighted = false,
+  });
 
   final WalletNavigationBarItemData data;
+  final bool floating;
+  final bool highlighted;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<StackColors>()!;
+
+    // iOS floating dock: icon-only, no per-icon circle. The active/primary
+    // item gets a lighter rounded "chip" behind it (adopted from a modern
+    // pill-nav pattern); the rest are plain icons that chip on press.
+    if (floating) {
+      return Material(
+        color: highlighted ? colors.bottomNavIconBack : Colors.transparent,
+        borderRadius: BorderRadius.circular(18),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          highlightColor: colors.bottomNavIconBack,
+          onTap: data.onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 22),
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: Center(
+                child:
+                    iosNavIcon(data.label, colors.bottomNavIconIcon) ??
+                    SizedBox(width: 22, height: 22, child: data.icon),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return Material(
       color: colors.popupBG,
@@ -137,7 +242,7 @@ class _ActionButton extends StatelessWidget {
                     data.label ?? "",
                     style: STextStyles.buttonSmall(context).copyWith(
                       fontSize: 11.5,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                       color: colors.bottomNavText,
                     ),
                   ),

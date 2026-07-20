@@ -1818,8 +1818,15 @@ class _DetailItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(label, style: labelStyle),
-                SelectableText(detail, style: detailStyle),
+                Flexible(child: Text(label, style: labelStyle)),
+                const SizedBox(width: 12),
+                Flexible(
+                  child: SelectableText(
+                    detail,
+                    style: detailStyle,
+                    textAlign: TextAlign.end,
+                  ),
+                ),
               ],
             ),
     );

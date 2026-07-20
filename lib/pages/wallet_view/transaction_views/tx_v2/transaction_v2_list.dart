@@ -9,6 +9,7 @@
  */
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -201,6 +202,9 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
                     },
                   )
                 : ListView.builder(
+                    padding: Platform.isIOS
+                        ? const EdgeInsets.only(bottom: 92)
+                        : EdgeInsets.zero,
                     itemCount: _txns.length,
                     itemBuilder: (context, index) {
                       BorderRadius? radius;

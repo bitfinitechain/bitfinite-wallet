@@ -338,7 +338,7 @@ class _CurrencyViewState extends ConsumerState<BaseCurrencySettingsView> {
                               child: Padding(
                                 padding: const EdgeInsets.all(12.0),
                                 child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     SizedBox(
                                       width: 20,

@@ -483,6 +483,28 @@ class _SendViewState extends ConsumerState<SendView> {
           stackTrace: s,
         );
       }
+    } catch (e, s) {
+      // Anything the scanner throws that isn't a PlatformException — e.g. the
+      // native "No camera available for position 0" NSError, which fails to
+      // encode over the platform channel — would otherwise crash the app.
+      Logging.instance.e(
+        "QR scan failed in SendView",
+        error: e,
+        stackTrace: s,
+      );
+      if (mounted) {
+        unawaited(
+          showDialog<void>(
+            context: context,
+            builder: (_) => const StackOkDialog(
+              title: "Unable to open camera",
+              message:
+                  "The camera could not be opened. Check that camera access is "
+                  "allowed for BitFinite in system settings, then try again.",
+            ),
+          ),
+        );
+      }
     }
   }
 

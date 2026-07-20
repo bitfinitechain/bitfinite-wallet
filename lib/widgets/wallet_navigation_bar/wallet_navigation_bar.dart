@@ -120,11 +120,12 @@ class WalletNavigationBar extends ConsumerWidget {
       return SafeArea(
         top: false,
         minimum: const EdgeInsets.only(bottom: 4),
-        // Stretch across the width (minus a margin) rather than hugging the
-        // icons, so the dock fills the left/right margins.
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
-          child: ClipRRect(
+        // Sized between "hugs the icons" (too cramped) and "full width" (too
+        // sparse): a centred dock with a comfortable max width.
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 260),
+            child: ClipRRect(
             borderRadius: BorderRadius.circular(999),
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 45, sigmaY: 45),
@@ -161,6 +162,7 @@ class WalletNavigationBar extends ConsumerWidget {
                 ),
               ),
             ),
+          ),
           ),
         ),
       );

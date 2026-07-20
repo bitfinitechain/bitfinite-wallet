@@ -4,7 +4,23 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
+import '../themes/stack_colors.dart';
 import 'assets.dart';
+
+/// Themed "?" help icon used in app bars / inline helpers. The bare
+/// `Assets.svg.circleQuestion` bakes a dark color and disappears on dark
+/// backgrounds; routing help icons through here guarantees a theme-aware,
+/// visible color (and SF Symbol on iOS). Systematic fix for the dark-mode
+/// invisible help button.
+Widget questionHelpIcon(BuildContext context, {double size = 20, Color? color}) {
+  return adaptiveIcon(
+    Assets.svg.circleQuestion,
+    CupertinoIcons.question_circle,
+    size: size,
+    color:
+        color ?? Theme.of(context).extension<StackColors>()!.topNavIconPrimary,
+  );
+}
 
 /// Maps the app's settings-row SVG assets to native SF Symbols. Used by
 /// [SettingsListButton] so every settings row picks up the iOS icon set in one
@@ -30,6 +46,9 @@ final Map<String, IconData> _settingsAssetToCupertino = <String, IconData>{
   Assets.svg.solidSliders: CupertinoIcons.slider_horizontal_3,
   Assets.svg.key: CupertinoIcons.gear_alt_fill,
   Assets.svg.questionMessage: CupertinoIcons.question_circle_fill,
+  Assets.svg.eye: CupertinoIcons.eye_fill,
+  Assets.svg.swap: CupertinoIcons.arrow_2_squarepath,
+  Assets.svg.peers: CupertinoIcons.person_3_fill,
 };
 
 /// Renders a native SF Symbol ([CupertinoIcons]) on iOS, falling back to the

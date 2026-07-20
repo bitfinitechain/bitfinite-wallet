@@ -42,6 +42,11 @@ class TransactionsV2List extends ConsumerStatefulWidget {
 class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
   bool _hasLoaded = false;
   List<TransactionV2> _transactions = [];
+  // Cached, already-sorted+processed view of [_transactions]. Recomputed only
+  // when the underlying data changes (initial load / db watch), never per
+  // build — avoids re-querying + reprocessing the whole list on every rebuild
+  // (e.g. when returning from a transaction details page).
+  List<Object> _txns = [];
 
   late final StreamSubscription<List<TransactionV2>> _subscription;
   late final Query<TransactionV2> _query;
@@ -109,6 +114,17 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
     return processed;
   }
 
+  void _rebuildData() {
+    _transactions.sort((a, b) {
+      final compare = b.timestamp.compareTo(a.timestamp);
+      if (compare == 0) {
+        return b.id.compareTo(a.id);
+      }
+      return compare;
+    });
+    _txns = _processData(_transactions);
+  }
+
   @override
   void initState() {
     coin = ref.read(pWallets).getWallet(widget.walletId).info.coin;
@@ -130,11 +146,17 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
           sortBy: [const SortProperty(property: "timestamp", sort: Sort.desc)],
         );
 
+    // Initial load once (synchronous), then rely on the db watch for updates.
+    _transactions = _query.findAllSync();
+    _rebuildData();
+    _hasLoaded = true;
+
     _subscription = _query.watch().listen((event) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           setState(() {
             _transactions = event;
+            _rebuildData();
           });
         }
       });
@@ -151,37 +173,19 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _query.findAll(),
-      builder: (fbContext, AsyncSnapshot<List<TransactionV2>> snapshot) {
-        if (snapshot.connectionState == ConnectionState.done &&
-            snapshot.hasData) {
-          _transactions = snapshot.data!;
-          _hasLoaded = true;
-        }
-        if (!_hasLoaded) {
-          return const Column(
-            children: [
-              Spacer(),
-              Center(child: LoadingIndicator(height: 50, width: 50)),
-              Spacer(flex: 4),
-            ],
-          );
-        }
-        if (_transactions.isEmpty) {
-          return const NoTransActionsFound();
-        } else {
-          _transactions.sort((a, b) {
-            final compare = b.timestamp.compareTo(a.timestamp);
-            if (compare == 0) {
-              return b.id.compareTo(a.id);
-            }
-            return compare;
-          });
-
-          final _txns = _processData(_transactions);
-
-          return RefreshIndicator(
+    if (!_hasLoaded) {
+      return const Column(
+        children: [
+          Spacer(),
+          Center(child: LoadingIndicator(height: 50, width: 50)),
+          Spacer(flex: 4),
+        ],
+      );
+    }
+    if (_txns.isEmpty) {
+      return const NoTransActionsFound();
+    }
+    return RefreshIndicator(
             onRefresh: () async {
               await ref.read(pWallets).getWallet(widget.walletId).refresh();
             },
@@ -235,8 +239,5 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
                     },
                   ),
           );
-        }
-      },
-    );
   }
 }

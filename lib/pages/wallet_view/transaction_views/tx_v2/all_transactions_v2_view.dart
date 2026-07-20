@@ -83,10 +83,39 @@ class _AllTransactionsV2ViewState extends ConsumerState<AllTransactionsV2View> {
   late final TextEditingController _searchController;
   final searchFieldFocusNode = FocusNode();
 
+  // Query the full transaction set once and cache the future, instead of
+  // re-querying the db on every rebuild (which made returning from a
+  // transaction details page slow). Client-side filter/search/group still
+  // run per build, but that's cheap compared to the db round-trip.
+  late final Future<List<TransactionV2>> _txnsFuture;
+
   @override
   void initState() {
     walletId = widget.walletId;
     _searchController = TextEditingController();
+
+    _txnsFuture = ref
+        .read(mainDBProvider)
+        .isar
+        .transactionV2s
+        .buildQuery<TransactionV2>(
+          whereClauses: [
+            IndexWhereClause.equalTo(
+              indexName: 'walletId',
+              value: [widget.walletId],
+            ),
+          ],
+          filter: widget.contractAddress == null
+              ? ref
+                    .read(pWallets)
+                    .getWallet(widget.walletId)
+                    .transactionFilterOperation
+              : ref.read(pCurrentTokenWallet)!.transactionFilterOperation,
+          sortBy: [
+            const SortProperty(property: "timestamp", sort: Sort.desc),
+          ],
+        )
+        .findAll();
 
     super.initState();
   }
@@ -481,33 +510,7 @@ class _AllTransactionsV2ViewState extends ConsumerState<AllTransactionsV2View> {
                       .state;
 
                   return FutureBuilder(
-                    future: ref
-                        .watch(mainDBProvider)
-                        .isar
-                        .transactionV2s
-                        .buildQuery<TransactionV2>(
-                          whereClauses: [
-                            IndexWhereClause.equalTo(
-                              indexName: 'walletId',
-                              value: [widget.walletId],
-                            ),
-                          ],
-                          filter: widget.contractAddress == null
-                              ? ref
-                                    .watch(pWallets)
-                                    .getWallet(widget.walletId)
-                                    .transactionFilterOperation
-                              : ref
-                                    .read(pCurrentTokenWallet)!
-                                    .transactionFilterOperation,
-                          sortBy: [
-                            const SortProperty(
-                              property: "timestamp",
-                              sort: Sort.desc,
-                            ),
-                          ],
-                        )
-                        .findAll(),
+                    future: _txnsFuture,
                     builder: (_, AsyncSnapshot<List<TransactionV2>> snapshot) {
                       if (snapshot.connectionState == ConnectionState.done &&
                           snapshot.hasData) {

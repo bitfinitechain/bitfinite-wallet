@@ -11,6 +11,7 @@
 import 'dart:async';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,6 +26,7 @@ import '../../route_generator.dart';
 import '../../themes/stack_colors.dart';
 import '../../utilities/address_utils.dart';
 import '../../utilities/assets.dart';
+import '../../utilities/ios_icon.dart';
 import '../../utilities/clipboard_interface.dart';
 import '../../utilities/constants.dart';
 import '../../utilities/enums/derive_path_type_enum.dart';
@@ -559,13 +561,13 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
                   size: 36,
                   shadows: const [],
                   color: Theme.of(context).extension<StackColors>()!.background,
-                  icon: SvgPicture.asset(
+                  icon: adaptiveIcon(
                     Assets.svg.verticalEllipsis,
+                    CupertinoIcons.ellipsis,
+                    size: 20,
                     color: Theme.of(
                       context,
                     ).extension<StackColors>()!.accentColorDark,
-                    width: 20,
-                    height: 20,
                   ),
                   onPressed: () {
                     showDialog<dynamic>(
@@ -689,10 +691,10 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
                               iconStyleData: IconStyleData(
                                 icon: Padding(
                                   padding: const EdgeInsets.only(right: 10),
-                                  child: SvgPicture.asset(
+                                  child: adaptiveIcon(
                                     Assets.svg.chevronDown,
-                                    width: 12,
-                                    height: 6,
+                                    CupertinoIcons.chevron_down,
+                                    size: 14,
                                     color: Theme.of(context)
                                         .extension<StackColors>()!
                                         .textFieldActiveSearchIconRight,
@@ -756,10 +758,10 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
                                   const Spacer(),
                                   Row(
                                     children: [
-                                      SvgPicture.asset(
+                                      adaptiveIcon(
                                         Assets.svg.copy,
-                                        width: 10,
-                                        height: 10,
+                                        CupertinoIcons.doc_on_doc,
+                                        size: 12,
                                         color: Theme.of(context)
                                             .extension<StackColors>()!
                                             .infoItemIcons,

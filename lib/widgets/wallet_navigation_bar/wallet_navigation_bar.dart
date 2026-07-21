@@ -127,8 +127,8 @@ class WalletNavigationBar extends ConsumerWidget {
             label: "More",
             icon: SvgPicture.asset(
               Assets.svg.bars,
-              width: 20,
-              height: 20,
+              width: 24,
+              height: 24,
               color: colors.bottomNavIconIcon,
             ),
             onTap: () => _showMoreSheet(context),
@@ -273,9 +273,14 @@ class _ActionButton extends StatelessWidget {
             width: 48,
             height: 48,
             child: Center(
+              // No fixed-size box here: a SizedBox imposes tight constraints
+              // that override an icon's own width/height. The Receive/Send
+              // icons are self-sizing circles (~36px); the "More" glyph carries
+              // its own size. Forcing them all to one box ballooned the bare
+              // hamburger to fill 36px while the circles looked right.
               child:
                   iosNavIcon(data.label, colors.bottomNavIconIcon) ??
-                  SizedBox(width: 36, height: 36, child: data.icon),
+                  data.icon,
             ),
           ),
         ),

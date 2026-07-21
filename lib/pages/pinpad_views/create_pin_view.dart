@@ -123,9 +123,16 @@ class _CreatePinViewState extends ConsumerState<CreatePinView> {
                 children: [
                   Text("Create a PIN", style: STextStyles.pageTitleH1(context)),
                   const SizedBox(height: 8),
-                  Text(
-                    "This PIN protects access to your wallet.",
-                    style: STextStyles.subtitle(context),
+                  // Sits directly in a full-width Column, so without a gutter
+                  // the copy wraps flush to both screen edges and each line
+                  // left-aligns under the centred title.
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(
+                      "This PIN protects access to your wallet.",
+                      style: STextStyles.subtitle(context),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                   const SizedBox(height: 36),
                   CustomPinPut(
@@ -185,9 +192,16 @@ class _CreatePinViewState extends ConsumerState<CreatePinView> {
                 children: [
                   Text("Confirm PIN", style: STextStyles.pageTitleH1(context)),
                   const SizedBox(height: 8),
-                  Text(
-                    "This PIN protects access to your wallet.",
-                    style: STextStyles.subtitle(context),
+                  // Sits directly in a full-width Column, so without a gutter
+                  // the copy wraps flush to both screen edges and each line
+                  // left-aligns under the centred title.
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(
+                      "This PIN protects access to your wallet.",
+                      style: STextStyles.subtitle(context),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                   const SizedBox(height: 36),
                   CustomPinPut(

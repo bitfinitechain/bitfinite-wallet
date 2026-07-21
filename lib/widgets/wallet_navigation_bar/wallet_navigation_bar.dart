@@ -8,7 +8,7 @@
  *
  */
 
-import 'dart:ui' show ImageFilter;
+import 'dart:ui' show ColorFilter, ImageFilter;
 
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
@@ -30,6 +30,22 @@ const Map<String, IconData> _iosNavIcons = <String, IconData>{
   "Send": CupertinoIcons.arrow_up_right,
   "More": CupertinoIcons.ellipsis,
 };
+
+/// Gap between actions in the floating dock.
+const double _dockGap = 24;
+
+/// A colour matrix that scales saturation by [s] about luminance, matching the
+/// saturation lift iOS applies in its vibrancy materials.
+List<double> _saturate(double s) {
+  const lumR = 0.2126, lumG = 0.7152, lumB = 0.0722;
+  final r = (1 - s) * lumR, g = (1 - s) * lumG, b = (1 - s) * lumB;
+  return <double>[
+    r + s, g, b, 0, 0, //
+    r, g + s, b, 0, 0, //
+    r, g, b + s, 0, 0, //
+    0, 0, 0, 1, 0, //
+  ];
+}
 
 Widget? iosNavIcon(String? label, Color color) {
   final icon = _iosNavIcons[label];
@@ -120,32 +136,35 @@ class WalletNavigationBar extends ConsumerWidget {
       return SafeArea(
         top: false,
         minimum: const EdgeInsets.only(bottom: 4),
-        // Sized between "hugs the icons" (too cramped) and "full width" (too
-        // sparse): a centred dock with a comfortable max width.
+        // The pill hugs its actions rather than spanning a fixed width, so the
+        // spacing between icons stays consistent no matter how many there are
+        // (a fixed width left big dead gaps with only three).
         child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 260),
-            child: ClipRRect(
+          child: ClipRRect(
             borderRadius: BorderRadius.circular(999),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 45, sigmaY: 45),
+              // iOS vibrancy is a blur *plus* a saturation boost - without the
+              // boost the backdrop reads as flat grey haze instead of glass.
+              filter: ImageFilter.compose(
+                outer: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+                inner: ColorFilter.matrix(_saturate(1.7)),
+              ),
               child: Container(
                 decoration: BoxDecoration(
-                  // Frosted-glass: a very light fill over a strong blur so the
-                  // content behind clearly reads through, plus a soft specular
-                  // sheen and a bright hairline edge.
-                  color: colors.bottomNavBack.withOpacity(0.16),
                   borderRadius: BorderRadius.circular(999),
+                  // Only a whisper of fill on top of the blur, so the content
+                  // behind stays legible through the dock. NB: a `color:` here
+                  // would be silently ignored - gradient wins in BoxDecoration.
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.white.withOpacity(0.16),
-                      Colors.white.withOpacity(0.03),
+                      Colors.white.withOpacity(0.22),
+                      Colors.white.withOpacity(0.06),
                     ],
                   ),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.22),
+                    color: Colors.white.withOpacity(0.30),
                   ),
                   boxShadow: [
                     BoxShadow(
@@ -159,17 +178,17 @@ class WalletNavigationBar extends ConsumerWidget {
                   vertical: 6,
                   horizontal: 6,
                 ),
-                // Stretch the actions across the dock: the outermost ones sit
-                // flush against the left/right edges (their 48px circles
-                // nesting into the pill's rounded ends) rather than clustering
-                // in the middle with dead space at the sides.
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [for (final b in buttons) b],
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (int i = 0; i < buttons.length; i++) ...[
+                      if (i > 0) const SizedBox(width: _dockGap),
+                      buttons[i],
+                    ],
+                  ],
                 ),
               ),
             ),
-          ),
           ),
         ),
       );

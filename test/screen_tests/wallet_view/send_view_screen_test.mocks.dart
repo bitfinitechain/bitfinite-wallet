@@ -7,7 +7,7 @@ import 'dart:async' as _i3;
 
 import 'package:flutter/material.dart' as _i4;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:stackwallet/utilities/barcode_scanner_interface.dart' as _i2;
+import 'package:bitfinite/utilities/barcode_scanner_interface.dart' as _i2;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values

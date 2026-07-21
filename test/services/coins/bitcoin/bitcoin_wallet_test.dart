@@ -1,7 +1,7 @@
 import 'package:mockito/annotations.dart';
-import 'package:stackwallet/electrumx_rpc/cached_electrumx_client.dart';
-import 'package:stackwallet/electrumx_rpc/electrumx_client.dart';
-import 'package:stackwallet/services/transaction_notification_tracker.dart';
+import 'package:bitfinite/electrumx_rpc/cached_electrumx_client.dart';
+import 'package:bitfinite/electrumx_rpc/electrumx_client.dart';
+import 'package:bitfinite/services/transaction_notification_tracker.dart';
 
 @GenerateMocks([
   ElectrumXClient,

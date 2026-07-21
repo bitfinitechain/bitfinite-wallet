@@ -1,7 +1,7 @@
 import 'package:coinlib_flutter/coinlib_flutter.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stackwallet/utilities/electrum_seed_utils.dart';
-import 'package:stackwallet/utilities/extensions/extensions.dart';
+import 'package:bitfinite/utilities/electrum_seed_utils.dart';
+import 'package:bitfinite/utilities/extensions/extensions.dart';
 
 class _TestCase {
   final String words, bip32Seed, seedVersion;

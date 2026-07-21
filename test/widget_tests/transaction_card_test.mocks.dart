@@ -12,30 +12,30 @@ import 'package:isar_community/isar.dart' as _i8;
 import 'package:logger/logger.dart' as _i19;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i15;
-import 'package:stackwallet/db/isar/main_db.dart' as _i3;
-import 'package:stackwallet/models/isar/models/block_explorer.dart' as _i27;
-import 'package:stackwallet/models/isar/models/blockchain_data/v2/transaction_v2.dart'
+import 'package:bitfinite/db/isar/main_db.dart' as _i3;
+import 'package:bitfinite/models/isar/models/block_explorer.dart' as _i27;
+import 'package:bitfinite/models/isar/models/blockchain_data/v2/transaction_v2.dart'
     as _i30;
-import 'package:stackwallet/models/isar/models/contact_entry.dart' as _i26;
-import 'package:stackwallet/models/isar/models/isar_models.dart' as _i28;
-import 'package:stackwallet/models/isar/stack_theme.dart' as _i24;
-import 'package:stackwallet/networking/http.dart' as _i7;
-import 'package:stackwallet/services/locale_service.dart' as _i14;
-import 'package:stackwallet/services/node_service.dart' as _i2;
-import 'package:stackwallet/services/price_service.dart' as _i21;
-import 'package:stackwallet/services/wallets.dart' as _i9;
-import 'package:stackwallet/themes/theme_service.dart' as _i23;
-import 'package:stackwallet/utilities/amount/amount_unit.dart' as _i20;
-import 'package:stackwallet/utilities/enums/backup_frequency_type.dart' as _i18;
-import 'package:stackwallet/utilities/enums/sync_type_enum.dart' as _i17;
-import 'package:stackwallet/utilities/flutter_secure_storage_interface.dart'
+import 'package:bitfinite/models/isar/models/contact_entry.dart' as _i26;
+import 'package:bitfinite/models/isar/models/isar_models.dart' as _i28;
+import 'package:bitfinite/models/isar/stack_theme.dart' as _i24;
+import 'package:bitfinite/networking/http.dart' as _i7;
+import 'package:bitfinite/services/locale_service.dart' as _i14;
+import 'package:bitfinite/services/node_service.dart' as _i2;
+import 'package:bitfinite/services/price_service.dart' as _i21;
+import 'package:bitfinite/services/wallets.dart' as _i9;
+import 'package:bitfinite/themes/theme_service.dart' as _i23;
+import 'package:bitfinite/utilities/amount/amount_unit.dart' as _i20;
+import 'package:bitfinite/utilities/enums/backup_frequency_type.dart' as _i18;
+import 'package:bitfinite/utilities/enums/sync_type_enum.dart' as _i17;
+import 'package:bitfinite/utilities/flutter_secure_storage_interface.dart'
     as _i12;
-import 'package:stackwallet/utilities/prefs.dart' as _i13;
-import 'package:stackwallet/wallets/crypto_currency/crypto_currency.dart'
+import 'package:bitfinite/utilities/prefs.dart' as _i13;
+import 'package:bitfinite/wallets/crypto_currency/crypto_currency.dart'
     as _i4;
-import 'package:stackwallet/wallets/isar/models/wallet_info.dart' as _i11;
-import 'package:stackwallet/wallets/wallet/wallet.dart' as _i5;
-import 'package:stackwallet/wallets/wallet/wallet_mixin_interfaces/cash_fusion_interface.dart'
+import 'package:bitfinite/wallets/isar/models/wallet_info.dart' as _i11;
+import 'package:bitfinite/wallets/wallet/wallet.dart' as _i5;
+import 'package:bitfinite/wallets/wallet/wallet_mixin_interfaces/cash_fusion_interface.dart'
     as _i6;
 import 'package:tuple/tuple.dart' as _i29;
 

@@ -4,12 +4,12 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:stackwallet/exceptions/exchange/exchange_exception.dart';
-import 'package:stackwallet/models/exchange/change_now/cn_exchange_transaction.dart';
-import 'package:stackwallet/models/exchange/change_now/cn_exchange_transaction_status.dart';
-import 'package:stackwallet/models/exchange/response_objects/estimate.dart';
-import 'package:stackwallet/networking/http.dart';
-import 'package:stackwallet/services/exchange/change_now/change_now_api.dart';
+import 'package:bitfinite/exceptions/exchange/exchange_exception.dart';
+import 'package:bitfinite/models/exchange/change_now/cn_exchange_transaction.dart';
+import 'package:bitfinite/models/exchange/change_now/cn_exchange_transaction_status.dart';
+import 'package:bitfinite/models/exchange/response_objects/estimate.dart';
+import 'package:bitfinite/networking/http.dart';
+import 'package:bitfinite/services/exchange/change_now/change_now_api.dart';
 
 import 'change_now_sample_data.dart';
 import 'change_now_test.mocks.dart';

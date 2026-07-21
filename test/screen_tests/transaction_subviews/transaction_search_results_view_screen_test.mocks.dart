@@ -8,7 +8,7 @@ import 'dart:ui' as _i5;
 
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i3;
-import 'package:stackwallet/services/locale_service.dart' as _i2;
+import 'package:bitfinite/services/locale_service.dart' as _i2;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values

@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:stackwallet/models/isar/stack_theme.dart';
-import 'package:stackwallet/themes/stack_colors.dart';
-import 'package:stackwallet/themes/theme_service.dart';
-import 'package:stackwallet/widgets/desktop/desktop_scaffold.dart';
+import 'package:bitfinite/models/isar/stack_theme.dart';
+import 'package:bitfinite/themes/stack_colors.dart';
+import 'package:bitfinite/themes/theme_service.dart';
+import 'package:bitfinite/widgets/desktop/desktop_scaffold.dart';
 
 import '../../sample_data/theme_json.dart';
 import 'desktop_scaffold_test.mocks.dart';

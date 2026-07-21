@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stackwallet/wallets/crypto_currency/crypto_currency.dart';
+import 'package:bitfinite/wallets/crypto_currency/crypto_currency.dart';
 
 void main() {
   test("Length of set equals length of list (checks for duplicates)", () {

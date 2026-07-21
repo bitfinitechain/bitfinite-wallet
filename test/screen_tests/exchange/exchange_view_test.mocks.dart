@@ -10,30 +10,30 @@ import 'package:decimal/decimal.dart' as _i19;
 import 'package:logger/logger.dart' as _i9;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i7;
-import 'package:stackwallet/models/exchange/change_now/cn_exchange_transaction.dart'
+import 'package:bitfinite/models/exchange/change_now/cn_exchange_transaction.dart'
     as _i22;
-import 'package:stackwallet/models/exchange/change_now/cn_exchange_transaction_status.dart'
+import 'package:bitfinite/models/exchange/change_now/cn_exchange_transaction_status.dart'
     as _i23;
-import 'package:stackwallet/models/exchange/response_objects/estimate.dart'
+import 'package:bitfinite/models/exchange/response_objects/estimate.dart'
     as _i21;
-import 'package:stackwallet/models/exchange/response_objects/range.dart'
+import 'package:bitfinite/models/exchange/response_objects/range.dart'
     as _i20;
-import 'package:stackwallet/models/exchange/response_objects/trade.dart'
+import 'package:bitfinite/models/exchange/response_objects/trade.dart'
     as _i15;
-import 'package:stackwallet/models/isar/exchange_cache/currency.dart' as _i18;
-import 'package:stackwallet/networking/http.dart' as _i3;
-import 'package:stackwallet/services/exchange/change_now/change_now_api.dart'
+import 'package:bitfinite/models/isar/exchange_cache/currency.dart' as _i18;
+import 'package:bitfinite/networking/http.dart' as _i3;
+import 'package:bitfinite/services/exchange/change_now/change_now_api.dart'
     as _i17;
-import 'package:stackwallet/services/exchange/exchange_response.dart' as _i4;
-import 'package:stackwallet/services/trade_notes_service.dart' as _i16;
-import 'package:stackwallet/services/trade_service.dart' as _i14;
-import 'package:stackwallet/utilities/amount/amount_unit.dart' as _i11;
-import 'package:stackwallet/utilities/enums/backup_frequency_type.dart' as _i8;
-import 'package:stackwallet/utilities/enums/sync_type_enum.dart' as _i6;
-import 'package:stackwallet/utilities/prefs.dart' as _i5;
-import 'package:stackwallet/wallets/crypto_currency/crypto_currency.dart'
+import 'package:bitfinite/services/exchange/exchange_response.dart' as _i4;
+import 'package:bitfinite/services/trade_notes_service.dart' as _i16;
+import 'package:bitfinite/services/trade_service.dart' as _i14;
+import 'package:bitfinite/utilities/amount/amount_unit.dart' as _i11;
+import 'package:bitfinite/utilities/enums/backup_frequency_type.dart' as _i8;
+import 'package:bitfinite/utilities/enums/sync_type_enum.dart' as _i6;
+import 'package:bitfinite/utilities/prefs.dart' as _i5;
+import 'package:bitfinite/wallets/crypto_currency/crypto_currency.dart'
     as _i12;
-import 'package:stackwallet/wallets/wallet/wallet_mixin_interfaces/cash_fusion_interface.dart'
+import 'package:bitfinite/wallets/wallet/wallet_mixin_interfaces/cash_fusion_interface.dart'
     as _i2;
 
 // ignore_for_file: type=lint

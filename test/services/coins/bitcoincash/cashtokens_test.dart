@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:convert/convert.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hex/hex.dart';
-import 'package:stackwallet/services/coins/bitcoincash/cashtokens.dart';
+import 'package:bitfinite/services/coins/bitcoincash/cashtokens.dart';
 
 void main() {
   // Just a testing function which can be called in standalone fashion.

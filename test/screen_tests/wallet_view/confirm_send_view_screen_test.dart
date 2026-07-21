@@ -4,13 +4,13 @@
 // import 'package:mockingjay/mockingjay.dart' as mockingjay;
 import 'package:mockito/annotations.dart';
 // import 'package:mockito/mockito.dart';
-// import 'package:stackwallet/notifications/campfire_alert.dart';
-// import 'package:stackwallet/pages/wallet_view/confirm_send_view.dart';
+// import 'package:bitfinite/notifications/campfire_alert.dart';
+// import 'package:bitfinite/pages/wallet_view/confirm_send_view.dart';
 
-// import 'package:stackwallet/utilities/flutter_secure_storage_interface.dart';
-// import 'package:stackwallet/widgets/custom_buttons/gradient_button.dart';
-// import 'package:stackwallet/widgets/custom_pin_put/custom_pin_put.dart';
-// import 'package:stackwallet/widgets/custom_pin_put/pin_keyboard.dart';
+// import 'package:bitfinite/utilities/flutter_secure_storage_interface.dart';
+// import 'package:bitfinite/widgets/custom_buttons/gradient_button.dart';
+// import 'package:bitfinite/widgets/custom_pin_put/custom_pin_put.dart';
+// import 'package:bitfinite/widgets/custom_pin_put/pin_keyboard.dart';
 // import 'package:provider/provider.dart';
 //
 // import 'confirm_send_view_screen_test.mocks.dart';

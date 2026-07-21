@@ -1,6 +1,6 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stackwallet/utilities/amount/amount.dart';
+import 'package:bitfinite/utilities/amount/amount.dart';
 
 void main() {
   test("Basic Amount Constructor tests", () {

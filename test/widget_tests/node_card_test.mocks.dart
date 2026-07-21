@@ -7,12 +7,12 @@ import 'dart:async' as _i5;
 import 'dart:ui' as _i8;
 
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:stackwallet/models/epicbox_server_model.dart' as _i7;
-import 'package:stackwallet/models/node_model.dart' as _i4;
-import 'package:stackwallet/services/node_service.dart' as _i3;
-import 'package:stackwallet/utilities/flutter_secure_storage_interface.dart'
+import 'package:bitfinite/models/epicbox_server_model.dart' as _i7;
+import 'package:bitfinite/models/node_model.dart' as _i4;
+import 'package:bitfinite/services/node_service.dart' as _i3;
+import 'package:bitfinite/utilities/flutter_secure_storage_interface.dart'
     as _i2;
-import 'package:stackwallet/wallets/crypto_currency/crypto_currency.dart'
+import 'package:bitfinite/wallets/crypto_currency/crypto_currency.dart'
     as _i6;
 
 // ignore_for_file: type=lint

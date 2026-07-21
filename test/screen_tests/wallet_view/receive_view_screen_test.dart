@@ -3,12 +3,12 @@
 // import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 // import 'package:mockito/mockito.dart';
-// import 'package:stackwallet/notifications/modal_popup_dialog.dart';
-// import 'package:stackwallet/pages/wallet_view/receive_view.dart';
+// import 'package:bitfinite/notifications/modal_popup_dialog.dart';
+// import 'package:bitfinite/pages/wallet_view/receive_view.dart';
 
-// import 'package:stackwallet/utilities/clipboard_interface.dart';
-// import 'package:stackwallet/widgets/custom_buttons/gradient_button.dart';
-// import 'package:stackwallet/widgets/custom_buttons/simple_button.dart';
+// import 'package:bitfinite/utilities/clipboard_interface.dart';
+// import 'package:bitfinite/widgets/custom_buttons/gradient_button.dart';
+// import 'package:bitfinite/widgets/custom_buttons/simple_button.dart';
 // import 'package:pretty_qr_code/pretty_qr_code.dart';
 // import 'package:provider/provider.dart';
 //

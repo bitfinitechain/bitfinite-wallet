@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stackwallet/models/shopinbit/shopinbit_order_model.dart';
+import 'package:bitfinite/models/shopinbit/shopinbit_order_model.dart';
 
 // Parses "Key: Value\n" car research description; strips " EUR" from Budget.
 Map<String, String> _parseCarRequestDescription(String desc) {

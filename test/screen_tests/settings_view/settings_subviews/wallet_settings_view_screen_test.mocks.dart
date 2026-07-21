@@ -12,11 +12,11 @@ import 'package:local_auth_darwin/local_auth_darwin.dart' as _i9;
 import 'package:local_auth_windows/local_auth_windows.dart' as _i10;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i4;
-import 'package:stackwallet/electrumx_rpc/cached_electrumx_client.dart' as _i3;
-import 'package:stackwallet/electrumx_rpc/electrumx_client.dart' as _i2;
-import 'package:stackwallet/services/wallets_service.dart' as _i12;
-import 'package:stackwallet/utilities/biometrics.dart' as _i11;
-import 'package:stackwallet/wallets/crypto_currency/crypto_currency.dart'
+import 'package:bitfinite/electrumx_rpc/cached_electrumx_client.dart' as _i3;
+import 'package:bitfinite/electrumx_rpc/electrumx_client.dart' as _i2;
+import 'package:bitfinite/services/wallets_service.dart' as _i12;
+import 'package:bitfinite/utilities/biometrics.dart' as _i11;
+import 'package:bitfinite/wallets/crypto_currency/crypto_currency.dart'
     as _i6;
 
 // ignore_for_file: type=lint

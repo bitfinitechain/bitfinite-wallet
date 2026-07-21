@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stackwallet/utilities/extensions/extensions.dart';
+import 'package:bitfinite/utilities/extensions/extensions.dart';
 
 void main() {
   test("Empty list", () {

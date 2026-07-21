@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stackwallet/utilities/format.dart';
+import 'package:bitfinite/utilities/format.dart';
 
 void main() {
   group("extractDateFrom", () {

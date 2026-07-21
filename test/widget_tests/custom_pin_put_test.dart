@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stackwallet/models/isar/stack_theme.dart';
-import 'package:stackwallet/themes/stack_colors.dart';
-import 'package:stackwallet/utilities/text_styles.dart';
-import 'package:stackwallet/widgets/custom_pin_put/custom_pin_put.dart';
-import 'package:stackwallet/widgets/custom_pin_put/pin_keyboard.dart';
+import 'package:bitfinite/models/isar/stack_theme.dart';
+import 'package:bitfinite/themes/stack_colors.dart';
+import 'package:bitfinite/utilities/text_styles.dart';
+import 'package:bitfinite/widgets/custom_pin_put/custom_pin_put.dart';
+import 'package:bitfinite/widgets/custom_pin_put/pin_keyboard.dart';
 
 import '../sample_data/theme_json.dart';
 

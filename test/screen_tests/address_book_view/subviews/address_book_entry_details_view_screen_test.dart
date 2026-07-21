@@ -10,13 +10,13 @@
 // import 'package:mockingjay/mockingjay.dart' as mockingjay;
 import 'package:mockito/annotations.dart';
 // import 'package:mockito/mockito.dart';
-// import 'package:stackwallet/models/models.dart';
-// import 'package:stackwallet/pages/address_book_view/subviews/address_book_entry_details_view.dart';
-import 'package:stackwallet/services/address_book_service.dart';
-import 'package:stackwallet/services/locale_service.dart';
-// import 'package:stackwallet/utilities/clipboard_interface.dart';
-// import 'package:stackwallet/widgets/custom_buttons/gradient_button.dart';
-// import 'package:stackwallet/widgets/transaction_card.dart';
+// import 'package:bitfinite/models/models.dart';
+// import 'package:bitfinite/pages/address_book_view/subviews/address_book_entry_details_view.dart';
+import 'package:bitfinite/services/address_book_service.dart';
+import 'package:bitfinite/services/locale_service.dart';
+// import 'package:bitfinite/utilities/clipboard_interface.dart';
+// import 'package:bitfinite/widgets/custom_buttons/gradient_button.dart';
+// import 'package:bitfinite/widgets/transaction_card.dart';
 // import 'package:provider/provider.dart';
 //
 // import '../../../sample_data/transaction_data_samples.dart';

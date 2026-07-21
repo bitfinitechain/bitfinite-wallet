@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:stackwallet/pages/settings_views/global_settings_view/manage_nodes_views/add_edit_node_view.dart';
-import 'package:stackwallet/providers/global/secure_store_provider.dart';
-import 'package:stackwallet/utilities/flutter_secure_storage_interface.dart';
-import 'package:stackwallet/utilities/test_node_connection.dart';
-import 'package:stackwallet/utilities/tor_plain_net_option_enum.dart';
-import 'package:stackwallet/wallets/crypto_currency/crypto_currency.dart';
+import 'package:bitfinite/pages/settings_views/global_settings_view/manage_nodes_views/add_edit_node_view.dart';
+import 'package:bitfinite/providers/global/secure_store_provider.dart';
+import 'package:bitfinite/utilities/flutter_secure_storage_interface.dart';
+import 'package:bitfinite/utilities/test_node_connection.dart';
+import 'package:bitfinite/utilities/tor_plain_net_option_enum.dart';
+import 'package:bitfinite/wallets/crypto_currency/crypto_currency.dart';
 
 class NodeConnectionTestInvocation {
   const NodeConnectionTestInvocation({

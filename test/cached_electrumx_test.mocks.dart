@@ -10,16 +10,16 @@ import 'package:decimal/decimal.dart' as _i4;
 import 'package:logger/logger.dart' as _i13;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i8;
-import 'package:stackwallet/electrumx_rpc/electrumx_client.dart' as _i6;
-import 'package:stackwallet/models/electrumx_response/spark_models.dart' as _i3;
-import 'package:stackwallet/utilities/amount/amount_unit.dart' as _i14;
-import 'package:stackwallet/utilities/enums/backup_frequency_type.dart' as _i12;
-import 'package:stackwallet/utilities/enums/sync_type_enum.dart' as _i11;
-import 'package:stackwallet/utilities/prefs.dart' as _i10;
-import 'package:stackwallet/utilities/tor_plain_net_option_enum.dart' as _i7;
-import 'package:stackwallet/wallets/crypto_currency/crypto_currency.dart'
+import 'package:bitfinite/electrumx_rpc/electrumx_client.dart' as _i6;
+import 'package:bitfinite/models/electrumx_response/spark_models.dart' as _i3;
+import 'package:bitfinite/utilities/amount/amount_unit.dart' as _i14;
+import 'package:bitfinite/utilities/enums/backup_frequency_type.dart' as _i12;
+import 'package:bitfinite/utilities/enums/sync_type_enum.dart' as _i11;
+import 'package:bitfinite/utilities/prefs.dart' as _i10;
+import 'package:bitfinite/utilities/tor_plain_net_option_enum.dart' as _i7;
+import 'package:bitfinite/wallets/crypto_currency/crypto_currency.dart'
     as _i2;
-import 'package:stackwallet/wallets/wallet/wallet_mixin_interfaces/cash_fusion_interface.dart'
+import 'package:bitfinite/wallets/wallet/wallet_mixin_interfaces/cash_fusion_interface.dart'
     as _i5;
 
 // ignore_for_file: type=lint

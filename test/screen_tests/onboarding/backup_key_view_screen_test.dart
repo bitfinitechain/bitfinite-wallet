@@ -4,10 +4,10 @@
 // import 'package:mockingjay/mockingjay.dart' as mockingjay;
 import 'package:mockito/annotations.dart';
 // import 'package:mockito/mockito.dart';
-// import 'package:stackwallet/notifications/modal_popup_dialog.dart';
-// import 'package:stackwallet/pages/onboarding_view/backup_key_view.dart';
+// import 'package:bitfinite/notifications/modal_popup_dialog.dart';
+// import 'package:bitfinite/pages/onboarding_view/backup_key_view.dart';
 
-// import 'package:stackwallet/widgets/custom_buttons/gradient_button.dart';
+// import 'package:bitfinite/widgets/custom_buttons/gradient_button.dart';
 // import 'package:pretty_qr_code/pretty_qr_code.dart';
 // import 'package:provider/provider.dart';
 //

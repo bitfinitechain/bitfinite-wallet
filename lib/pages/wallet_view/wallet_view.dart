@@ -516,7 +516,7 @@ class _WalletViewState extends ConsumerState<WalletView> {
 
     final Widget walletDock =
                 WalletNavigationBar(
-                  floating: Platform.isIOS,
+                  floating: true,
                   items: [
                     WalletNavigationBarItemData(
                       label: "Receive",
@@ -1240,11 +1240,7 @@ class _WalletViewState extends ConsumerState<WalletView> {
                             ),
                           ),
                         ),
-              if (!Platform.isIOS)
-                Padding(
-                  padding: const EdgeInsets.only(left: 16, right: 16, top: 12),
-                  child: walletDock,
-                ),
+
                         if ((isSparkWallet ||
                                 ref
                                     .watch(pWalletInfo(walletId))
@@ -1422,13 +1418,12 @@ class _WalletViewState extends ConsumerState<WalletView> {
                     ),
                   ),
                 ),
-                  if (Platform.isIOS)
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      child: walletDock,
-                    ),
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: walletDock,
+                  ),
                 ],
               ),
               ),

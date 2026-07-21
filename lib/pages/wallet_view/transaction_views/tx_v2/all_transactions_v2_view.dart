@@ -9,7 +9,6 @@
  */
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:decimal/decimal.dart';
 import 'package:flutter/foundation.dart';
@@ -542,9 +541,7 @@ class _AllTransactionsV2ViewState extends ConsumerState<AllTransactionsV2View> {
                             rows.addAll(m.transactions);
                           }
                           return ListView.builder(
-                            padding: Platform.isIOS
-                                ? const EdgeInsets.only(bottom: 92)
-                                : EdgeInsets.zero,
+                            padding: const EdgeInsets.only(bottom: 92),
                             itemCount: rows.length,
                             itemBuilder: (_, index) {
                               final row = rows[index];

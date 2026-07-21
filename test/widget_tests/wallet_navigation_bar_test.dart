@@ -39,8 +39,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // The pill itself.
-    final dock = tester.getRect(find.byType(BackdropFilter));
+    // The pill itself. Keyed rather than found by type, because the surface is
+    // wrapped in a BackdropFilter only on iOS - Android gets a solid fill.
+    final dock = tester.getRect(find.byKey(const Key("walletDockSurface")));
 
     // Two items + the generated "More" button.
     final buttons = find.byType(InkWell);

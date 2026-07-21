@@ -8,6 +8,7 @@
  *
  */
 
+import 'dart:io' show Platform;
 import 'dart:ui' show ColorFilter, ImageFilter;
 
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
@@ -48,6 +49,9 @@ List<double> _saturate(double s) {
 }
 
 Widget? iosNavIcon(String? label, Color color) {
+  // SF Symbols are Apple's design language - on Android the dock keeps the
+  // app's own icon set, so only map these on iOS.
+  if (!Platform.isIOS) return null;
   final icon = _iosNavIcons[label];
   if (icon == null) return null;
   return Icon(icon, size: 24, color: color);
@@ -133,6 +137,54 @@ class WalletNavigationBar extends ConsumerWidget {
     ];
 
     if (floating) {
+      // Frosted glass is an iOS idiom, and BackdropFilter is measurably more
+      // expensive on low-end Android GPUs. Android gets the same dock shape
+      // over a solid themed surface instead.
+      final bool glass = Platform.isIOS;
+
+      final Widget surface = Container(
+        key: const Key("walletDockSurface"),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(999),
+          // Glass: only a whisper of fill over the blur, so content behind
+          // stays legible. NB: a `color:` alongside would be silently ignored -
+          // gradient wins in BoxDecoration.
+          gradient: glass
+              ? LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.white.withOpacity(0.22),
+                    Colors.white.withOpacity(0.06),
+                  ],
+                )
+              : null,
+          color: glass ? null : colors.popupBG,
+          border: Border.all(
+            color: glass
+                ? Colors.white.withOpacity(0.30)
+                : colors.background.withOpacity(0.6),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(glass ? 0.18 : 0.22),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (int i = 0; i < buttons.length; i++) ...[
+              if (i > 0) const SizedBox(width: _dockGap),
+              buttons[i],
+            ],
+          ],
+        ),
+      );
+
       return SafeArea(
         top: false,
         minimum: const EdgeInsets.only(bottom: 4),
@@ -142,53 +194,18 @@ class WalletNavigationBar extends ConsumerWidget {
         child: Center(
           child: ClipRRect(
             borderRadius: BorderRadius.circular(999),
-            child: BackdropFilter(
-              // iOS vibrancy is a blur *plus* a saturation boost - without the
-              // boost the backdrop reads as flat grey haze instead of glass.
-              filter: ImageFilter.compose(
-                outer: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-                inner: ColorFilter.matrix(_saturate(1.7)),
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(999),
-                  // Only a whisper of fill on top of the blur, so the content
-                  // behind stays legible through the dock. NB: a `color:` here
-                  // would be silently ignored - gradient wins in BoxDecoration.
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.white.withOpacity(0.22),
-                      Colors.white.withOpacity(0.06),
-                    ],
-                  ),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.30),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.18),
-                      blurRadius: 24,
-                      offset: const Offset(0, 8),
+            child: glass
+                ? BackdropFilter(
+                    // iOS vibrancy is a blur *plus* a saturation boost -
+                    // without the boost the backdrop reads as flat grey haze
+                    // instead of glass.
+                    filter: ImageFilter.compose(
+                      outer: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+                      inner: ColorFilter.matrix(_saturate(1.7)),
                     ),
-                  ],
-                ),
-                padding: const EdgeInsets.symmetric(
-                  vertical: 6,
-                  horizontal: 6,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (int i = 0; i < buttons.length; i++) ...[
-                      if (i > 0) const SizedBox(width: _dockGap),
-                      buttons[i],
-                    ],
-                  ],
-                ),
-              ),
-            ),
+                    child: surface,
+                  )
+                : surface,
           ),
         ),
       );
@@ -225,12 +242,16 @@ class _ActionButton extends StatelessWidget {
     // chip on press.
     if (floating) {
       return Material(
-        // A translucent white wash rather than the opaque `bottomNavIconBack`,
-        // which read as a dull grey blob sitting on top of the glass instead
-        // of part of it. White works on both themes: it lifts against a dark
-        // backdrop and stays subtle against a light one.
+        // On glass, a translucent white wash rather than the opaque
+        // `bottomNavIconBack`, which read as a dull grey blob sitting on top of
+        // the glass instead of part of it. White works on both themes: it lifts
+        // against a dark backdrop and stays subtle against a light one. On
+        // Android's solid surface there is no glass to blend with, so the
+        // theme's own highlight colour is the right choice.
         color: highlighted
-            ? Colors.white.withOpacity(0.35)
+            ? (Platform.isIOS
+                  ? Colors.white.withOpacity(0.35)
+                  : colors.bottomNavIconBack)
             : Colors.transparent,
         // Circular highlight (not a rounded rect) behind the active action.
         shape: const CircleBorder(),

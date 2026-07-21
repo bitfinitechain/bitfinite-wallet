@@ -32,9 +32,11 @@ APP=bitfinite
 VERSION="${VERSION:-0.1.0}"
 BUILD_NUM="${BUILD_NUM:-1}"
 MODE="${1:-debug}"
-# The fork hasn't changed the Dockerfile, so the upstream image matches. Swap to
-# ghcr.io/bitfinitechain/bitfinitewallet-ci:android once the fork's CI publishes one.
-IMAGE="${BFX_CI_IMAGE:-ghcr.io/cypherstack/stackwallet-ci:android}"
+# Our own CI toolchain image, published to GHCR by build-ci-image.yaml. It is
+# publicly pullable, so no `docker login` is needed. Override with BFX_CI_IMAGE
+# to fall back to upstream (ghcr.io/cypherstack/stackwallet-ci:android) if ours
+# is ever unavailable.
+IMAGE="${BFX_CI_IMAGE:-ghcr.io/bitfinitechain/bitfinitewallet-ci:android}"
 # The CI image is published for linux/amd64 only, and the Dockerfile hardcodes
 # amd64 paths (JAVA_HOME, the Go tarball) while the Android NDK ships no
 # linux-arm64 host toolchain. So pin the platform: on Apple Silicon this runs

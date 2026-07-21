@@ -192,27 +192,32 @@ class WalletNavigationBar extends ConsumerWidget {
 
       return SafeArea(
         top: false,
-        // Lift the pill off the bottom edge so it reads as floating rather than
-        // stuck to the navigation area.
-        minimum: const EdgeInsets.only(bottom: 10),
         // The pill hugs its actions rather than spanning a fixed width, so the
         // spacing between icons stays consistent no matter how many there are
         // (a fixed width left big dead gaps with only three).
-        child: Center(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(999),
-            child: glass
-                ? BackdropFilter(
-                    // iOS vibrancy is a blur *plus* a saturation boost -
-                    // without the boost the backdrop reads as flat grey haze
-                    // instead of glass.
-                    filter: ImageFilter.compose(
-                      outer: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-                      inner: ColorFilter.matrix(_saturate(1.7)),
-                    ),
-                    child: surface,
-                  )
-                : surface,
+        child: Padding(
+          // A real gap above the system navigation bar so the pill reads as
+          // floating. SafeArea's `minimum` is only a floor: with 3-button
+          // navigation the nav-bar inset already exceeds it, so the pill sat
+          // flush against the bar. Explicit bottom padding clears it on every
+          // navigation mode.
+          padding: const EdgeInsets.only(bottom: 20),
+          child: Center(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              child: glass
+                  ? BackdropFilter(
+                      // iOS vibrancy is a blur *plus* a saturation boost -
+                      // without the boost the backdrop reads as flat grey haze
+                      // instead of glass.
+                      filter: ImageFilter.compose(
+                        outer: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+                        inner: ColorFilter.matrix(_saturate(1.7)),
+                      ),
+                      child: surface,
+                    )
+                  : surface,
+            ),
           ),
         ),
       );
@@ -270,7 +275,7 @@ class _ActionButton extends StatelessWidget {
             child: Center(
               child:
                   iosNavIcon(data.label, colors.bottomNavIconIcon) ??
-                  SizedBox(width: 22, height: 22, child: data.icon),
+                  SizedBox(width: 36, height: 36, child: data.icon),
             ),
           ),
         ),

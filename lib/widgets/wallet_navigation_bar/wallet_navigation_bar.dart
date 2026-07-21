@@ -160,10 +160,15 @@ class WalletNavigationBar extends ConsumerWidget {
                 )
               : null,
           color: glass ? null : colors.popupBG,
+          // A hairline so the solid pill reads as a distinct surface on every
+          // theme - on a light theme a white pill on a light background was
+          // otherwise invisible. Derived from the dock's own text colour, so it
+          // contrasts against the surface in both light and dark themes.
           border: Border.all(
             color: glass
                 ? Colors.white.withOpacity(0.30)
-                : colors.background.withOpacity(0.6),
+                : colors.bottomNavText.withOpacity(0.22),
+            width: 1,
           ),
           boxShadow: [
             BoxShadow(
@@ -187,7 +192,9 @@ class WalletNavigationBar extends ConsumerWidget {
 
       return SafeArea(
         top: false,
-        minimum: const EdgeInsets.only(bottom: 4),
+        // Lift the pill off the bottom edge so it reads as floating rather than
+        // stuck to the navigation area.
+        minimum: const EdgeInsets.only(bottom: 10),
         // The pill hugs its actions rather than spanning a fixed width, so the
         // spacing between icons stays consistent no matter how many there are
         // (a fixed width left big dead gaps with only three).
@@ -242,16 +249,13 @@ class _ActionButton extends StatelessWidget {
     // chip on press.
     if (floating) {
       return Material(
-        // On glass, a translucent white wash rather than the opaque
-        // `bottomNavIconBack`, which read as a dull grey blob sitting on top of
-        // the glass instead of part of it. White works on both themes: it lifts
-        // against a dark backdrop and stays subtle against a light one. On
-        // Android's solid surface there is no glass to blend with, so the
-        // theme's own highlight colour is the right choice.
-        color: highlighted
-            ? (Platform.isIOS
-                  ? Colors.white.withOpacity(0.35)
-                  : colors.bottomNavIconBack)
+        // On glass (iOS) the SF glyph has no circle of its own, so the active
+        // item gets a translucent white wash behind it. On Android the icons
+        // (ReceiveNavIcon/SendNavIcon) already carry their own circle - like the
+        // transaction list - so a highlight circle here would double it up.
+        // Keep them single: no extra circle on Android.
+        color: highlighted && Platform.isIOS
+            ? Colors.white.withOpacity(0.35)
             : Colors.transparent,
         // Circular highlight (not a rounded rect) behind the active action.
         shape: const CircleBorder(),

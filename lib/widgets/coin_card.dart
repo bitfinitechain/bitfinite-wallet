@@ -14,10 +14,43 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../themes/coin_card_provider.dart';
+import '../themes/stack_colors.dart';
 import '../themes/theme_providers.dart';
 import '../utilities/assets.dart';
 import '../utilities/constants.dart';
+import '../wallets/crypto_currency/crypto_currency.dart';
 import '../wallets/isar/providers/wallet_info_provider.dart';
+
+/// Colour for text and icons drawn on top of a [CoinCard].
+///
+/// Themes carry a `textFavoriteCard` colour, but upstream authored it against
+/// their pastel coin colours (bitcoin is a light peach), so several themes
+/// specify black — which then sits illegibly on BitFinite's saturated, darker
+/// card. When the card is the generated gradient we derive the colour from
+/// that gradient instead. Themes that ship their own card artwork keep their
+/// declared colour, since it was chosen against that artwork.
+Color onCoinCardColor(
+  BuildContext context,
+  WidgetRef ref,
+  CryptoCurrency coin, {
+  bool isFavorite = true,
+}) {
+  final hasCardImageBg = isFavorite
+      ? ref.watch(coinCardFavoritesProvider(coin)) != null
+      : ref.watch(coinCardProvider(coin)) != null;
+
+  if (hasCardImageBg) {
+    return Theme.of(context).extension<StackColors>()!.textFavoriteCard;
+  }
+
+  // Sample the middle of the base -> 30%-darker gradient the card paints.
+  final base = ref.watch(pCoinColor(coin));
+  final mid = Color.alphaBlend(Colors.black.withOpacity(0.15), base);
+
+  return ThemeData.estimateBrightnessForColor(mid) == Brightness.dark
+      ? Colors.white
+      : Colors.black87;
+}
 
 class CoinCard extends ConsumerWidget {
   const CoinCard({

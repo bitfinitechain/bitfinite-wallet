@@ -194,9 +194,7 @@ class _FavoriteCardState extends ConsumerState<FavoriteCard> {
                             ref.watch(pWalletName(walletId)),
                             style: STextStyles.itemSubtitle12(context).copyWith(
                               color:
-                                  Theme.of(
-                                    context,
-                                  ).extension<StackColors>()!.textFavoriteCard,
+onCoinCardColor(context, ref, coin),
                             ),
                             overflow: TextOverflow.fade,
                           ),
@@ -246,9 +244,7 @@ class _FavoriteCardState extends ConsumerState<FavoriteCard> {
                               style: STextStyles.titleBold12(context).copyWith(
                                 fontSize: 16,
                                 color:
-                                    Theme.of(context)
-                                        .extension<StackColors>()!
-                                        .textFavoriteCard,
+onCoinCardColor(context, ref, coin),
                               ),
                             ),
                           ),
@@ -268,9 +264,7 @@ class _FavoriteCardState extends ConsumerState<FavoriteCard> {
                               ).copyWith(
                                 fontSize: 10,
                                 color:
-                                    Theme.of(context)
-                                        .extension<StackColors>()!
-                                        .textFavoriteCard,
+onCoinCardColor(context, ref, coin),
                               ),
                             ),
                         ],

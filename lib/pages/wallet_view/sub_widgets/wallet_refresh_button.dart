@@ -23,6 +23,8 @@ import '../../../utilities/util.dart';
 import '../../../wallets/isar/providers/eth/current_token_wallet_provider.dart';
 import '../../../wallets/isar/providers/solana/current_sol_token_wallet_provider.dart';
 import '../../../widgets/animated_widgets/rotating_arrows.dart';
+import '../../../widgets/coin_card.dart';
+import '../../../wallets/isar/providers/wallet_info_provider.dart';
 
 /// [eventBus] should only be set during testing
 class WalletRefreshButton extends ConsumerStatefulWidget {
@@ -157,9 +159,12 @@ class _RefreshButtonState extends ConsumerState<WalletRefreshButton> {
                     ? Theme.of(context)
                         .extension<StackColors>()!
                         .textFieldDefaultSearchIconRight
-                    : Theme.of(context)
-                        .extension<StackColors>()!
-                        .textFavoriteCard,
+                    : onCoinCardColor(
+                        context,
+                        ref,
+                        ref.watch(pWalletCoin(widget.walletId)),
+                        isFavorite: false,
+                      ),
           ),
         ),
       ),

@@ -8,6 +8,8 @@ import '../../../services/event_bus/events/global/wallet_sync_status_changed_eve
 import '../../../services/event_bus/global_event_bus.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/text_styles.dart';
+import '../../../widgets/coin_card.dart';
+import '../../../wallets/isar/providers/wallet_info_provider.dart';
 
 /// Live sync-status pill shown on the balance card ("Synced" / "Syncing" /
 /// "Offline"). Tapping it triggers a wallet refresh, replacing the old
@@ -60,7 +62,12 @@ class _WalletSyncChipState extends ConsumerState<WalletSyncChip> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<StackColors>()!;
-    final favText = colors.textFavoriteCard;
+    final favText = onCoinCardColor(
+      context,
+      ref,
+      ref.watch(pWalletCoin(widget.walletId)),
+      isFavorite: false,
+    );
 
     final (Color dotColor, String label) = switch (_status) {
       WalletSyncStatus.synced => (colors.accentColorGreen, "Synced"),

@@ -155,9 +155,16 @@ class WalletNavigationBar extends ConsumerWidget {
                     ),
                   ],
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 6,
+                  horizontal: 6,
+                ),
+                // Stretch the actions across the dock: the outermost ones sit
+                // flush against the left/right edges (their 48px circles
+                // nesting into the pill's rounded ends) rather than clustering
+                // in the middle with dead space at the sides.
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [for (final b in buttons) b],
                 ),
               ),

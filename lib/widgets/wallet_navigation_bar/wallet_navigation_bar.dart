@@ -221,17 +221,23 @@ class _ActionButton extends StatelessWidget {
     final colors = Theme.of(context).extension<StackColors>()!;
 
     // iOS floating dock: icon-only, no per-icon circle. The active/primary
-    // item gets a lighter rounded "chip" behind it (adopted from a modern
-    // pill-nav pattern); the rest are plain icons that chip on press.
+    // item gets a lighter circle behind it; the rest are plain icons that
+    // chip on press.
     if (floating) {
       return Material(
-        color: highlighted ? colors.bottomNavIconBack : Colors.transparent,
+        // A translucent white wash rather than the opaque `bottomNavIconBack`,
+        // which read as a dull grey blob sitting on top of the glass instead
+        // of part of it. White works on both themes: it lifts against a dark
+        // backdrop and stays subtle against a light one.
+        color: highlighted
+            ? Colors.white.withOpacity(0.35)
+            : Colors.transparent,
         // Circular highlight (not a rounded rect) behind the active action.
         shape: const CircleBorder(),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           customBorder: const CircleBorder(),
-          highlightColor: colors.bottomNavIconBack,
+          highlightColor: Colors.white.withOpacity(0.25),
           onTap: data.onTap,
           child: SizedBox(
             width: 48,

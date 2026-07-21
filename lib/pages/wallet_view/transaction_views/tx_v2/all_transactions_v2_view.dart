@@ -12,6 +12,7 @@ import 'dart:async';
 
 import 'package:decimal/decimal.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -29,6 +30,7 @@ import '../../../../themes/stack_colors.dart';
 import '../../../../utilities/amount/amount.dart';
 import '../../../../utilities/amount/amount_formatter.dart';
 import '../../../../utilities/assets.dart';
+import '../../../../utilities/ios_icon.dart';
 import '../../../../utilities/constants.dart';
 import '../../../../utilities/format.dart';
 import '../../../../utilities/text_styles.dart';
@@ -83,10 +85,39 @@ class _AllTransactionsV2ViewState extends ConsumerState<AllTransactionsV2View> {
   late final TextEditingController _searchController;
   final searchFieldFocusNode = FocusNode();
 
+  // Query the full transaction set once and cache the future, instead of
+  // re-querying the db on every rebuild (which made returning from a
+  // transaction details page slow). Client-side filter/search/group still
+  // run per build, but that's cheap compared to the db round-trip.
+  late final Future<List<TransactionV2>> _txnsFuture;
+
   @override
   void initState() {
     walletId = widget.walletId;
     _searchController = TextEditingController();
+
+    _txnsFuture = ref
+        .read(mainDBProvider)
+        .isar
+        .transactionV2s
+        .buildQuery<TransactionV2>(
+          whereClauses: [
+            IndexWhereClause.equalTo(
+              indexName: 'walletId',
+              value: [widget.walletId],
+            ),
+          ],
+          filter: widget.contractAddress == null
+              ? ref
+                    .read(pWallets)
+                    .getWallet(widget.walletId)
+                    .transactionFilterOperation
+              : ref.read(pCurrentTokenWallet)!.transactionFilterOperation,
+          sortBy: [
+            const SortProperty(property: "timestamp", sort: Sort.desc),
+          ],
+        )
+        .findAll();
 
     super.initState();
   }
@@ -324,13 +355,13 @@ class _AllTransactionsV2ViewState extends ConsumerState<AllTransactionsV2View> {
                       color: Theme.of(
                         context,
                       ).extension<StackColors>()!.background,
-                      icon: SvgPicture.asset(
+                      icon: adaptiveIcon(
                         Assets.svg.filter,
+                        CupertinoIcons.line_horizontal_3_decrease,
+                        size: 20,
                         color: Theme.of(
                           context,
                         ).extension<StackColors>()!.accentColorDark,
-                        width: 20,
-                        height: 20,
                       ),
                       onPressed: () {
                         Navigator.of(context).pushNamed(
@@ -397,10 +428,10 @@ class _AllTransactionsV2ViewState extends ConsumerState<AllTransactionsV2View> {
                                     horizontal: isDesktop ? 12 : 10,
                                     vertical: isDesktop ? 18 : 16,
                                   ),
-                                  child: SvgPicture.asset(
+                                  child: adaptiveIcon(
                                     Assets.svg.search,
-                                    width: isDesktop ? 20 : 16,
-                                    height: isDesktop ? 20 : 16,
+                                    CupertinoIcons.search,
+                                    size: isDesktop ? 20 : 16,
                                   ),
                                 ),
                                 suffixIcon: _searchController.text.isNotEmpty
@@ -436,13 +467,13 @@ class _AllTransactionsV2ViewState extends ConsumerState<AllTransactionsV2View> {
                       buttonHeight: ButtonHeight.l,
                       width: 200,
                       label: "Filter",
-                      icon: SvgPicture.asset(
+                      icon: adaptiveIcon(
                         Assets.svg.filter,
+                        CupertinoIcons.line_horizontal_3_decrease,
+                        size: 20,
                         color: Theme.of(
                           context,
                         ).extension<StackColors>()!.accentColorDark,
-                        width: 20,
-                        height: 20,
                       ),
                       onPressed: () {
                         if (isDesktop) {
@@ -481,33 +512,7 @@ class _AllTransactionsV2ViewState extends ConsumerState<AllTransactionsV2View> {
                       .state;
 
                   return FutureBuilder(
-                    future: ref
-                        .watch(mainDBProvider)
-                        .isar
-                        .transactionV2s
-                        .buildQuery<TransactionV2>(
-                          whereClauses: [
-                            IndexWhereClause.equalTo(
-                              indexName: 'walletId',
-                              value: [widget.walletId],
-                            ),
-                          ],
-                          filter: widget.contractAddress == null
-                              ? ref
-                                    .watch(pWallets)
-                                    .getWallet(widget.walletId)
-                                    .transactionFilterOperation
-                              : ref
-                                    .read(pCurrentTokenWallet)!
-                                    .transactionFilterOperation,
-                          sortBy: [
-                            const SortProperty(
-                              property: "timestamp",
-                              sort: Sort.desc,
-                            ),
-                          ],
-                        )
-                        .findAll(),
+                    future: _txnsFuture,
                     builder: (_, AsyncSnapshot<List<TransactionV2>> snapshot) {
                       if (snapshot.connectionState == ConnectionState.done &&
                           snapshot.hasData) {
@@ -526,6 +531,48 @@ class _AllTransactionsV2ViewState extends ConsumerState<AllTransactionsV2View> {
                         });
 
                         final monthlyList = groupTransactionsByMonth(searched);
+                        if (!isDesktop) {
+                          // Flatten month groups into a single lazy list so a
+                          // month with many transactions doesn't build every
+                          // card eagerly (this was the See-all lag).
+                          final List<Object> rows = [];
+                          for (final m in monthlyList) {
+                            rows.add(m.label);
+                            rows.addAll(m.transactions);
+                          }
+                          return ListView.builder(
+                            padding: const EdgeInsets.only(bottom: 92),
+                            itemCount: rows.length,
+                            itemBuilder: (_, index) {
+                              final row = rows[index];
+                              if (row is String) {
+                                return Padding(
+                                  padding: EdgeInsets.only(
+                                    left: 8,
+                                    right: 8,
+                                    top: index == 0 ? 4 : 20,
+                                    bottom: 8,
+                                  ),
+                                  child: Text(
+                                    row,
+                                    style: STextStyles.smallMed12(context),
+                                  ),
+                                );
+                              }
+                              final tx = row as TransactionV2;
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 3,
+                                ),
+                                child: TransactionCardV2(
+                                  key: Key("transactionCard_key_${tx.txid}"),
+                                  transaction: tx,
+                                ),
+                              );
+                            },
+                          );
+                        }
                         return ListView.builder(
                           primary: isDesktop ? false : null,
                           itemCount: monthlyList.length,

@@ -1252,8 +1252,14 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
   }
 
   Future<void> updateElectrumX() async {
+    final newNode = await _getCurrentElectrumXNode();
+
     final failovers = nodeService
         .failoverNodesFor(currency: cryptoCurrency)
+        // The primary is itself flagged isFailover, so without this the first
+        // failover hop retries the host that just failed - paying its timeout
+        // a second time before reaching a different server.
+        .where((e) => e.id != newNode.id)
         .map(
           (e) => ElectrumXNode(
             address: e.host,
@@ -1267,7 +1273,6 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
         )
         .toList();
 
-    final newNode = await _getCurrentElectrumXNode();
     try {
       await electrumXClient.closeAdapter();
     } catch (e, s) {

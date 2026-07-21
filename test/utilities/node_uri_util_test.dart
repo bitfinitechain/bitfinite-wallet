@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stackwallet/utilities/node_uri_util.dart';
+import 'package:bitfinite/utilities/node_uri_util.dart';
 
 void main() {
   test("Valid xmrrpc scheme node uri", () {

@@ -8,11 +8,13 @@
  *
  */
 
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../themes/stack_colors.dart';
 import '../../utilities/assets.dart';
+import '../../utilities/ios_icon.dart';
 import '../../utilities/util.dart';
 import '../conditional_parent.dart';
 
@@ -107,10 +109,12 @@ class AppBarBackButton extends StatelessWidget {
             ? Theme.of(context).extension<StackColors>()!.textFieldDefaultBG
             : Theme.of(context).extension<StackColors>()!.background,
         shadows: const [],
-        icon: SvgPicture.asset(
-          Assets.svg.arrowLeft,
-          width: iconSize ?? (isCompact ? 18 : 24),
-          height: iconSize ?? (isCompact ? 18 : 24),
+        icon: adaptiveIcon(
+          // Chevron rather than a full arrow, matching the iOS back affordance
+          // (CupertinoIcons.back is itself a chevron).
+          Assets.svg.chevronLeft,
+          CupertinoIcons.back,
+          size: iconSize ?? (isCompact ? 18 : 24),
           color: Theme.of(context).extension<StackColors>()!.topNavIconPrimary,
         ),
         onPressed: onPressed ?? Navigator.of(context).pop,

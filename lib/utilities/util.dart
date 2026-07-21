@@ -46,9 +46,13 @@ abstract class Util {
     }
 
     // special check for running under ipad mode in macos
+    // The iOS Simulator's library path is under .../CoreSimulator/... and lacks
+    // "/var/mobile/", so exclude it here or it would be misdetected as desktop
+    // and render the desktop layout (causing overflow) on a phone-sized screen.
     if (Platform.isIOS &&
         libraryPath != null &&
-        !libraryPath!.path.contains("/var/mobile/")) {
+        !libraryPath!.path.contains("/var/mobile/") &&
+        !libraryPath!.path.contains("/CoreSimulator/")) {
       return true;
     }
 

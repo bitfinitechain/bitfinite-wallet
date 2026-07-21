@@ -228,6 +228,7 @@ class _SVG {
   String get ellipse1 => "assets/svg/Ellipse-43.svg";
   String get ellipse2 => "assets/svg/Ellipse-42.svg";
   String get chevronRight => "assets/svg/chevron-right.svg";
+  String get chevronLeft => "assets/svg/chevron-left.svg";
   String get minimize => "assets/svg/minimize.svg";
   String get walletFa => "assets/svg/wallet-fa.svg";
   String get exchange3 => "assets/svg/exchange-3.svg";

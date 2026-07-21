@@ -1,6 +1,6 @@
 import 'package:mockito/annotations.dart';
-import 'package:stackwallet/services/wallets.dart';
-import 'package:stackwallet/themes/theme_service.dart';
+import 'package:bitfinite/services/wallets.dart';
+import 'package:bitfinite/themes/theme_service.dart';
 
 @GenerateMocks([
   Wallets,

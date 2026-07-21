@@ -8,10 +8,11 @@
  *
  */
 
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import '../../themes/stack_colors.dart';
 import '../../utilities/assets.dart';
+import '../../utilities/ios_icon.dart';
 
 class AddressBookIcon extends StatelessWidget {
   const AddressBookIcon({
@@ -27,10 +28,10 @@ class AddressBookIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SvgPicture.asset(
+    return adaptiveIcon(
       Assets.svg.addressBook,
-      width: width,
-      height: height,
+      CupertinoIcons.person_2_fill,
+      size: width,
       color: color ?? Theme.of(context).extension<StackColors>()!.textDark3,
     );
   }

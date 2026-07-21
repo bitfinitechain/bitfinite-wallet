@@ -23,6 +23,7 @@ import '../providers/global/secure_store_provider.dart';
 import '../providers/providers.dart';
 import '../themes/stack_colors.dart';
 import '../utilities/assets.dart';
+import '../utilities/ios_icon.dart';
 import '../utilities/constants.dart';
 import '../utilities/default_nodes.dart';
 import '../utilities/enums/sync_type_enum.dart';
@@ -261,19 +262,17 @@ class _NodeCardState extends ConsumerState<NodeCard> {
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: Center(
-                    child: SvgPicture.asset(
-                      Assets.svg.node,
-                      height: isDesktop ? 18 : 11,
-                      width: isDesktop ? 20 : 14,
-                      color:
-                          _node.id.startsWith(DefaultNodes.defaultNodeIdPrefix)
+                    child: adaptiveSvg(
+  Assets.svg.node,
+  size: isDesktop ? 20 : 14,
+  color: _node.id.startsWith(DefaultNodes.defaultNodeIdPrefix)
                           ? Theme.of(
                               context,
                             ).extension<StackColors>()!.accentColorDark
                           : Theme.of(
                               context,
                             ).extension<StackColors>()!.infoItemIcons,
-                    ),
+),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -287,18 +286,17 @@ class _NodeCardState extends ConsumerState<NodeCard> {
                 ),
                 const Spacer(),
                 if (!isDesktop)
-                  SvgPicture.asset(
-                    Assets.svg.network,
-                    color: _status == "Connected"
+                  adaptiveSvg(
+  Assets.svg.network,
+  size: 20,
+  color: _status == "Connected"
                         ? Theme.of(
                             context,
                           ).extension<StackColors>()!.accentColorGreen
                         : Theme.of(
                             context,
                           ).extension<StackColors>()!.buttonBackSecondary,
-                    width: 20,
-                    height: 20,
-                  ),
+),
                 if (isDesktop)
                   SvgPicture.asset(
                     _advancedIsExpanded

@@ -3,7 +3,7 @@
 // import 'package:mockingjay/mockingjay.dart' as mockingjay;
 import 'package:mockito/annotations.dart';
 // import 'package:mockito/mockito.dart';
-// import 'package:stackwallet/pages/settings_view/settings_subviews/currency_view.dart';
+// import 'package:bitfinite/pages/settings_view/settings_subviews/currency_view.dart';
 
 // import 'package:provider/provider.dart';
 //

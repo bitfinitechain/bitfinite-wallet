@@ -7,10 +7,10 @@ import 'dart:async' as _i6;
 import 'dart:typed_data' as _i7;
 
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:stackwallet/db/isar/main_db.dart' as _i2;
-import 'package:stackwallet/models/isar/stack_theme.dart' as _i5;
-import 'package:stackwallet/networking/http.dart' as _i3;
-import 'package:stackwallet/themes/theme_service.dart' as _i4;
+import 'package:bitfinite/db/isar/main_db.dart' as _i2;
+import 'package:bitfinite/models/isar/stack_theme.dart' as _i5;
+import 'package:bitfinite/networking/http.dart' as _i3;
+import 'package:bitfinite/themes/theme_service.dart' as _i4;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values

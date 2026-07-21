@@ -8,10 +8,11 @@
  *
  */
 
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import '../../themes/stack_colors.dart';
 import '../../utilities/assets.dart';
+import '../../utilities/ios_icon.dart';
 
 class ShareIcon extends StatelessWidget {
   const ShareIcon({
@@ -27,10 +28,10 @@ class ShareIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SvgPicture.asset(
+    return adaptiveIcon(
       Assets.svg.share,
-      width: width,
-      height: height,
+      CupertinoIcons.share,
+      size: width,
       color: color ?? Theme.of(context).extension<StackColors>()!.textDark3,
     );
   }

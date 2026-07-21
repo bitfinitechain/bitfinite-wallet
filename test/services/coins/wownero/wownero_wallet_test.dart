@@ -20,7 +20,7 @@ import 'dart:core';
 // import 'package:hive_ce/hive.dart';
 // import 'package:hive_test/hive_test.dart';
 // import 'package:path_provider/path_provider.dart';
-// import 'package:stackwallet/utilities/flutter_secure_storage_interface.dart';
+// import 'package:bitfinite/utilities/flutter_secure_storage_interface.dart';
 //
 // import 'wownero_wallet_test_data.dart';
 //

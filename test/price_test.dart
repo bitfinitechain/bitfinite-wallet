@@ -6,9 +6,9 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:stackwallet/db/hive/db.dart';
-import 'package:stackwallet/networking/http.dart';
-import 'package:stackwallet/services/price.dart';
+import 'package:bitfinite/db/hive/db.dart';
+import 'package:bitfinite/networking/http.dart';
+import 'package:bitfinite/services/price.dart';
 
 import 'hive/hive_ce_test_utils.dart';
 import 'price_test.mocks.dart';

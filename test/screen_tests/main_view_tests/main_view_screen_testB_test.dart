@@ -3,13 +3,13 @@
 // import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 // import 'package:mockito/mockito.dart';
-// import 'package:stackwallet/models/lelantus_fee_data.dart';
-// import 'package:stackwallet/pages/main_view.dart';
+// import 'package:bitfinite/models/lelantus_fee_data.dart';
+// import 'package:bitfinite/pages/main_view.dart';
 
-// import 'package:stackwallet/services/event_bus/events/node_connection_status_changed_event.dart';
-// import 'package:stackwallet/services/event_bus/global_event_bus.dart';
-import 'package:stackwallet/services/locale_service.dart';
-import 'package:stackwallet/services/wallets_service.dart';
+// import 'package:bitfinite/services/event_bus/events/node_connection_status_changed_event.dart';
+// import 'package:bitfinite/services/event_bus/global_event_bus.dart';
+import 'package:bitfinite/services/locale_service.dart';
+import 'package:bitfinite/services/wallets_service.dart';
 // import 'package:provider/provider.dart';
 //
 // import '../../sample_data/transaction_data_samples.dart';

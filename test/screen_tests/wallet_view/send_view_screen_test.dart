@@ -7,15 +7,15 @@
 // import 'package:mockingjay/mockingjay.dart' as mockingjay;
 import 'package:mockito/annotations.dart';
 // import 'package:mockito/mockito.dart';
-// import 'package:stackwallet/models/lelantus_fee_data.dart';
-// import 'package:stackwallet/notifications/campfire_alert.dart';
-// import 'package:stackwallet/pages/wallet_view/send_view.dart';
+// import 'package:bitfinite/models/lelantus_fee_data.dart';
+// import 'package:bitfinite/notifications/campfire_alert.dart';
+// import 'package:bitfinite/pages/wallet_view/send_view.dart';
 
-import 'package:stackwallet/utilities/barcode_scanner_interface.dart';
-// import 'package:stackwallet/utilities/clipboard_interface.dart';
-// import 'package:stackwallet/widgets/amount_input_field.dart';
-// import 'package:stackwallet/widgets/custom_buttons/gradient_button.dart';
-// import 'package:stackwallet/widgets/gradient_card.dart';
+import 'package:bitfinite/utilities/barcode_scanner_interface.dart';
+// import 'package:bitfinite/utilities/clipboard_interface.dart';
+// import 'package:bitfinite/widgets/amount_input_field.dart';
+// import 'package:bitfinite/widgets/custom_buttons/gradient_button.dart';
+// import 'package:bitfinite/widgets/gradient_card.dart';
 // import 'package:provider/provider.dart';
 //
 // import 'send_view_screen_test.mocks.dart';

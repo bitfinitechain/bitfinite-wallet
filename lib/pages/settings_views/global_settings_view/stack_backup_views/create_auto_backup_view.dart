@@ -24,6 +24,7 @@ import '../../../../providers/global/prefs_provider.dart';
 import '../../../../providers/global/secure_store_provider.dart';
 import '../../../../themes/stack_colors.dart';
 import '../../../../utilities/assets.dart';
+import '../../../../utilities/ios_icon.dart';
 import '../../../../utilities/constants.dart';
 import '../../../../utilities/flutter_secure_storage_interface.dart';
 import '../../../../utilities/format.dart';
@@ -287,14 +288,13 @@ class _EnableAutoBackupViewState extends ConsumerState<CreateAutoBackupView> {
                                   child: Row(
                                     children: [
                                       const SizedBox(width: 16),
-                                      SvgPicture.asset(
-                                        Assets.svg.folder,
-                                        color: Theme.of(
+                                      adaptiveSvg(
+  Assets.svg.folder,
+  size: 16,
+  color: Theme.of(
                                           context,
                                         ).extension<StackColors>()!.textDark3,
-                                        width: 16,
-                                        height: 16,
-                                      ),
+),
                                       const SizedBox(width: 12),
                                     ],
                                   ),
@@ -569,14 +569,13 @@ class _EnableAutoBackupViewState extends ConsumerState<CreateAutoBackupView> {
                                           padding: const EdgeInsets.only(
                                             right: 4.0,
                                           ),
-                                          child: SvgPicture.asset(
-                                            Assets.svg.chevronDown,
-                                            color: Theme.of(context)
+                                          child: adaptiveSvg(
+  Assets.svg.chevronDown,
+  size: 12,
+  color: Theme.of(context)
                                                 .extension<StackColors>()!
                                                 .textSubtitle2,
-                                            width: 12,
-                                            height: 6,
-                                          ),
+),
                                         ),
                                       ],
                                     ),

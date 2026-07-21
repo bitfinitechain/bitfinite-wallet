@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stackwallet/services/coins/bitcoincash/bch_utils.dart';
-import 'package:stackwallet/utilities/extensions/impl/string.dart';
+import 'package:bitfinite/services/coins/bitcoincash/bch_utils.dart';
+import 'package:bitfinite/utilities/extensions/impl/string.dart';
 
 void main() {
   test("script pub key check for SLP is true", () {

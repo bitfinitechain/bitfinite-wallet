@@ -287,6 +287,13 @@ class _StartupPreferencesViewState
                                                                   ),
                                                                 ),
                                                               ),
+                                                              // Without an
+                                                              // explicit size
+                                                              // the coin svg
+                                                              // expands to
+                                                              // fill the row.
+                                                              width: 20,
+                                                              height: 20,
                                                             ),
                                                             const SizedBox(
                                                               width: 10,

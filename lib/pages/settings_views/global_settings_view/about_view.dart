@@ -395,7 +395,7 @@ class AboutView extends ConsumerWidget {
                                         ..onTap = () {
                                           launchUrl(
                                             Uri.parse(
-                                              "https://bitfinitechain.org",
+                                              "https://bitfinitechain.org/terms-of-service",
                                             ),
                                             mode:
                                                 LaunchMode.externalApplication,
@@ -411,7 +411,7 @@ class AboutView extends ConsumerWidget {
                                         ..onTap = () {
                                           launchUrl(
                                             Uri.parse(
-                                              "https://bitfinitechain.org",
+                                              "https://bitfinitechain.org/privacy-policy",
                                             ),
                                             mode:
                                                 LaunchMode.externalApplication,

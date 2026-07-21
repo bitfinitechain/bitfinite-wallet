@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:stackwallet/networking/http.dart';
-import 'package:stackwallet/utilities/paynym_is_api.dart';
+import 'package:bitfinite/networking/http.dart';
+import 'package:bitfinite/utilities/paynym_is_api.dart';
 
 import 'paynym_is_api_test.mocks.dart';
 

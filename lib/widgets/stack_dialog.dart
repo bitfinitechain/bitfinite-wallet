@@ -78,6 +78,7 @@ class StackDialog extends StatelessWidget {
     this.icon,
     required this.title,
     this.message,
+    this.footer,
     this.width,
     this.padding = const EdgeInsets.all(24),
   });
@@ -86,6 +87,11 @@ class StackDialog extends StatelessWidget {
   final Widget? rightButton;
 
   final Widget? icon;
+
+  /// Full-width content shown between the message and the buttons. Use this
+  /// rather than [icon] for anything wider than a glyph - [icon] shares the
+  /// title's row, so a wide widget there squeezes the title into wrapping.
+  final Widget? footer;
 
   final String title;
   final String? message;
@@ -124,6 +130,8 @@ class StackDialog extends StatelessWidget {
                 ),
               ],
             ),
+          if (footer != null) const SizedBox(height: 12),
+          if (footer != null) footer!,
           if (leftButton != null || rightButton != null)
             const SizedBox(height: 20),
           if (leftButton != null || rightButton != null)
@@ -182,7 +190,7 @@ class StackOkDialog extends StatelessWidget {
                 Flexible(
                   child: Text(title, style: STextStyles.pageTitleH2(context)),
                 ),
-                icon != null ? icon! : Container(),
+                icon != null ? Flexible(child: icon!) : Container(),
               ],
             ),
           ),

@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:stackwallet/electrumx_rpc/cached_electrumx_client.dart';
-import 'package:stackwallet/electrumx_rpc/electrumx_client.dart';
-import 'package:stackwallet/utilities/prefs.dart';
-import 'package:stackwallet/wallets/crypto_currency/crypto_currency.dart';
+import 'package:bitfinite/electrumx_rpc/cached_electrumx_client.dart';
+import 'package:bitfinite/electrumx_rpc/electrumx_client.dart';
+import 'package:bitfinite/utilities/prefs.dart';
+import 'package:bitfinite/wallets/crypto_currency/crypto_currency.dart';
 
 import 'cached_electrumx_test.mocks.dart';
 import 'hive/hive_ce_test_utils.dart';

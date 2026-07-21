@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:hive_ce/hive.dart';
-import 'package:stackwallet/db/hive/db.dart';
+import 'package:bitfinite/db/hive/db.dart';
 
 const _helperPath = 'test/hive/hive_ce_test_utils.dart';
 const _defaultHiveCeTestTimeout = Duration(seconds: 15);

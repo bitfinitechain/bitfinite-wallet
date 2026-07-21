@@ -240,7 +240,10 @@ class _TransactionDetailsViewState
             title: "Attention",
             message:
                 "You are about to view this transaction in a block explorer. The explorer may log your IP address and link it to the transaction. Only proceed if you trust $explorer.",
-            icon: Row(
+            // Below the message rather than beside the title: at phone width
+            // this row is wide enough to squeeze "Attention" into wrapping.
+            footer: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Consumer(
                   builder: (_, ref, __) {

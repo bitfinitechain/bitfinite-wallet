@@ -22,7 +22,6 @@ import '../../../providers/providers.dart';
 import '../../../providers/wallet/public_private_balance_state_provider.dart';
 import '../../../providers/wallet/wallet_balance_toggle_state_provider.dart';
 import '../../../services/event_bus/events/global/wallet_sync_status_changed_event.dart';
-import '../../../themes/stack_colors.dart';
 import '../../../utilities/amount/amount.dart';
 import '../../../utilities/amount/amount_formatter.dart';
 import '../../../utilities/assets.dart';
@@ -34,6 +33,7 @@ import '../../../wallets/crypto_currency/coins/firo.dart';
 import '../../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../../wallets/wallet/impl/banano_wallet.dart';
 import '../../../widgets/conditional_parent.dart';
+import '../../../widgets/coin_card.dart';
 import 'wallet_balance_toggle_sheet.dart';
 import 'wallet_sync_chip.dart';
 
@@ -149,8 +149,7 @@ class WalletSummaryInfo extends ConsumerWidget {
       }
     }
 
-    final favText =
-        Theme.of(context).extension<StackColors>()!.textFavoriteCard;
+    final favText = onCoinCardColor(context, ref, coin, isFavorite: false);
     final receivingAddress = ref.watch(pWalletReceivingAddress(walletId));
     final heroStyle = STextStyles.pageTitleH1(context).copyWith(
       fontSize: 30,

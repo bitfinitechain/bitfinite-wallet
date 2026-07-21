@@ -1,11 +1,11 @@
 import 'package:mockito/annotations.dart';
-import 'package:stackwallet/db/isar/main_db.dart';
-import 'package:stackwallet/models/isar/stack_theme.dart';
-import 'package:stackwallet/services/locale_service.dart';
-import 'package:stackwallet/services/price_service.dart';
-import 'package:stackwallet/services/wallets.dart';
-import 'package:stackwallet/themes/theme_service.dart';
-import 'package:stackwallet/utilities/prefs.dart';
+import 'package:bitfinite/db/isar/main_db.dart';
+import 'package:bitfinite/models/isar/stack_theme.dart';
+import 'package:bitfinite/services/locale_service.dart';
+import 'package:bitfinite/services/price_service.dart';
+import 'package:bitfinite/services/wallets.dart';
+import 'package:bitfinite/themes/theme_service.dart';
+import 'package:bitfinite/utilities/prefs.dart';
 
 @GenerateMocks([
   Wallets,

@@ -12,6 +12,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:event_bus/event_bus.dart';
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -39,6 +40,7 @@ import '../../themes/stack_colors.dart';
 import '../../themes/theme_providers.dart';
 import '../../utilities/amount/amount.dart';
 import '../../utilities/assets.dart';
+import '../../utilities/ios_icon.dart';
 import '../../utilities/clipboard_interface.dart';
 import '../../utilities/constants.dart';
 import '../../utilities/enums/backup_frequency_type.dart';
@@ -315,27 +317,28 @@ class _WalletViewState extends ConsumerState<WalletView> {
   }
 
   Widget _buildNetworkIcon(WalletSyncStatus status) {
+    final colors = Theme.of(context).extension<StackColors>()!;
     switch (status) {
       case WalletSyncStatus.unableToSync:
-        return SvgPicture.asset(
+        return adaptiveIcon(
           Assets.svg.radioProblem,
-          color: Theme.of(context).extension<StackColors>()!.accentColorRed,
-          width: 20,
-          height: 20,
+          CupertinoIcons.wifi_slash,
+          size: 20,
+          color: colors.accentColorRed,
         );
       case WalletSyncStatus.synced:
-        return SvgPicture.asset(
+        return adaptiveIcon(
           Assets.svg.radio,
-          color: Theme.of(context).extension<StackColors>()!.accentColorGreen,
-          width: 20,
-          height: 20,
+          CupertinoIcons.wifi,
+          size: 20,
+          color: colors.accentColorGreen,
         );
       case WalletSyncStatus.syncing:
-        return SvgPicture.asset(
+        return adaptiveIcon(
           Assets.svg.radioSyncing,
-          color: Theme.of(context).extension<StackColors>()!.accentColorYellow,
-          width: 20,
-          height: 20,
+          CupertinoIcons.arrow_2_circlepath,
+          size: 20,
+          color: colors.accentColorYellow,
         );
     }
   }
@@ -511,338 +514,9 @@ class _WalletViewState extends ConsumerState<WalletView> {
 
     final viewOnly = wallet is ViewOnlyOptionInterface && wallet.isViewOnly;
 
-    return ConditionalParent(
-      condition: _rescanningOnOpen,
-      builder: (child) {
-        return WillPopScope(
-          onWillPop: () async => !_rescanningOnOpen,
-          child: Stack(
-            children: [
-              child,
-              Background(
-                child: CustomLoadingOverlay(
-                  message:
-                      "Migration in progress\nThis could take a while\nPlease don't leave this screen",
-                  subMessage: "This only needs to run once per wallet",
-                  eventBus: null,
-                  textColor: Theme.of(
-                    context,
-                  ).extension<StackColors>()!.textDark,
-                  actionButton: SecondaryButton(
-                    label: "Cancel",
-                    onPressed: () async {
-                      await showDialog<void>(
-                        context: context,
-                        builder: (context) => StackDialog(
-                          title: "Warning!",
-                          message:
-                              "Skipping this process can completely"
-                              " break your wallet. It is only meant to be done in"
-                              " emergency situations where the migration fails"
-                              " and will not let you continue. Still skip?",
-                          leftButton: SecondaryButton(
-                            label: "Cancel",
-                            onPressed: Navigator.of(
-                              context,
-                              rootNavigator: true,
-                            ).pop,
-                          ),
-                          rightButton: SecondaryButton(
-                            label: "Ok",
-                            onPressed: () {
-                              Navigator.of(context, rootNavigator: true).pop();
-                              setState(() => _rescanningOnOpen = false);
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-      child: WillPopScope(
-        onWillPop: _onWillPop,
-        child: Background(
-          child: Stack(
-            children: [
-              Scaffold(
-                backgroundColor: Theme.of(
-                  context,
-                ).extension<StackColors>()!.background,
-                appBar: AppBar(
-                  leading: AppBarBackButton(
-                    onPressed: () {
-                      _logout();
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                  titleSpacing: 0,
-                  title: Row(
-                    children: [
-                      SvgPicture.file(
-                        File(ref.watch(coinIconProvider(coin))),
-                        width: 24,
-                        height: 24,
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Text(
-                          ref.watch(pWalletName(walletId)),
-                          style: STextStyles.navBarTitle(context),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                  actions: [
-                    if (AppConfig.hasFeature(AppFeature.tor))
-                      const Padding(
-                        padding: EdgeInsets.only(
-                          top: 10,
-                          bottom: 10,
-                          right: 10,
-                        ),
-                        child: AspectRatio(
-                          aspectRatio: 1,
-                          child: SmallTorIcon(),
-                        ),
-                      ),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        top: 10,
-                        bottom: 10,
-                        right: 10,
-                      ),
-                      child: AspectRatio(
-                        aspectRatio: 1,
-                        child: AppBarIconButton(
-                          semanticsLabel:
-                              "Network Button. Takes To Network Status Page.",
-                          key: const Key("walletViewRadioButton"),
-                          size: 36,
-                          shadows: const [],
-                          color: Theme.of(
-                            context,
-                          ).extension<StackColors>()!.background,
-                          icon: _buildNetworkIcon(_currentSyncStatus),
-                          onPressed: () {
-                            Navigator.of(context).pushNamed(
-                              WalletNetworkSettingsView.routeName,
-                              arguments: Tuple3(
-                                walletId,
-                                _currentSyncStatus,
-                                _currentNodeStatus,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        top: 10,
-                        bottom: 10,
-                        right: 10,
-                      ),
-                      child: AspectRatio(
-                        aspectRatio: 1,
-                        child: AppBarIconButton(
-                          semanticsLabel:
-                              "Notifications Button. Takes To Notifications Page.",
-                          key: const Key("walletViewAlertsButton"),
-                          size: 36,
-                          shadows: const [],
-                          color: Theme.of(
-                            context,
-                          ).extension<StackColors>()!.background,
-                          icon:
-                              ref.watch(
-                                notificationsProvider.select(
-                                  (value) =>
-                                      value.hasUnreadNotificationsFor(walletId),
-                                ),
-                              )
-                              ? SvgPicture.file(
-                                  File(
-                                    ref.watch(
-                                      themeProvider.select(
-                                        (value) => value.assets.bellNew,
-                                      ),
-                                    ),
-                                  ),
-                                  width: 20,
-                                  height: 20,
-                                  color:
-                                      ref.watch(
-                                        notificationsProvider.select(
-                                          (value) =>
-                                              value.hasUnreadNotificationsFor(
-                                                walletId,
-                                              ),
-                                        ),
-                                      )
-                                      ? null
-                                      : Theme.of(context)
-                                            .extension<StackColors>()!
-                                            .topNavIconPrimary,
-                                )
-                              : SvgPicture.asset(
-                                  Assets.svg.bell,
-                                  width: 20,
-                                  height: 20,
-                                  color:
-                                      ref.watch(
-                                        notificationsProvider.select(
-                                          (value) =>
-                                              value.hasUnreadNotificationsFor(
-                                                walletId,
-                                              ),
-                                        ),
-                                      )
-                                      ? null
-                                      : Theme.of(context)
-                                            .extension<StackColors>()!
-                                            .topNavIconPrimary,
-                                ),
-                          onPressed: () {
-                            // reset unread state
-                            ref.refresh(unreadNotificationsStateProvider);
-
-                            Navigator.of(context)
-                                .pushNamed(
-                                  NotificationsView.routeName,
-                                  arguments: walletId,
-                                )
-                                .then((_) {
-                                  final Set<int> unreadNotificationIds = ref
-                                      .read(
-                                        unreadNotificationsStateProvider.state,
-                                      )
-                                      .state;
-                                  if (unreadNotificationIds.isEmpty) return;
-
-                                  final List<Future<dynamic>> futures = [];
-                                  for (
-                                    int i = 0;
-                                    i < unreadNotificationIds.length - 1;
-                                    i++
-                                  ) {
-                                    futures.add(
-                                      ref
-                                          .read(notificationsProvider)
-                                          .markAsRead(
-                                            unreadNotificationIds.elementAt(i),
-                                            false,
-                                          ),
-                                    );
-                                  }
-
-                                  // wait for multiple to update if any
-                                  Future.wait(futures).then((_) {
-                                    // only notify listeners once
-                                    ref
-                                        .read(notificationsProvider)
-                                        .markAsRead(
-                                          unreadNotificationIds.last,
-                                          true,
-                                        );
-                                  });
-                                });
-                          },
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        top: 10,
-                        bottom: 10,
-                        right: 10,
-                      ),
-                      child: AspectRatio(
-                        aspectRatio: 1,
-                        child: AppBarIconButton(
-                          semanticsLabel:
-                              "Settings Button. Takes To Wallet Settings Page.",
-                          key: const Key("walletViewSettingsButton"),
-                          size: 36,
-                          shadows: const [],
-                          color: Theme.of(
-                            context,
-                          ).extension<StackColors>()!.background,
-                          icon: SvgPicture.asset(
-                            Assets.svg.bars,
-                            color: Theme.of(
-                              context,
-                            ).extension<StackColors>()!.accentColorDark,
-                            width: 20,
-                            height: 20,
-                          ),
-                          onPressed: () {
-                            //todo: check if print needed
-                            // debugPrint("wallet view settings tapped");
-                            Navigator.of(context).pushNamed(
-                              WalletSettingsView.routeName,
-                              arguments: Tuple4(
-                                walletId,
-                                coin,
-                                _currentSyncStatus,
-                                _currentNodeStatus,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                body: SafeArea(
-                  child: Container(
-                    color: Theme.of(
-                      context,
-                    ).extension<StackColors>()!.background,
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 10),
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            // Cap the card height in landscape so the
-                            // aspect-ratio card can't balloon and overflow the
-                            // column; portrait keeps its natural full-width size.
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxHeight:
-                                    MediaQuery.of(context).orientation ==
-                                        Orientation.landscape
-                                    ? 180.0
-                                    : double.infinity,
-                              ),
-                              child: WalletSummary(
-                                walletId: walletId,
-                                aspectRatio: 1.75,
-                                initialSyncStatus:
-                                    ref
-                                        .watch(pWallets)
-                                        .getWallet(walletId)
-                                        .refreshMutex
-                                        .isLocked
-                                    ? WalletSyncStatus.syncing
-                                    : WalletSyncStatus.synced,
-                              ),
-                            ),
-                          ),
-                        ),
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 16,
-                  right: 16,
-                  top: 12,
-                ),
-                child: WalletNavigationBar(
+    final Widget walletDock =
+                WalletNavigationBar(
+                  floating: true,
                   items: [
                     WalletNavigationBarItemData(
                       label: "Receive",
@@ -994,10 +668,10 @@ class _WalletViewState extends ConsumerState<WalletView> {
                       ),
                     if (wallet is SignVerifyInterface && !viewOnly)
                       WalletNavigationBarItemData(
-                        icon: SvgPicture.asset(
+                        icon: adaptiveIcon(
                           Assets.svg.pencil,
-                          height: 20,
-                          width: 20,
+                          CupertinoIcons.pencil,
+                          size: 20,
                           color: Theme.of(
                             context,
                           ).extension<StackColors>()!.bottomNavIconIcon,
@@ -1220,8 +894,353 @@ class _WalletViewState extends ConsumerState<WalletView> {
                         },
                       ),
                   ],
+                )
+    ;
+
+    return ConditionalParent(
+      condition: _rescanningOnOpen,
+      builder: (child) {
+        return WillPopScope(
+          onWillPop: () async => !_rescanningOnOpen,
+          child: Stack(
+            children: [
+              child,
+              Background(
+                child: CustomLoadingOverlay(
+                  message:
+                      "Migration in progress\nThis could take a while\nPlease don't leave this screen",
+                  subMessage: "This only needs to run once per wallet",
+                  eventBus: null,
+                  textColor: Theme.of(
+                    context,
+                  ).extension<StackColors>()!.textDark,
+                  actionButton: SecondaryButton(
+                    label: "Cancel",
+                    onPressed: () async {
+                      await showDialog<void>(
+                        context: context,
+                        builder: (context) => StackDialog(
+                          title: "Warning!",
+                          message:
+                              "Skipping this process can completely"
+                              " break your wallet. It is only meant to be done in"
+                              " emergency situations where the migration fails"
+                              " and will not let you continue. Still skip?",
+                          leftButton: SecondaryButton(
+                            label: "Cancel",
+                            onPressed: Navigator.of(
+                              context,
+                              rootNavigator: true,
+                            ).pop,
+                          ),
+                          rightButton: SecondaryButton(
+                            label: "Ok",
+                            onPressed: () {
+                              Navigator.of(context, rootNavigator: true).pop();
+                              setState(() => _rescanningOnOpen = false);
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
+            ],
+          ),
+        );
+      },
+      child: WillPopScope(
+        onWillPop: _onWillPop,
+        child: Background(
+          child: Stack(
+            children: [
+              Scaffold(
+                backgroundColor: Theme.of(
+                  context,
+                ).extension<StackColors>()!.background,
+                appBar: AppBar(
+                  leading: AppBarBackButton(
+                    onPressed: () {
+                      _logout();
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  titleSpacing: 0,
+                  title: Row(
+                    children: [
+                      SvgPicture.file(
+                        File(ref.watch(coinIconProvider(coin))),
+                        width: 24,
+                        height: 24,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          ref.watch(pWalletName(walletId)),
+                          style: STextStyles.navBarTitle(context),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    if (AppConfig.hasFeature(AppFeature.tor))
+                      const Padding(
+                        padding: EdgeInsets.only(
+                          top: 10,
+                          bottom: 10,
+                          right: 10,
+                        ),
+                        child: AspectRatio(
+                          aspectRatio: 1,
+                          child: SmallTorIcon(),
+                        ),
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: 10,
+                        bottom: 10,
+                        right: 10,
+                      ),
+                      child: AspectRatio(
+                        aspectRatio: 1,
+                        child: AppBarIconButton(
+                          semanticsLabel:
+                              "Network Button. Takes To Network Status Page.",
+                          key: const Key("walletViewRadioButton"),
+                          size: 36,
+                          shadows: const [],
+                          color: Theme.of(
+                            context,
+                          ).extension<StackColors>()!.background,
+                          icon: _buildNetworkIcon(_currentSyncStatus),
+                          onPressed: () {
+                            Navigator.of(context).pushNamed(
+                              WalletNetworkSettingsView.routeName,
+                              arguments: Tuple3(
+                                walletId,
+                                _currentSyncStatus,
+                                _currentNodeStatus,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: 10,
+                        bottom: 10,
+                        right: 10,
+                      ),
+                      child: AspectRatio(
+                        aspectRatio: 1,
+                        child: AppBarIconButton(
+                          semanticsLabel:
+                              "Notifications Button. Takes To Notifications Page.",
+                          key: const Key("walletViewAlertsButton"),
+                          size: 36,
+                          shadows: const [],
+                          color: Theme.of(
+                            context,
+                          ).extension<StackColors>()!.background,
+                          icon: Platform.isIOS
+                              ? Icon(
+                                  ref.watch(
+                                        notificationsProvider.select(
+                                          (value) => value
+                                              .hasUnreadNotificationsFor(
+                                                walletId,
+                                              ),
+                                        ),
+                                      )
+                                      ? CupertinoIcons.bell_fill
+                                      : CupertinoIcons.bell,
+                                  size: 20,
+                                  color: Theme.of(context)
+                                      .extension<StackColors>()!
+                                      .topNavIconPrimary,
+                                )
+                              : ref.watch(
+                                notificationsProvider.select(
+                                  (value) =>
+                                      value.hasUnreadNotificationsFor(walletId),
+                                ),
+                              )
+                              ? SvgPicture.file(
+                                  File(
+                                    ref.watch(
+                                      themeProvider.select(
+                                        (value) => value.assets.bellNew,
+                                      ),
+                                    ),
+                                  ),
+                                  width: 20,
+                                  height: 20,
+                                  color:
+                                      ref.watch(
+                                        notificationsProvider.select(
+                                          (value) =>
+                                              value.hasUnreadNotificationsFor(
+                                                walletId,
+                                              ),
+                                        ),
+                                      )
+                                      ? null
+                                      : Theme.of(context)
+                                            .extension<StackColors>()!
+                                            .topNavIconPrimary,
+                                )
+                              : SvgPicture.asset(
+                                  Assets.svg.bell,
+                                  width: 20,
+                                  height: 20,
+                                  color:
+                                      ref.watch(
+                                        notificationsProvider.select(
+                                          (value) =>
+                                              value.hasUnreadNotificationsFor(
+                                                walletId,
+                                              ),
+                                        ),
+                                      )
+                                      ? null
+                                      : Theme.of(context)
+                                            .extension<StackColors>()!
+                                            .topNavIconPrimary,
+                                ),
+                          onPressed: () {
+                            // reset unread state
+                            ref.refresh(unreadNotificationsStateProvider);
+
+                            Navigator.of(context)
+                                .pushNamed(
+                                  NotificationsView.routeName,
+                                  arguments: walletId,
+                                )
+                                .then((_) {
+                                  final Set<int> unreadNotificationIds = ref
+                                      .read(
+                                        unreadNotificationsStateProvider.state,
+                                      )
+                                      .state;
+                                  if (unreadNotificationIds.isEmpty) return;
+
+                                  final List<Future<dynamic>> futures = [];
+                                  for (
+                                    int i = 0;
+                                    i < unreadNotificationIds.length - 1;
+                                    i++
+                                  ) {
+                                    futures.add(
+                                      ref
+                                          .read(notificationsProvider)
+                                          .markAsRead(
+                                            unreadNotificationIds.elementAt(i),
+                                            false,
+                                          ),
+                                    );
+                                  }
+
+                                  // wait for multiple to update if any
+                                  Future.wait(futures).then((_) {
+                                    // only notify listeners once
+                                    ref
+                                        .read(notificationsProvider)
+                                        .markAsRead(
+                                          unreadNotificationIds.last,
+                                          true,
+                                        );
+                                  });
+                                });
+                          },
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: 10,
+                        bottom: 10,
+                        right: 10,
+                      ),
+                      child: AspectRatio(
+                        aspectRatio: 1,
+                        child: AppBarIconButton(
+                          semanticsLabel:
+                              "Settings Button. Takes To Wallet Settings Page.",
+                          key: const Key("walletViewSettingsButton"),
+                          size: 36,
+                          shadows: const [],
+                          color: Theme.of(
+                            context,
+                          ).extension<StackColors>()!.background,
+                          icon: adaptiveIcon(
+                            Assets.svg.bars,
+                            CupertinoIcons.line_horizontal_3,
+                            size: 20,
+                            color: Theme.of(
+                              context,
+                            ).extension<StackColors>()!.accentColorDark,
+                          ),
+                          onPressed: () {
+                            //todo: check if print needed
+                            // debugPrint("wallet view settings tapped");
+                            Navigator.of(context).pushNamed(
+                              WalletSettingsView.routeName,
+                              arguments: Tuple4(
+                                walletId,
+                                coin,
+                                _currentSyncStatus,
+                                _currentNodeStatus,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                body: Stack(
+                children: [
+                  SafeArea(
+                  child: Container(
+                    color: Theme.of(
+                      context,
+                    ).extension<StackColors>()!.background,
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 10),
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            // Cap the card height in landscape so the
+                            // aspect-ratio card can't balloon and overflow the
+                            // column; portrait keeps its natural full-width size.
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxHeight:
+                                    MediaQuery.of(context).orientation ==
+                                        Orientation.landscape
+                                    ? 180.0
+                                    : double.infinity,
+                              ),
+                              child: WalletSummary(
+                                walletId: walletId,
+                                aspectRatio: 1.75,
+                                initialSyncStatus:
+                                    ref
+                                        .watch(pWallets)
+                                        .getWallet(walletId)
+                                        .refreshMutex
+                                        .isLocked
+                                    ? WalletSyncStatus.syncing
+                                    : WalletSyncStatus.synced,
+                              ),
+                            ),
+                          ),
+                        ),
+
                         if ((isSparkWallet ||
                                 ref
                                     .watch(pWalletInfo(walletId))
@@ -1399,6 +1418,14 @@ class _WalletViewState extends ConsumerState<WalletView> {
                     ),
                   ),
                 ),
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: walletDock,
+                  ),
+                ],
+              ),
               ),
             ],
           ),

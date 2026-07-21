@@ -23,6 +23,7 @@ import '../../../../../providers/providers.dart';
 import '../../../../../providers/stack_restore/stack_restoring_ui_state_provider.dart';
 import '../../../../../themes/stack_colors.dart';
 import '../../../../../utilities/assets.dart';
+import '../../../../../utilities/ios_icon.dart';
 import '../../../../../utilities/enums/stack_restoring_status.dart';
 import '../../../../../utilities/logger.dart';
 import '../../../../../utilities/text_styles.dart';
@@ -312,15 +313,13 @@ class _StackRestoreProgressViewState
                                   context,
                                 ).extension<StackColors>()!.buttonBackSecondary,
                             child: Center(
-                              child: SvgPicture.asset(
-                                Assets.svg.gear,
-                                width: 16,
-                                height: 16,
-                                color:
-                                    Theme.of(
+                              child: adaptiveSvg(
+  Assets.svg.gear,
+  size: 16,
+  color: Theme.of(
                                       context,
                                     ).extension<StackColors>()!.accentColorDark,
-                              ),
+),
                             ),
                           ),
                         ),
@@ -357,15 +356,13 @@ class _StackRestoreProgressViewState
                                       .extension<StackColors>()!
                                       .buttonBackSecondary,
                               child: Center(
-                                child: SvgPicture.asset(
-                                  Assets.svg.gear,
-                                  width: 16,
-                                  height: 16,
-                                  color:
-                                      Theme.of(context)
+                                child: adaptiveSvg(
+  Assets.svg.gear,
+  size: 16,
+  color: Theme.of(context)
                                           .extension<StackColors>()!
                                           .accentColorDark,
-                                ),
+),
                               ),
                             ),
                           ),
@@ -498,15 +495,13 @@ class _StackRestoreProgressViewState
                                   context,
                                 ).extension<StackColors>()!.buttonBackSecondary,
                             child: Center(
-                              child: SvgPicture.asset(
-                                Assets.svg.node,
-                                width: 16,
-                                height: 16,
-                                color:
-                                    Theme.of(
+                              child: adaptiveSvg(
+  Assets.svg.node,
+  size: 16,
+  color: Theme.of(
                                       context,
                                     ).extension<StackColors>()!.accentColorDark,
-                              ),
+),
                             ),
                           ),
                         ),
@@ -543,15 +538,13 @@ class _StackRestoreProgressViewState
                                       .extension<StackColors>()!
                                       .buttonBackSecondary,
                               child: Center(
-                                child: SvgPicture.asset(
-                                  Assets.svg.node,
-                                  width: 16,
-                                  height: 16,
-                                  color:
-                                      Theme.of(context)
+                                child: adaptiveSvg(
+  Assets.svg.node,
+  size: 16,
+  color: Theme.of(context)
                                           .extension<StackColors>()!
                                           .accentColorDark,
-                                ),
+),
                               ),
                             ),
                           ),
@@ -592,15 +585,13 @@ class _StackRestoreProgressViewState
                                   context,
                                 ).extension<StackColors>()!.buttonBackSecondary,
                             child: Center(
-                              child: SvgPicture.asset(
-                                Assets.svg.arrowsTwoWay,
-                                width: 16,
-                                height: 16,
-                                color:
-                                    Theme.of(
+                              child: adaptiveSvg(
+  Assets.svg.arrowsTwoWay,
+  size: 16,
+  color: Theme.of(
                                       context,
                                     ).extension<StackColors>()!.accentColorDark,
-                              ),
+),
                             ),
                           ),
                         ),
@@ -637,15 +628,13 @@ class _StackRestoreProgressViewState
                                       .extension<StackColors>()!
                                       .buttonBackSecondary,
                               child: Center(
-                                child: SvgPicture.asset(
-                                  Assets.svg.arrowsTwoWay,
-                                  width: 16,
-                                  height: 16,
-                                  color:
-                                      Theme.of(context)
+                                child: adaptiveSvg(
+  Assets.svg.arrowsTwoWay,
+  size: 16,
+  color: Theme.of(context)
                                           .extension<StackColors>()!
                                           .accentColorDark,
-                                ),
+),
                               ),
                             ),
                           ),

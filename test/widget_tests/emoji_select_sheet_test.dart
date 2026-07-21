@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockingjay/mockingjay.dart' as mockingjay;
-import 'package:stackwallet/models/isar/stack_theme.dart';
-import 'package:stackwallet/themes/stack_colors.dart';
-import 'package:stackwallet/widgets/emoji_select_sheet.dart';
+import 'package:bitfinite/models/isar/stack_theme.dart';
+import 'package:bitfinite/themes/stack_colors.dart';
+import 'package:bitfinite/widgets/emoji_select_sheet.dart';
 
 import '../sample_data/theme_json.dart';
 

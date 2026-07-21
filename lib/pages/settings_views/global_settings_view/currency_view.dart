@@ -17,6 +17,7 @@ import '../../../providers/providers.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/assets.dart';
 import '../../../utilities/constants.dart';
+import '../../../utilities/currency_flag.dart';
 import '../../../utilities/text_styles.dart';
 import '../../../utilities/util.dart';
 import '../../../widgets/background.dart';
@@ -337,7 +338,7 @@ class _CurrencyViewState extends ConsumerState<BaseCurrencySettingsView> {
                               child: Padding(
                                 padding: const EdgeInsets.all(12.0),
                                 child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     SizedBox(
                                       width: 20,
@@ -359,7 +360,31 @@ class _CurrencyViewState extends ConsumerState<BaseCurrencySettingsView> {
                                       ),
                                     ),
                                     const SizedBox(width: 12),
-                                    Column(
+                                    if (currencyFlagEmoji(
+                                          currenciesWithoutSelected[index],
+                                        ) !=
+                                        null) ...[
+                                      // Constrain to the selector's height so
+                                      // the flag lines up with the radio and
+                                      // the currency code, not the row centre.
+                                      SizedBox(
+                                        height: 20,
+                                        child: Center(
+                                          child: Text(
+                                            currencyFlagEmoji(
+                                              currenciesWithoutSelected[index],
+                                            )!,
+                                            style: const TextStyle(
+                                              fontSize: 18,
+                                              height: 1.0,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                    ],
+                                    Expanded(
+                                      child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
@@ -396,6 +421,7 @@ class _CurrencyViewState extends ConsumerState<BaseCurrencySettingsView> {
                                           ),
                                         ),
                                       ],
+                                    ),
                                     ),
                                   ],
                                 ),

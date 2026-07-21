@@ -29,11 +29,11 @@ class SendNavIcon extends StatelessWidget {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(6.0),
+        padding: const EdgeInsets.all(10.0),
         child: SvgPicture.asset(
           Assets.svg.arrowUpRight,
-          width: 12,
-          height: 12,
+          width: 16,
+          height: 16,
           color: Theme.of(context).extension<StackColors>()!.bottomNavIconIcon,
         ),
       ),

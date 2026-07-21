@@ -1,9 +1,9 @@
 import 'package:decimal/decimal.dart';
 import 'package:mockito/annotations.dart';
-import 'package:stackwallet/services/locale_service.dart';
-import 'package:stackwallet/services/wallets.dart';
-import 'package:stackwallet/themes/theme_service.dart';
-import 'package:stackwallet/utilities/amount/amount.dart';
+import 'package:bitfinite/services/locale_service.dart';
+import 'package:bitfinite/services/wallets.dart';
+import 'package:bitfinite/themes/theme_service.dart';
+import 'package:bitfinite/utilities/amount/amount.dart';
 
 /// quick amount constructor wrapper. Using an int is bad practice but for
 /// testing with small amounts this should be fine

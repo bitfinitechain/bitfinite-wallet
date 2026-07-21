@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stackwallet/utilities/dynamic_object.dart';
+import 'package:bitfinite/utilities/dynamic_object.dart';
 
 void main() {
   test("DynamicObject get success", () {

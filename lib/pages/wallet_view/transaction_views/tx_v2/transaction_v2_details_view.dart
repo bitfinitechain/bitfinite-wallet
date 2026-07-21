@@ -1818,8 +1818,15 @@ class _DetailItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(label, style: labelStyle),
-                SelectableText(detail, style: detailStyle),
+                Flexible(child: Text(label, style: labelStyle)),
+                const SizedBox(width: 12),
+                Flexible(
+                  child: SelectableText(
+                    detail,
+                    style: detailStyle,
+                    textAlign: TextAlign.end,
+                  ),
+                ),
               ],
             ),
     );
@@ -1857,7 +1864,10 @@ class _TxidDetailItemState extends ConsumerState<_TxidDetailItem> {
           return StackDialog(
             title: "Attention",
             message: warningMessage,
-            icon: Row(
+            // Below the message rather than beside the title: at phone width
+            // this row is wide enough to squeeze "Attention" into wrapping.
+            footer: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Consumer(
                   builder: (_, ref, __) {
@@ -1879,9 +1889,11 @@ class _TxidDetailItemState extends ConsumerState<_TxidDetailItem> {
                     );
                   },
                 ),
-                Text(
-                  "Never show again",
-                  style: STextStyles.smallMed14(context),
+                Flexible(
+                  child: Text(
+                    "Never show again",
+                    style: STextStyles.smallMed14(context),
+                  ),
                 ),
               ],
             ),

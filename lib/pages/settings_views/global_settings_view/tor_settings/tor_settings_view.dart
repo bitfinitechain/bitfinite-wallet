@@ -20,6 +20,7 @@ import '../../../../services/event_bus/events/global/tor_connection_status_chang
 import '../../../../services/tor_service.dart';
 import '../../../../themes/stack_colors.dart';
 import '../../../../utilities/assets.dart';
+import '../../../../utilities/ios_icon.dart';
 import '../../../../utilities/constants.dart';
 import '../../../../utilities/logger.dart';
 import '../../../../utilities/stack_file_system.dart';
@@ -63,7 +64,7 @@ class _TorSettingsViewState extends ConsumerState<TorSettingsView> {
             AspectRatio(
               aspectRatio: 1,
               child: AppBarIconButton(
-                icon: SvgPicture.asset(Assets.svg.circleQuestion),
+                icon: questionHelpIcon(context),
                 onPressed: () {
                   showDialog<dynamic>(
                     context: context,

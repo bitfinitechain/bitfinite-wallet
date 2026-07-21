@@ -1,12 +1,12 @@
 // TODO MWC
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stackwallet/app_config.dart';
-import 'package:stackwallet/db/hive/db.dart';
-import 'package:stackwallet/models/node_model.dart';
-import 'package:stackwallet/services/node_service.dart';
-import 'package:stackwallet/utilities/flutter_secure_storage_interface.dart';
-import 'package:stackwallet/wallets/crypto_currency/crypto_currency.dart';
+import 'package:bitfinite/app_config.dart';
+import 'package:bitfinite/db/hive/db.dart';
+import 'package:bitfinite/models/node_model.dart';
+import 'package:bitfinite/services/node_service.dart';
+import 'package:bitfinite/utilities/flutter_secure_storage_interface.dart';
+import 'package:bitfinite/wallets/crypto_currency/crypto_currency.dart';
 
 import '../hive/hive_ce_test_utils.dart';
 

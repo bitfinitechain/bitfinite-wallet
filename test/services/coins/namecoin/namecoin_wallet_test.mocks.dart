@@ -8,13 +8,13 @@ import 'dart:async' as _i8;
 import 'package:decimal/decimal.dart' as _i4;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i7;
-import 'package:stackwallet/electrumx_rpc/cached_electrumx_client.dart' as _i9;
-import 'package:stackwallet/electrumx_rpc/electrumx_client.dart' as _i5;
-import 'package:stackwallet/models/electrumx_response/spark_models.dart' as _i3;
-import 'package:stackwallet/services/transaction_notification_tracker.dart'
+import 'package:bitfinite/electrumx_rpc/cached_electrumx_client.dart' as _i9;
+import 'package:bitfinite/electrumx_rpc/electrumx_client.dart' as _i5;
+import 'package:bitfinite/models/electrumx_response/spark_models.dart' as _i3;
+import 'package:bitfinite/services/transaction_notification_tracker.dart'
     as _i10;
-import 'package:stackwallet/utilities/tor_plain_net_option_enum.dart' as _i6;
-import 'package:stackwallet/wallets/crypto_currency/crypto_currency.dart'
+import 'package:bitfinite/utilities/tor_plain_net_option_enum.dart' as _i6;
+import 'package:bitfinite/wallets/crypto_currency/crypto_currency.dart'
     as _i2;
 
 // ignore_for_file: type=lint

@@ -28,4 +28,10 @@ paths = [
 ]
 regexes = [
   '''(?i)(YOUR_|CHANGE_?ME|EXAMPLE|PLACEHOLDER|dummy|<[a-z_.]+>|\$\{[^}]+\}|process\.env|import\.meta\.env|username:password|user:pass|USER:PASSWORD)''',
+  # Upstream Stack Wallet public constants, NOT BFX secrets (allowlisted by exact value):
+  #  - Trocador exchange aggregator key, shipped publicly by upstream; the exchange
+  #    feature is stubbed in BFX builds so it is inert here.
+  '''8rFqf7QLxX1mUBiNPEMaLUpV2biz6n''',
+  #  - USDC SPL token mint address on Solana: a public on-chain identifier, not a key.
+  '''EPjFWaJUwYUoRwzwkH4H8gNB7zHW9tLT6NCKB8S4yh6h''',
 ]

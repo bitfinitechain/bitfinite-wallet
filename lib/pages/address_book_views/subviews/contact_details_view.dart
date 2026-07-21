@@ -25,6 +25,7 @@ import '../../../providers/ui/address_book_providers/address_entry_data_provider
 import '../../../themes/coin_icon_provider.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/assets.dart';
+import '../../../utilities/ios_icon.dart';
 import '../../../utilities/clipboard_interface.dart';
 import '../../../utilities/text_styles.dart';
 import '../../../widgets/background.dart';
@@ -141,19 +142,17 @@ class _ContactDetailsViewState extends ConsumerState<ContactDetailsView> {
                   size: 36,
                   shadows: const [],
                   color: Theme.of(context).extension<StackColors>()!.background,
-                  icon: SvgPicture.asset(
-                    Assets.svg.star,
-                    color:
-                        _contact.isFavorite
+                  icon: adaptiveSvg(
+  Assets.svg.star,
+  size: 20,
+  color: _contact.isFavorite
                             ? Theme.of(
                               context,
                             ).extension<StackColors>()!.favoriteStarActive
                             : Theme.of(
                               context,
                             ).extension<StackColors>()!.favoriteStarInactive,
-                    width: 20,
-                    height: 20,
-                  ),
+),
                   onPressed: () {
                     final bool isFavorite = _contact.isFavorite;
 
@@ -175,15 +174,13 @@ class _ContactDetailsViewState extends ConsumerState<ContactDetailsView> {
                   size: 36,
                   shadows: const [],
                   color: Theme.of(context).extension<StackColors>()!.background,
-                  icon: SvgPicture.asset(
-                    Assets.svg.trash,
-                    color:
-                        Theme.of(
+                  icon: adaptiveSvg(
+  Assets.svg.trash,
+  size: 20,
+  color: Theme.of(
                           context,
                         ).extension<StackColors>()!.accentColorDark,
-                    width: 20,
-                    height: 20,
-                  ),
+),
                   onPressed: () {
                     showDialog<dynamic>(
                       context: context,
@@ -259,11 +256,10 @@ class _ContactDetailsViewState extends ConsumerState<ContactDetailsView> {
                           child: Center(
                             child:
                                 _contact.emojiChar == null
-                                    ? SvgPicture.asset(
-                                      Assets.svg.user,
-                                      height: 24,
-                                      width: 24,
-                                    )
+                                    ? adaptiveSvg(
+  Assets.svg.user,
+  size: 24,
+)
                                     : Text(
                                       _contact.emojiChar!,
                                       style: STextStyles.pageTitleH1(context),
@@ -299,15 +295,13 @@ class _ContactDetailsViewState extends ConsumerState<ContactDetailsView> {
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: Row(
                               children: [
-                                SvgPicture.asset(
-                                  Assets.svg.pencil,
-                                  width: 10,
-                                  height: 10,
-                                  color:
-                                      Theme.of(context)
+                                adaptiveSvg(
+  Assets.svg.pencil,
+  size: 10,
+  color: Theme.of(context)
                                           .extension<StackColors>()!
                                           .accentColorDark,
-                                ),
+),
                                 const SizedBox(width: 4),
                                 Text(
                                   "Edit",
@@ -400,15 +394,13 @@ class _ContactDetailsViewState extends ConsumerState<ContactDetailsView> {
                                               .extension<StackColors>()!
                                               .textFieldDefaultBG,
                                       padding: const EdgeInsets.all(6),
-                                      child: SvgPicture.asset(
-                                        Assets.svg.pencil,
-                                        width: 14,
-                                        height: 14,
-                                        color:
-                                            Theme.of(context)
+                                      child: adaptiveSvg(
+  Assets.svg.pencil,
+  size: 14,
+  color: Theme.of(context)
                                                 .extension<StackColors>()!
                                                 .accentColorDark,
-                                      ),
+),
                                     ),
                                   ),
                                   const SizedBox(width: 4),
@@ -430,15 +422,13 @@ class _ContactDetailsViewState extends ConsumerState<ContactDetailsView> {
                                               .extension<StackColors>()!
                                               .textFieldDefaultBG,
                                       padding: const EdgeInsets.all(6),
-                                      child: SvgPicture.asset(
-                                        Assets.svg.copy,
-                                        width: 16,
-                                        height: 16,
-                                        color:
-                                            Theme.of(context)
+                                      child: adaptiveSvg(
+  Assets.svg.copy,
+  size: 16,
+  color: Theme.of(context)
                                                 .extension<StackColors>()!
                                                 .accentColorDark,
-                                      ),
+),
                                     ),
                                   ),
                                 ],

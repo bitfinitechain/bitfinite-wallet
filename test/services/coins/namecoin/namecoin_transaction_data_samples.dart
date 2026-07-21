@@ -1,4 +1,4 @@
-import 'package:stackwallet/models/paymint/transactions_model.dart';
+import 'package:bitfinite/models/paymint/transactions_model.dart';
 
 final transactionData = TransactionData.fromMap({
   "3ef543d0887c3e9f9924f1b2d3b21410d0238937364663ed3414a2c2ddf4ccc6": tx1,

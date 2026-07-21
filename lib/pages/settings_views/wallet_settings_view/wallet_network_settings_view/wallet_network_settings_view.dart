@@ -30,6 +30,7 @@ import '../../../../services/event_bus/global_event_bus.dart';
 import '../../../../services/tor_service.dart';
 import '../../../../themes/stack_colors.dart';
 import '../../../../utilities/assets.dart';
+import '../../../../utilities/ios_icon.dart';
 import '../../../../utilities/constants.dart';
 import '../../../../utilities/text_styles.dart';
 import '../../../../utilities/util.dart';
@@ -406,14 +407,13 @@ class _WalletNetworkSettingsViewState
                         color: Theme.of(
                           context,
                         ).extension<StackColors>()!.background,
-                        icon: SvgPicture.asset(
-                          Assets.svg.verticalEllipsis,
-                          color: Theme.of(
+                        icon: adaptiveSvg(
+  Assets.svg.verticalEllipsis,
+  size: 20,
+  color: Theme.of(
                             context,
                           ).extension<StackColors>()!.accentColorDark,
-                          width: 20,
-                          height: 20,
-                        ),
+),
                         onPressed: () {
                           showDialog<dynamic>(
                             barrierColor: Colors.transparent,
@@ -541,14 +541,13 @@ class _WalletNetworkSettingsViewState
                       borderRadius: BorderRadius.circular(_iconSize),
                     ),
                     child: Center(
-                      child: SvgPicture.asset(
-                        Assets.svg.radio,
-                        height: isDesktop ? 19 : 14,
-                        width: isDesktop ? 19 : 14,
-                        color: Theme.of(
+                      child: adaptiveSvg(
+  Assets.svg.radio,
+  size: isDesktop ? 19 : 14,
+  color: Theme.of(
                           context,
                         ).extension<StackColors>()!.accentColorGreen,
-                      ),
+),
                     ),
                   ),
                   SizedBox(width: _boxPadding),
@@ -604,14 +603,13 @@ class _WalletNetworkSettingsViewState
                       borderRadius: BorderRadius.circular(_iconSize),
                     ),
                     child: Center(
-                      child: SvgPicture.asset(
-                        Assets.svg.radioSyncing,
-                        height: 14,
-                        width: 14,
-                        color: Theme.of(
+                      child: adaptiveSvg(
+  Assets.svg.radioSyncing,
+  size: 14,
+  color: Theme.of(
                           context,
                         ).extension<StackColors>()!.accentColorYellow,
-                      ),
+),
                     ),
                   ),
                   SizedBox(width: _boxPadding),
@@ -705,14 +703,13 @@ class _WalletNetworkSettingsViewState
                       borderRadius: BorderRadius.circular(_iconSize),
                     ),
                     child: Center(
-                      child: SvgPicture.asset(
-                        Assets.svg.radioProblem,
-                        height: 14,
-                        width: 14,
-                        color: Theme.of(
+                      child: adaptiveSvg(
+  Assets.svg.radioProblem,
+  size: 14,
+  color: Theme.of(
                           context,
                         ).extension<StackColors>()!.accentColorRed,
-                      ),
+),
                     ),
                   ),
                   SizedBox(width: _boxPadding),
@@ -853,14 +850,13 @@ class _WalletNetworkSettingsViewState
                         borderRadius: BorderRadius.circular(_iconSize),
                       ),
                       child: Center(
-                        child: SvgPicture.asset(
-                          Assets.svg.tor,
-                          height: isDesktop ? 19 : 14,
-                          width: isDesktop ? 19 : 14,
-                          color: Theme.of(
+                        child: adaptiveSvg(
+  Assets.svg.tor,
+  size: isDesktop ? 19 : 14,
+  color: Theme.of(
                             context,
                           ).extension<StackColors>()!.accentColorGreen,
-                        ),
+),
                       ),
                     ),
                   if (!ref.watch(
@@ -876,14 +872,13 @@ class _WalletNetworkSettingsViewState
                         borderRadius: BorderRadius.circular(_iconSize),
                       ),
                       child: Center(
-                        child: SvgPicture.asset(
-                          Assets.svg.tor,
-                          height: isDesktop ? 19 : 14,
-                          width: isDesktop ? 19 : 14,
-                          color: Theme.of(
+                        child: adaptiveSvg(
+  Assets.svg.tor,
+  size: isDesktop ? 19 : 14,
+  color: Theme.of(
                             context,
                           ).extension<StackColors>()!.textDark,
-                        ),
+),
                       ),
                     ),
                   SizedBox(width: _boxPadding),
@@ -1017,13 +1012,13 @@ class _WalletNetworkSettingsViewState
                             borderRadius: BorderRadius.circular(_iconSize),
                           ),
                           child: Center(
-                            child: SvgPicture.asset(
-                              Assets.svg.networkWired,
-                              width: 24,
-                              color: Theme.of(
+                            child: adaptiveSvg(
+  Assets.svg.networkWired,
+  size: 24,
+  color: Theme.of(
                                 context,
                               ).extension<StackColors>()!.textDark,
-                            ),
+),
                           ),
                         ),
                         const SizedBox(width: 10),

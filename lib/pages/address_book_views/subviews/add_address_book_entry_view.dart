@@ -21,6 +21,7 @@ import '../../../providers/ui/address_book_providers/contact_name_is_not_empty_s
 import '../../../providers/ui/address_book_providers/valid_contact_state_provider.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/assets.dart';
+import '../../../utilities/ios_icon.dart';
 import '../../../utilities/clipboard_interface.dart';
 import '../../../utilities/constants.dart';
 import '../../../utilities/text_styles.dart';
@@ -162,19 +163,17 @@ class _AddAddressBookEntryViewState
                           Theme.of(
                             context,
                           ).extension<StackColors>()!.background,
-                      icon: SvgPicture.asset(
-                        Assets.svg.star,
-                        color:
-                            _isFavorite
+                      icon: adaptiveSvg(
+  Assets.svg.star,
+  size: 20,
+  color: _isFavorite
                                 ? Theme.of(
                                   context,
                                 ).extension<StackColors>()!.favoriteStarActive
                                 : Theme.of(context)
                                     .extension<StackColors>()!
                                     .favoriteStarInactive,
-                        width: 20,
-                        height: 20,
-                      ),
+),
                       onPressed: () {
                         setState(() {
                           _isFavorite = !_isFavorite;
@@ -306,11 +305,10 @@ class _AddAddressBookEntryViewState
                                             child: Center(
                                               child:
                                                   _selectedEmoji == null
-                                                      ? SvgPicture.asset(
-                                                        Assets.svg.user,
-                                                        height: 30,
-                                                        width: 30,
-                                                      )
+                                                      ? adaptiveSvg(
+  Assets.svg.user,
+  size: 30,
+)
                                                       : Text(
                                                         _selectedEmoji!.char,
                                                         style:
@@ -338,28 +336,24 @@ class _AddAddressBookEntryViewState
                                               child: Center(
                                                 child:
                                                     _selectedEmoji == null
-                                                        ? SvgPicture.asset(
-                                                          Assets.svg.plus,
-                                                          color:
-                                                              Theme.of(context)
+                                                        ? adaptiveSvg(
+  Assets.svg.plus,
+  size: 12,
+  color: Theme.of(context)
                                                                   .extension<
                                                                     StackColors
                                                                   >()!
                                                                   .textWhite,
-                                                          width: 12,
-                                                          height: 12,
-                                                        )
-                                                        : SvgPicture.asset(
-                                                          Assets.svg.thickX,
-                                                          color:
-                                                              Theme.of(context)
+)
+                                                        : adaptiveSvg(
+  Assets.svg.thickX,
+  size: 8,
+  color: Theme.of(context)
                                                                   .extension<
                                                                     StackColors
                                                                   >()!
                                                                   .textWhite,
-                                                          width: 8,
-                                                          height: 8,
-                                                        ),
+),
                                               ),
                                             ),
                                           ),
@@ -482,11 +476,10 @@ class _AddAddressBookEntryViewState
                                           child: Center(
                                             child:
                                                 _selectedEmoji == null
-                                                    ? SvgPicture.asset(
-                                                      Assets.svg.user,
-                                                      height: 24,
-                                                      width: 24,
-                                                    )
+                                                    ? adaptiveSvg(
+  Assets.svg.user,
+  size: 24,
+)
                                                     : Text(
                                                       _selectedEmoji!.char,
                                                       style:
@@ -512,28 +505,24 @@ class _AddAddressBookEntryViewState
                                             child: Center(
                                               child:
                                                   _selectedEmoji == null
-                                                      ? SvgPicture.asset(
-                                                        Assets.svg.plus,
-                                                        color:
-                                                            Theme.of(context)
+                                                      ? adaptiveSvg(
+  Assets.svg.plus,
+  size: 12,
+  color: Theme.of(context)
                                                                 .extension<
                                                                   StackColors
                                                                 >()!
                                                                 .textWhite,
-                                                        width: 12,
-                                                        height: 12,
-                                                      )
-                                                      : SvgPicture.asset(
-                                                        Assets.svg.thickX,
-                                                        color:
-                                                            Theme.of(context)
+)
+                                                      : adaptiveSvg(
+  Assets.svg.thickX,
+  size: 8,
+  color: Theme.of(context)
                                                                 .extension<
                                                                   StackColors
                                                                 >()!
                                                                 .textWhite,
-                                                        width: 8,
-                                                        height: 8,
-                                                      ),
+),
                                             ),
                                           ),
                                         ),

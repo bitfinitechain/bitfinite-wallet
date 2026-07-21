@@ -1864,7 +1864,9 @@ class _TxidDetailItemState extends ConsumerState<_TxidDetailItem> {
           return StackDialog(
             title: "Attention",
             message: warningMessage,
-            icon: Row(
+            // Below the message rather than beside the title: at phone width
+            // this row is wide enough to squeeze "Attention" into wrapping.
+            footer: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Consumer(

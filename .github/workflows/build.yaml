@@ -38,7 +38,7 @@ jobs:
       contents: read
       packages: read
     container:
-      image: ghcr.io/${{ github.repository_owner }}/stackwallet-ci:latest
+      image: ghcr.io/${{ github.repository_owner }}/bitfinitewallet-ci:latest
       credentials:
         username: ${{ github.actor }}
         password: ${{ github.token }}
@@ -115,7 +115,7 @@ jobs:
       contents: read
       packages: read
     container:
-      image: ghcr.io/${{ github.repository_owner }}/stackwallet-ci:android
+      image: ghcr.io/${{ github.repository_owner }}/bitfinitewallet-ci:android
       credentials:
         username: ${{ github.actor }}
         password: ${{ github.token }}
@@ -511,7 +511,7 @@ jobs:
       contents: read
       packages: read
     container:
-      image: ghcr.io/${{ github.repository_owner }}/stackwallet-ci:latest
+      image: ghcr.io/${{ github.repository_owner }}/bitfinitewallet-ci:latest
       credentials:
         username: ${{ github.actor }}
         password: ${{ github.token }}
@@ -575,7 +575,7 @@ jobs:
       contents: read
       packages: read
     container:
-      image: ghcr.io/${{ github.repository_owner }}/stackwallet-ci:latest
+      image: ghcr.io/${{ github.repository_owner }}/bitfinitewallet-ci:latest
       credentials:
         username: ${{ github.actor }}
         password: ${{ github.token }}
@@ -756,7 +756,7 @@ jobs:
       contents: read
       packages: read
     container:
-      image: ghcr.io/${{ github.repository_owner }}/stackwallet-ci:android
+      image: ghcr.io/${{ github.repository_owner }}/bitfinitewallet-ci:android
       credentials:
         username: ${{ github.actor }}
         password: ${{ github.token }}
@@ -1214,7 +1214,7 @@ jobs:
       contents: read
       packages: read
     container:
-      image: ghcr.io/${{ github.repository_owner }}/stackwallet-ci:android
+      image: ghcr.io/${{ github.repository_owner }}/bitfinitewallet-ci:android
       credentials:
         username: ${{ github.actor }}
         password: ${{ github.token }}

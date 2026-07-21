@@ -33,7 +33,7 @@ VERSION="${VERSION:-0.1.0}"
 BUILD_NUM="${BUILD_NUM:-1}"
 MODE="${1:-debug}"
 # The fork hasn't changed the Dockerfile, so the upstream image matches. Swap to
-# ghcr.io/bitfinitechain/stackwallet-ci:android once the fork's CI publishes one.
+# ghcr.io/bitfinitechain/bitfinitewallet-ci:android once the fork's CI publishes one.
 IMAGE="${BFX_CI_IMAGE:-ghcr.io/cypherstack/stackwallet-ci:android}"
 # The CI image is published for linux/amd64 only, and the Dockerfile hardcodes
 # amd64 paths (JAVA_HOME, the Go tarball) while the Android NDK ships no

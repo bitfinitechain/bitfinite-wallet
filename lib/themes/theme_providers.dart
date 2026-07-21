@@ -47,5 +47,10 @@ final pCoinColor = StateProvider.family<Color, CryptoCurrency>(
       ref.watch(
         themeProvider.select((value) => value.coinColors[coin.mainNetId]),
       ) ??
-      Colors.deepOrangeAccent,
+      // Themes carried over from upstream only define colours for the coins
+      // upstream ships, so they have no entry for BitFinite. Fall back to the
+      // theme's own primary colour rather than a fixed orange, which clashed
+      // with every non-orange theme (e.g. the wallet card rendered orange on
+      // the green Forest theme).
+      ref.watch(themeProvider.select((value) => value.buttonBackPrimary)),
 );

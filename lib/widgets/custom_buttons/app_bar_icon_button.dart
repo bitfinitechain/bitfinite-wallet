@@ -110,7 +110,9 @@ class AppBarBackButton extends StatelessWidget {
             : Theme.of(context).extension<StackColors>()!.background,
         shadows: const [],
         icon: adaptiveIcon(
-          Assets.svg.arrowLeft,
+          // Chevron rather than a full arrow, matching the iOS back affordance
+          // (CupertinoIcons.back is itself a chevron).
+          Assets.svg.chevronLeft,
           CupertinoIcons.back,
           size: iconSize ?? (isCompact ? 18 : 24),
           color: Theme.of(context).extension<StackColors>()!.topNavIconPrimary,

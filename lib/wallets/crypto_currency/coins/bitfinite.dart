@@ -296,8 +296,9 @@ class Bitfinite extends Bip39HDCurrency with ElectrumXCurrencyInterface {
       network == CryptoCurrencyNetwork.main
           ? [
             // Secondary public Electrum server (raw ElectrumX SSL on the
-            // carrier-safe port 443). isFailover:true → the wallet auto-fails
-            // over here when electr.bitfinitechain.org is unreachable.
+            // carrier-safe port 443). isFailover:true → ElectrumXClient moves
+            // here when a request to the primary fails, and stays here for
+            // subsequent requests rather than retrying the primary each time.
             NodeModel(
               host: "electrum2.bitfinitechain.org",
               port: 443,

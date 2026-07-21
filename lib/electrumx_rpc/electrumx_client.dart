@@ -101,6 +101,16 @@ class ElectrumXClient {
   late TorService _torService;
 
   late final List<ElectrumXNode> _failovers;
+
+  /// Which server requests currently go to: -1 is the primary, >= 0 indexes
+  /// [_failovers].
+  ///
+  /// This is deliberately *sticky*. It used to reset to -1 on every successful
+  /// request, so once the primary degraded every single request paid its full
+  /// timeout again before failing over — leaving the wallet effectively stuck
+  /// on "timed out" even though a healthy failover was configured. Staying on
+  /// whichever server just worked is reset by [updateElectrumX] (node changes,
+  /// reconnects) and by exhausting the failover list.
   int currentFailoverIndex = -1;
 
   final Duration connectionTimeoutForSpecialCaseJsonRPCClients;
@@ -382,7 +392,9 @@ class ElectrumXClient {
         );
       }
 
-      currentFailoverIndex = -1;
+      // NB: deliberately not resetting currentFailoverIndex here - see its
+      // declaration. Sticking to the server that just answered is what stops
+      // every request re-paying a degraded primary's timeout.
 
       // If the command is a ping, a good return should always be null.
       if (command.contains("ping")) {
@@ -488,7 +500,7 @@ class ElectrumXClient {
       //   throw Exception("JSONRPC response error: $error");
       // }
 
-      currentFailoverIndex = -1;
+      // Sticky on success - see currentFailoverIndex's declaration.
       return response;
     } on WifiOnlyException {
       rethrow;

@@ -79,6 +79,7 @@ import '../../widgets/icon_widgets/clipboard_icon.dart';
 import '../../widgets/icon_widgets/qrcode_icon.dart';
 import '../../widgets/icon_widgets/x_icon.dart';
 import '../../widgets/mwc_txs_method_toggle.dart';
+import '../../widgets/receive_send_switch.dart';
 import '../../widgets/rounded_white_container.dart';
 import '../../widgets/stack_dialog.dart';
 import '../../widgets/stack_text_field.dart';
@@ -1723,9 +1724,11 @@ class _SendViewState extends ConsumerState<SendView> {
               }
             },
           ),
-          title: Text(
-            "Send ${coin.ticker}",
-            style: STextStyles.navBarTitle(context),
+          centerTitle: true,
+          title: ReceiveSendSwitch(
+            current: TransferTab.send,
+            walletId: walletId,
+            coin: coin,
           ),
         ),
         body: SafeArea(

@@ -53,6 +53,7 @@ import '../../widgets/desktop/primary_button.dart';
 import '../../widgets/desktop/secondary_button.dart';
 import '../../widgets/dialogs/s_dialog.dart';
 import '../../widgets/qr.dart';
+import '../../widgets/receive_send_switch.dart';
 import '../../widgets/rounded_white_container.dart';
 import '../../widgets/stack_dialog.dart';
 import 'addresses/wallet_addresses_view.dart';
@@ -545,9 +546,11 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
               Navigator.of(context).pop();
             },
           ),
-          title: Text(
-            "Receive $ticker",
-            style: STextStyles.navBarTitle(context),
+          centerTitle: true,
+          title: ReceiveSendSwitch(
+            current: TransferTab.receive,
+            walletId: walletId,
+            coin: coin,
           ),
           actions: [
             Padding(

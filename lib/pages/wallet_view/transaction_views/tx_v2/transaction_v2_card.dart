@@ -179,7 +179,8 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
     }
 
     return Material(
-      color: Theme.of(context).extension<StackColors>()!.popupBG,
+      // Ledger redesign: hairline rows on the page background, not white cards.
+      color: Colors.transparent,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(

@@ -55,8 +55,15 @@ class TxListItem extends ConsumerWidget {
         final trade = matchingTrades.first;
         return Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).extension<StackColors>()!.popupBG,
-            borderRadius: radius,
+            color: Colors.transparent,
+            border: Border(
+              bottom: BorderSide(
+                color: Theme.of(
+                  context,
+                ).extension<StackColors>()!.textSubtitle1.withOpacity(0.1),
+                width: 1,
+              ),
+            ),
           ),
           child: Breathing(
             child: Column(
@@ -151,8 +158,15 @@ class TxListItem extends ConsumerWidget {
       } else {
         return Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).extension<StackColors>()!.popupBG,
-            borderRadius: radius,
+            color: Colors.transparent,
+            border: Border(
+              bottom: BorderSide(
+                color: Theme.of(
+                  context,
+                ).extension<StackColors>()!.textSubtitle1.withOpacity(0.1),
+                width: 1,
+              ),
+            ),
           ),
           child: Breathing(
             child: TransactionCardV2(

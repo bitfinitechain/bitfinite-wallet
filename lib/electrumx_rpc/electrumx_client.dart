@@ -1415,7 +1415,20 @@ class ElectrumXClient {
             throw Exception("Unexpected cryptoCurrency found!");
           }
         }
-        return Decimal.parse(response.toString());
+        final serverRate = Decimal.parse(response.toString());
+        // Floor the server's rate at the coin's safe default. coinlib
+        // underestimates tx size by ~1 byte/input, so at exactly the relay
+        // minimum (1 sat/vByte) prepareSend rejects the tx ("fee < vSize").
+        // Never go below defaultFeeRate, whatever the server reports.
+        if (cryptoCurrency is ElectrumXCurrencyInterface) {
+          final floor = Amount(
+            rawValue:
+                (cryptoCurrency as ElectrumXCurrencyInterface).defaultFeeRate,
+            fractionDigits: cryptoCurrency.fractionDigits,
+          ).decimal;
+          return serverRate > floor ? serverRate : floor;
+        }
+        return serverRate;
       } catch (e, s) {
         final String msg =
             "Error parsing fee rate.  Response: $response"

@@ -2812,7 +2812,9 @@ class _SendViewState extends ConsumerState<SendView> {
                                                         .state !=
                                                     BalanceType.public
                                             ? null
-                                            : _onFeeSelectPressed,
+                                            // BitFinite: one flat network fee, so
+                                            // there's no tier sheet to open.
+                                            : null,
                                         child:
                                             (isFiro &&
                                                 ref
@@ -2865,13 +2867,14 @@ class _SendViewState extends ConsumerState<SendView> {
                                                   Row(
                                                     children: [
                                                       Text(
-                                                        ref
-                                                            .watch(
-                                                              feeRateTypeMobileStateProvider
-                                                                  .state,
-                                                            )
-                                                            .state
-                                                            .prettyName,
+                                                        // BitFinite has one flat
+                                                        // network fee (the server
+                                                        // has no estimatefee, so
+                                                        // fast/medium/slow are
+                                                        // identical) - show it as
+                                                        // a single line, no tier
+                                                        // selector.
+                                                        "Network fee",
                                                         style:
                                                             STextStyles.itemSubtitle12(
                                                               context,
@@ -2914,16 +2917,9 @@ class _SendViewState extends ConsumerState<SendView> {
                                                       ),
                                                     ],
                                                   ),
-                                                  SvgPicture.asset(
-                                                    Assets.svg.chevronDown,
-                                                    width: 8,
-                                                    height: 4,
-                                                    color: Theme.of(context)
-                                                        .extension<
-                                                          StackColors
-                                                        >()!
-                                                        .textSubtitle2,
-                                                  ),
+                                                  // No tier chevron: single flat
+                                                  // network fee, not a selector.
+                                                  const SizedBox.shrink(),
                                                 ],
                                               ),
                                       ),

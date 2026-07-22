@@ -18,12 +18,11 @@ class SendNavIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Send reads as outgoing: the accent blue, matching the primary actions.
+    final blue = Theme.of(context).extension<StackColors>()!.accentColorBlue;
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context)
-            .extension<StackColors>()!
-            .bottomNavIconIcon
-            .withOpacity(0.4),
+        color: blue.withOpacity(0.15),
         borderRadius: BorderRadius.circular(
           24,
         ),
@@ -34,7 +33,7 @@ class SendNavIcon extends StatelessWidget {
           Assets.svg.arrowUpRight,
           width: 16,
           height: 16,
-          color: Theme.of(context).extension<StackColors>()!.bottomNavIconIcon,
+          color: blue,
         ),
       ),
     );

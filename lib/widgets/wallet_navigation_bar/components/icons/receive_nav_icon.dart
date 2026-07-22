@@ -18,12 +18,11 @@ class ReceiveNavIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Receive reads as incoming: green, matching the received transaction rows.
+    final green = Theme.of(context).extension<StackColors>()!.accentColorGreen;
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context)
-            .extension<StackColors>()!
-            .bottomNavIconIcon
-            .withOpacity(0.4),
+        color: green.withOpacity(0.15),
         borderRadius: BorderRadius.circular(
           24,
         ),
@@ -34,7 +33,7 @@ class ReceiveNavIcon extends StatelessWidget {
           Assets.svg.arrowDownLeft,
           width: 16,
           height: 16,
-          color: Theme.of(context).extension<StackColors>()!.bottomNavIconIcon,
+          color: green,
         ),
       ),
     );

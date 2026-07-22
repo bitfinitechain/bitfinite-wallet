@@ -546,11 +546,9 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
               Navigator.of(context).pop();
             },
           ),
-          centerTitle: true,
-          title: ReceiveSendSwitch(
-            current: TransferTab.receive,
-            walletId: walletId,
-            coin: coin,
+          title: Text(
+            "Receive",
+            style: STextStyles.navBarTitle(context),
           ),
           actions: [
             Padding(
@@ -638,6 +636,11 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
               ),
             ),
           ],
+        ),
+        bottomNavigationBar: ReceiveSendSwitchDock(
+          current: TransferTab.receive,
+          walletId: walletId,
+          coin: coin,
         ),
         body: SafeArea(
           child: Padding(

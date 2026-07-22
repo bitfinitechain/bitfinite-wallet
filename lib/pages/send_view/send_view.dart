@@ -1724,12 +1724,15 @@ class _SendViewState extends ConsumerState<SendView> {
               }
             },
           ),
-          centerTitle: true,
-          title: ReceiveSendSwitch(
-            current: TransferTab.send,
-            walletId: walletId,
-            coin: coin,
+          title: Text(
+            "Send",
+            style: STextStyles.navBarTitle(context),
           ),
+        ),
+        bottomNavigationBar: ReceiveSendSwitchDock(
+          current: TransferTab.send,
+          walletId: walletId,
+          coin: coin,
         ),
         body: SafeArea(
           child: LayoutBuilder(

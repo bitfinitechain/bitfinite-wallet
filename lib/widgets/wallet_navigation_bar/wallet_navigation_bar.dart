@@ -33,7 +33,7 @@ const Map<String, IconData> _iosNavIcons = <String, IconData>{
 };
 
 /// Gap between actions in the floating dock.
-const double _dockGap = 24;
+const double _dockGap = 4;
 
 /// A colour matrix that scales saturation by [s] about luminance, matching the
 /// saturation lift iOS applies in its vibrancy materials.
@@ -119,6 +119,8 @@ class WalletNavigationBar extends ConsumerWidget {
           data: items[i],
           floating: floating,
           highlighted: floating && i == 0,
+          // Floating dock: label the actions (Receive/Send) like the switch-dock.
+          labeled: floating,
         ),
       if (hasMore)
         _ActionButton(
@@ -239,11 +241,13 @@ class _ActionButton extends StatelessWidget {
     required this.data,
     this.floating = false,
     this.highlighted = false,
+    this.labeled = false,
   });
 
   final WalletNavigationBarItemData data;
   final bool floating;
   final bool highlighted;
+  final bool labeled;
 
   @override
   Widget build(BuildContext context) {
@@ -253,6 +257,34 @@ class _ActionButton extends StatelessWidget {
     // item gets a lighter circle behind it; the rest are plain icons that
     // chip on press.
     if (floating) {
+      // Labeled action (Receive/Send): icon + text pill, matching the
+      // Receive/Send switch-dock so the launcher reads in the same language.
+      if (labeled) {
+        return Material(
+          color: Colors.transparent,
+          shape: const StadiumBorder(),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: data.onTap,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 9, 14, 9),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  data.icon,
+                  const SizedBox(width: 8),
+                  Text(
+                    data.label ?? "",
+                    style: STextStyles.w600_14(
+                      context,
+                    ).copyWith(color: colors.bottomNavText),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
       return Material(
         // On glass (iOS) the SF glyph has no circle of its own, so the active
         // item gets a translucent white wash behind it. On Android the icons

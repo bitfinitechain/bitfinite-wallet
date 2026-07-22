@@ -22,6 +22,7 @@ import '../../../providers/providers.dart';
 import '../../../providers/wallet/public_private_balance_state_provider.dart';
 import '../../../providers/wallet/wallet_balance_toggle_state_provider.dart';
 import '../../../services/event_bus/events/global/wallet_sync_status_changed_event.dart';
+import '../../../themes/stack_colors.dart';
 import '../../../utilities/amount/amount.dart';
 import '../../../utilities/amount/amount_formatter.dart';
 import '../../../utilities/assets.dart';
@@ -149,13 +150,15 @@ class WalletSummaryInfo extends ConsumerWidget {
       }
     }
 
-    final favText = onCoinCardColor(context, ref, coin, isFavorite: false);
+    // Balance-first block sits on the page background now (no gradient card),
+    // so the text is themed ink rather than on-card white.
+    final favText = Theme.of(context).extension<StackColors>()!.textDark;
     final receivingAddress = ref.watch(pWalletReceivingAddress(walletId));
     final heroStyle = STextStyles.pageTitleH1(context).copyWith(
-      fontSize: 30,
+      fontSize: 42,
       fontWeight: FontWeight.w800,
-      height: 1.1,
-      letterSpacing: -0.5,
+      height: 1.05,
+      letterSpacing: -1.2,
       color: favText,
       fontFeatures: const [FontFeature.tabularFigures()],
     );
@@ -227,7 +230,7 @@ class WalletSummaryInfo extends ConsumerWidget {
               ),
             ],
           ),
-          const Spacer(),
+          const SizedBox(height: 18),
           if (ref.watch(pWalletInfo(walletId)).isViewOnly)
             FittedBox(
               fit: BoxFit.scaleDown,
@@ -248,15 +251,15 @@ class WalletSummaryInfo extends ConsumerWidget {
                     TextSpan(
                       text: dustPart,
                       style: heroStyle.copyWith(
-                        fontSize: 20,
+                        fontSize: 22,
                         fontWeight: FontWeight.w700,
-                        color: favText.withOpacity(0.55),
+                        color: favText.withOpacity(0.4),
                       ),
                     ),
                   TextSpan(
                     text: " $unitStr",
                     style: heroStyle.copyWith(
-                      fontSize: 16,
+                      fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: favText.withOpacity(0.85),
                     ),
@@ -267,7 +270,7 @@ class WalletSummaryInfo extends ConsumerWidget {
           ),
           if (receivingAddress.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(top: 4),
+              padding: const EdgeInsets.only(top: 14),
               child: GestureDetector(
                 onTap: () {
                   unawaited(HapticFeedback.lightImpact());
@@ -281,15 +284,43 @@ class WalletSummaryInfo extends ConsumerWidget {
                     ),
                   );
                 },
-                child: Text(
-                  receivingAddress.length > 22
-                      ? "${receivingAddress.substring(0, 12)}…"
-                          "${receivingAddress.substring(receivingAddress.length - 6)}"
-                      : receivingAddress,
-                  style: STextStyles.subtitle500(context).copyWith(
-                    fontSize: 12,
-                    color: favText.withOpacity(0.65),
-                    fontFeatures: const [FontFeature.tabularFigures()],
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).extension<StackColors>()!.textFieldDefaultBG,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: favText.withOpacity(0.08),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        receivingAddress.length > 22
+                            ? "${receivingAddress.substring(0, 12)}…"
+                                "${receivingAddress.substring(receivingAddress.length - 6)}"
+                            : receivingAddress,
+                        style: STextStyles.subtitle500(context).copyWith(
+                          fontSize: 12.5,
+                          color: favText.withOpacity(0.7),
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      SvgPicture.asset(
+                        Assets.svg.copy,
+                        width: 13,
+                        height: 13,
+                        color: favText.withOpacity(0.45),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -306,7 +337,6 @@ class WalletSummaryInfo extends ConsumerWidget {
                 ).copyWith(color: favText),
               ),
             ),
-          const Spacer(),
         ],
       ),
     );

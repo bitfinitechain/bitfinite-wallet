@@ -8,18 +8,11 @@
  *
  */
 
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
-import 'wallet_summary_info.dart';
 import '../../../services/event_bus/events/global/wallet_sync_status_changed_event.dart';
-import '../../../themes/coin_icon_provider.dart';
-import '../../../utilities/constants.dart';
-import '../../../wallets/isar/providers/wallet_info_provider.dart';
-import '../../../widgets/coin_card.dart';
+import 'wallet_summary_info.dart';
 
 class WalletSummary extends ConsumerWidget {
   const WalletSummary({
@@ -44,57 +37,13 @@ class WalletSummary extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final coin = ref.watch(pWalletCoin(walletId));
-
-    return AspectRatio(
-      aspectRatio: aspectRatio,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          minHeight: minHeight,
-          minWidth: minWidth,
-          maxHeight: maxHeight,
-          maxWidth: minWidth,
-        ),
-        child: LayoutBuilder(
-          builder: (_, constraints) => ClipRRect(
-            // Clip the oversized watermark to the card's rounded corners.
-            borderRadius: BorderRadius.circular(
-              Constants.size.circularBorderRadius + 4,
-            ),
-            child: Stack(
-              children: [
-                CoinCard(
-                  walletId: walletId,
-                  width: constraints.maxWidth,
-                  height: constraints.maxHeight,
-                  isFavorite: false,
-                ),
-                // Ghosted coin-mark watermark, bottom-right (brand texture).
-                Positioned(
-                  right: -constraints.maxWidth * 0.04,
-                  bottom: -constraints.maxWidth * 0.08,
-                  child: Opacity(
-                    opacity: 0.08,
-                    child: SvgPicture.file(
-                      File(ref.watch(coinIconProvider(coin))),
-                      width: constraints.maxWidth * 0.42,
-                      height: constraints.maxWidth * 0.42,
-                    ),
-                  ),
-                ),
-                Positioned.fill(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: WalletSummaryInfo(
-                      walletId: walletId,
-                      initialSyncStatus: initialSyncStatus,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+    // Ledger redesign: the balance is a first-class block on the page
+    // background (big tabular numerals + address chip), not a gradient card.
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: WalletSummaryInfo(
+        walletId: walletId,
+        initialSyncStatus: initialSyncStatus,
       ),
     );
   }

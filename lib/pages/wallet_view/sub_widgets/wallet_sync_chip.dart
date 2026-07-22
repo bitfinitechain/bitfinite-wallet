@@ -62,12 +62,9 @@ class _WalletSyncChipState extends ConsumerState<WalletSyncChip> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<StackColors>()!;
-    final favText = onCoinCardColor(
-      context,
-      ref,
-      ref.watch(pWalletCoin(widget.walletId)),
-      isFavorite: false,
-    );
+    // Balance block now sits on the page background (no gradient card), so the
+    // chip reads against the themed surface rather than on-card white.
+    final favText = colors.textDark;
 
     final (Color dotColor, String label) = switch (_status) {
       WalletSyncStatus.synced => (colors.accentColorGreen, "Synced"),

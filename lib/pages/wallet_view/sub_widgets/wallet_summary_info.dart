@@ -17,6 +17,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../settings_views/global_settings_view/advanced_views/manage_coin_units/edit_coin_units_view.dart';
 import '../../../notifications/show_flush_bar.dart';
 import '../../../providers/providers.dart';
 import '../../../providers/wallet/public_private_balance_state_provider.dart';
@@ -241,30 +242,39 @@ class WalletSummaryInfo extends ConsumerWidget {
                 ).copyWith(fontSize: 18, color: favText.withOpacity(0.7)),
               ),
             ),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: SelectableText.rich(
-              TextSpan(
-                children: [
-                  TextSpan(text: mainPart, style: heroStyle),
-                  if (dustPart.isNotEmpty)
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            // Tap the balance to change how many decimals are shown, per coin
+            // (Settings > Advanced > Manage coin units). Nothing is hardcoded.
+            onTap: () => Navigator.of(context).pushNamed(
+              EditCoinUnitsView.routeName,
+              arguments: coin,
+            ),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(text: mainPart, style: heroStyle),
+                    if (dustPart.isNotEmpty)
+                      TextSpan(
+                        text: dustPart,
+                        style: heroStyle.copyWith(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: favText.withOpacity(0.4),
+                        ),
+                      ),
                     TextSpan(
-                      text: dustPart,
+                      text: " $unitStr",
                       style: heroStyle.copyWith(
-                        fontSize: 22,
+                        fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: favText.withOpacity(0.4),
+                        color: favText.withOpacity(0.85),
                       ),
                     ),
-                  TextSpan(
-                    text: " $unitStr",
-                    style: heroStyle.copyWith(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: favText.withOpacity(0.85),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

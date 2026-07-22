@@ -27,55 +27,13 @@ void main() {
   });
 
   void expectFetchedPriceSnapshot(String prices) {
+    // BitFinite is a single-coin app with no external price feed: the price
+    // service only knows Bitfinite, which has no market listing (value 0). The
+    // upstream multi-coin coingecko mock is ignored because none of those coins
+    // are supported here.
     expect(
       prices,
-      contains("Instance of 'Bitcoin': (change24h: 0.0, value: 1)"),
-    );
-    expect(
-      prices,
-      contains(
-        "Instance of 'Monero': (change24h: -0.77656, value: 0.00717236)",
-      ),
-    );
-    expect(
-      prices,
-      contains(
-        "Instance of 'Dogecoin': (change24h: -2.68533, value: 0.00000315)",
-      ),
-    );
-    expect(
-      prices,
-      contains(
-        "Instance of 'Epiccash': (change24h: 7.27524, value: 0.00002803)",
-      ),
-    );
-    expect(
-      prices,
-      contains("Instance of 'Firo': (change24h: -0.89304, value: 0.0001096)"),
-    );
-    expect(
-      prices,
-      contains("Instance of 'Xelis': (change24h: 5.67, value: 0.00001234)"),
-    );
-    expect(
-      prices,
-      contains("Instance of 'Cardano': (change24h: 0.0, value: 0)"),
-    );
-    expect(
-      prices,
-      contains("Instance of 'Fact0rn': (change24h: 0.0, value: 0)"),
-    );
-    expect(
-      prices,
-      contains("Instance of 'Peercoin': (change24h: 0.0, value: 0)"),
-    );
-    expect(
-      prices,
-      contains("Instance of 'Salvium': (change24h: 0.0, value: 0)"),
-    );
-    expect(
-      prices,
-      contains("Instance of 'Solana': (change24h: 0.0, value: 0)"),
+      contains("Instance of 'Bitfinite': (change24h: 0.0, value: 0)"),
     );
     expect(prices, isNot('{}'));
   }

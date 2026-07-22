@@ -33,7 +33,7 @@ void main() {
         name: "John Doe",
         addresses: [
           ContactAddressEntry()
-            ..coinName = Bitcoincash(CryptoCurrencyNetwork.main).identifier
+            ..coinName = Bitfinite(CryptoCurrencyNetwork.main).identifier
             ..address = "some bch address"
             ..label = "Bills"
             ..other = null,
@@ -68,9 +68,9 @@ void main() {
     );
 
     expect(find.text("John Doe"), findsOneWidget);
-    expect(find.text("BCH"), findsOneWidget);
+    expect(find.text("BFX"), findsOneWidget);
     expect(
-      find.text(Bitcoincash(CryptoCurrencyNetwork.main).ticker),
+      find.text(Bitfinite(CryptoCurrencyNetwork.main).ticker),
       findsOneWidget,
     );
 

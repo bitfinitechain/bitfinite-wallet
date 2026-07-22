@@ -18,6 +18,14 @@ void main() {
       .toList(growable: false);
   final expectedDefaultNodeCount =
       expectedPrimaryDefaults.length +
+      // Some coins (e.g. BitFinite) seed extra failover nodes via
+      // additionalDefaultNodes on top of their primary defaultNode.
+      AppConfig.coins
+          .where((coin) => coin.identifier != 'firo')
+          .fold<int>(
+            0,
+            (sum, coin) => sum + coin.additionalDefaultNodes.length,
+          ) +
       (AppConfig.coins.any((e) => e.identifier == 'firo') ? 4 : 0);
 
   setUp(() async {
@@ -150,7 +158,10 @@ void main() {
       id: "pnodeID2",
       useSSL: true,
       enabled: true,
-      coinName: "monero",
+      // Supported-coin identifier: NodeService.delete resolves the node's coin
+      // via getCryptoCurrencyByPrettyName, which throws for coins the fork
+      // dropped (e.g. monero).
+      coinName: "bitfinite",
       isFailover: true,
       isDown: false,
       torEnabled: true,
@@ -183,21 +194,21 @@ void main() {
       final service = NodeService(secureStorageInterface: fakeStore);
       expect(
         service
-            .getPrimaryNodeFor(currency: Bitcoin(CryptoCurrencyNetwork.main))
+            .getPrimaryNodeFor(currency: Bitfinite(CryptoCurrencyNetwork.main))
             ?.toString(),
-        Bitcoin(
+        Bitfinite(
           CryptoCurrencyNetwork.main,
         ).defaultNode(isPrimary: true).toString(),
       );
       await service.setPrimaryNodeFor(
-        coin: Bitcoin(CryptoCurrencyNetwork.main),
-        node: Bitcoin(CryptoCurrencyNetwork.main).defaultNode(isPrimary: true),
+        coin: Bitfinite(CryptoCurrencyNetwork.main),
+        node: Bitfinite(CryptoCurrencyNetwork.main).defaultNode(isPrimary: true),
       );
       expect(
         service
-            .getPrimaryNodeFor(currency: Bitcoin(CryptoCurrencyNetwork.main))
+            .getPrimaryNodeFor(currency: Bitfinite(CryptoCurrencyNetwork.main))
             .toString(),
-        Bitcoin(
+        Bitfinite(
           CryptoCurrencyNetwork.main,
         ).defaultNode(isPrimary: true).toString(),
       );
@@ -207,14 +218,13 @@ void main() {
     test("get primary nodes", () async {
       final fakeStore = FakeSecureStorage();
       final service = NodeService(secureStorageInterface: fakeStore);
-      await service.setPrimaryNodeFor(
-        coin: Bitcoin(CryptoCurrencyNetwork.main),
-        node: Bitcoin(CryptoCurrencyNetwork.main).defaultNode(isPrimary: true),
-      );
-      await service.setPrimaryNodeFor(
-        coin: Monero(CryptoCurrencyNetwork.main),
-        node: Monero(CryptoCurrencyNetwork.main).defaultNode(isPrimary: true),
-      );
+      // Single-coin app: set the primary for each supported coin's default.
+      for (final coin in AppConfig.coins) {
+        await service.setPrimaryNodeFor(
+          coin: coin,
+          node: coin.defaultNode(isPrimary: true),
+        );
+      }
       final primaryNodes = service.primaryNodes;
       final expectedPrimaryNodes = [...expectedPrimaryDefaults]
         ..sort((a, b) => a.id.compareTo(b.id));

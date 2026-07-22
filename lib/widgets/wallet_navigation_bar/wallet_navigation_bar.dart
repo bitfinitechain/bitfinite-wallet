@@ -204,7 +204,12 @@ class WalletNavigationBar extends ConsumerWidget {
           // flush against the bar. Explicit bottom padding clears it on every
           // navigation mode.
           padding: const EdgeInsets.only(bottom: 20),
-          child: Center(
+          // heightFactor collapses this to the pill's height so the dock is
+          // safe both as a Positioned overlay (wallet view) and as a Scaffold
+          // bottomNavigationBar (receive/send pages).
+          child: Align(
+            alignment: Alignment.center,
+            heightFactor: 1,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(999),
               child: glass

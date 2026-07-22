@@ -9,25 +9,24 @@
  */
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 
 import '../pages/receive_view/receive_view.dart';
 import '../pages/send_view/send_view.dart';
-import '../themes/stack_colors.dart';
-import '../utilities/assets.dart';
-import '../utilities/text_styles.dart';
 import '../wallets/crypto_currency/crypto_currency.dart';
+import 'wallet_navigation_bar/components/icons/receive_nav_icon.dart';
+import 'wallet_navigation_bar/components/icons/send_nav_icon.dart';
+import 'wallet_navigation_bar/components/wallet_navigation_bar_item.dart';
+import 'wallet_navigation_bar/wallet_navigation_bar.dart';
 
-/// Which side of the Receive/Send switch is active.
+/// Which Receive/Send flow the page is currently showing.
 enum TransferTab { receive, send }
 
-/// The floating Receive <-> Send switch dock. Lives at the bottom of the
-/// Receive and Send pages, mirroring the wallet-view dock so navigation reads
-/// as one language across the app. Tapping the other side slides the accent
-/// indicator across, then replaces the current route with its sibling — so the
-/// two flows feel like one surface and the back stack stays clean (both still
-/// pop straight to the wallet view).
-class ReceiveSendSwitchDock extends StatefulWidget {
+/// The wallet dock, on the Receive/Send pages. It is the *same* floating
+/// WalletNavigationBar used on the wallet view — so navigation reads as one
+/// language everywhere — with Receive/Send jumping between the two flows via
+/// pushReplacement (the back stack stays clean; both still pop to the wallet
+/// view). The action for the page you are already on is disabled.
+class ReceiveSendSwitchDock extends StatelessWidget {
   const ReceiveSendSwitchDock({
     super.key,
     required this.current,
@@ -40,152 +39,32 @@ class ReceiveSendSwitchDock extends StatefulWidget {
   final CryptoCurrency coin;
 
   @override
-  State<ReceiveSendSwitchDock> createState() => _ReceiveSendSwitchDockState();
-}
-
-class _ReceiveSendSwitchDockState extends State<ReceiveSendSwitchDock> {
-  static const double _height = 54;
-  static const double _width = 240;
-  static const Duration _slide = Duration(milliseconds: 220);
-
-  late TransferTab _active = widget.current;
-  bool _navigating = false;
-
-  void _select(TransferTab target) {
-    if (target == _active || _navigating) return;
-    _navigating = true;
-    setState(() => _active = target); // slides the indicator on THIS page first
-    Future.delayed(_slide, () {
-      if (!mounted) return;
-      switch (target) {
-        case TransferTab.send:
-          Navigator.of(context).pushReplacementNamed(
-            SendView.routeName,
-            arguments: (walletId: widget.walletId, coin: widget.coin),
-          );
-        case TransferTab.receive:
-          Navigator.of(context).pushReplacementNamed(
-            ReceiveView.routeName,
-            arguments: widget.walletId,
-          );
-      }
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).extension<StackColors>()!;
-    final bool sendActive = _active == TransferTab.send;
-
-    return SafeArea(
-      top: false,
-      child: Padding(
-        // Float clear of the system navigation bar, matching the wallet dock.
-        padding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
-        // heightFactor: 1 collapses this to the capsule's height. Without it,
-        // as a Scaffold bottomNavigationBar it expands vertically and swallows
-        // the page body.
-        child: Align(
-          alignment: Alignment.center,
-          heightFactor: 1,
-          child: Container(
-            height: _height,
-            width: _width,
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: colors.popupBG,
-              borderRadius: BorderRadius.circular(_height / 2),
-              border: Border.all(
-                color: colors.bottomNavText.withOpacity(0.16),
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.22),
-                  blurRadius: 24,
-                  offset: const Offset(0, 8),
+    return WalletNavigationBar(
+      floating: true,
+      items: [
+        WalletNavigationBarItemData(
+          label: "Receive",
+          icon: const ReceiveNavIcon(),
+          onTap: current == TransferTab.receive
+              ? null
+              : () => Navigator.of(context).pushReplacementNamed(
+                  ReceiveView.routeName,
+                  arguments: walletId,
                 ),
-              ],
-            ),
-            child: Stack(
-              children: [
-                // The sliding accent indicator.
-                AnimatedAlign(
-                  duration: _slide,
-                  curve: Curves.easeOutCubic,
-                  alignment:
-                      sendActive ? Alignment.centerRight : Alignment.centerLeft,
-                  child: FractionallySizedBox(
-                    widthFactor: 0.5,
-                    heightFactor: 1,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: colors.accentColorBlue,
-                        borderRadius: BorderRadius.circular((_height - 12) / 2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: colors.accentColorBlue.withOpacity(0.42),
-                            blurRadius: 16,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                Row(
-                  children: [
-                    _segment(
-                      context,
-                      label: "Receive",
-                      asset: Assets.svg.arrowDownLeft,
-                      active: !sendActive,
-                      onTap: () => _select(TransferTab.receive),
-                    ),
-                    _segment(
-                      context,
-                      label: "Send",
-                      asset: Assets.svg.arrowUpRight,
-                      active: sendActive,
-                      onTap: () => _select(TransferTab.send),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
         ),
-      ),
-    );
-  }
-
-  Widget _segment(
-    BuildContext context, {
-    required String label,
-    required String asset,
-    required bool active,
-    required VoidCallback onTap,
-  }) {
-    final colors = Theme.of(context).extension<StackColors>()!;
-    final Color fg =
-        active ? Colors.white : colors.bottomNavText.withOpacity(0.78);
-    return Expanded(
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: AnimatedDefaultTextStyle(
-          duration: const Duration(milliseconds: 180),
-          style: STextStyles.w600_14(context).copyWith(color: fg),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SvgPicture.asset(asset, width: 18, height: 18, color: fg),
-              const SizedBox(width: 8),
-              Text(label),
-            ],
-          ),
+        WalletNavigationBarItemData(
+          label: "Send",
+          icon: const SendNavIcon(),
+          onTap: current == TransferTab.send
+              ? null
+              : () => Navigator.of(context).pushReplacementNamed(
+                  SendView.routeName,
+                  arguments: (walletId: walletId, coin: coin),
+                ),
         ),
-      ),
+      ],
+      moreItems: const [],
     );
   }
 }

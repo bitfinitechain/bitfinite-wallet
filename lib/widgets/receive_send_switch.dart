@@ -10,18 +10,18 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:tuple/tuple.dart';
 
-import '../app_config.dart';
-import '../pages/cashfusion/cashfusion_view.dart';
 import '../pages/coin_control/coin_control_view.dart';
 import '../pages/receive_view/receive_view.dart';
 import '../pages/send_view/send_view.dart';
+import '../pages/wallet_view/transaction_views/tx_v2/all_transactions_v2_view.dart';
 import '../providers/providers.dart';
+import '../themes/stack_colors.dart';
+import '../utilities/assets.dart';
 import '../wallets/crypto_currency/crypto_currency.dart';
-import '../wallets/isar/providers/wallet_info_provider.dart';
 import 'wallet_navigation_bar/components/icons/coin_control_nav_icon.dart';
-import 'wallet_navigation_bar/components/icons/fusion_nav_icon.dart';
 import 'wallet_navigation_bar/components/icons/receive_nav_icon.dart';
 import 'wallet_navigation_bar/components/icons/send_nav_icon.dart';
 import 'wallet_navigation_bar/components/wallet_navigation_bar_item.dart';
@@ -35,8 +35,7 @@ enum TransferTab { receive, send }
 /// navigation reads as one language everywhere. Receive/Send jump between the
 /// two flows via pushReplacement (the back stack stays clean; both still pop to
 /// the wallet view), the action for the current page is disabled, and More
-/// opens the same overflow sheet as the wallet view (BitFinite: Fusion, plus
-/// Coin control when the user has enabled it).
+/// opens an overflow sheet (All transactions, plus Coin control when enabled).
 class ReceiveSendSwitchDock extends ConsumerWidget {
   const ReceiveSendSwitchDock({
     super.key,
@@ -51,7 +50,7 @@ class ReceiveSendSwitchDock extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewOnly = ref.watch(pWalletInfo(walletId)).isViewOnly;
+    final colors = Theme.of(context).extension<StackColors>()!;
 
     return WalletNavigationBar(
       floating: true,
@@ -77,9 +76,20 @@ class ReceiveSendSwitchDock extends ConsumerWidget {
                 ),
         ),
       ],
-      // Mirror the wallet-view dock's overflow for the BitFinite coin (which is
-      // always coin-control + cash-fusion capable), so More is consistent.
       moreItems: <WalletNavigationBarItemData>[
+        WalletNavigationBarItemData(
+          label: "All transactions",
+          icon: SvgPicture.asset(
+            Assets.svg.list,
+            width: 20,
+            height: 20,
+            color: colors.bottomNavIconIcon,
+          ),
+          onTap: () => Navigator.of(context).pushNamed(
+            AllTransactionsV2View.routeName,
+            arguments: walletId,
+          ),
+        ),
         if (ref.watch(
           prefsChangeNotifierProvider.select((value) => value.enableCoinControl),
         ))
@@ -89,15 +99,6 @@ class ReceiveSendSwitchDock extends ConsumerWidget {
             onTap: () => Navigator.of(context).pushNamed(
               CoinControlView.routeName,
               arguments: Tuple2(walletId, CoinControlViewType.manage),
-            ),
-          ),
-        if (AppConfig.hasFeature(AppFeature.tor) && !viewOnly)
-          WalletNavigationBarItemData(
-            label: "Fusion",
-            icon: const FusionNavIcon(),
-            onTap: () => Navigator.of(context).pushNamed(
-              CashFusionView.routeName,
-              arguments: walletId,
             ),
           ),
       ],

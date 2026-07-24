@@ -2500,39 +2500,26 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
             processGapCheckResults([...futuresResult[0], ...futuresResult[1]]),
           );
         } else {
-          final clAddress = coinlib.Address.fromString(
-            (data as AddressViewOnlyWalletData).address,
-            cryptoCurrency.networkParams,
-          );
+          final addressString = (data as AddressViewOnlyWalletData).address;
 
-          final AddressType addressType;
-          switch (clAddress.runtimeType) {
-            case const (coinlib.P2PKHAddress):
-              addressType = AddressType.p2pkh;
-              break;
+          // Resolve the address type via the currency's own parser rather than
+          // stock coinlib. Coins with a custom cashaddr alphabet (BitFinite
+          // swaps q<->f in the base32 charset) fail coinlib.Address.fromString
+          // with InvalidAddress; getAddressType() routes them through the
+          // correct decoder (BfxCashAddr) and still handles standard coins.
+          final AddressType? addressType =
+              cryptoCurrency.getAddressType(addressString);
 
-            case const (coinlib.P2SHAddress):
-              addressType = AddressType.p2sh;
-              break;
-
-            case const (coinlib.P2WPKHAddress):
-              addressType = AddressType.p2wpkh;
-              break;
-
-            case const (coinlib.P2TRAddress):
-              addressType = AddressType.p2tr;
-              break;
-
-            default:
-              throw Exception(
-                "Unsupported address type: ${clAddress.runtimeType}",
-              );
+          if (addressType == null) {
+            throw Exception(
+              "Unsupported or invalid view only address: $addressString",
+            );
           }
 
           addressesToStore.add(
             Address(
               walletId: walletId,
-              value: clAddress.toString(),
+              value: addressString,
               publicKey: [],
               derivationIndex: -1,
               derivationPath: null,

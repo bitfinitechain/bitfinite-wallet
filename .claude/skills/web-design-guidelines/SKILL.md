@@ -229,6 +229,22 @@ The most common defect class.
 - **Adapt a vendored component in the open.** Copy-in libraries are re-added by
   the same command that created them, so a local change is one `add` from being
   reverted in silence. Record each deviation in the file it lives in.
+- **Count the copies before designing the component.** The extraction that pays
+  is the one the codebase already voted for: a stat tile existed five times and a
+  grid table seven, two of which were byte-identical apart from one string. Audit
+  first — `grep` for the repeated style object, not for the component name, since
+  the copies rarely share one.
+- **A missing variant is a bug, not a gap.** Those five stat tiles had no way to
+  say "degraded", so every partial failure had to render as either fine or down —
+  and a host with half its workers offline showed green for months. When you
+  extract, enumerate the states the thing can actually be in.
+- **Put the hard-won defaults inside the component.** Scroll containment,
+  `min-width: 0`, the affordance, tabular figures, a link that is really an `<a>`:
+  each was a separate incident. Baked into one component they cannot be forgotten
+  at a call site; left as guidance they will be.
+- **Distinguish what you own from what you vendor.** Components from a registry
+  can be re-fetched and overwritten; yours cannot. Keep both in one directory if
+  it suits, but stamp yours, and never let a sync clobber the vendored ones.
 
 ---
 

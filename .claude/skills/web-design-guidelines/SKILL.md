@@ -77,6 +77,18 @@ Reading source predicts; rendering proves.
 - **Confirm findings before acting.** A line-scoped grep for buttons missing
   `aria-label` produced six candidates, four false — JSX carries the label in an
   expression the grep had stripped.
+- **Check the ruler before believing the reading.** A contrast probe reported a
+  token at 19.51:1 and its counterpart at 1.17:1 — both nonsense. Browsers return
+  `color-mix()` results as `color(srgb 0.19 0.36 0.85)`, 0..1 floats, while plain
+  colours come back as `rgb(50, 92, 217)`. The probe divided the floats by 255 and
+  read every mixed colour as near-black. The tokens were correct; the measurement
+  was not. A second, independent calculation disagreeing is what surfaced it.
+- **A loop that calls ssh silently runs once.** `ssh` reads stdin, so inside
+  `while read … done < list` it swallows the remaining lines. A deploy copied 1 of
+  20 files and the checksum loop that followed had the same defect, so it verified
+  that one file and reported success. Use `ssh -n`, and prefer an explicit array
+  over stdin. Note also that zsh does not word-split on newlines and has no
+  `mapfile` — a bash-shaped loop can silently iterate zero times.
 - **One engine cannot emulate another.** A UA string and a viewport do not change
   the layout engine; Safari's flex `min-width` behaviour differs. Say what you
   could not verify rather than implying you did.

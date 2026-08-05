@@ -19,6 +19,13 @@ keywords = ["password","passwd","secret","token","apikey","api_key","api-key","r
 
 [allowlist]
 description = "Placeholders, examples, docs, lockfiles, vendored/test code"
+# Match these against the whole LINE, not just the matched secret. Patterns like
+# `process.env` and `user:pass` are line-level signals — the secret gitleaks
+# extracts is only "postgres://user:password@", so a fallback such as
+#   process.env.DATABASE_URL || 'postgres://user:password@localhost:5432/db'
+# was reported as a leak on every scan. A scanner that cries wolf gets ignored,
+# and then a real finding slides past with it.
+regexTarget = "line"
 paths = [
   '''(^|/)\.env\.(example|sample|template)$''',
   '''\.(example|sample|template|lock)$''',

@@ -122,4 +122,10 @@ lib/wl_gen/generated/
 
 /assets/windows/mwebd.exe
 /tool/build
-/debug.logsdebug-logs/
+/debug.log
+debug-logs/
+
+# Build output — release artifacts are published via GitHub releases, not here.
+dist/*.apk
+dist/*.aab
+*.zip

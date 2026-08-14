@@ -128,4 +128,10 @@ debug-logs/
 # Build output — release artifacts are published via GitHub releases, not here.
 dist/*.apk
 dist/*.aab
+# Release metadata belongs WITH the release assets, versioned alongside them.
+# A SHA256SUMS committed here goes stale the moment a new version ships, and a
+# user verifying a current APK against it gets a mismatch that looks exactly
+# like tampering — worse than publishing no checksum at all.
+dist/SHA256SUMS
+dist/RELEASE_NOTES_*.md
 *.zip

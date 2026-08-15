@@ -1213,12 +1213,12 @@ class _WalletViewState extends ConsumerState<WalletView> {
                 ),
                 body: Stack(
                 children: [
-                  // Blue hero. SafeArea sits INSIDE the container, not around
-                  // it: the colour must reach the physical top edge behind the
-                  // status bar, while the content still clears the notch. With
-                  // SafeArea on the outside the block starts below the status
-                  // bar and leaves a dark strip above it.
-                  Container(
+                  // Blue hero + the rest of the screen. SafeArea sits INSIDE the
+                  // hero container, not around it: the colour must reach the
+                  // physical top edge behind the status bar while the content
+                  // still clears the notch. With SafeArea outside, the block
+                  // starts below the status bar and leaves a dark strip above.
+                  Column(
                     // Solid, not a gradient — the reference is a flat block of
                     // brand colour, and a wash reads as a smudge rather than a
                     // header.
@@ -1230,22 +1230,33 @@ class _WalletViewState extends ConsumerState<WalletView> {
                     // from the theme rather than by adding a colour key to
                     // StackColors — that file is 1651 lines of upstream code
                     // and every added field is permanent merge friction.
-                    decoration: BoxDecoration(
-                      color: ref.watch(pCoinColor(coin)),
-                      // Rounded foot so the transaction list reads as a sheet
-                      // sliding up over the hero, not an abutting rectangle.
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(24),
-                        bottomRight: Radius.circular(24),
-                      ),
-                    ),
-                    child: SafeArea(
-                      // Only the top inset matters here; the sheet below owns
-                      // the bottom.
-                      bottom: false,
-                      child: Column(
-                      children: [
-                        const SizedBox(height: 10),
+                    // Only the balance goes inside the blue. Wrapping the whole
+                    // Column painted the transaction list blue too and hid the
+                    // rounded foot, because this Column holds the entire screen,
+                    // not just the header.
+                    //
+                    // No mainAxisSize.min here: this Column contains an
+                    // Expanded (the transaction list), which needs a parent
+                    // that takes all available height.
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: ref.watch(pCoinColor(coin)),
+                          // Rounded foot so the transaction list reads as a
+                          // sheet sliding up over the hero.
+                          borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(24),
+                            bottomRight: Radius.circular(24),
+                          ),
+                        ),
+                        child: SafeArea(
+                          // Only the top inset matters; the sheet owns the rest.
+                          bottom: false,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(height: 10),
                         Center(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1275,6 +1286,14 @@ class _WalletViewState extends ConsumerState<WalletView> {
                             ),
                           ),
                         ),
+                              // Foot of the blue block. Everything below this
+                              // point sits on the page background, which is what
+                              // makes the rounded corners visible at all.
+                              const SizedBox(height: 16),
+                            ],
+                          ),
+                        ),
+                      ),
 
                         if ((isSparkWallet ||
                                 ref
@@ -1451,8 +1470,6 @@ class _WalletViewState extends ConsumerState<WalletView> {
                         ),
                       ],
                     ),
-                  ),
-                ),
                   Positioned(
                     left: 0,
                     right: 0,

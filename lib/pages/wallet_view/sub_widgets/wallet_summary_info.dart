@@ -307,12 +307,20 @@ class WalletSummaryInfo extends ConsumerWidget {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).extension<StackColors>()!.textFieldDefaultBG,
+                    // Derived from the hero ink, NOT from the page theme.
+                    // textFieldDefaultBG is a *page* surface colour: near-white
+                    // in the light and forest themes, which put white text on
+                    // white and made the address unreadable in two themes out
+                    // of three. A translucent white scrim works on any hero
+                    // colour — today's blue, forest's teal, whatever a future
+                    // coin colour brings — because it is the same white the
+                    // text already uses, just quieter.
+                    color: favText.withOpacity(0.16),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: favText.withOpacity(0.08),
+                      // 0.08 was invisible against a filled chip; the chip needs
+                      // a defined edge now that it sits on colour.
+                      color: favText.withOpacity(0.24),
                       width: 1,
                     ),
                   ),
@@ -326,16 +334,22 @@ class WalletSummaryInfo extends ConsumerWidget {
                             : receivingAddress,
                         style: STextStyles.subtitle500(context).copyWith(
                           fontSize: 12.5,
-                          color: favText.withOpacity(0.7),
+                          // 0.7 was set for dark ink on a pale page chip. On a
+                          // translucent scrim over colour it reads as washed
+                          // out — this is the user's own address and should be
+                          // checkable at a glance.
+                          color: favText.withOpacity(0.95),
                           fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
                       const SizedBox(width: 8),
                       SvgPicture.asset(
                         Assets.svg.copy,
-                        width: 13,
-                        height: 13,
-                        color: favText.withOpacity(0.45),
+                        width: 14,
+                        height: 14,
+                        // The only affordance signalling the chip is tappable,
+                        // so it has to be findable rather than decorative.
+                        color: favText.withOpacity(0.8),
                       ),
                     ],
                   ),

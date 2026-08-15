@@ -1289,7 +1289,12 @@ class _WalletViewState extends ConsumerState<WalletView> {
                               // Foot of the blue block. Everything below this
                               // point sits on the page background, which is what
                               // makes the rounded corners visible at all.
-                              const SizedBox(height: 16),
+                              //
+                              // Matched to the 24px corner radius: at 16 the
+                              // address chip crowded the curve, which reads as
+                              // the block being too small for its contents
+                              // rather than as a deliberate edge.
+                              const SizedBox(height: 24),
                             ],
                           ),
                         ),

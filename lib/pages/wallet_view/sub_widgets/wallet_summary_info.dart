@@ -151,9 +151,16 @@ class WalletSummaryInfo extends ConsumerWidget {
       }
     }
 
-    // Balance-first block sits on the page background now (no gradient card),
-    // so the text is themed ink rather than on-card white.
-    final favText = Theme.of(context).extension<StackColors>()!.textDark;
+    // This block now sits on the solid blue hero, not on the page background,
+    // so it needs on-blue ink rather than themed ink. Themed ink would be
+    // light in the dark theme (fine) but dark in the light theme, where it
+    // would sit illegibly on saturated blue — the same trap coin_card.dart
+    // documents for BitFinite's colour.
+    //
+    // White is correct in BOTH themes because the hero is the coin colour in
+    // both; it does not follow the theme's brightness. Every label here is
+    // derived from favText, so this one value carries the whole block.
+    const favText = Colors.white;
     final receivingAddress = ref.watch(pWalletReceivingAddress(walletId));
     final heroStyle = STextStyles.pageTitleH1(context).copyWith(
       fontSize: 42,

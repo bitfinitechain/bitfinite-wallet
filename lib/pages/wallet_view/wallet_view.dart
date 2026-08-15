@@ -959,7 +959,17 @@ class _WalletViewState extends ConsumerState<WalletView> {
                 backgroundColor: Theme.of(
                   context,
                 ).extension<StackColors>()!.background,
+                // Blue hero runs to the very top edge, behind the status bar,
+                // so the bar is part of the hero rather than a dark strip
+                // sitting above it. The body therefore has to start at y=0.
+                extendBodyBehindAppBar: true,
                 appBar: AppBar(
+                  // Transparent so the hero colour shows through. Without
+                  // clearing BOTH elevations the bar paints a surface tint
+                  // over the hero as the list scrolls under it.
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  scrolledUnderElevation: 0,
                   leading: AppBarBackButton(
                     onPressed: () {
                       _logout();
@@ -1203,12 +1213,37 @@ class _WalletViewState extends ConsumerState<WalletView> {
                 ),
                 body: Stack(
                 children: [
-                  SafeArea(
-                  child: Container(
-                    color: Theme.of(
-                      context,
-                    ).extension<StackColors>()!.background,
-                    child: Column(
+                  // Blue hero. SafeArea sits INSIDE the container, not around
+                  // it: the colour must reach the physical top edge behind the
+                  // status bar, while the content still clears the notch. With
+                  // SafeArea on the outside the block starts below the status
+                  // bar and leaves a dark strip above it.
+                  Container(
+                    // Solid, not a gradient — the reference is a flat block of
+                    // brand colour, and a wash reads as a smudge rather than a
+                    // header.
+                    //
+                    // The colour is NOT hardcoded: pCoinColor comes from the
+                    // theme's colors.coin.bitfinite, already the brand blue
+                    // (0xff2f6bff). A theme shipping a different coin colour
+                    // re-tints the hero for free, which is why this is driven
+                    // from the theme rather than by adding a colour key to
+                    // StackColors — that file is 1651 lines of upstream code
+                    // and every added field is permanent merge friction.
+                    decoration: BoxDecoration(
+                      color: ref.watch(pCoinColor(coin)),
+                      // Rounded foot so the transaction list reads as a sheet
+                      // sliding up over the hero, not an abutting rectangle.
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(24),
+                        bottomRight: Radius.circular(24),
+                      ),
+                    ),
+                    child: SafeArea(
+                      // Only the top inset matters here; the sheet below owns
+                      // the bottom.
+                      bottom: false,
+                      child: Column(
                       children: [
                         const SizedBox(height: 10),
                         Center(

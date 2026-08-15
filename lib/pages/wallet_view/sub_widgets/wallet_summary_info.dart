@@ -162,11 +162,15 @@ class WalletSummaryInfo extends ConsumerWidget {
     // derived from favText, so this one value carries the whole block.
     const favText = Colors.white;
     final receivingAddress = ref.watch(pWalletReceivingAddress(walletId));
+    // Spec: 52px / 700 / letter-spacing -0.02em, tabular. -0.02em at 52px is
+    // -1.04, so the previous -1.2 was slightly tighter than intended; w800 was
+    // also heavier than the design, which relies on size rather than weight to
+    // carry the balance.
     final heroStyle = STextStyles.pageTitleH1(context).copyWith(
-      fontSize: 42,
-      fontWeight: FontWeight.w800,
+      fontSize: 52,
+      fontWeight: FontWeight.w700,
       height: 1.05,
-      letterSpacing: -1.2,
+      letterSpacing: -1.04,
       color: favText,
       fontFeatures: const [FontFeature.tabularFigures()],
     );
@@ -212,10 +216,19 @@ class WalletSummaryInfo extends ConsumerWidget {
                         child: Text(
                           title.toUpperCase(),
                           overflow: TextOverflow.ellipsis,
+                          // Spec: 12px / 600 / 0.1em tracking (= 1.2 at 12px).
+                          //
+                          // Opacity deliberately stays at 0.80 rather than the
+                          // spec's 0.72: measured on blue-600, 0.72 gives
+                          // 4.19:1 and 0.76 gives 4.49:1 — both under the 4.5:1
+                          // AA floor for text this size. 0.80 is the first
+                          // passing step at 4.84:1. The design's intent is a
+                          // de-emphasised label, and 0.80 still reads as one;
+                          // shipping 0.72 would just be an unreadable one.
                           style: STextStyles.subtitle500(context).copyWith(
-                            fontSize: 11,
+                            fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            letterSpacing: 1.6,
+                            letterSpacing: 1.2,
                             color: favText.withOpacity(0.8),
                           ),
                         ),
@@ -315,12 +328,14 @@ class WalletSummaryInfo extends ConsumerWidget {
                     // colour — today's blue, forest's teal, whatever a future
                     // coin colour brings — because it is the same white the
                     // text already uses, just quieter.
-                    color: favText.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(10),
+                    // Redesign spec values: rgba(255,255,255,0.12) fill,
+                    // 0.22 border, 12px radius. These are tuned for blue-600
+                    // #0644F1 — on the old #2F6BFF they would fail AA, which
+                    // is why the coin colour moved to blue-600 alongside this.
+                    color: favText.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      // 0.08 was invisible against a filled chip; the chip needs
-                      // a defined edge now that it sits on colour.
-                      color: favText.withOpacity(0.24),
+                      color: favText.withOpacity(0.22),
                       width: 1,
                     ),
                   ),
@@ -333,12 +348,11 @@ class WalletSummaryInfo extends ConsumerWidget {
                                 "${receivingAddress.substring(receivingAddress.length - 6)}"
                             : receivingAddress,
                         style: STextStyles.subtitle500(context).copyWith(
-                          fontSize: 12.5,
-                          // 0.7 was set for dark ink on a pale page chip. On a
-                          // translucent scrim over colour it reads as washed
-                          // out — this is the user's own address and should be
-                          // checkable at a glance.
-                          color: favText.withOpacity(0.95),
+                          // Spec: 13px monospace at 0.92. On blue-600 that is
+                          // 5.94:1 — comfortably AA. The same 0.92 on the old
+                          // #2F6BFF was 4.05:1 and failed.
+                          fontSize: 13,
+                          color: favText.withOpacity(0.92),
                           fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),

@@ -1243,11 +1243,13 @@ class _WalletViewState extends ConsumerState<WalletView> {
                         width: double.infinity,
                         decoration: BoxDecoration(
                           color: ref.watch(pCoinColor(coin)),
-                          // Rounded foot so the transaction list reads as a
-                          // sheet sliding up over the hero.
+                          // 32px per the redesign spec (0 0 32px 32px), which
+                          // matches the 32px device-frame radius the mockups
+                          // use — the foot echoes the screen corner rather
+                          // than inventing a second curve.
                           borderRadius: const BorderRadius.only(
-                            bottomLeft: Radius.circular(24),
-                            bottomRight: Radius.circular(24),
+                            bottomLeft: Radius.circular(32),
+                            bottomRight: Radius.circular(32),
                           ),
                         ),
                         child: SafeArea(

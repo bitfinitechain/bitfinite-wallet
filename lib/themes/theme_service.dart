@@ -31,7 +31,14 @@ final pThemeService = Provider<ThemeService>((ref) {
 });
 
 class ThemeService {
-  static const _currentDefaultThemeVersion = 26;
+  // Bump this WHENEVER a bundled theme.json changes, and bump the matching
+  // "version" inside dark.zip / light.zip to the same number. The update path
+  // is gated on `installed.version < _currentDefaultThemeVersion`, so a theme
+  // edit that does not move both numbers ships inside the APK and is then
+  // ignored: the copy already in the database wins, and the change looks like
+  // it silently did nothing.
+  // 27: coin.bitfinite #2F6BFF -> Brandkit blue-600 #0644F1
+  static const _currentDefaultThemeVersion = 27;
   ThemeService._();
   static ThemeService? _instance;
   static ThemeService get instance => _instance ??= ThemeService._();

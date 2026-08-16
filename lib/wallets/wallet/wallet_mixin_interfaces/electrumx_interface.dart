@@ -40,6 +40,35 @@ import 'rbf_interface.dart';
 import 'sign_verify_interface.dart';
 import 'view_only_option_interface.dart';
 
+/// Nodes reject transactions over this size as non-standard ("tx-size",
+/// reject code 64) even though consensus allows up to 1 MB. Same value in
+/// BCHN and Bitcoin Core, so it holds for every coin using this interface.
+const int _maxStandardTxSize = 100000;
+
+/// Headroom: signedSize is an estimate and real signatures vary by a byte or
+/// two each, which adds up across hundreds of inputs.
+const int _txSizeSafetyMargin = 2000;
+
+/// Carries its message with no "Exception: " prefix — this text is shown to
+/// the user in a dialog, not to a developer in a log.
+class TransactionTooLargeException implements Exception {
+  TransactionTooLargeException(this.message);
+  final String message;
+  @override
+  String toString() => message;
+}
+
+/// Thousands separators. Long digit runs like 147227 are hard to read at a
+/// glance, and this text is the whole point of the check.
+String _grouped(String digits) {
+  final buf = StringBuffer();
+  for (int i = 0; i < digits.length; i++) {
+    if (i > 0 && (digits.length - i) % 3 == 0) buf.write(",");
+    buf.write(digits[i]);
+  }
+  return buf.toString();
+}
+
 mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
     on Bip39HDWallet<T>
     implements ViewOnlyOptionInterface<T>, SignVerifyInterface {
@@ -716,6 +745,53 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
 
     if (selection.tooLarge) {
       throw Exception("Selected transaction would be too large");
+    }
+
+    // coinlib's `tooLarge` only trips above 1 MB — the CONSENSUS limit. Nodes
+    // reject anything over MAX_STANDARD_TX_SIZE (100 000 bytes) as non-standard
+    // long before that, with "tx-size" / reject code 64. A wallet holding many
+    // small UTXOs (mining payouts) therefore built a transaction that passed
+    // every local check and then failed at broadcast, after the user had
+    // already confirmed it. Catch it here, while we can still say something
+    // useful.
+    if (selection.signedSize > _maxStandardTxSize - _txSizeSafetyMargin) {
+      final int inputsUsed = selection.selected.length;
+      // Derive bytes-per-input from this selection rather than assuming a
+      // script type, then work out what would actually fit.
+      final int bytesPerInput = inputsUsed > 0
+          ? (selection.signedSize / inputsUsed).ceil()
+          : 148;
+      final int maxInputs =
+          ((_maxStandardTxSize - _txSizeSafetyMargin) / bytesPerInput).floor();
+
+      final sorted = candidates.map((c) => c.value).toList()
+        ..sort((a, b) => b.compareTo(a));
+      BigInt fits = BigInt.zero;
+      for (int i = 0; i < maxInputs && i < sorted.length; i++) {
+        fits += sorted[i];
+      }
+      // Rough fee for a full-size transaction, so the figure we quote is
+      // actually sendable rather than one the user will bounce off again.
+      final BigInt roughFee =
+          BigInt.from(_maxStandardTxSize - _txSizeSafetyMargin) *
+          feePerKb ~/
+          BigInt.from(1000);
+      final BigInt sendable = fits > roughFee ? fits - roughFee : BigInt.zero;
+      // Floor to whole coins. The fractional part is noise here, and quoting a
+      // figure to eight decimals invites the user to type it back exactly and
+      // land right on the limit again.
+      final BigInt unit = BigInt.from(10).pow(cryptoCurrency.fractionDigits);
+      final BigInt wholeCoins = sendable ~/ unit;
+      final String sendableStr = _grouped(wholeCoins.toString());
+
+      throw TransactionTooLargeException(
+        "This amount needs $inputsUsed coins, which makes the transaction "
+        "${_grouped(selection.signedSize.toString())} bytes. The network only "
+        "accepts transactions up to ${_grouped(_maxStandardTxSize.toString())} "
+        "bytes.\n\n"
+        "Send $sendableStr ${cryptoCurrency.ticker} or less in one "
+        "transaction, then repeat. Your coins are safe — nothing was sent.",
+      );
     }
     if (!selection.ready) {
       throw Exception("Selection of coins was not successful");

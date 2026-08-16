@@ -60,6 +60,7 @@ class ReceiveSendSwitchDock extends ConsumerWidget {
         WalletNavigationBarItemData(
           label: "Receive",
           icon: const ReceiveNavIcon(),
+          filledIcon: const ReceiveNavIcon(onFilled: true),
           onTap: current == TransferTab.receive
               ? null
               : () => Navigator.of(context).pushReplacementNamed(
@@ -70,6 +71,7 @@ class ReceiveSendSwitchDock extends ConsumerWidget {
         WalletNavigationBarItemData(
           label: "Send",
           icon: const SendNavIcon(),
+          filledIcon: const SendNavIcon(onFilled: true),
           onTap: current == TransferTab.send
               ? null
               : () => Navigator.of(context).pushReplacementNamed(

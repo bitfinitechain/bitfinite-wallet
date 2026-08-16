@@ -294,7 +294,9 @@ class _ActionButton extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  data.icon,
+                  // On the filled pill the semantic-coloured icon is invisible
+                  // (Send's blue on blue) or muddy (Receive's green on blue).
+                  filled ? (data.filledIcon ?? data.icon) : data.icon,
                   const SizedBox(width: 8),
                   Text(
                     data.label ?? "",

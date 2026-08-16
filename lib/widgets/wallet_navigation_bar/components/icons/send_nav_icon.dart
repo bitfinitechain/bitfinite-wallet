@@ -14,15 +14,26 @@ import '../../../../themes/stack_colors.dart';
 import '../../../../utilities/assets.dart';
 
 class SendNavIcon extends StatelessWidget {
-  const SendNavIcon({super.key});
+  const SendNavIcon({super.key, this.onFilled = false});
+
+  /// True when this icon sits on the filled brand-blue pill.
+  ///
+  /// Without it the icon vanished: both the disc and the arrow are painted in
+  /// accentColorBlue, and the filled pill is now that same blue — blue on blue.
+  /// The Send action appeared to have no icon at all, which also made Receive
+  /// (a bright green disc) read as the active one.
+  final bool onFilled;
 
   @override
   Widget build(BuildContext context) {
     // Send reads as outgoing: the accent blue, matching the primary actions.
+    // On the filled pill the roles invert — white on blue, per the design
+    // (disc rgba(255,255,255,0.18), arrow #FFFFFF).
     final blue = Theme.of(context).extension<StackColors>()!.accentColorBlue;
+    final tint = onFilled ? Colors.white : blue;
     return Container(
       decoration: BoxDecoration(
-        color: blue.withOpacity(0.15),
+        color: tint.withOpacity(onFilled ? 0.18 : 0.15),
         borderRadius: BorderRadius.circular(
           24,
         ),
@@ -33,7 +44,7 @@ class SendNavIcon extends StatelessWidget {
           Assets.svg.arrowUpRight,
           width: 14,
           height: 14,
-          color: blue,
+          color: tint,
         ),
       ),
     );

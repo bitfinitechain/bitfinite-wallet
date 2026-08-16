@@ -14,15 +14,21 @@ import '../../../../themes/stack_colors.dart';
 import '../../../../utilities/assets.dart';
 
 class ReceiveNavIcon extends StatelessWidget {
-  const ReceiveNavIcon({super.key});
+  const ReceiveNavIcon({super.key, this.onFilled = false});
+
+  /// True when this icon sits on the filled brand-blue pill (the Receive page,
+  /// where Receive is the active action). Green on blue is muddy and low
+  /// contrast, so the filled state uses white like the Send icon does.
+  final bool onFilled;
 
   @override
   Widget build(BuildContext context) {
     // Receive reads as incoming: green, matching the received transaction rows.
     final green = Theme.of(context).extension<StackColors>()!.accentColorGreen;
+    final tint = onFilled ? Colors.white : green;
     return Container(
       decoration: BoxDecoration(
-        color: green.withOpacity(0.15),
+        color: tint.withOpacity(onFilled ? 0.18 : 0.15),
         borderRadius: BorderRadius.circular(
           24,
         ),
@@ -33,7 +39,7 @@ class ReceiveNavIcon extends StatelessWidget {
           Assets.svg.arrowDownLeft,
           width: 14,
           height: 14,
-          color: green,
+          color: tint,
         ),
       ),
     );

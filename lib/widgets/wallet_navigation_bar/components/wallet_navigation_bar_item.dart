@@ -22,6 +22,7 @@ class WalletNavigationBarItemData {
     required this.onTap,
     this.isMore = false,
     this.overrideText,
+    this.filledIcon,
   });
 
   final Widget icon;
@@ -29,6 +30,13 @@ class WalletNavigationBarItemData {
   final VoidCallback? onTap;
   final bool isMore;
   final Widget? overrideText;
+
+  /// Icon to use when this action is rendered as the filled primary pill.
+  ///
+  /// The normal icons are tinted with their semantic colour — Send blue,
+  /// Receive green — which disappears or muddies against a brand-blue fill.
+  /// Falls back to [icon] when not supplied.
+  final Widget? filledIcon;
 }
 
 class WalletNavigationBarItem extends ConsumerWidget {

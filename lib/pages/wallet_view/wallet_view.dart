@@ -523,6 +523,7 @@ class _WalletViewState extends ConsumerState<WalletView> {
                     WalletNavigationBarItemData(
                       label: "Receive",
                       icon: const ReceiveNavIcon(),
+                      filledIcon: const ReceiveNavIcon(onFilled: true),
                       onTap: () {
                         if (mounted) {
                           unawaited(
@@ -574,6 +575,7 @@ class _WalletViewState extends ConsumerState<WalletView> {
                       WalletNavigationBarItemData(
                         label: "Send",
                         icon: const SendNavIcon(),
+                        filledIcon: const SendNavIcon(onFilled: true),
                         onTap: () {
                           // not sure what this is supposed to accomplish?
                           // switch (ref
@@ -994,7 +996,12 @@ class _WalletViewState extends ConsumerState<WalletView> {
                       Expanded(
                         child: Text(
                           ref.watch(pWalletName(walletId)),
-                          style: STextStyles.navBarTitle(context),
+                          // navBarTitle resolves to textDark — a page colour,
+                          // dark in the light theme — which is unreadable on
+                          // the blue hero. On the hero, ink comes from the hero.
+                          style: STextStyles.navBarTitle(
+                            context,
+                          ).copyWith(color: Colors.white),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -1076,9 +1083,7 @@ class _WalletViewState extends ConsumerState<WalletView> {
                                       ? CupertinoIcons.bell_fill
                                       : CupertinoIcons.bell,
                                   size: 20,
-                                  color: Theme.of(context)
-                                      .extension<StackColors>()!
-                                      .topNavIconPrimary,
+                                  color: Colors.white,
                                 )
                               : ref.watch(
                                 notificationsProvider.select(
@@ -1106,9 +1111,7 @@ class _WalletViewState extends ConsumerState<WalletView> {
                                         ),
                                       )
                                       ? null
-                                      : Theme.of(context)
-                                            .extension<StackColors>()!
-                                            .topNavIconPrimary,
+                                      : Colors.white,
                                 )
                               : SvgPicture.asset(
                                   Assets.svg.bell,
@@ -1124,9 +1127,7 @@ class _WalletViewState extends ConsumerState<WalletView> {
                                         ),
                                       )
                                       ? null
-                                      : Theme.of(context)
-                                            .extension<StackColors>()!
-                                            .topNavIconPrimary,
+                                      : Colors.white,
                                 ),
                           onPressed: () {
                             // reset unread state

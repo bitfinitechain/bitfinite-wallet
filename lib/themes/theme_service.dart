@@ -43,7 +43,20 @@ class ThemeService {
   // 29: light text_field_default_bg -> #FFFFFF per the redesign (inputs are
   //     white surfaces on the tinted page). active_bg keeps the old grey so
   //     focus is still a visible change now that resting state is white.
-  static const _currentDefaultThemeVersion = 29;
+  // 30: the last 11 (light) / 12 (dark) tokens still holding the legacy
+  //     #2F6BFF — primary buttons, switches, checkboxes, radios, the
+  //     highlighted nav icon. White on #2F6BFF measures 4.4956:1, just under
+  //     the 4.5 AA floor, so every primary button was marginally failing.
+  //     Light takes blue-600 #0644F1 (6.25:1 vs page, 6.76:1 under white).
+  //     Dark CANNOT take blue-600 — on the #12151C ground it drops to 2.70:1,
+  //     under the 3:1 UI-component floor. It takes blue-700 #2258E6, the only
+  //     step passing both sides (3.14:1 vs page, 5.82:1 under white).
+  // 31: new text_field_default_border token (#E4E4E7 light / #2A3447 dark).
+  //     A white field on the tinted page is 1.08:1 — the control had no
+  //     visible edge. Note the spec's border is 1.27:1 against the field, so
+  //     it is an affordance, not a WCAG 1.4.11 boundary; darkening it to
+  //     >=3:1 is a deliberate open decision, not an oversight.
+  static const _currentDefaultThemeVersion = 31;
   ThemeService._();
   static ThemeService? _instance;
   static ThemeService get instance => _instance ??= ThemeService._();

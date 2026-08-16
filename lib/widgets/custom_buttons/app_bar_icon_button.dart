@@ -81,6 +81,7 @@ class AppBarBackButton extends StatelessWidget {
     this.size,
     this.iconSize,
     this.color,
+    this.iconColor,
     this.semanticsLabel = "Back Button. Takes Back To Previous Page.",
   });
 
@@ -94,6 +95,11 @@ class AppBarBackButton extends StatelessWidget {
   /// hero passes a translucent white scrim so the button sits on the hero
   /// instead of floating on it as a solid disc.
   final Color? color;
+
+  /// Optional glyph colour. Defaults to topNavIconPrimary, which is near-black
+  /// in the light theme — invisible on a coloured header. Callers on the hero
+  /// pass white.
+  final Color? iconColor;
   final String semanticsLabel;
 
   @override
@@ -124,7 +130,9 @@ class AppBarBackButton extends StatelessWidget {
           Assets.svg.chevronLeft,
           CupertinoIcons.back,
           size: iconSize ?? (isCompact ? 18 : 24),
-          color: Theme.of(context).extension<StackColors>()!.topNavIconPrimary,
+          color:
+              iconColor ??
+              Theme.of(context).extension<StackColors>()!.topNavIconPrimary,
         ),
         onPressed: onPressed ?? Navigator.of(context).pop,
       ),

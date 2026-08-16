@@ -24,6 +24,8 @@ import '../../../providers/wallet/public_private_balance_state_provider.dart';
 import '../../../providers/wallet/wallet_balance_toggle_state_provider.dart';
 import '../../../services/event_bus/events/global/wallet_sync_status_changed_event.dart';
 import '../../../themes/stack_colors.dart';
+import '../../../themes/theme_providers.dart';
+import '../../../utilities/hero_ink.dart';
 import '../../../utilities/amount/amount.dart';
 import '../../../utilities/amount/amount_formatter.dart';
 import '../../../utilities/assets.dart';
@@ -165,16 +167,17 @@ class WalletSummaryInfo extends ConsumerWidget {
       dustPart = "";
     }
 
-    // This block now sits on the solid blue hero, not on the page background,
-    // so it needs on-blue ink rather than themed ink. Themed ink would be
-    // light in the dark theme (fine) but dark in the light theme, where it
-    // would sit illegibly on saturated blue — the same trap coin_card.dart
-    // documents for BitFinite's colour.
+    // This block sits on the solid hero, not on the page background, so it
+    // needs on-hero ink rather than themed ink. Themed ink would be dark in
+    // the light theme, sitting illegibly on a saturated fill — the same trap
+    // coin_card.dart documents for BitFinite's colour.
     //
-    // White is correct in BOTH themes because the hero is the coin colour in
-    // both; it does not follow the theme's brightness. Every label here is
-    // derived from favText, so this one value carries the whole block.
-    const favText = Colors.white;
+    // It does NOT follow the theme's brightness, but it cannot be hardcoded
+    // white either: the hero is the theme's own colour, which is a light
+    // orange in some themes where white measures 3.00:1. heroInk derives it
+    // from the fill. Every label here is built from favText, so this one value
+    // carries the whole block.
+    final favText = heroInk(ref.watch(pCoinColor(coin)));
     final receivingAddress = ref.watch(pWalletReceivingAddress(walletId));
     // Spec: 52px / 700 / letter-spacing -0.02em, tabular. -0.02em at 52px is
     // -1.04, so the previous -1.2 was slightly tighter than intended; w800 was
@@ -299,7 +302,10 @@ class WalletSummaryInfo extends ConsumerWidget {
                 "(View only)",
                 style: STextStyles.pageTitleH1(
                   context,
-                ).copyWith(fontSize: 18, color: favText.withOpacity(0.7)),
+                // w600/18px is not "large text" by WCAG (that needs w700 at
+                // >=18.66px), so this owes the full 4.5:1. 0.7 measured
+                // 4.03:1; 0.8 gives 4.84:1 and matches the other hero labels.
+                ).copyWith(fontSize: 18, color: favText.withOpacity(0.8)),
               ),
             ),
           GestureDetector(
@@ -322,7 +328,12 @@ class WalletSummaryInfo extends ConsumerWidget {
                         style: heroStyle.copyWith(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
-                          color: favText.withOpacity(0.4),
+                          // 0.4 measured 2.21:1 on blue-600 — under even the
+                          // 3:1 large-text floor, and these are real satoshi
+                          // digits of the balance, not decoration. 0.62 gives
+                          // 3.46:1 and still reads as secondary against the
+                          // 52px full-opacity main part.
+                          color: favText.withOpacity(0.62),
                         ),
                       ),
                     TextSpan(

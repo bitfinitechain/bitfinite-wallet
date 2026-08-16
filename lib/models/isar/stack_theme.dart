@@ -922,6 +922,15 @@ class StackTheme {
   Color? _textFieldSuccessBG;
   late final int textFieldSuccessBGInt;
 
+  // ==== textFieldDefaultBorder ===================================================
+
+  @ignore
+  Color get textFieldDefaultBorder =>
+      _textFieldDefaultBorder ??= Color(textFieldDefaultBorderInt);
+  @ignore
+  Color? _textFieldDefaultBorder;
+  late final int textFieldDefaultBorderInt;
+
   // ==== textFieldErrorBorder =====================================================
 
   @ignore
@@ -1720,6 +1729,15 @@ class StackTheme {
           parseColor(json["colors"]["text_field_error_bg"] as String)
       ..textFieldSuccessBGInt =
           parseColor(json["colors"]["text_field_success_bg"] as String)
+      // Read tolerantly: every other colour here is `as String`, which throws
+      // on a missing key. This token was added after themes were already in
+      // the wild, so an older or third-party theme.json has no such key and
+      // would fail to import entirely. Absent means "no border", which is
+      // exactly how the app looked before this token existed.
+      ..textFieldDefaultBorderInt = parseColor(
+        json["colors"]["text_field_default_border"] as String? ??
+            json["colors"]["text_field_default_bg"] as String,
+      )
       ..textFieldErrorBorderInt =
           parseColor(json["colors"]["text_field_error_border"] as String)
       ..textFieldSuccessBorderInt =

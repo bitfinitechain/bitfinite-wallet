@@ -637,189 +637,194 @@ const StackThemeSchema = CollectionSchema(
       name: r'textFieldDefaultBGInt',
       type: IsarType.long,
     ),
-    r'textFieldDefaultSearchIconLeftInt': PropertySchema(
+    r'textFieldDefaultBorderInt': PropertySchema(
       id: 124,
+      name: r'textFieldDefaultBorderInt',
+      type: IsarType.long,
+    ),
+    r'textFieldDefaultSearchIconLeftInt': PropertySchema(
+      id: 125,
       name: r'textFieldDefaultSearchIconLeftInt',
       type: IsarType.long,
     ),
     r'textFieldDefaultSearchIconRightInt': PropertySchema(
-      id: 125,
+      id: 126,
       name: r'textFieldDefaultSearchIconRightInt',
       type: IsarType.long,
     ),
     r'textFieldDefaultTextInt': PropertySchema(
-      id: 126,
+      id: 127,
       name: r'textFieldDefaultTextInt',
       type: IsarType.long,
     ),
     r'textFieldErrorBGInt': PropertySchema(
-      id: 127,
+      id: 128,
       name: r'textFieldErrorBGInt',
       type: IsarType.long,
     ),
     r'textFieldErrorBorderInt': PropertySchema(
-      id: 128,
+      id: 129,
       name: r'textFieldErrorBorderInt',
       type: IsarType.long,
     ),
     r'textFieldErrorLabelInt': PropertySchema(
-      id: 129,
+      id: 130,
       name: r'textFieldErrorLabelInt',
       type: IsarType.long,
     ),
     r'textFieldErrorSearchIconLeftInt': PropertySchema(
-      id: 130,
+      id: 131,
       name: r'textFieldErrorSearchIconLeftInt',
       type: IsarType.long,
     ),
     r'textFieldErrorSearchIconRightInt': PropertySchema(
-      id: 131,
+      id: 132,
       name: r'textFieldErrorSearchIconRightInt',
       type: IsarType.long,
     ),
     r'textFieldErrorTextInt': PropertySchema(
-      id: 132,
+      id: 133,
       name: r'textFieldErrorTextInt',
       type: IsarType.long,
     ),
     r'textFieldSuccessBGInt': PropertySchema(
-      id: 133,
+      id: 134,
       name: r'textFieldSuccessBGInt',
       type: IsarType.long,
     ),
     r'textFieldSuccessBorderInt': PropertySchema(
-      id: 134,
+      id: 135,
       name: r'textFieldSuccessBorderInt',
       type: IsarType.long,
     ),
     r'textFieldSuccessLabelInt': PropertySchema(
-      id: 135,
+      id: 136,
       name: r'textFieldSuccessLabelInt',
       type: IsarType.long,
     ),
     r'textFieldSuccessSearchIconLeftInt': PropertySchema(
-      id: 136,
+      id: 137,
       name: r'textFieldSuccessSearchIconLeftInt',
       type: IsarType.long,
     ),
     r'textFieldSuccessSearchIconRightInt': PropertySchema(
-      id: 137,
+      id: 138,
       name: r'textFieldSuccessSearchIconRightInt',
       type: IsarType.long,
     ),
     r'textFieldSuccessTextInt': PropertySchema(
-      id: 138,
+      id: 139,
       name: r'textFieldSuccessTextInt',
       type: IsarType.long,
     ),
     r'textRestoreInt': PropertySchema(
-      id: 139,
+      id: 140,
       name: r'textRestoreInt',
       type: IsarType.long,
     ),
     r'textSelectedWordTableItemInt': PropertySchema(
-      id: 140,
+      id: 141,
       name: r'textSelectedWordTableItemInt',
       type: IsarType.long,
     ),
     r'textSubtitle1Int': PropertySchema(
-      id: 141,
+      id: 142,
       name: r'textSubtitle1Int',
       type: IsarType.long,
     ),
     r'textSubtitle2Int': PropertySchema(
-      id: 142,
+      id: 143,
       name: r'textSubtitle2Int',
       type: IsarType.long,
     ),
     r'textSubtitle3Int': PropertySchema(
-      id: 143,
+      id: 144,
       name: r'textSubtitle3Int',
       type: IsarType.long,
     ),
     r'textSubtitle4Int': PropertySchema(
-      id: 144,
+      id: 145,
       name: r'textSubtitle4Int',
       type: IsarType.long,
     ),
     r'textSubtitle5Int': PropertySchema(
-      id: 145,
+      id: 146,
       name: r'textSubtitle5Int',
       type: IsarType.long,
     ),
     r'textSubtitle6Int': PropertySchema(
-      id: 146,
+      id: 147,
       name: r'textSubtitle6Int',
       type: IsarType.long,
     ),
     r'textWhiteInt': PropertySchema(
-      id: 147,
+      id: 148,
       name: r'textWhiteInt',
       type: IsarType.long,
     ),
     r'themeId': PropertySchema(
-      id: 148,
+      id: 149,
       name: r'themeId',
       type: IsarType.string,
     ),
     r'tokenSummaryBGInt': PropertySchema(
-      id: 149,
+      id: 150,
       name: r'tokenSummaryBGInt',
       type: IsarType.long,
     ),
     r'tokenSummaryButtonBGInt': PropertySchema(
-      id: 150,
+      id: 151,
       name: r'tokenSummaryButtonBGInt',
       type: IsarType.long,
     ),
     r'tokenSummaryIconInt': PropertySchema(
-      id: 151,
+      id: 152,
       name: r'tokenSummaryIconInt',
       type: IsarType.long,
     ),
     r'tokenSummaryTextPrimaryInt': PropertySchema(
-      id: 152,
+      id: 153,
       name: r'tokenSummaryTextPrimaryInt',
       type: IsarType.long,
     ),
     r'tokenSummaryTextSecondaryInt': PropertySchema(
-      id: 153,
+      id: 154,
       name: r'tokenSummaryTextSecondaryInt',
       type: IsarType.long,
     ),
     r'topNavIconGreenInt': PropertySchema(
-      id: 154,
+      id: 155,
       name: r'topNavIconGreenInt',
       type: IsarType.long,
     ),
     r'topNavIconPrimaryInt': PropertySchema(
-      id: 155,
+      id: 156,
       name: r'topNavIconPrimaryInt',
       type: IsarType.long,
     ),
     r'topNavIconRedInt': PropertySchema(
-      id: 156,
+      id: 157,
       name: r'topNavIconRedInt',
       type: IsarType.long,
     ),
     r'topNavIconYellowInt': PropertySchema(
-      id: 157,
+      id: 158,
       name: r'topNavIconYellowInt',
       type: IsarType.long,
     ),
-    r'version': PropertySchema(id: 158, name: r'version', type: IsarType.long),
+    r'version': PropertySchema(id: 159, name: r'version', type: IsarType.long),
     r'warningBackgroundInt': PropertySchema(
-      id: 159,
+      id: 160,
       name: r'warningBackgroundInt',
       type: IsarType.long,
     ),
     r'warningForegroundInt': PropertySchema(
-      id: 160,
+      id: 161,
       name: r'warningForegroundInt',
       type: IsarType.long,
     ),
     r'zAssetsV3': PropertySchema(
-      id: 161,
+      id: 162,
       name: r'zAssetsV3',
       type: IsarType.object,
 
@@ -1062,45 +1067,46 @@ void _stackThemeSerialize(
   writer.writeLong(offsets[121], object.textFieldActiveSearchIconRightInt);
   writer.writeLong(offsets[122], object.textFieldActiveTextInt);
   writer.writeLong(offsets[123], object.textFieldDefaultBGInt);
-  writer.writeLong(offsets[124], object.textFieldDefaultSearchIconLeftInt);
-  writer.writeLong(offsets[125], object.textFieldDefaultSearchIconRightInt);
-  writer.writeLong(offsets[126], object.textFieldDefaultTextInt);
-  writer.writeLong(offsets[127], object.textFieldErrorBGInt);
-  writer.writeLong(offsets[128], object.textFieldErrorBorderInt);
-  writer.writeLong(offsets[129], object.textFieldErrorLabelInt);
-  writer.writeLong(offsets[130], object.textFieldErrorSearchIconLeftInt);
-  writer.writeLong(offsets[131], object.textFieldErrorSearchIconRightInt);
-  writer.writeLong(offsets[132], object.textFieldErrorTextInt);
-  writer.writeLong(offsets[133], object.textFieldSuccessBGInt);
-  writer.writeLong(offsets[134], object.textFieldSuccessBorderInt);
-  writer.writeLong(offsets[135], object.textFieldSuccessLabelInt);
-  writer.writeLong(offsets[136], object.textFieldSuccessSearchIconLeftInt);
-  writer.writeLong(offsets[137], object.textFieldSuccessSearchIconRightInt);
-  writer.writeLong(offsets[138], object.textFieldSuccessTextInt);
-  writer.writeLong(offsets[139], object.textRestoreInt);
-  writer.writeLong(offsets[140], object.textSelectedWordTableItemInt);
-  writer.writeLong(offsets[141], object.textSubtitle1Int);
-  writer.writeLong(offsets[142], object.textSubtitle2Int);
-  writer.writeLong(offsets[143], object.textSubtitle3Int);
-  writer.writeLong(offsets[144], object.textSubtitle4Int);
-  writer.writeLong(offsets[145], object.textSubtitle5Int);
-  writer.writeLong(offsets[146], object.textSubtitle6Int);
-  writer.writeLong(offsets[147], object.textWhiteInt);
-  writer.writeString(offsets[148], object.themeId);
-  writer.writeLong(offsets[149], object.tokenSummaryBGInt);
-  writer.writeLong(offsets[150], object.tokenSummaryButtonBGInt);
-  writer.writeLong(offsets[151], object.tokenSummaryIconInt);
-  writer.writeLong(offsets[152], object.tokenSummaryTextPrimaryInt);
-  writer.writeLong(offsets[153], object.tokenSummaryTextSecondaryInt);
-  writer.writeLong(offsets[154], object.topNavIconGreenInt);
-  writer.writeLong(offsets[155], object.topNavIconPrimaryInt);
-  writer.writeLong(offsets[156], object.topNavIconRedInt);
-  writer.writeLong(offsets[157], object.topNavIconYellowInt);
-  writer.writeLong(offsets[158], object.version);
-  writer.writeLong(offsets[159], object.warningBackgroundInt);
-  writer.writeLong(offsets[160], object.warningForegroundInt);
+  writer.writeLong(offsets[124], object.textFieldDefaultBorderInt);
+  writer.writeLong(offsets[125], object.textFieldDefaultSearchIconLeftInt);
+  writer.writeLong(offsets[126], object.textFieldDefaultSearchIconRightInt);
+  writer.writeLong(offsets[127], object.textFieldDefaultTextInt);
+  writer.writeLong(offsets[128], object.textFieldErrorBGInt);
+  writer.writeLong(offsets[129], object.textFieldErrorBorderInt);
+  writer.writeLong(offsets[130], object.textFieldErrorLabelInt);
+  writer.writeLong(offsets[131], object.textFieldErrorSearchIconLeftInt);
+  writer.writeLong(offsets[132], object.textFieldErrorSearchIconRightInt);
+  writer.writeLong(offsets[133], object.textFieldErrorTextInt);
+  writer.writeLong(offsets[134], object.textFieldSuccessBGInt);
+  writer.writeLong(offsets[135], object.textFieldSuccessBorderInt);
+  writer.writeLong(offsets[136], object.textFieldSuccessLabelInt);
+  writer.writeLong(offsets[137], object.textFieldSuccessSearchIconLeftInt);
+  writer.writeLong(offsets[138], object.textFieldSuccessSearchIconRightInt);
+  writer.writeLong(offsets[139], object.textFieldSuccessTextInt);
+  writer.writeLong(offsets[140], object.textRestoreInt);
+  writer.writeLong(offsets[141], object.textSelectedWordTableItemInt);
+  writer.writeLong(offsets[142], object.textSubtitle1Int);
+  writer.writeLong(offsets[143], object.textSubtitle2Int);
+  writer.writeLong(offsets[144], object.textSubtitle3Int);
+  writer.writeLong(offsets[145], object.textSubtitle4Int);
+  writer.writeLong(offsets[146], object.textSubtitle5Int);
+  writer.writeLong(offsets[147], object.textSubtitle6Int);
+  writer.writeLong(offsets[148], object.textWhiteInt);
+  writer.writeString(offsets[149], object.themeId);
+  writer.writeLong(offsets[150], object.tokenSummaryBGInt);
+  writer.writeLong(offsets[151], object.tokenSummaryButtonBGInt);
+  writer.writeLong(offsets[152], object.tokenSummaryIconInt);
+  writer.writeLong(offsets[153], object.tokenSummaryTextPrimaryInt);
+  writer.writeLong(offsets[154], object.tokenSummaryTextSecondaryInt);
+  writer.writeLong(offsets[155], object.topNavIconGreenInt);
+  writer.writeLong(offsets[156], object.topNavIconPrimaryInt);
+  writer.writeLong(offsets[157], object.topNavIconRedInt);
+  writer.writeLong(offsets[158], object.topNavIconYellowInt);
+  writer.writeLong(offsets[159], object.version);
+  writer.writeLong(offsets[160], object.warningBackgroundInt);
+  writer.writeLong(offsets[161], object.warningForegroundInt);
   writer.writeObject<ThemeAssetsV3>(
-    offsets[161],
+    offsets[162],
     allOffsets,
     ThemeAssetsV3Schema.serialize,
     object.assetsV3,
@@ -1249,45 +1255,46 @@ StackTheme _stackThemeDeserialize(
   object.textFieldActiveSearchIconRightInt = reader.readLong(offsets[121]);
   object.textFieldActiveTextInt = reader.readLong(offsets[122]);
   object.textFieldDefaultBGInt = reader.readLong(offsets[123]);
-  object.textFieldDefaultSearchIconLeftInt = reader.readLong(offsets[124]);
-  object.textFieldDefaultSearchIconRightInt = reader.readLong(offsets[125]);
-  object.textFieldDefaultTextInt = reader.readLong(offsets[126]);
-  object.textFieldErrorBGInt = reader.readLong(offsets[127]);
-  object.textFieldErrorBorderInt = reader.readLong(offsets[128]);
-  object.textFieldErrorLabelInt = reader.readLong(offsets[129]);
-  object.textFieldErrorSearchIconLeftInt = reader.readLong(offsets[130]);
-  object.textFieldErrorSearchIconRightInt = reader.readLong(offsets[131]);
-  object.textFieldErrorTextInt = reader.readLong(offsets[132]);
-  object.textFieldSuccessBGInt = reader.readLong(offsets[133]);
-  object.textFieldSuccessBorderInt = reader.readLong(offsets[134]);
-  object.textFieldSuccessLabelInt = reader.readLong(offsets[135]);
-  object.textFieldSuccessSearchIconLeftInt = reader.readLong(offsets[136]);
-  object.textFieldSuccessSearchIconRightInt = reader.readLong(offsets[137]);
-  object.textFieldSuccessTextInt = reader.readLong(offsets[138]);
-  object.textRestoreInt = reader.readLong(offsets[139]);
-  object.textSelectedWordTableItemInt = reader.readLong(offsets[140]);
-  object.textSubtitle1Int = reader.readLong(offsets[141]);
-  object.textSubtitle2Int = reader.readLong(offsets[142]);
-  object.textSubtitle3Int = reader.readLong(offsets[143]);
-  object.textSubtitle4Int = reader.readLong(offsets[144]);
-  object.textSubtitle5Int = reader.readLong(offsets[145]);
-  object.textSubtitle6Int = reader.readLong(offsets[146]);
-  object.textWhiteInt = reader.readLong(offsets[147]);
-  object.themeId = reader.readString(offsets[148]);
-  object.tokenSummaryBGInt = reader.readLong(offsets[149]);
-  object.tokenSummaryButtonBGInt = reader.readLong(offsets[150]);
-  object.tokenSummaryIconInt = reader.readLong(offsets[151]);
-  object.tokenSummaryTextPrimaryInt = reader.readLong(offsets[152]);
-  object.tokenSummaryTextSecondaryInt = reader.readLong(offsets[153]);
-  object.topNavIconGreenInt = reader.readLong(offsets[154]);
-  object.topNavIconPrimaryInt = reader.readLong(offsets[155]);
-  object.topNavIconRedInt = reader.readLong(offsets[156]);
-  object.topNavIconYellowInt = reader.readLong(offsets[157]);
-  object.version = reader.readLongOrNull(offsets[158]);
-  object.warningBackgroundInt = reader.readLong(offsets[159]);
-  object.warningForegroundInt = reader.readLong(offsets[160]);
+  object.textFieldDefaultBorderInt = reader.readLong(offsets[124]);
+  object.textFieldDefaultSearchIconLeftInt = reader.readLong(offsets[125]);
+  object.textFieldDefaultSearchIconRightInt = reader.readLong(offsets[126]);
+  object.textFieldDefaultTextInt = reader.readLong(offsets[127]);
+  object.textFieldErrorBGInt = reader.readLong(offsets[128]);
+  object.textFieldErrorBorderInt = reader.readLong(offsets[129]);
+  object.textFieldErrorLabelInt = reader.readLong(offsets[130]);
+  object.textFieldErrorSearchIconLeftInt = reader.readLong(offsets[131]);
+  object.textFieldErrorSearchIconRightInt = reader.readLong(offsets[132]);
+  object.textFieldErrorTextInt = reader.readLong(offsets[133]);
+  object.textFieldSuccessBGInt = reader.readLong(offsets[134]);
+  object.textFieldSuccessBorderInt = reader.readLong(offsets[135]);
+  object.textFieldSuccessLabelInt = reader.readLong(offsets[136]);
+  object.textFieldSuccessSearchIconLeftInt = reader.readLong(offsets[137]);
+  object.textFieldSuccessSearchIconRightInt = reader.readLong(offsets[138]);
+  object.textFieldSuccessTextInt = reader.readLong(offsets[139]);
+  object.textRestoreInt = reader.readLong(offsets[140]);
+  object.textSelectedWordTableItemInt = reader.readLong(offsets[141]);
+  object.textSubtitle1Int = reader.readLong(offsets[142]);
+  object.textSubtitle2Int = reader.readLong(offsets[143]);
+  object.textSubtitle3Int = reader.readLong(offsets[144]);
+  object.textSubtitle4Int = reader.readLong(offsets[145]);
+  object.textSubtitle5Int = reader.readLong(offsets[146]);
+  object.textSubtitle6Int = reader.readLong(offsets[147]);
+  object.textWhiteInt = reader.readLong(offsets[148]);
+  object.themeId = reader.readString(offsets[149]);
+  object.tokenSummaryBGInt = reader.readLong(offsets[150]);
+  object.tokenSummaryButtonBGInt = reader.readLong(offsets[151]);
+  object.tokenSummaryIconInt = reader.readLong(offsets[152]);
+  object.tokenSummaryTextPrimaryInt = reader.readLong(offsets[153]);
+  object.tokenSummaryTextSecondaryInt = reader.readLong(offsets[154]);
+  object.topNavIconGreenInt = reader.readLong(offsets[155]);
+  object.topNavIconPrimaryInt = reader.readLong(offsets[156]);
+  object.topNavIconRedInt = reader.readLong(offsets[157]);
+  object.topNavIconYellowInt = reader.readLong(offsets[158]);
+  object.version = reader.readLongOrNull(offsets[159]);
+  object.warningBackgroundInt = reader.readLong(offsets[160]);
+  object.warningForegroundInt = reader.readLong(offsets[161]);
   object.assetsV3 = reader.readObjectOrNull<ThemeAssetsV3>(
-    offsets[161],
+    offsets[162],
     ThemeAssetsV3Schema.deserialize,
     allOffsets,
   );
@@ -1608,9 +1615,9 @@ P _stackThemeDeserializeProp<P>(
     case 147:
       return (reader.readLong(offset)) as P;
     case 148:
-      return (reader.readString(offset)) as P;
-    case 149:
       return (reader.readLong(offset)) as P;
+    case 149:
+      return (reader.readString(offset)) as P;
     case 150:
       return (reader.readLong(offset)) as P;
     case 151:
@@ -1628,12 +1635,14 @@ P _stackThemeDeserializeProp<P>(
     case 157:
       return (reader.readLong(offset)) as P;
     case 158:
-      return (reader.readLongOrNull(offset)) as P;
-    case 159:
       return (reader.readLong(offset)) as P;
+    case 159:
+      return (reader.readLongOrNull(offset)) as P;
     case 160:
       return (reader.readLong(offset)) as P;
     case 161:
+      return (reader.readLong(offset)) as P;
+    case 162:
       return (reader.readObjectOrNull<ThemeAssetsV3>(
             offset,
             ThemeAssetsV3Schema.deserialize,
@@ -9519,6 +9528,64 @@ extension StackThemeQueryFilter
   }
 
   QueryBuilder<StackTheme, StackTheme, QAfterFilterCondition>
+  textFieldDefaultBorderIntEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'textFieldDefaultBorderInt',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<StackTheme, StackTheme, QAfterFilterCondition>
+  textFieldDefaultBorderIntGreaterThan(int value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'textFieldDefaultBorderInt',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<StackTheme, StackTheme, QAfterFilterCondition>
+  textFieldDefaultBorderIntLessThan(int value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'textFieldDefaultBorderInt',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<StackTheme, StackTheme, QAfterFilterCondition>
+  textFieldDefaultBorderIntBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'textFieldDefaultBorderInt',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<StackTheme, StackTheme, QAfterFilterCondition>
   textFieldDefaultSearchIconLeftIntEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -13472,6 +13539,20 @@ extension StackThemeQuerySortBy
   }
 
   QueryBuilder<StackTheme, StackTheme, QAfterSortBy>
+  sortByTextFieldDefaultBorderInt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'textFieldDefaultBorderInt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<StackTheme, StackTheme, QAfterSortBy>
+  sortByTextFieldDefaultBorderIntDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'textFieldDefaultBorderInt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<StackTheme, StackTheme, QAfterSortBy>
   sortByTextFieldDefaultSearchIconLeftInt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'textFieldDefaultSearchIconLeftInt', Sort.asc);
@@ -15659,6 +15740,20 @@ extension StackThemeQuerySortThenBy
   }
 
   QueryBuilder<StackTheme, StackTheme, QAfterSortBy>
+  thenByTextFieldDefaultBorderInt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'textFieldDefaultBorderInt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<StackTheme, StackTheme, QAfterSortBy>
+  thenByTextFieldDefaultBorderIntDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'textFieldDefaultBorderInt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<StackTheme, StackTheme, QAfterSortBy>
   thenByTextFieldDefaultSearchIconLeftInt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'textFieldDefaultSearchIconLeftInt', Sort.asc);
@@ -17015,6 +17110,13 @@ extension StackThemeQueryWhereDistinct
   }
 
   QueryBuilder<StackTheme, StackTheme, QDistinct>
+  distinctByTextFieldDefaultBorderInt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'textFieldDefaultBorderInt');
+    });
+  }
+
+  QueryBuilder<StackTheme, StackTheme, QDistinct>
   distinctByTextFieldDefaultSearchIconLeftInt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'textFieldDefaultSearchIconLeftInt');
@@ -18107,6 +18209,13 @@ extension StackThemeQueryProperty
   textFieldDefaultBGIntProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'textFieldDefaultBGInt');
+    });
+  }
+
+  QueryBuilder<StackTheme, int, QQueryOperations>
+  textFieldDefaultBorderIntProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'textFieldDefaultBorderInt');
     });
   }
 

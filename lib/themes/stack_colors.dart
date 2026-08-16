@@ -127,6 +127,7 @@ class StackColors extends ThemeExtension<StackColors> {
   final Color textFieldDefaultBG;
   final Color textFieldErrorBG;
   final Color textFieldSuccessBG;
+  final Color textFieldDefaultBorder;
   final Color textFieldErrorBorder;
   final Color textFieldSuccessBorder;
   final Color textFieldActiveSearchIconLeft;
@@ -304,6 +305,7 @@ class StackColors extends ThemeExtension<StackColors> {
     required this.textFieldDefaultBG,
     required this.textFieldErrorBG,
     required this.textFieldSuccessBG,
+    required this.textFieldDefaultBorder,
     required this.textFieldErrorBorder,
     required this.textFieldSuccessBorder,
     required this.textFieldActiveSearchIconLeft,
@@ -465,6 +467,7 @@ class StackColors extends ThemeExtension<StackColors> {
       textFieldDefaultBG: colorTheme.textFieldDefaultBG,
       textFieldErrorBG: colorTheme.textFieldErrorBG,
       textFieldSuccessBG: colorTheme.textFieldSuccessBG,
+      textFieldDefaultBorder: colorTheme.textFieldDefaultBorder,
       textFieldErrorBorder: colorTheme.textFieldErrorBorder,
       textFieldSuccessBorder: colorTheme.textFieldSuccessBorder,
       textFieldActiveSearchIconLeft: colorTheme.textFieldActiveSearchIconLeft,
@@ -628,6 +631,7 @@ class StackColors extends ThemeExtension<StackColors> {
     Color? textFieldDefaultBG,
     Color? textFieldErrorBG,
     Color? textFieldSuccessBG,
+    Color? textFieldDefaultBorder,
     Color? textFieldErrorBorder,
     Color? textFieldSuccessBorder,
     Color? textFieldActiveSearchIconLeft,
@@ -804,6 +808,8 @@ class StackColors extends ThemeExtension<StackColors> {
       textFieldDefaultBG: textFieldDefaultBG ?? this.textFieldDefaultBG,
       textFieldErrorBG: textFieldErrorBG ?? this.textFieldErrorBG,
       textFieldSuccessBG: textFieldSuccessBG ?? this.textFieldSuccessBG,
+      textFieldDefaultBorder:
+          textFieldDefaultBorder ?? this.textFieldDefaultBorder,
       textFieldErrorBorder: textFieldErrorBorder ?? this.textFieldErrorBorder,
       textFieldSuccessBorder:
           textFieldSuccessBorder ?? this.textFieldSuccessBorder,
@@ -1256,6 +1262,11 @@ class StackColors extends ThemeExtension<StackColors> {
       textFieldSuccessBG: Color.lerp(
         textFieldSuccessBG,
         other.textFieldSuccessBG,
+        t,
+      )!,
+      textFieldDefaultBorder: Color.lerp(
+        textFieldDefaultBorder,
+        other.textFieldDefaultBorder,
         t,
       )!,
       textFieldErrorBorder: Color.lerp(

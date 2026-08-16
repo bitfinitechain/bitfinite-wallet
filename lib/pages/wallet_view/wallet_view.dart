@@ -40,6 +40,7 @@ import '../../themes/stack_colors.dart';
 import '../../themes/theme_providers.dart';
 import '../../utilities/amount/amount.dart';
 import '../../utilities/assets.dart';
+import '../../utilities/hero_ink.dart';
 import '../../utilities/ios_icon.dart';
 import '../../utilities/clipboard_interface.dart';
 import '../../utilities/constants.dart';
@@ -506,6 +507,11 @@ class _WalletViewState extends ConsumerState<WalletView> {
     debugPrint("BUILD: $runtimeType");
 
     final coin = ref.watch(pWalletCoin(walletId));
+    // Ink for everything sitting on the hero (app bar glyphs, title, the
+    // translucent discs behind them). Derived from the hero fill for the same
+    // reason as the balance block: the hero is the theme's own colour and is a
+    // light orange in some themes, where white ink measures 3.00:1.
+    final onHero = heroInk(ref.watch(pCoinColor(coin)));
 
     final prefs = ref.watch(prefsChangeNotifierProvider);
     final showExchange = prefs.enableExchange;
@@ -978,7 +984,8 @@ class _WalletViewState extends ConsumerState<WalletView> {
                     // Matches the other hero buttons: without this it falls
                     // back to the page background and reads as a solid white
                     // disc on the blue.
-                    color: Colors.white.withOpacity(0.14),
+                    color: onHero.withOpacity(0.14),
+                    iconColor: onHero,
                     onPressed: () {
                       _logout();
                       Navigator.of(context).pop();
@@ -1001,7 +1008,7 @@ class _WalletViewState extends ConsumerState<WalletView> {
                           // the blue hero. On the hero, ink comes from the hero.
                           style: STextStyles.navBarTitle(
                             context,
-                          ).copyWith(color: Colors.white),
+                          ).copyWith(color: onHero),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -1034,7 +1041,7 @@ class _WalletViewState extends ConsumerState<WalletView> {
                           // painted them as solid white discs floating on the
                           // blue. Same rule as the address chip: on the hero,
                           // derive from the hero.
-                          color: Colors.white.withOpacity(0.14),
+                          color: onHero.withOpacity(0.14),
                           icon: _buildNetworkIcon(_currentSyncStatus),
                           onPressed: () {
                             Navigator.of(context).pushNamed(
@@ -1069,66 +1076,57 @@ class _WalletViewState extends ConsumerState<WalletView> {
                           // painted them as solid white discs floating on the
                           // blue. Same rule as the address chip: on the hero,
                           // derive from the hero.
-                          color: Colors.white.withOpacity(0.14),
-                          icon: Platform.isIOS
-                              ? Icon(
-                                  ref.watch(
-                                        notificationsProvider.select(
-                                          (value) => value
-                                              .hasUnreadNotificationsFor(
-                                                walletId,
-                                              ),
-                                        ),
-                                      )
-                                      ? CupertinoIcons.bell_fill
-                                      : CupertinoIcons.bell,
-                                  size: 20,
-                                  color: Colors.white,
-                                )
-                              : ref.watch(
+                          color: onHero.withOpacity(0.14),
+                          // White bell plus a separate red dot, as the design
+                          // does. Previously the UNREAD state was signalled by
+                          // dropping the colour override so the theme's bellNew
+                          // asset showed its own dark bell — i.e. the indicator
+                          // WAS the colour. On the blue hero that inverts into
+                          // "unread = invisible", which is the wrong way round
+                          // for the one state that wants attention.
+                          icon: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Platform.isIOS
+                                  ? Icon(
+                                      CupertinoIcons.bell,
+                                      size: 20,
+                                      color: onHero,
+                                    )
+                                  : SvgPicture.asset(
+                                      Assets.svg.bell,
+                                      width: 20,
+                                      height: 20,
+                                      color: onHero,
+                                    ),
+                              if (ref.watch(
                                 notificationsProvider.select(
                                   (value) =>
                                       value.hasUnreadNotificationsFor(walletId),
                                 ),
-                              )
-                              ? SvgPicture.file(
-                                  File(
-                                    ref.watch(
-                                      themeProvider.select(
-                                        (value) => value.assets.bellNew,
+                              ))
+                                Positioned(
+                                  top: -1,
+                                  right: -1,
+                                  child: Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(
+                                        context,
+                                      ).extension<StackColors>()!.accentColorRed,
+                                      shape: BoxShape.circle,
+                                      // Ring in the hero colour so the dot reads
+                                      // as a badge rather than a smudge on the bell.
+                                      border: Border.all(
+                                        color: ref.watch(pCoinColor(coin)),
+                                        width: 1.5,
                                       ),
                                     ),
                                   ),
-                                  width: 20,
-                                  height: 20,
-                                  color:
-                                      ref.watch(
-                                        notificationsProvider.select(
-                                          (value) =>
-                                              value.hasUnreadNotificationsFor(
-                                                walletId,
-                                              ),
-                                        ),
-                                      )
-                                      ? null
-                                      : Colors.white,
-                                )
-                              : SvgPicture.asset(
-                                  Assets.svg.bell,
-                                  width: 20,
-                                  height: 20,
-                                  color:
-                                      ref.watch(
-                                        notificationsProvider.select(
-                                          (value) =>
-                                              value.hasUnreadNotificationsFor(
-                                                walletId,
-                                              ),
-                                        ),
-                                      )
-                                      ? null
-                                      : Colors.white,
                                 ),
+                            ],
+                          ),
                           onPressed: () {
                             // reset unread state
                             ref.refresh(unreadNotificationsStateProvider);
@@ -1197,14 +1195,14 @@ class _WalletViewState extends ConsumerState<WalletView> {
                           // painted them as solid white discs floating on the
                           // blue. Same rule as the address chip: on the hero,
                           // derive from the hero.
-                          color: Colors.white.withOpacity(0.14),
+                          color: onHero.withOpacity(0.14),
                           icon: adaptiveIcon(
                             Assets.svg.bars,
                             CupertinoIcons.line_horizontal_3,
                             size: 20,
-                            color: Theme.of(
-                              context,
-                            ).extension<StackColors>()!.accentColorDark,
+                            // accentColorDark is a page colour; on the hero the
+                            // glyph is white like every other control there.
+                            color: onHero,
                           ),
                           onPressed: () {
                             //todo: check if print needed

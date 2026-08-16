@@ -39,11 +39,23 @@ class PriceService extends ChangeNotifier {
 
   final _priceAPI = PriceAPI(HTTP());
 
+  /// A price of zero means "this coin is not listed on the price API", not
+  /// "this coin is worth nothing". The upstream cache stores that as a real
+  /// record, so every `price != null` check in the UI passed and rendered a
+  /// fabricated "+0.00 USD" on every amount. BFX is unlisted, so that was the
+  /// whole app.
+  ///
+  /// Normalised here rather than at the ~37 call sites: the callers already
+  /// treat null as "no price and show nothing", which is exactly right.
+  ({Decimal value, double change24h})? _orNullIfUnpriced(
+    ({Decimal value, double change24h})? cached,
+  ) => (cached == null || cached.value <= Decimal.zero) ? null : cached;
+
   ({Decimal value, double change24h})? getPrice(CryptoCurrency coin) =>
-      _cachedPrices[coin];
+      _orNullIfUnpriced(_cachedPrices[coin]);
 
   ({Decimal value, double change24h})? getTokenPrice(String contractAddress) =>
-      _cachedTokenPrices[contractAddress.toLowerCase()];
+      _orNullIfUnpriced(_cachedTokenPrices[contractAddress.toLowerCase()]);
 
   PriceService(this.baseTicker);
 

@@ -50,13 +50,26 @@ InputDecoration standardInputDecoration(
               )
             : STextStyles.desktopTextFieldLabel(context)
         : STextStyles.fieldLabel(context),
-    enabledBorder: InputBorder.none,
-    focusedBorder: InputBorder.none,
+    // A white field on the tinted page measures 1.08:1 — without a border the
+    // control has no visible edge at all. The design's #E4E4E7 hairline is what
+    // makes it readable as an input. Radius matches the ClipRRect these fields
+    // are wrapped in, so the stroke follows the corner instead of being cut.
+    enabledBorder: _defaultFieldBorder(context),
+    focusedBorder: _defaultFieldBorder(context),
     errorBorder: InputBorder.none,
-    disabledBorder: InputBorder.none,
+    disabledBorder: _defaultFieldBorder(context),
     focusedErrorBorder: InputBorder.none,
   );
 }
+
+OutlineInputBorder _defaultFieldBorder(BuildContext context) =>
+    OutlineInputBorder(
+      borderRadius: BorderRadius.circular(Constants.size.circularBorderRadius),
+      borderSide: BorderSide(
+        color: Theme.of(context).extension<StackColors>()!.textFieldDefaultBorder,
+        width: 1,
+      ),
+    );
 
 class FullTextField extends StatefulWidget {
   const FullTextField({

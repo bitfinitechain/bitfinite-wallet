@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import '../../themes/stack_colors.dart';
+import '../../utilities/hero_ink.dart';
 import '../../utilities/assets.dart';
 import '../../utilities/constants.dart';
 import '../../utilities/text_styles.dart';
@@ -279,12 +280,16 @@ class _ActionButton extends StatelessWidget {
       // Labeled action (Receive/Send): icon + text pill, matching the
       // Receive/Send switch-dock so the launcher reads in the same language.
       if (labeled) {
-        // The primary action is a filled brand-blue pill; the other stays a
-        // plain label. accentColorBlue is blue-600 (#0644F1), the same token
-        // the hero uses, so the two blues on screen are one blue.
+        // The primary action is a filled pill in the THEME's own primary
+        // colour. accentColorBlue was wrong here: it is a named slot that
+        // stays blue in every theme (#077CBE in Forest and Orange, #1276EB in
+        // Fruit Sorbet), so those themes rendered a Brandkit-ish blue instead
+        // of their own identity. buttonBackPrimary is each theme's real
+        // primary — and because it is blue-600/700 in Light/Dark, those two
+        // still follow the Brandkit, which is the rule.
         final filled = highlighted;
         return Material(
-          color: filled ? colors.accentColorBlue : Colors.transparent,
+          color: filled ? colors.buttonBackPrimary : Colors.transparent,
           shape: const StadiumBorder(),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
@@ -301,9 +306,19 @@ class _ActionButton extends StatelessWidget {
                   Text(
                     data.label ?? "",
                     style: STextStyles.w600_14(context).copyWith(
-                      // White on blue-600 is 6.76:1. Leaving this as
-                      // bottomNavText would put dark ink on the filled pill.
-                      color: filled ? Colors.white : colors.bottomNavText,
+                      // Each theme declares the ink for its own primary, and
+                      // OLED Black's is BLACK on #F26822 — so this is not
+                      // hardcoded. But a token can be wrong: Orange declares
+                      // white ink on a white dock (1.00:1) and white on its
+                      // #F36B43 pill (3.00:1). readableInk keeps the theme's
+                      // choice wherever it holds up and replaces it only where
+                      // it does not.
+                      color: filled
+                          ? readableInk(
+                              colors.buttonTextPrimary,
+                              colors.buttonBackPrimary,
+                            )
+                          : readableInk(colors.bottomNavText, colors.popupBG),
                     ),
                   ),
                 ],
@@ -363,7 +378,9 @@ class _ActionButton extends StatelessWidget {
                 width: 30,
                 height: 30,
                 decoration: BoxDecoration(
-                  color: colors.accentColorBlue.withOpacity(0.15),
+                  // Same rule as the pill: the theme's own primary, not the
+                  // permanently-blue accent slot.
+                  color: colors.buttonBackPrimary.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Center(

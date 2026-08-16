@@ -11,26 +11,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../themes/stack_colors.dart';
+import '../../../../utilities/hero_ink.dart';
 import '../../../../utilities/assets.dart';
 
 class SendNavIcon extends StatelessWidget {
   const SendNavIcon({super.key, this.onFilled = false});
 
-  /// True when this icon sits on the filled brand-blue pill.
+  /// True when this icon sits on the filled primary pill.
   ///
-  /// Without it the icon vanished: both the disc and the arrow are painted in
-  /// accentColorBlue, and the filled pill is now that same blue — blue on blue.
-  /// The Send action appeared to have no icon at all, which also made Receive
-  /// (a bright green disc) read as the active one.
+  /// Without it the icon vanished: the disc, the arrow and the pill are all the
+  /// theme's primary colour — primary on primary. The Send action appeared to
+  /// have no icon at all, which also made Receive (a bright green disc) read as
+  /// the active one.
   final bool onFilled;
 
   @override
   Widget build(BuildContext context) {
-    // Send reads as outgoing: the accent blue, matching the primary actions.
-    // On the filled pill the roles invert — white on blue, per the design
-    // (disc rgba(255,255,255,0.18), arrow #FFFFFF).
-    final blue = Theme.of(context).extension<StackColors>()!.accentColorBlue;
-    final tint = onFilled ? Colors.white : blue;
+    // Send reads as outgoing in the theme's primary colour, matching the
+    // primary actions. On the filled pill the roles invert to that theme's own
+    // button ink — which is black, not white, in OLED Black.
+    final colors = Theme.of(context).extension<StackColors>()!;
+    // On the pill the icon must survive the same check as the label beside it,
+    // or the two disagree — Orange's declared white is 3.00:1 on its own fill.
+    final tint = onFilled
+        ? readableInk(colors.buttonTextPrimary, colors.buttonBackPrimary)
+        : colors.buttonBackPrimary;
     return Container(
       decoration: BoxDecoration(
         color: tint.withOpacity(onFilled ? 0.18 : 0.15),

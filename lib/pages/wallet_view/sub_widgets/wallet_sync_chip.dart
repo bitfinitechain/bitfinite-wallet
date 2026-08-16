@@ -7,6 +7,8 @@ import '../../../providers/global/wallets_provider.dart';
 import '../../../services/event_bus/events/global/wallet_sync_status_changed_event.dart';
 import '../../../services/event_bus/global_event_bus.dart';
 import '../../../themes/stack_colors.dart';
+import '../../../themes/theme_providers.dart';
+import '../../../utilities/hero_ink.dart';
 import '../../../utilities/text_styles.dart';
 import '../../../widgets/coin_card.dart';
 import '../../../wallets/isar/providers/wallet_info_provider.dart';
@@ -64,7 +66,13 @@ class _WalletSyncChipState extends ConsumerState<WalletSyncChip> {
     final colors = Theme.of(context).extension<StackColors>()!;
     // Balance block now sits on the page background (no gradient card), so the
     // chip reads against the themed surface rather than on-card white.
-    final favText = colors.textDark;
+    // This chip only ever renders inside the hero (its sole call site is
+    // wallet_summary_info), so its ink comes from the hero, not the page.
+    // textDark is near-black in the light theme and was unreadable on blue;
+    // hardcoded white then failed the other way on the light-orange heroes.
+    final favText = heroInk(
+      ref.watch(pCoinColor(ref.watch(pWalletCoin(widget.walletId)))),
+    );
 
     final (Color dotColor, String label) = switch (_status) {
       WalletSyncStatus.synced => (colors.accentColorGreen, "Synced"),

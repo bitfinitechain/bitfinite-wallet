@@ -11,21 +11,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../themes/stack_colors.dart';
+import '../../../../utilities/hero_ink.dart';
 import '../../../../utilities/assets.dart';
 
 class ReceiveNavIcon extends StatelessWidget {
   const ReceiveNavIcon({super.key, this.onFilled = false});
 
-  /// True when this icon sits on the filled brand-blue pill (the Receive page,
-  /// where Receive is the active action). Green on blue is muddy and low
-  /// contrast, so the filled state uses white like the Send icon does.
+  /// True when this icon sits on the filled primary pill (the Receive page,
+  /// where Receive is the active action). Green on the primary fill is muddy
+  /// and low contrast, so the filled state uses the theme's button ink like
+  /// the Send icon does.
   final bool onFilled;
 
   @override
   Widget build(BuildContext context) {
     // Receive reads as incoming: green, matching the received transaction rows.
-    final green = Theme.of(context).extension<StackColors>()!.accentColorGreen;
-    final tint = onFilled ? Colors.white : green;
+    // accentColorGreen is per-theme (Forest #00A591, OLED Black #4CC0A0), so
+    // this already follows the theme; only the filled state needed fixing.
+    final colors = Theme.of(context).extension<StackColors>()!;
+    final tint = onFilled
+        ? readableInk(colors.buttonTextPrimary, colors.buttonBackPrimary)
+        : colors.accentColorGreen;
     return Container(
       decoration: BoxDecoration(
         color: tint.withOpacity(onFilled ? 0.18 : 0.15),

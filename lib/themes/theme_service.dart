@@ -40,7 +40,10 @@ class ThemeService {
   // 27: coin.bitfinite #2F6BFF -> Brandkit blue-600 #0644F1
   // 28: accent_color_blue #2F6BFF -> #0644F1 (one brand blue across fills and
   //     accents; as text on white this also goes 4.50:1 -> 6.76:1)
-  static const _currentDefaultThemeVersion = 28;
+  // 29: light text_field_default_bg -> #FFFFFF per the redesign (inputs are
+  //     white surfaces on the tinted page). active_bg keeps the old grey so
+  //     focus is still a visible change now that resting state is white.
+  static const _currentDefaultThemeVersion = 29;
   ThemeService._();
   static ThemeService? _instance;
   static ThemeService get instance => _instance ??= ThemeService._();

@@ -54,6 +54,8 @@ class ReceiveSendSwitchDock extends ConsumerWidget {
 
     return WalletNavigationBar(
       floating: true,
+      // The page you are on is the active one.
+      activeLabel: current == TransferTab.receive ? "Receive" : "Send",
       items: [
         WalletNavigationBarItemData(
           label: "Receive",

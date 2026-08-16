@@ -112,6 +112,10 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
       prefsChangeNotifierProvider.select((value) => value.currency),
     );
 
+    final privacyMode = ref.watch(
+      prefsChangeNotifierProvider.select((value) => value.privacyMode),
+    );
+
     Decimal? price;
     if (ref.watch(
       prefsChangeNotifierProvider.select((value) => value.externalCalls),
@@ -277,7 +281,12 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
                                       );
 
                                   return Text(
-                                    "$prefix$formattedAmount",
+                                    // Privacy mode masks per-row amounts too:
+                                    // hiding the balance while listing every
+                                    // transaction underneath it is not privacy.
+                                    privacyMode
+                                        ? "••••"
+                                        : "$prefix$formattedAmount",
                                     style: STextStyles.itemSubtitle12(context)
                                         .copyWith(
                                           fontWeight: FontWeight.w600,
@@ -325,7 +334,9 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
                                             .fiatString(locale: locale);
 
                                     return Text(
-                                      "$prefix$formattedFiat $baseCurrency",
+                                      privacyMode
+                                          ? "•••• $baseCurrency"
+                                          : "$prefix$formattedFiat $baseCurrency",
                                       style: STextStyles.label(context),
                                     );
                                   },

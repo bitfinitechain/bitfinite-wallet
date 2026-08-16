@@ -66,10 +66,19 @@ class WalletNavigationBar extends ConsumerWidget {
     required this.items,
     required this.moreItems,
     this.floating = false,
+    this.activeLabel,
   });
 
   final List<WalletNavigationBarItemData> items;
   final List<WalletNavigationBarItemData> moreItems;
+
+  /// Label of the action rendered as the filled primary pill.
+  ///
+  /// Set by the page rather than inferred here: on the wallet home the primary
+  /// action is Send, but on the Receive and Send pages it is whichever page you
+  /// are actually on. Hardcoding "Send" left the Receive page showing Send as
+  /// active, which reads as the wrong page being selected.
+  final String? activeLabel;
 
   /// When true, renders as a frosted, rounded "pill" dock (iOS style) that
   /// hugs its content, instead of the full-width in-flow button row.
@@ -119,12 +128,11 @@ class WalletNavigationBar extends ConsumerWidget {
           data: items[i],
           floating: floating,
           // Matched on label, not index: Finalize/Sign appear conditionally
-          // between Receive and Send, so Send has no fixed position.
-          //
-          // The redesign fills Send as the primary action; Receive stays plain
-          // beside it. Previously this highlighted items[0] (Receive), and only
-          // on iOS, so on Android nothing was highlighted at all.
-          highlighted: floating && items[i].label == "Send",
+          // between Receive and Send, so positions are not stable.
+          highlighted:
+              floating &&
+              activeLabel != null &&
+              items[i].label == activeLabel,
           // Floating dock: label the actions (Receive/Send) like the switch-dock.
           labeled: floating,
         ),

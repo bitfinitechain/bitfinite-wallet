@@ -54,6 +54,7 @@ class Prefs extends ChangeNotifier {
       _lastUnlocked = await _getLastUnlocked();
       _lastUnlockedTimeout = await _getLastUnlockedTimeout();
       _showTestNetCoins = await _getShowTestNetCoins();
+      _privacyMode = await _getPrivacyMode();
       _torKillswitch = await _getTorKillswitch();
       _isAutoBackupEnabled = await _getIsAutoBackupEnabled();
       _autoBackupLocation = await _getAutoBackupLocation();
@@ -589,6 +590,36 @@ class Prefs extends ChangeNotifier {
     return await DB.instance.get<dynamic>(
               boxName: DB.boxNamePrefs,
               key: "showTestNetCoins",
+            )
+            as bool? ??
+        false;
+  }
+
+  // privacy mode — hide balances and transaction amounts behind a mask so the
+  // wallet can be opened in public. Persisted, because a privacy setting that
+  // resets on restart is worse than none: you would believe it was on.
+  // Defaults to false so nothing is hidden unless asked for.
+
+  bool _privacyMode = false;
+
+  bool get privacyMode => _privacyMode;
+
+  set privacyMode(bool privacyMode) {
+    if (_privacyMode != privacyMode) {
+      DB.instance.put<dynamic>(
+        boxName: DB.boxNamePrefs,
+        key: "privacyMode",
+        value: privacyMode,
+      );
+      _privacyMode = privacyMode;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> _getPrivacyMode() async {
+    return await DB.instance.get<dynamic>(
+              boxName: DB.boxNamePrefs,
+              key: "privacyMode",
             )
             as bool? ??
         false;

@@ -516,6 +516,8 @@ class _WalletViewState extends ConsumerState<WalletView> {
 
     final Widget walletDock =
                 WalletNavigationBar(
+                  // Wallet home: Send is the primary action, per the design.
+                  activeLabel: "Send",
                   floating: true,
                   items: [
                     WalletNavigationBarItemData(
@@ -999,18 +1001,12 @@ class _WalletViewState extends ConsumerState<WalletView> {
                     ],
                   ),
                   actions: [
-                    if (AppConfig.hasFeature(AppFeature.tor))
-                      const Padding(
-                        padding: EdgeInsets.only(
-                          top: 10,
-                          bottom: 10,
-                          right: 10,
-                        ),
-                        child: AspectRatio(
-                          aspectRatio: 1,
-                          child: SmallTorIcon(),
-                        ),
-                      ),
+                    // Tor status indicator removed from the wallet header.
+                    // It was the fourth control after the title, which is why
+                    // the wallet name truncated to "FOUND…" where the design
+                    // fits it — the design's header carries three. Tor state
+                    // is still reachable from Settings; a passive indicator
+                    // does not need to cost the wallet its name.
                     Padding(
                       padding: const EdgeInsets.only(
                         top: 10,

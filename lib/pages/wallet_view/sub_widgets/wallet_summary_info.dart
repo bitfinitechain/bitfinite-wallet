@@ -77,6 +77,11 @@ class WalletSummaryInfo extends ConsumerWidget {
       prefsChangeNotifierProvider.select((value) => value.currency),
     );
 
+    // Watched via select so toggling it rebuilds only this block.
+    final privacyMode = ref.watch(
+      prefsChangeNotifierProvider.select((value) => value.privacyMode),
+    );
+
     ({double change24h, Decimal value})? price;
     if (ref.watch(
       prefsChangeNotifierProvider.select((value) => value.externalCalls),
@@ -149,6 +154,15 @@ class WalletSummaryInfo extends ConsumerWidget {
         mainPart = numStr.substring(0, sepIdx + 3);
         dustPart = decimals.substring(2);
       }
+    }
+
+    // Privacy mode: replace the digits entirely rather than blurring or
+    // shrinking them. A fixed-width mask also means the hero does not change
+    // size when toggled, so it cannot leak the magnitude of the balance
+    // through its own layout.
+    if (privacyMode) {
+      mainPart = "••••••";
+      dustPart = "";
     }
 
     // This block now sits on the solid blue hero, not on the page background,
@@ -245,6 +259,32 @@ class WalletSummaryInfo extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 8),
+              // Privacy toggle. Sits beside the label it governs rather than in
+              // a menu: hiding your balance is something you do *now*, because
+              // of who is next to you, so it has to be one tap from the number
+              // it hides.
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  final prefs = ref.read(prefsChangeNotifierProvider);
+                  prefs.privacyMode = !prefs.privacyMode;
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 4,
+                  ),
+                  child: SvgPicture.asset(
+                    privacyMode ? Assets.svg.eyeSlash : Assets.svg.eye,
+                    // Same ink as the label; on the hero everything derives
+                    // from the hero, never from the page theme.
+                    color: favText.withOpacity(0.8),
+                    width: 18,
+                    height: 18,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
               WalletSyncChip(
                 walletId: walletId,
                 initialSyncStatus: initialSyncStatus,
@@ -376,7 +416,11 @@ class WalletSummaryInfo extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.only(top: 2),
               child: Text(
-                "${(price.value * balanceToShow.decimal).toAmount(fractionDigits: 2).fiatString(locale: locale)} $baseCurrency",
+                // Masked too: hiding the BFX figure while showing its fiat
+                // value would defeat the point entirely.
+                privacyMode
+                    ? "•••• $baseCurrency"
+                    : "${(price.value * balanceToShow.decimal).toAmount(fractionDigits: 2).fiatString(locale: locale)} $baseCurrency",
                 style: STextStyles.subtitle500(
                   context,
                 ).copyWith(color: favText),

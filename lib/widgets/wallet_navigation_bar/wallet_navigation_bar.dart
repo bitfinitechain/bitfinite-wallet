@@ -118,7 +118,13 @@ class WalletNavigationBar extends ConsumerWidget {
         _ActionButton(
           data: items[i],
           floating: floating,
-          highlighted: floating && i == 0,
+          // Matched on label, not index: Finalize/Sign appear conditionally
+          // between Receive and Send, so Send has no fixed position.
+          //
+          // The redesign fills Send as the primary action; Receive stays plain
+          // beside it. Previously this highlighted items[0] (Receive), and only
+          // on iOS, so on Android nothing was highlighted at all.
+          highlighted: floating && items[i].label == "Send",
           // Floating dock: label the actions (Receive/Send) like the switch-dock.
           labeled: floating,
         ),
@@ -265,8 +271,12 @@ class _ActionButton extends StatelessWidget {
       // Labeled action (Receive/Send): icon + text pill, matching the
       // Receive/Send switch-dock so the launcher reads in the same language.
       if (labeled) {
+        // The primary action is a filled brand-blue pill; the other stays a
+        // plain label. accentColorBlue is blue-600 (#0644F1), the same token
+        // the hero uses, so the two blues on screen are one blue.
+        final filled = highlighted;
         return Material(
-          color: Colors.transparent,
+          color: filled ? colors.accentColorBlue : Colors.transparent,
           shape: const StadiumBorder(),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
@@ -280,9 +290,11 @@ class _ActionButton extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text(
                     data.label ?? "",
-                    style: STextStyles.w600_14(
-                      context,
-                    ).copyWith(color: colors.bottomNavText),
+                    style: STextStyles.w600_14(context).copyWith(
+                      // White on blue-600 is 6.76:1. Leaving this as
+                      // bottomNavText would put dark ink on the filled pill.
+                      color: filled ? Colors.white : colors.bottomNavText,
+                    ),
                   ),
                 ],
               ),

@@ -53,18 +53,22 @@ class TxListItem extends ConsumerWidget {
 
       if (matchingTrades.isNotEmpty) {
         final trade = matchingTrades.first;
+        // Same card treatment as the plain row below — a tx with a matching
+        // trade is still one item in the list and must not read as a
+        // different kind of thing.
         return Container(
+          margin: const EdgeInsets.only(bottom: 4),
           decoration: BoxDecoration(
-            color: Colors.transparent,
-            border: Border(
-              bottom: BorderSide(
-                color: Theme.of(
-                  context,
-                ).extension<StackColors>()!.textSubtitle1.withOpacity(0.1),
-                width: 1,
-              ),
+            color: Theme.of(context).extension<StackColors>()!.popupBG,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Theme.of(
+                context,
+              ).extension<StackColors>()!.textSubtitle1.withOpacity(0.1),
+              width: 1,
             ),
           ),
+          clipBehavior: Clip.antiAlias,
           child: Breathing(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -156,18 +160,25 @@ class TxListItem extends ConsumerWidget {
           ),
         );
       } else {
+        // Redesign: each transaction is its own card on the page background,
+        // not a row divided by a hairline. popupBG is the "raised surface"
+        // token — #FFFFFF in the light theme, #1A2130 in dark — so the card
+        // reads correctly in both without hardcoding the design's #FFFFFF.
         return Container(
+          margin: const EdgeInsets.only(bottom: 4),
           decoration: BoxDecoration(
-            color: Colors.transparent,
-            border: Border(
-              bottom: BorderSide(
-                color: Theme.of(
-                  context,
-                ).extension<StackColors>()!.textSubtitle1.withOpacity(0.1),
-                width: 1,
-              ),
+            color: Theme.of(context).extension<StackColors>()!.popupBG,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Theme.of(
+                context,
+              ).extension<StackColors>()!.textSubtitle1.withOpacity(0.1),
+              width: 1,
             ),
           ),
+          // The card clips its child so the row's own ink/splash cannot paint
+          // over the rounded corners when tapped.
+          clipBehavior: Clip.antiAlias,
           child: Breathing(
             child: TransactionCardV2(
               // this may mess with combined firo transactions

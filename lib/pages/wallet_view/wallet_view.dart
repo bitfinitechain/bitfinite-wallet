@@ -971,6 +971,10 @@ class _WalletViewState extends ConsumerState<WalletView> {
                   elevation: 0,
                   scrolledUnderElevation: 0,
                   leading: AppBarBackButton(
+                    // Matches the other hero buttons: without this it falls
+                    // back to the page background and reads as a solid white
+                    // disc on the blue.
+                    color: Colors.white.withOpacity(0.14),
                     onPressed: () {
                       _logout();
                       Navigator.of(context).pop();
@@ -1021,9 +1025,13 @@ class _WalletViewState extends ConsumerState<WalletView> {
                           key: const Key("walletViewRadioButton"),
                           size: 36,
                           shadows: const [],
-                          color: Theme.of(
-                            context,
-                          ).extension<StackColors>()!.background,
+                          // These sit on the blue hero, so they take a
+                          // translucent white scrim (spec: rgba(255,255,255,
+                          // 0.14)) rather than the page background — which
+                          // painted them as solid white discs floating on the
+                          // blue. Same rule as the address chip: on the hero,
+                          // derive from the hero.
+                          color: Colors.white.withOpacity(0.14),
                           icon: _buildNetworkIcon(_currentSyncStatus),
                           onPressed: () {
                             Navigator.of(context).pushNamed(
@@ -1052,9 +1060,13 @@ class _WalletViewState extends ConsumerState<WalletView> {
                           key: const Key("walletViewAlertsButton"),
                           size: 36,
                           shadows: const [],
-                          color: Theme.of(
-                            context,
-                          ).extension<StackColors>()!.background,
+                          // These sit on the blue hero, so they take a
+                          // translucent white scrim (spec: rgba(255,255,255,
+                          // 0.14)) rather than the page background — which
+                          // painted them as solid white discs floating on the
+                          // blue. Same rule as the address chip: on the hero,
+                          // derive from the hero.
+                          color: Colors.white.withOpacity(0.14),
                           icon: Platform.isIOS
                               ? Icon(
                                   ref.watch(
@@ -1182,9 +1194,13 @@ class _WalletViewState extends ConsumerState<WalletView> {
                           key: const Key("walletViewSettingsButton"),
                           size: 36,
                           shadows: const [],
-                          color: Theme.of(
-                            context,
-                          ).extension<StackColors>()!.background,
+                          // These sit on the blue hero, so they take a
+                          // translucent white scrim (spec: rgba(255,255,255,
+                          // 0.14)) rather than the page background — which
+                          // painted them as solid white discs floating on the
+                          // blue. Same rule as the address chip: on the hero,
+                          // derive from the hero.
+                          color: Colors.white.withOpacity(0.14),
                           icon: adaptiveIcon(
                             Assets.svg.bars,
                             CupertinoIcons.line_horizontal_3,

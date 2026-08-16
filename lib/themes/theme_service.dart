@@ -38,7 +38,9 @@ class ThemeService {
   // ignored: the copy already in the database wins, and the change looks like
   // it silently did nothing.
   // 27: coin.bitfinite #2F6BFF -> Brandkit blue-600 #0644F1
-  static const _currentDefaultThemeVersion = 27;
+  // 28: accent_color_blue #2F6BFF -> #0644F1 (one brand blue across fills and
+  //     accents; as text on white this also goes 4.50:1 -> 6.76:1)
+  static const _currentDefaultThemeVersion = 28;
   ThemeService._();
   static ThemeService? _instance;
   static ThemeService get instance => _instance ??= ThemeService._();

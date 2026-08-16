@@ -80,6 +80,7 @@ class AppBarBackButton extends StatelessWidget {
     this.isCompact = false,
     this.size,
     this.iconSize,
+    this.color,
     this.semanticsLabel = "Back Button. Takes Back To Previous Page.",
   });
 
@@ -87,6 +88,12 @@ class AppBarBackButton extends StatelessWidget {
   final bool isCompact;
   final double? size;
   final double? iconSize;
+
+  /// Optional disc colour. Defaults to the page background, which is right on
+  /// an ordinary page but wrong on a coloured header — the wallet view's blue
+  /// hero passes a translucent white scrim so the button sits on the hero
+  /// instead of floating on it as a solid disc.
+  final Color? color;
   final String semanticsLabel;
 
   @override
@@ -105,9 +112,11 @@ class AppBarBackButton extends StatelessWidget {
                       ? 42
                       : 56
                 : 32),
-        color: isDesktop
-            ? Theme.of(context).extension<StackColors>()!.textFieldDefaultBG
-            : Theme.of(context).extension<StackColors>()!.background,
+        color:
+            color ??
+            (isDesktop
+                ? Theme.of(context).extension<StackColors>()!.textFieldDefaultBG
+                : Theme.of(context).extension<StackColors>()!.background),
         shadows: const [],
         icon: adaptiveIcon(
           // Chevron rather than a full arrow, matching the iOS back affordance

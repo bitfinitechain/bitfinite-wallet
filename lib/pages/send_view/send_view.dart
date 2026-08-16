@@ -2501,9 +2501,14 @@ class _SendViewState extends ConsumerState<SendView> {
                                 ),
                               ),
                             ),
-                            if (Prefs.instance.externalCalls)
-                              const SizedBox(height: 8),
-                            if (Prefs.instance.externalCalls)
+                            // Gated on an actual price, not just on external
+                            // calls being enabled. BFX is unlisted, so this
+                            // rendered a USD field that could only ever be 0 —
+                            // worse than absent, because it invites typing into
+                            // a box that cannot work. price is null when the
+                            // coin has no quote (see PriceService).
+                            if (price != null) const SizedBox(height: 8),
+                            if (price != null)
                               TextField(
                                 autocorrect: Util.isDesktop ? false : true,
                                 enableSuggestions: Util.isDesktop

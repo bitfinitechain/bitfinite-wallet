@@ -2187,7 +2187,10 @@ class _TxDetailsAmountHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return RoundedWhiteContainer(
-      padding: isDesktop ? const EdgeInsets.all(0) : const EdgeInsets.all(12),
+      // Spec: 18px vertical / 16px horizontal on the amount card.
+      padding: isDesktop
+          ? const EdgeInsets.all(0)
+          : const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
       child: Container(
         decoration: isDesktop
             ? BoxDecoration(
@@ -2231,9 +2234,31 @@ class _TxDetailsAmountHeader extends ConsumerWidget {
                       final formattedAmount = ref
                           .watch(pAmountFormatter(coin))
                           .format(amount, tokenContract: tokenContract);
+                      final colors = Theme.of(
+                        context,
+                      ).extension<StackColors>()!;
+                      // This is the headline figure of the screen and was
+                      // rendering at itemSubtitle12 — subtitle size for the one
+                      // number the page exists to show. Spec is 24/700, with
+                      // incoming in green, using the same accentColorGreen the
+                      // transaction list uses so the two agree.
                       return SelectableText(
                         "$amountPrefix$formattedAmount",
-                        style: detailStyle,
+                        style: isDesktop
+                            ? detailStyle
+                            : detailStyle.copyWith(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
+                                height: 1.15,
+                                color:
+                                    transaction.type ==
+                                        TransactionType.incoming
+                                    ? colors.accentColorGreen
+                                    : colors.textDark,
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures(),
+                                ],
+                              ),
                       );
                     },
                   ),

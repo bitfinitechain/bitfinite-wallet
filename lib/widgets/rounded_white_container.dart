@@ -10,6 +10,7 @@
 
 import 'package:flutter/material.dart';
 import '../themes/stack_colors.dart';
+import '../utilities/constants.dart';
 import 'rounded_container.dart';
 
 class RoundedWhiteContainer extends StatelessWidget {
@@ -17,7 +18,7 @@ class RoundedWhiteContainer extends StatelessWidget {
     super.key,
     this.child,
     this.padding = const EdgeInsets.all(12),
-    this.radiusMultiplier = 1.0,
+    this.radiusMultiplier,
     this.width,
     this.height,
     this.borderColor,
@@ -28,7 +29,7 @@ class RoundedWhiteContainer extends StatelessWidget {
 
   final Widget? child;
   final EdgeInsets padding;
-  final double radiusMultiplier;
+  final double? radiusMultiplier;
   final double? width;
   final double? height;
   final Color? borderColor;
@@ -38,13 +39,22 @@ class RoundedWhiteContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<StackColors>()!;
     return RoundedContainer(
-      color: Theme.of(context).extension<StackColors>()!.popupBG,
+      color: colors.popupBG,
       padding: padding,
-      radiusMultiplier: radiusMultiplier,
+      // The redesign's card is 16px with a hairline, not a borderless 12px
+      // box. Applied here rather than at ~209 call sites; a caller that passes
+      // its own multiplier or border still wins.
+      radiusMultiplier:
+          radiusMultiplier ??
+          (Constants.size.cardBorderRadius / Constants.size.circularBorderRadius),
       width: width,
       height: height,
-      borderColor: borderColor,
+      // Derived, not the spec's literal #E4E4E7: a fixed light grey would be
+      // invisible on the dark themes. textSubtitle1 tracks each theme's ink,
+      // matching the hairline the transaction cards already use.
+      borderColor: borderColor ?? colors.textSubtitle1.withOpacity(0.1),
       boxShadow: boxShadow,
       hoverColor: hoverColor,
       onPressed: onPressed,

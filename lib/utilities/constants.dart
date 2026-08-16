@@ -16,6 +16,10 @@ class _LayoutSizing {
   const _LayoutSizing();
 
   double get circularBorderRadius => 12.0;
+
+  /// Cards in the redesign are 16px, not the 12px used by controls. Kept
+  /// separate so buttons and fields kept their existing geometry.
+  double get cardBorderRadius => 16.0;
   double get checkboxBorderRadius => 4.0;
 
   double get standardPadding => 16.0;

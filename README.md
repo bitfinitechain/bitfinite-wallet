@@ -1,3 +1,5 @@
+![BitFinite Wallet — your keys, your BFX](docs/media/bitfinite-wallet-banner.png)
+
 # BitFinite Wallet
 
 **BitFinite Wallet** is a free, open-source, **non-custodial** mobile wallet for

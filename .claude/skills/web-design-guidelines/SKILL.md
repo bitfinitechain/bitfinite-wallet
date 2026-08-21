@@ -172,6 +172,23 @@ The most common defect class.
 
 ## §5 Typography and numbers
 
+- **Use the scale: `--bfx-text-100 … --bfx-text-1000`** (10, 11, 12, 13, 14, 16,
+  20, 24, 30, 44). A size not on the list is a bug, not a decision — take the
+  nearest step. If a design genuinely needs a new one, add it to `tokens.css` so
+  all four apps get it; never inline.
+- **No half-steps.** Measured 2026-08-18: 27 distinct sizes across 587
+  declarations, seven of them half-pixel (9.5, 10.5, 11.5, 12.5, 13.5, 14.5,
+  15.5), each used in exactly one app. A 12.5 beside a 13 is invisible on screen
+  and doubles the vocabulary. One app used 25 of the 27; the other three used
+  nine between them. Half-steps are undetectable in review precisely because
+  they look almost right.
+- Roles are per-app — 13px is dense body in analytics and a caption on the
+  marketing site. Map the primitive to your own semantic name; do not rename the
+  primitive. A differing *body size* is fine and deliberate; differing *steps*
+  are not.
+- The typeface is **Geist / Geist Mono** across every app. A second family makes
+  identical px values render at different apparent sizes, which is exactly how
+  analytics came to look like a different product.
 - `font-variant-numeric: tabular-nums` wherever figures align in a column or
   update in place.
 - Fluid type (`clamp()`) for values that must fit a fixed box; a fixed size
@@ -206,6 +223,25 @@ The most common defect class.
 - **Headless primitives keep this working**: Radix carries behaviour, our tokens
   carry appearance, so one component renders two design languages with no
   conditional. A styled component library would fight the mode system.
+- **The lockup is a component, never markup.** `Brandkit/ui/wordmark.tsx`, synced
+  by `skills/sync.sh`. Four apps once hand-rolled `BIT<span>FINITE</span>` and
+  had already disagreed about which half carries the accent. Structure and type
+  come from the component; colour stays local — each app maps its own semantic
+  tokens onto `--wm-fg` / `--wm-accent`, because the apps do not share semantic
+  names (`--foreground`/`--primary` vs `--fg`/`--acc`).
+- **A control's radius, height and focus ring come from `--bfx-*`.** One app was
+  using `rounded-lg` 30x, `rounded-md` 14x and `rounded-full` 13x for buttons.
+  Two apps carried different shadcn generations, so the same keyboard affordance
+  was a 2px offset ring in one and a 3px inset ring in the next — a focus
+  indicator that changes between our own products teaches nothing.
+- **shadcn primitives are vendored per repo**, so Brandkit does not own
+  `button.tsx`. It owns the values that must agree across them, and re-running
+  the shadcn CLI is expected to need the focus ring re-aligned.
+- **A card in a seam grid cannot shrink to its content.** The 1px gaps ARE the
+  rules, so a short card punches an L-shaped hole where a clean line belongs.
+  Either give the card something that fills, or spread what it has — never leave
+  the slack as one void at the bottom. Measure it: for each card in a row,
+  `rect.bottom - lastChild.rect.bottom` should be the same number.
 - **Access changes run `pnpm audit:access`** and update the asserted matrix in the
   same commit.
 - **Dependencies**: exact pins, committed lockfile, `--frozen-lockfile` on the

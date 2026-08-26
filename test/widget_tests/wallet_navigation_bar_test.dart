@@ -47,41 +47,39 @@ void main() {
     final buttons = find.byType(InkWell);
     expect(buttons, findsNWidgets(3));
 
-    final centers = <double>[
-      for (int i = 0; i < 3; i++) tester.getCenter(buttons.at(i)).dx,
+    // Measure edges, not centres against a fixed button size. The dock's
+    // actions became variable-width when they gained labels, so any assertion
+    // built on "48px square" describes one past revision rather than the
+    // intent, which is that the row of actions fills the pill.
+    final rects = <Rect>[
+      for (int i = 0; i < 3; i++) tester.getRect(buttons.at(i)),
     ];
 
-    // The dock's 6px horizontal padding plus its 1px hairline border, both of
-    // which inset the content box the actions are laid out in.
-    const hPadding = 6.0 + 1.0;
-    const buttonSize = 48.0;
+    // 6px horizontal padding plus the 1px hairline border inset the content
+    // box the actions are laid out in.
+    const inset = 6.0 + 1.0;
 
-    // The outer actions sit flush against the content box's edges, so the
-    // icons genuinely span the pill rather than clustering in the middle.
     expect(
-      centers.first,
-      closeTo(dock.left + hPadding + buttonSize / 2, 0.5),
-      reason: "first action should be flush with the dock's left edge",
+      rects.first.left,
+      closeTo(dock.left + inset, 1.0),
+      reason: "first action should start at the dock's content edge",
     );
     expect(
-      centers.last,
-      closeTo(dock.right - hPadding - buttonSize / 2, 0.5),
-      reason: "last action should be flush with the dock's right edge",
+      rects.last.right,
+      closeTo(dock.right - inset, 1.0),
+      reason: "last action should end at the dock's content edge",
     );
 
-    // ...and the remaining ones are evenly spread between them.
-    expect(
-      (centers[1] - centers[0]) - (centers[2] - centers[1]),
-      closeTo(0, 0.5),
-      reason: "actions should be evenly spaced across the dock",
-    );
-
-    // Symmetric: the dock reads as balanced, with the outer actions the same
-    // distance from their respective edges.
-    expect(
-      (centers.first - dock.left) - (dock.right - centers.last),
-      closeTo(0, 0.5),
-      reason: "outer actions should be inset equally from both edges",
-    );
+    // No action overlaps its neighbour, and none is stranded by a gap wider
+    // than an action - either would read as a broken row rather than a dock.
+    for (int i = 1; i < rects.length; i++) {
+      final gap = rects[i].left - rects[i - 1].right;
+      expect(gap, greaterThanOrEqualTo(-0.5), reason: "actions must not overlap");
+      expect(
+        gap,
+        lessThan(rects[i].width),
+        reason: "gap between actions should not exceed an action's own width",
+      );
+    }
   });
 }

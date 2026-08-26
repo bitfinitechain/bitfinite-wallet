@@ -1253,7 +1253,14 @@ class _WalletViewState extends ConsumerState<WalletView> {
                       Container(
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: ref.watch(pCoinColor(coin)),
+                          // Seated for the theme's brightness - see heroFill.
+                          // Light themes get the declared colour unchanged.
+                          color: heroFill(
+                            ref.watch(pCoinColor(coin)),
+                            ref.watch(
+                              themeProvider.select((t) => t.brightness),
+                            ),
+                          ),
                           // 32px per the redesign spec (0 0 32px 32px), which
                           // matches the 32px device-frame radius the mockups
                           // use — the foot echoes the screen corner rather
@@ -1488,6 +1495,40 @@ class _WalletViewState extends ConsumerState<WalletView> {
                         ),
                       ],
                     ),
+                  // The dock floats over the list, so without this the last
+                  // visible row is simply sliced in half by an opaque pill,
+                  // which reads as clipping rather than layering. A short fade
+                  // to the page background lets content pass *under* the dock.
+                  // IgnorePointer so it never swallows a tap meant for a row.
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    height: 140,
+                    child: IgnorePointer(
+                      child: Builder(
+                        builder: (context) {
+                          final scrimBase = Theme.of(
+                            context,
+                          ).extension<StackColors>()!.background;
+                          return DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  scrimBase.withOpacity(0.0),
+                                  scrimBase.withOpacity(0.92),
+                                  scrimBase,
+                                ],
+                                stops: const [0.0, 0.6, 1.0],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
                   Positioned(
                     left: 0,
                     right: 0,

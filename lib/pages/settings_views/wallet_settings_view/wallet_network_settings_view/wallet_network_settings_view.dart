@@ -91,6 +91,9 @@ class _WalletNetworkSettingsViewState
     extends ConsumerState<WalletNetworkSettingsView> {
   final double _padding = 16;
   final double _boxPadding = 12;
+
+  /// RoundedWhiteContainer's hairline, one on each side.
+  static const double _cardBorderWidth = 1;
   final double _iconSize = Util.isDesktop ? 40 : 28;
 
   late final EventBus eventBus;
@@ -337,7 +340,15 @@ class _WalletNetworkSettingsViewState
 
     final progressLength = isDesktop
         ? 430.0
-        : screenWidth - (_padding * 2) - (_boxPadding * 3) - _iconSize;
+        // The card is a RoundedWhiteContainer, which draws a 1px border on
+        // each side. Omitting it here overflowed every sync state by
+        // exactly 2px. Kept as one expression so all five call sites stay
+        // in step, but note it stays coupled to the card's decoration.
+        : screenWidth -
+              (_padding * 2) -
+              (_boxPadding * 3) -
+              _iconSize -
+              _cardBorderWidth * 2;
 
     final coin = ref.watch(pWalletCoin(widget.walletId));
 

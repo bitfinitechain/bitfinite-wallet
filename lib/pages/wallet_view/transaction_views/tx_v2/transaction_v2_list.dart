@@ -47,6 +47,8 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
   // (e.g. when returning from a transaction details page).
   List<Object> _txns = [];
 
+
+
   late final StreamSubscription<List<TransactionV2>> _subscription;
   late final Query<TransactionV2> _query;
   late final CryptoCurrency coin;
@@ -221,20 +223,26 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
                         radius = _borderRadiusFirst;
                       }
                       final tx = _txns[index];
+                      final row = TxListItem(
+                        tx: tx,
+                        coin: coin,
+                        radius: radius,
+                      );
                       if (shouldWrap) {
                         return Column(
                           children: [
-                            TxListItem(tx: tx, coin: coin, radius: radius),
+                            row,
                             const SizedBox(
                               height: WalletView.navBarHeight + 14,
                             ),
                           ],
                         );
                       } else {
-                        return TxListItem(tx: tx, coin: coin, radius: radius);
+                        return row;
                       }
                     },
                   ),
           );
   }
 }
+

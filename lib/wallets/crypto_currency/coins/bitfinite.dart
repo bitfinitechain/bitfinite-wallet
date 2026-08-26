@@ -313,6 +313,33 @@ class Bitfinite extends Bip39HDCurrency with ElectrumXCurrencyInterface {
               clearnetEnabled: true,
               isPrimary: false,
             ),
+            // The primary host again, on the raw ElectrumX port.
+            //
+            // Port 443 reaches electrs through nginx (stream + ssl_preread),
+            // so anything that takes nginx or the firewall down takes 443 with
+            // it while electrs itself stays healthy and in sync - which is
+            // exactly what happened when a firewall rule for 443 went missing
+            // on the primary. This entry keeps that server usable through that
+            // class of outage.
+            //
+            // Last, deliberately: 50002 is blocked by some mobile carriers,
+            // which is why 443 is the default in the first place. It is a
+            // fallback for when the carrier-safe path is the broken one, not a
+            // route to prefer.
+            NodeModel(
+              host: "electr.bitfinitechain.org",
+              port: 50002,
+              name: "BitFinite Default (direct)",
+              id: "${DefaultNodes.defaultNodeIdPrefix}${identifier}_direct50002",
+              useSSL: true,
+              enabled: true,
+              coinName: identifier,
+              isFailover: true,
+              isDown: false,
+              torEnabled: true,
+              clearnetEnabled: true,
+              isPrimary: false,
+            ),
           ]
           : const [];
 

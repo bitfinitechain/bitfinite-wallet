@@ -91,7 +91,11 @@ class WalletInfoRowBalance extends ConsumerWidget {
     return Text(
       ref
           .watch(pAmountFormatter(info.coin))
-          .format(totalBalance, tokenContract: contract),
+          .format(
+            totalBalance,
+            tokenContract: contract,
+            trimTrailingZeros: true,
+          ),
       style: Util.isDesktop
           ? STextStyles.desktopTextExtraSmall(context).copyWith(
               color: Theme.of(context).extension<StackColors>()!.textSubtitle1,

@@ -26,6 +26,7 @@ import '../../../../widgets/coin_ticker_tag.dart';
 import '../../../../widgets/conditional_parent.dart';
 import '../../../../widgets/desktop/desktop_dialog.dart';
 import '../../sub_widgets/tx_icon.dart';
+import 'tx_row_presentation.dart';
 import 'transaction_v2_details_view.dart' as tvd;
 
 class TransactionCardV2 extends ConsumerStatefulWidget {
@@ -233,119 +234,150 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
                 ),
                 const SizedBox(width: 14),
                 Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    // crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Builder(
+                    builder: (context) {
+                      final colors = Theme.of(
+                        context,
+                      ).extension<StackColors>()!;
+                      final pres = txRowPresentation(
+                        _transaction,
+                        fallbackLabel: whatIsIt(coin, currentHeight),
+                        currentHeight: currentHeight,
+                        minConfirms: coin.minConfirms,
+                        minCoinbaseConfirms: coin.minCoinbaseConfirms,
+                        isFailed:
+                            _transaction.isCancelled && coin is Ethereum,
+                      );
+
+                      final formattedAmount = ref
+                          .watch(pAmountFormatter(coin))
+                          .format(
+                            amount,
+                            tokenContract: tokenContract,
+                            trimTrailingZeros: true,
+                          );
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Flexible(
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: ConditionalParent(
-                                condition:
-                                    coin is Firo &&
-                                    _transaction.isInstantLock &&
-                                    !_transaction.isConfirmed(
-                                      currentHeight,
-                                      coin.minConfirms,
-                                      coin.minCoinbaseConfirms,
-                                    ),
-                                builder: (child) => Row(
-                                  children: [
-                                    child,
-
-                                    const SizedBox(width: 10),
-                                    const CoinTickerTag(ticker: "INSTANT"),
-                                  ],
-                                ),
-                                child: Text(
-                                  whatIsIt(coin, currentHeight),
-                                  style: STextStyles.itemSubtitle12(context),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Flexible(
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Builder(
-                                builder: (context) {
-                                  final formattedAmount = ref
-                                      .watch(pAmountFormatter(coin))
-                                      .format(
-                                        amount,
-                                        tokenContract: tokenContract,
-                                      );
-
-                                  return Text(
-                                    // Privacy mode masks per-row amounts too:
-                                    // hiding the balance while listing every
-                                    // transaction underneath it is not privacy.
-                                    privacyMode
-                                        ? "••••"
-                                        : "$prefix$formattedAmount",
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ConditionalParent(
+                                  condition:
+                                      coin is Firo &&
+                                      _transaction.isInstantLock &&
+                                      !_transaction.isConfirmed(
+                                        currentHeight,
+                                        coin.minConfirms,
+                                        coin.minCoinbaseConfirms,
+                                      ),
+                                  builder: (child) => Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Flexible(child: child),
+                                      const SizedBox(width: 8),
+                                      const CoinTickerTag(ticker: "INSTANT"),
+                                    ],
+                                  ),
+                                  child: Text(
+                                    pres.title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: STextStyles.itemSubtitle12(context)
                                         .copyWith(
                                           fontWeight: FontWeight.w600,
-                                          color:
-                                              _transaction.type ==
-                                                      TransactionType.incoming
-                                                  ? Theme.of(context)
-                                                        .extension<
-                                                          StackColors
-                                                        >()!
-                                                        .accentColorGreen
-                                                  : null,
                                         ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        // crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Flexible(
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                Format.extractDateFrom(_transaction.timestamp),
-                                style: STextStyles.label(context),
-                              ),
-                            ),
-                          ),
-                          if (price != null) const SizedBox(width: 10),
-                          if (price != null)
-                            Flexible(
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Builder(
-                                  builder: (context) {
-                                    final formattedFiat =
-                                        (amount.decimal * price!)
-                                            .toAmount(fractionDigits: 2)
-                                            .fiatString(locale: locale);
-
-                                    return Text(
-                                      privacyMode
-                                          ? "•••• $baseCurrency"
-                                          : "$prefix$formattedFiat $baseCurrency",
-                                      style: STextStyles.label(context),
-                                    );
-                                  },
+                                  ),
                                 ),
                               ),
-                            ),
+                              const SizedBox(width: 8),
+                              // The amount as a tinted chip rather than
+                              // coloured text. The fill is what makes it the
+                              // row's one loud element, and it gives failed
+                              // and pending transactions somewhere to show
+                              // that is not just a different text colour.
+                              // Natural width, no flex share: the title above is
+                              // Expanded, so it absorbs the slack and every
+                              // chip lands on the same right edge.
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 190,
+                                ),
+                                child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: pres.chipFill(colors),
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        privacyMode
+                                            ? "••••"
+                                            : signedAmountLabel(
+                                                prefix,
+                                                formattedAmount,
+                                              ),
+                                        style:
+                                            STextStyles.itemSubtitle12(context)
+                                                .copyWith(
+                                                  fontWeight: FontWeight.w600,
+                                                  color: pres.chipInk(colors),
+                                                ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  "${pres.state} • "
+                                  "${Format.extractRelativeDateFrom(_transaction.timestamp)}",
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: STextStyles.label(context),
+                                ),
+                              ),
+                              if (price != null) const SizedBox(width: 10),
+                              if (price != null)
+                                Flexible(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Builder(
+                                      builder: (context) {
+                                        final formattedFiat =
+                                            (amount.decimal * price!)
+                                                .toAmount(fractionDigits: 2)
+                                                .fiatString(locale: locale);
+
+                                        return Text(
+                                          privacyMode
+                                              ? "•••• $baseCurrency"
+                                              : "$prefix$formattedFiat "
+                                                  "$baseCurrency",
+                                          style: STextStyles.label(context),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ],
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ),
               ],

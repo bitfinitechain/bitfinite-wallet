@@ -250,6 +250,7 @@ extension AmountUnitExt on AmountUnit {
     required int maxDecimalPlaces,
     bool withUnitName = true,
     bool indicatePrecisionLoss = true,
+    bool trimTrailingZeros = false,
     String? overrideUnit,
     Contract? tokenContract,
   }) {
@@ -329,11 +330,22 @@ extension AmountUnitExt on AmountUnit {
         }
       }
 
+      // Trailing zeros carry no information in a list: "+50,0000 BFX" is read
+      // as "+50 BFX", and the padding just makes columns of amounts harder to
+      // scan. Opt-in, because fixed precision is still the right choice for
+      // detail views and anywhere an amount is edited.
+      if (trimTrailingZeros) {
+        remainder = remainder.replaceFirst(RegExp(r"0+$"), "");
+      }
+
       // get decimal separator based on locale
       final String separator = numberSymbols?.DECIMAL_SEP ?? ".";
 
-      // append separator and fractional amount
-      returnValue += "$separator$remainder";
+      // append separator and fractional amount (a fully trimmed remainder
+      // leaves a whole number, so the separator would dangle)
+      if (remainder.isNotEmpty) {
+        returnValue += "$separator$remainder";
+      }
     }
 
     if (!withUnitName && !indicatePrecisionLoss) {

@@ -23,7 +23,6 @@ import '../../../providers/providers.dart';
 import '../../../providers/wallet/public_private_balance_state_provider.dart';
 import '../../../providers/wallet/wallet_balance_toggle_state_provider.dart';
 import '../../../services/event_bus/events/global/wallet_sync_status_changed_event.dart';
-import '../../../themes/stack_colors.dart';
 import '../../../themes/theme_providers.dart';
 import '../../../utilities/hero_ink.dart';
 import '../../../utilities/amount/amount.dart';
@@ -37,7 +36,7 @@ import '../../../wallets/crypto_currency/coins/firo.dart';
 import '../../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../../wallets/wallet/impl/banano_wallet.dart';
 import '../../../widgets/conditional_parent.dart';
-import '../../../widgets/coin_card.dart';
+import '../../../utilities/util.dart';
 import 'wallet_balance_toggle_sheet.dart';
 import 'wallet_sync_chip.dart';
 
@@ -138,22 +137,38 @@ class WalletSummaryInfo extends ConsumerWidget {
     }
 
     // Hero balance: split the formatted amount into a full-weight part and
-    // de-emphasized trailing "dust" decimals (locale-safe: the decimal
-    // separator is whatever [.,] appears last in the numeric string).
+    // de-emphasized trailing "dust" decimals.
+    //
+    // Trailing zeros are trimmed first: a round balance rendered "1.500,0000"
+    // put "00" in the dust span, which reads as the number having broken rather
+    // than as insignificant digits.
+    //
+    // The split uses the locale's real decimal separator. Taking "whatever
+    // [.,] appears last" is wrong in any locale that groups with "." - once
+    // trimmed, 1500 BFX formats as "1.500", whose only separator is a
+    // *thousands* mark, and the naive rule split it into "6.25" + dust "0".
     final formatter = ref.watch(pAmountFormatter(coin));
-    final String fullStr = formatter.format(balanceToShow);
-    final String numStr = formatter.format(balanceToShow, withUnitName: false);
+    final String fullStr = formatter.format(
+      balanceToShow,
+      trimTrailingZeros: true,
+    );
+    final String numStr = formatter.format(
+      balanceToShow,
+      withUnitName: false,
+      trimTrailingZeros: true,
+    );
     final String unitStr =
         fullStr.startsWith(numStr)
             ? fullStr.substring(numStr.length).trim()
             : coin.ticker;
     String mainPart = numStr;
     String dustPart = "";
-    final sepIdx = numStr.lastIndexOf(RegExp(r"[.,]"));
+    final String decimalSep = Util.getSymbolsFor(locale: locale)?.DECIMAL_SEP ?? ".";
+    final sepIdx = numStr.lastIndexOf(decimalSep);
     if (sepIdx > 0) {
-      final decimals = numStr.substring(sepIdx + 1);
+      final decimals = numStr.substring(sepIdx + decimalSep.length);
       if (decimals.length > 2) {
-        mainPart = numStr.substring(0, sepIdx + 3);
+        mainPart = numStr.substring(0, sepIdx + decimalSep.length + 2);
         dustPart = decimals.substring(2);
       }
     }
@@ -295,17 +310,34 @@ class WalletSummaryInfo extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 18),
+          // View-only is a capability statement - you cannot spend from this
+          // wallet - so it reads as a state badge, not as a parenthetical
+          // aside set in heading type above the balance. Chip styling matches
+          // the sync pill, which is the hero's other bit of wallet state.
           if (ref.watch(pWalletInfo(walletId)).isViewOnly)
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: SelectableText(
-                "(View only)",
-                style: STextStyles.pageTitleH1(
-                  context,
-                // w600/18px is not "large text" by WCAG (that needs w700 at
-                // >=18.66px), so this owes the full 4.5:1. 0.7 measured
-                // 4.03:1; 0.8 gives 4.84:1 and matches the other hero labels.
-                ).copyWith(fontSize: 18, color: favText.withOpacity(0.8)),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: favText.withOpacity(0.16),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: favText.withOpacity(0.30)),
+                ),
+                child: Text(
+                  "View only",
+                  style: STextStyles.itemSubtitle12(context).copyWith(
+                    // Full weight, not the 0.8 the old heading needed to pass
+                    // contrast: on the chip's own fill this is a small label,
+                    // so it owes 4.5:1 and gets it by staying undimmed.
+                    color: favText,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.2,
+                  ),
+                ),
               ),
             ),
           GestureDetector(

@@ -281,10 +281,14 @@ class _TransactionCardState extends ConsumerState<TransactionCard> {
                                       .format(
                                         _transaction.realAmount,
                                         tokenContract: tokenContract,
+                                        trimTrailingZeros: true,
                                       );
 
                                   return Text(
-                                    "$prefix$formattedAmount",
+                                    signedAmountLabel(
+                                      prefix,
+                                      formattedAmount,
+                                    ),
                                     style: STextStyles.itemSubtitle12(context),
                                   );
                                 },

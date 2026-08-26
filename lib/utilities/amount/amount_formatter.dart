@@ -34,6 +34,21 @@ final pAmountFormatter = Provider.family<AmountFormatter, CryptoCurrency>((
   );
 });
 
+/// Composes a signed amount label from a sign [prefix] ("+", "-" or "") and an
+/// already-[formatted] amount.
+///
+/// The formatter marks a rounded value by prefixing "~". Concatenating a sign
+/// in front of that produces "-~1.234,5678", which reads as a typo rather than
+/// as "approximately minus 1,234.5678". Hoist the marker out so the sign sits
+/// against its own digits, and use the real "almost equal to" glyph while we
+/// are here.
+String signedAmountLabel(String prefix, String formatted) {
+  if (formatted.startsWith("~")) {
+    return "≈ $prefix${formatted.substring(1)}";
+  }
+  return "$prefix$formatted";
+}
+
 class AmountFormatter {
   final AmountUnit unit;
   final String locale;
@@ -53,6 +68,7 @@ class AmountFormatter {
     Contract? tokenContract,
     bool withUnitName = true,
     bool indicatePrecisionLoss = true,
+    bool trimTrailingZeros = false,
   }) {
     return unit.displayAmount(
       amount: amount,
@@ -61,6 +77,7 @@ class AmountFormatter {
       maxDecimalPlaces: maxDecimals,
       withUnitName: withUnitName,
       indicatePrecisionLoss: indicatePrecisionLoss,
+      trimTrailingZeros: trimTrailingZeros,
       overrideUnit: overrideUnit,
       tokenContract: tokenContract,
     );

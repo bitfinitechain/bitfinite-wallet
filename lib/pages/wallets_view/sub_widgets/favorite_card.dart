@@ -240,7 +240,9 @@ onCoinCardColor(context, ref, coin),
                           FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Text(
-                              ref.watch(pAmountFormatter(coin)).format(total),
+                              ref
+                                  .watch(pAmountFormatter(coin))
+                                  .format(total, trimTrailingZeros: true),
                               style: STextStyles.titleBold12(context).copyWith(
                                 fontSize: 16,
                                 color:

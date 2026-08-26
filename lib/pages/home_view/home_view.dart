@@ -39,7 +39,6 @@ import '../../widgets/animated_widgets/rotate_icon.dart';
 import '../../widgets/app_icon.dart';
 import '../../widgets/background.dart';
 import '../../widgets/custom_buttons/app_bar_icon_button.dart';
-import '../../widgets/small_tor_icon.dart';
 import '../../widgets/stack_dialog.dart';
 import '../buy_view/buy_view.dart';
 import '../exchange_view/exchange_view.dart';
@@ -327,11 +326,6 @@ class _HomeViewState extends ConsumerState<HomeView> {
               ],
             ),
             actions: [
-              if (AppConfig.hasFeature(AppFeature.tor))
-                const Padding(
-                  padding: EdgeInsets.only(top: 10, bottom: 10, right: 10),
-                  child: AspectRatio(aspectRatio: 1, child: SmallTorIcon()),
-                ),
               Padding(
                 padding: const EdgeInsets.only(top: 10, bottom: 10, right: 10),
                 child: AspectRatio(

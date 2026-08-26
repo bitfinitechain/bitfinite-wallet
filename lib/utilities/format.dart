@@ -73,6 +73,45 @@ abstract class Format {
     return "$dayAndYear, ${date.hour}:$minutes";
   }
 
+  /// A transaction timestamp written the way someone would say it.
+  ///
+  /// Lists repeat the same absolute date on consecutive rows ("23 Jul 2026,
+  /// 22:32" three times over), which is noise: what a person wants at a glance
+  /// is how recent it was. Recent days get their name, the current year is left
+  /// implicit, and only genuinely old entries carry a year.
+  ///
+  /// [now] is injectable so this is testable without freezing the clock.
+  static String extractRelativeDateFrom(
+    int timestamp, {
+    bool localized = true,
+    DateTime? now,
+  }) {
+    var date = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+    if (!localized) {
+      date = date.toUtc();
+    }
+    final today = now ?? DateTime.now();
+
+    final minutes =
+        date.minute < 10 ? "0${date.minute}" : date.minute.toString();
+    final time = "${date.hour}:$minutes";
+
+    // Compare calendar days, not elapsed hours: something at 23:50 last night
+    // is "Yesterday" even though it was only minutes ago.
+    final startOfToday = DateTime(today.year, today.month, today.day);
+    final startOfDate = DateTime(date.year, date.month, date.day);
+    final dayDelta = startOfToday.difference(startOfDate).inDays;
+
+    if (dayDelta == 0) return "Today, $time";
+    if (dayDelta == 1) return "Yesterday, $time";
+
+    final dayAndMonth = "${date.day} ${Constants.monthMapShort[date.month]}";
+    if (date.year == today.year) {
+      return "$dayAndMonth, $time";
+    }
+    return "$dayAndMonth ${date.year}, $time";
+  }
+
   // static String localizedStringAsFixed({
   //   required Decimal value,
   //   required String locale,

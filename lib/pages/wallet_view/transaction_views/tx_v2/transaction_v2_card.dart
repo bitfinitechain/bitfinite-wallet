@@ -262,7 +262,18 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
                                 ),
                                 child: Text(
                                   whatIsIt(coin, currentHeight),
-                                  style: STextStyles.itemSubtitle12(context),
+                                  // Secondary, not primary. The direction is
+                                  // already carried three times over - by the
+                                  // arrow, its colour, and the amount's sign -
+                                  // so leading each row with "Sent"/"Received"
+                                  // in the same weight as the amount made the
+                                  // least informative element the loudest.
+                                  style: STextStyles.itemSubtitle12(context)
+                                      .copyWith(
+                                        color: Theme.of(context)
+                                            .extension<StackColors>()!
+                                            .textSubtitle1,
+                                      ),
                                 ),
                               ),
                             ),
@@ -278,6 +289,7 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
                                       .format(
                                         amount,
                                         tokenContract: tokenContract,
+                                        trimTrailingZeros: true,
                                       );
 
                                   return Text(
@@ -286,7 +298,10 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
                                     // transaction underneath it is not privacy.
                                     privacyMode
                                         ? "••••"
-                                        : "$prefix$formattedAmount",
+                                        : signedAmountLabel(
+                                            prefix,
+                                            formattedAmount,
+                                          ),
                                     style: STextStyles.itemSubtitle12(context)
                                         .copyWith(
                                           fontWeight: FontWeight.w600,
@@ -316,7 +331,9 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
                             child: FittedBox(
                               fit: BoxFit.scaleDown,
                               child: Text(
-                                Format.extractDateFrom(_transaction.timestamp),
+                                Format.extractRelativeDateFrom(
+                                  _transaction.timestamp,
+                                ),
                                 style: STextStyles.label(context),
                               ),
                             ),

@@ -21,6 +21,25 @@ import 'package:flutter/material.dart';
 /// rule has one home and one place to change if that call is ever revisited.
 Color heroInk(Color hero) => Colors.white;
 
+/// The hero's fill, seated in the theme it actually sits in.
+///
+/// Distinct from [heroInk] above, and deliberately so. What was rejected there
+/// was making the *ink* adapt per theme, because that broke the hero reading as
+/// one treatment across the theme set. The fill was never uniform — every theme
+/// declares its own `colors.coin`, which is the whole point of the token — so
+/// seating it is a different question from restyling it.
+///
+/// In a dark theme a fully saturated fill butting straight onto a near-black
+/// page is a hard, glaring edge across a large area. Compositing a little of
+/// that page into the fill settles it without changing the hue: the theme's
+/// colour is still the theme's colour, just not floodlit.
+///
+/// Light themes are returned untouched.
+Color heroFill(Color declared, Brightness brightness) {
+  if (brightness != Brightness.dark) return declared;
+  return Color.alphaBlend(Colors.black.withOpacity(0.10), declared);
+}
+
 /// Ink for content on any *other* filled surface — dock pills, the dock itself.
 ///
 /// Unlike the hero, these are not a brand statement, and unreadable text here

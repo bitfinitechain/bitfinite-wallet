@@ -1093,10 +1093,14 @@ class _DesktopTransactionCardRowState
                   builder: (context) {
                     final formattedAmount = ref
                         .watch(pAmountFormatter(coin))
-                        .format(amount, tokenContract: contract);
+                        .format(
+                          amount,
+                          tokenContract: contract,
+                          trimTrailingZeros: true,
+                        );
 
                     return Text(
-                      "$prefix$formattedAmount",
+                      signedAmountLabel(prefix, formattedAmount),
                       style: STextStyles.desktopTextExtraExtraSmall(context)
                           .copyWith(
                             color: Theme.of(

@@ -89,6 +89,7 @@ docker run --rm --platform "$PLATFORM" \
   -v bfx-gradle:/root/.gradle \
   -v bfx-android-config:/root/.android \
   -e APP="$APP" -e VERSION="$VERSION" -e BUILD_NUM="$BUILD_NUM" -e MODE="$MODE" \
+  -e BFX_APP_ID="${BFX_APP_ID:-}" \
   -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" \
   "$IMAGE" bash -euxo pipefail -c '
     git config --system --add safe.directory "*"

@@ -551,33 +551,43 @@ class _WalletNetworkSettingsViewState
                     ),
                   ),
                   SizedBox(width: _boxPadding),
-                  Column(
-                    children: [
-                      SizedBox(
-                        width: progressLength,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Synchronized",
-                              style: STextStyles.w600_12(context),
+                  // Takes what is left of the row instead of a width derived from
+                  // MediaQuery. progressLength was
+                  //   screenWidth - (_padding * 2) - (_boxPadding * 3) - _iconSize
+                  // which over-estimated the slot by 2px on a 360dp screen and
+                  // overflowed the sync bar. LayoutBuilder reports the width the
+                  // layout actually granted. Desktop keeps its fixed 430px.
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (_, c) => Column(
+                        children: [
+                          SizedBox(
+                            width: isDesktop ? progressLength : c.maxWidth,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Synchronized",
+                                  style: STextStyles.w600_12(context),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
+                          const SizedBox(height: 4),
+                          ProgressBar(
+                            width: isDesktop ? progressLength : c.maxWidth,
+                            height: 5,
+                            fillColor: Theme.of(
+                              context,
+                            ).extension<StackColors>()!.accentColorGreen,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).extension<StackColors>()!.textFieldDefaultBG,
+                            percent: 1,
+                          ),
+                        ],
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      ProgressBar(
-                        width: progressLength,
-                        height: 5,
-                        fillColor: Theme.of(
-                          context,
-                        ).extension<StackColors>()!.accentColorGreen,
-                        backgroundColor: Theme.of(
-                          context,
-                        ).extension<StackColors>()!.textFieldDefaultBG,
-                        percent: 1,
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -613,71 +623,81 @@ class _WalletNetworkSettingsViewState
                     ),
                   ),
                   SizedBox(width: _boxPadding),
-                  Column(
-                    children: [
-                      SizedBox(
-                        width: progressLength,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            AnimatedText(
-                              style: STextStyles.w600_12(context),
-                              stringsToLoopThrough: const [
-                                "Synchronizing",
-                                "Synchronizing.",
-                                "Synchronizing..",
-                                "Synchronizing...",
-                              ],
-                            ),
-                            Row(
+                  // Takes what is left of the row instead of a width derived from
+                  // MediaQuery. progressLength was
+                  //   screenWidth - (_padding * 2) - (_boxPadding * 3) - _iconSize
+                  // which over-estimated the slot by 2px on a 360dp screen and
+                  // overflowed the sync bar. LayoutBuilder reports the width the
+                  // layout actually granted. Desktop keeps its fixed 430px.
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (_, c) => Column(
+                        children: [
+                          SizedBox(
+                            width: isDesktop ? progressLength : c.maxWidth,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  _percentString(_percent),
-                                  style: STextStyles.syncPercent(context)
-                                      .copyWith(
-                                        color: Theme.of(context)
-                                            .extension<StackColors>()!
-                                            .accentColorYellow,
-                                      ),
+                                AnimatedText(
+                                  style: STextStyles.w600_12(context),
+                                  stringsToLoopThrough: const [
+                                    "Synchronizing",
+                                    "Synchronizing.",
+                                    "Synchronizing..",
+                                    "Synchronizing...",
+                                  ],
                                 ),
-                                if (coin is Monero ||
-                                    coin is Wownero ||
-                                    coin is Epiccash ||
-                                    coin is Salvium ||
-                                    coin is Mimblewimblecoin ||
-                                    (coin is Litecoin &&
-                                        ref.watch(
-                                          pWalletInfo(
-                                            widget.walletId,
-                                          ).select((s) => s.isMwebEnabled),
-                                        )))
-                                  Text(
-                                    " (Blocks to go: ${_blocksRemaining == -1 ? "?" : _blocksRemaining})",
-                                    style: STextStyles.syncPercent(context)
-                                        .copyWith(
-                                          color: Theme.of(context)
-                                              .extension<StackColors>()!
-                                              .accentColorYellow,
-                                        ),
-                                  ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      _percentString(_percent),
+                                      style: STextStyles.syncPercent(context)
+                                          .copyWith(
+                                            color: Theme.of(context)
+                                                .extension<StackColors>()!
+                                                .accentColorYellow,
+                                          ),
+                                    ),
+                                    if (coin is Monero ||
+                                        coin is Wownero ||
+                                        coin is Epiccash ||
+                                        coin is Salvium ||
+                                        coin is Mimblewimblecoin ||
+                                        (coin is Litecoin &&
+                                            ref.watch(
+                                              pWalletInfo(
+                                                widget.walletId,
+                                              ).select((s) => s.isMwebEnabled),
+                                            )))
+                                      Text(
+                                        " (Blocks to go: ${_blocksRemaining == -1 ? "?" : _blocksRemaining})",
+                                        style: STextStyles.syncPercent(context)
+                                            .copyWith(
+                                              color: Theme.of(context)
+                                                  .extension<StackColors>()!
+                                                  .accentColorYellow,
+                                            ),
+                                      ),
+                                  ],
+                                ),
                               ],
                             ),
-                          ],
+                          ),
+                          const SizedBox(height: 4),
+                          ProgressBar(
+                            width: isDesktop ? progressLength : c.maxWidth,
+                            height: 5,
+                            fillColor: Theme.of(
+                              context,
+                            ).extension<StackColors>()!.accentColorYellow,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).extension<StackColors>()!.textFieldDefaultBG,
+                            percent: _percent,
+                          ),
+                        ],
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      ProgressBar(
-                        width: progressLength,
-                        height: 5,
-                        fillColor: Theme.of(
-                          context,
-                        ).extension<StackColors>()!.accentColorYellow,
-                        backgroundColor: Theme.of(
-                          context,
-                        ).extension<StackColors>()!.textFieldDefaultBG,
-                        percent: _percent,
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -713,45 +733,55 @@ class _WalletNetworkSettingsViewState
                     ),
                   ),
                   SizedBox(width: _boxPadding),
-                  Column(
-                    children: [
-                      SizedBox(
-                        width: progressLength,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "Unable to synchronize",
-                              style: STextStyles.w600_12(context).copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).extension<StackColors>()!.accentColorRed,
-                              ),
+                  // Takes what is left of the row instead of a width derived from
+                  // MediaQuery. progressLength was
+                  //   screenWidth - (_padding * 2) - (_boxPadding * 3) - _iconSize
+                  // which over-estimated the slot by 2px on a 360dp screen and
+                  // overflowed the sync bar. LayoutBuilder reports the width the
+                  // layout actually granted. Desktop keeps its fixed 430px.
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (_, c) => Column(
+                        children: [
+                          SizedBox(
+                            width: isDesktop ? progressLength : c.maxWidth,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Unable to synchronize",
+                                  style: STextStyles.w600_12(context).copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).extension<StackColors>()!.accentColorRed,
+                                  ),
+                                ),
+                                Text(
+                                  "0%",
+                                  style: STextStyles.syncPercent(context).copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).extension<StackColors>()!.accentColorRed,
+                                  ),
+                                ),
+                              ],
                             ),
-                            Text(
-                              "0%",
-                              style: STextStyles.syncPercent(context).copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).extension<StackColors>()!.accentColorRed,
-                              ),
-                            ),
-                          ],
+                          ),
+                          const SizedBox(height: 4),
+                          ProgressBar(
+                            width: isDesktop ? progressLength : c.maxWidth,
+                            height: 5,
+                            fillColor: Theme.of(
+                              context,
+                            ).extension<StackColors>()!.accentColorRed,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).extension<StackColors>()!.textFieldDefaultBG,
+                            percent: 0,
+                          ),
+                        ],
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      ProgressBar(
-                        width: progressLength,
-                        height: 5,
-                        fillColor: Theme.of(
-                          context,
-                        ).extension<StackColors>()!.accentColorRed,
-                        backgroundColor: Theme.of(
-                          context,
-                        ).extension<StackColors>()!.textFieldDefaultBG,
-                        percent: 0,
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),

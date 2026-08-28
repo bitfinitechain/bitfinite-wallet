@@ -184,11 +184,17 @@ class WalletSummaryInfo extends ConsumerWidget {
     // -1.04, so the previous -1.2 was slightly tighter than intended; w800 was
     // also heavier than the design, which relies on size rather than weight to
     // carry the balance.
+    // 44, down from the spec's 52. The chart now leads the hero at the 52 the
+    // balance used to own, and two elements competing at one size is no
+    // hierarchy at all. 44 still outranks everything under it by a wide margin
+    // — the fiat line is 13 — and buys back most of the height the taller chart
+    // costs, so the hero does not grow into the transaction list. The -0.02em
+    // tracking follows the size: -0.02 x 44.
     final heroStyle = STextStyles.pageTitleH1(context).copyWith(
-      fontSize: 52,
+      fontSize: 44,
       fontWeight: FontWeight.w700,
       height: 1.05,
-      letterSpacing: -1.04,
+      letterSpacing: -0.88,
       color: favText,
       fontFeatures: const [FontFeature.tabularFigures()],
     );
@@ -208,6 +214,46 @@ class WalletSummaryInfo extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Seven days of price, from the series the price API already returns.
+          // Gated on the same price != null as the fiat line above, and
+          // getSparkline gates itself again — a coin with no market gets no
+          // chart rather than a flat line at zero, which would be a claim we
+          // cannot support. Hidden in privacy mode for the same reason the fiat
+          // figure is: the shape still tells you how the holding moved.
+          if (price != null && price.value > Decimal.zero && !privacyMode)
+            Builder(
+              builder: (context) {
+                final series = ref
+                    .read(priceAnd24hChangeNotifierProvider)
+                    .getSparkline(coin);
+                if (series == null) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Container(
+                        padding: const EdgeInsets.fromLTRB(10, 8, 10, 6),
+                        decoration: BoxDecoration(
+                          // A faint well so the line has an edge to sit on;
+                          // floating on the hero fill it read as a stray mark.
+                          // Same white the text uses, far quieter, so it follows
+                          // whatever coin colour the hero takes.
+                          color: favText.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: PriceSparkline(
+                          series: series,
+                          color: favText.withOpacity(0.9),
+                          height: 52,
+                          // The same formatter as the fiat figure above, so a
+                          // price read off the chart and the value printed
+                          // over it cannot disagree about how to write a
+                          // number smaller than a cent.
+                          format: (v) =>
+                              "${Decimal.parse(v.toString()).toAmount(fractionDigits: 8).fiatString(locale: locale)} $baseCurrency",
+                        ),
+                      ),
+                );
+              },
+            ),
           Row(
             children: [
               Expanded(
@@ -350,6 +396,27 @@ class WalletSummaryInfo extends ConsumerWidget {
               ),
             ),
           ),
+          // Fiat sits directly under the balance it converts, above the address:
+          // the two are the same quantity in two units, and putting an unrelated
+          // chip between them made the second read as a third number. Quieter
+          // than the balance — it restates it rather than adding a fact.
+          //
+          // "≈" because it genuinely is approximate: a cached market price
+          // against a balance, not an amount anyone will receive.
+          if (price != null && price.value > Decimal.zero)
+            Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 2),
+              child: Text(
+                // Masked too: hiding the BFX figure while showing its fiat
+                // value would defeat the point entirely.
+                privacyMode
+                    ? "•••• $baseCurrency"
+                    : "≈ ${(price.value * balanceToShow.decimal).toAmount(fractionDigits: 8).fiatString(locale: locale)} $baseCurrency",
+                style: STextStyles.subtitle500(
+                  context,
+                ).copyWith(color: favText.withOpacity(0.78), fontSize: 13),
+              ),
+            ),
           if (receivingAddress.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 14),
@@ -421,41 +488,6 @@ class WalletSummaryInfo extends ConsumerWidget {
                   ),
                 ),
               ),
-            ),
-          // Fiat is noise while no real price feed exists (provider returns 0
-          // for unlisted coins) — show it only when there's an actual price.
-          if (price != null && price.value > Decimal.zero)
-            Padding(
-              padding: const EdgeInsets.only(top: 2),
-              child: Text(
-                // Masked too: hiding the BFX figure while showing its fiat
-                // value would defeat the point entirely.
-                privacyMode
-                    ? "•••• $baseCurrency"
-                    : "${(price.value * balanceToShow.decimal).toAmount(fractionDigits: 8).fiatString(locale: locale)} $baseCurrency",
-                style: STextStyles.subtitle500(
-                  context,
-                ).copyWith(color: favText),
-              ),
-            ),
-          // Seven days of price, from the series the price API already returns.
-          // Gated on the same price != null as the fiat line above, and
-          // getSparkline gates itself again — a coin with no market gets no
-          // chart rather than a flat line at zero, which would be a claim we
-          // cannot support. Hidden in privacy mode for the same reason the fiat
-          // figure is: the shape still tells you how the holding moved.
-          if (price != null && price.value > Decimal.zero && !privacyMode)
-            Builder(
-              builder: (context) {
-                final series = ref
-                    .read(priceAnd24hChangeNotifierProvider)
-                    .getSparkline(coin);
-                if (series == null) return const SizedBox.shrink();
-                return Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: PriceSparkline(series: series, color: favText),
-                );
-              },
             ),
         ],
       ),

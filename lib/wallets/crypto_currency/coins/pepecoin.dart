@@ -148,6 +148,12 @@ class Pepecoin extends Bip39HDCurrency with ElectrumXCurrencyInterface {
     }
   }
 
+  /// #269B4D, the primary green from Pepecoin's brand guide (page 02).
+  /// Their palette also carries #208241 and #16532A as darker greens and
+  /// #C07A4E for the mouth; the primary is the one that identifies the coin.
+  @override
+  int get brandColorValue => 0xFF269B4D;
+
   @override
   int get minConfirms => 1;
 
@@ -202,7 +208,12 @@ class Pepecoin extends Bip39HDCurrency with ElectrumXCurrencyInterface {
         return NodeModel(
           host: "electrum.pepeblocks.com",
           port: 50002,
-          name: DefaultNodes.defaultName,
+          // NOT DefaultNodes.defaultName: that constant is
+          // "${AppConfig.prefix} Default" — literally "BitFinite Default" —
+          // and every coin shares it. Copying it here produced two nodes with
+          // the same name pointing at different chains, which on the node list
+          // reads as BFX using Pepecoin's server.
+          name: "Pepecoin Default",
           id: DefaultNodes.buildId(this),
           useSSL: true,
           enabled: true,
@@ -218,7 +229,12 @@ class Pepecoin extends Bip39HDCurrency with ElectrumXCurrencyInterface {
         return NodeModel(
           host: "electrum.pepeblocks.com",
           port: 50002,
-          name: DefaultNodes.defaultName,
+          // NOT DefaultNodes.defaultName: that constant is
+          // "${AppConfig.prefix} Default" — literally "BitFinite Default" —
+          // and every coin shares it. Copying it here produced two nodes with
+          // the same name pointing at different chains, which on the node list
+          // reads as BFX using Pepecoin's server.
+          name: "Pepecoin Default",
           id: DefaultNodes.buildId(this),
           useSSL: true,
           enabled: true,

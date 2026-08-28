@@ -67,7 +67,7 @@ class _FeeSliderState extends State<FeeSlider> {
                 sliderValue * (widget.max - widget.min) + widget.min,
                 widget.pow,
               ).toDouble();
-              if (widget.coin is Dogecoin) {
+              if (widget.coin is Dogecoin || widget.coin is Pepecoin) {
                 rate = (number * 1000).toInt();
               } else {
                 rate = number.toInt();

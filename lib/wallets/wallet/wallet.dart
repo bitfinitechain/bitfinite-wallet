@@ -34,6 +34,7 @@ import 'impl/bitfinite_wallet.dart';
 import 'impl/cardano_wallet.dart';
 import 'impl/dash_wallet.dart';
 import 'impl/dogecoin_wallet.dart';
+import 'impl/pepecoin_wallet.dart';
 import 'impl/ecash_wallet.dart';
 import 'impl/epiccash_wallet.dart';
 import 'impl/ethereum_wallet.dart';
@@ -375,6 +376,9 @@ abstract class Wallet<T extends CryptoCurrency> {
 
       case const (Dogecoin):
         return DogecoinWallet(net);
+
+      case const (Pepecoin):
+        return PepecoinWallet(net);
 
       case const (Ecash):
         return EcashWallet(net);

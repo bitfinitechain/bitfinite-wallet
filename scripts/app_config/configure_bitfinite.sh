@@ -87,6 +87,11 @@ const ({String light, String dark})? _appIconAsset = null;
 
 final List<CryptoCurrency> _supportedCoins = List.unmodifiable([
   Bitfinite(CryptoCurrencyNetwork.main),
+  // Pepecoin, the first coin added beyond BFX. It rides two public Electrum
+  // servers we do not run (electrum.pepeblocks.com, electrum.pepe.tips) — the
+  // whole of Pepecoin's public Electrum infrastructure, since the third
+  // published host no longer resolves.
+  Pepecoin(CryptoCurrencyNetwork.main),
 ]);
 
 // BFX is not on exchanges; swap defaults are unused but the field is required.

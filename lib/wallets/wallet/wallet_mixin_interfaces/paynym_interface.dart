@@ -649,7 +649,7 @@ mixin PaynymInterface<T extends PaynymCurrencyInterface>
         ),
       );
 
-      if (info.coin is Dogecoin) {
+      if (info.coin is Dogecoin || info.coin is Pepecoin) {
         if (feeForNoChange < vSizeForNoChange * BigInt.from(1000)) {
           feeForNoChange = vSizeForNoChange * BigInt.from(1000);
         }

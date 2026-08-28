@@ -10,6 +10,7 @@ export 'coins/bitfinite.dart';
 export 'coins/cardano.dart';
 export 'coins/dash.dart';
 export 'coins/dogecoin.dart';
+export 'coins/pepecoin.dart';
 export 'coins/ecash.dart';
 export 'coins/epiccash.dart';
 export 'coins/mimblewimblecoin.dart';

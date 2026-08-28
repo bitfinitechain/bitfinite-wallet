@@ -33,6 +33,7 @@ class PriceAPI {
     Cardano: "cardano",
     Dash: "dash",
     Dogecoin: "dogecoin",
+    Pepecoin: "pepecoin-network",
     Epiccash: "epic-cash",
     Mimblewimblecoin: "mimblewimblecoin",
     Ecash: "ecash",

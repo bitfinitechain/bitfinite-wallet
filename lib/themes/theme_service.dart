@@ -60,7 +60,12 @@ class ThemeService {
   //     Without it Pepecoin fell through to the bitcoincash placeholder — the
   //     same fallback BitFinite uses — so the two coins were indistinguishable
   //     in the wallet list.
-  static const _currentDefaultThemeVersion = 32;
+  // 33: the same for coins.images and coins.secondaries. Only the small icon
+  //     was registered in 32, so anywhere the big art is used — the "Add
+  //     Pepecoin wallet" screen most visibly — fell through to
+  //     coin_placeholder, which is BitFinite's own blue logo. Adding a coin
+  //     needs all three slots, not just the one you happened to look at.
+  static const _currentDefaultThemeVersion = 33;
   ThemeService._();
   static ThemeService? _instance;
   static ThemeService get instance => _instance ??= ThemeService._();

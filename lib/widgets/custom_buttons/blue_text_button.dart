@@ -133,6 +133,7 @@ class CustomTextButton extends StatelessWidget {
     this.onTap,
     this.enabled = true,
     this.textSize,
+    this.color,
   });
 
   final String text;
@@ -140,14 +141,21 @@ class CustomTextButton extends StatelessWidget {
   final bool enabled;
   final double? textSize;
 
+  /// Overrides the theme's link colour. Used where the surrounding screen
+  /// belongs to a single coin, so the link matches it rather than staying blue.
+  /// Null keeps the theme default, which is what all other call sites get.
+  final Color? color;
+
   @override
   Widget build(BuildContext context) {
     return _CustomTextButton(
       key: UniqueKey(),
       text: text,
-      enabledColor: Theme.of(context)
-          .extension<StackColors>()!
-          .customTextButtonEnabledText,
+      enabledColor:
+          color ??
+          Theme.of(context)
+              .extension<StackColors>()!
+              .customTextButtonEnabledText,
       disabledColor: Theme.of(context)
           .extension<StackColors>()!
           .customTextButtonDisabledText,

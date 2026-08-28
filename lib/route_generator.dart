@@ -270,6 +270,7 @@ import 'wallets/models/tx_data.dart';
 import 'wallets/wallet/impl/firo_wallet.dart';
 import 'wallets/wallet/wallet.dart';
 import 'wallets/wallet/wallet_mixin_interfaces/extended_keys_interface.dart';
+import 'widgets/coin_themed.dart';
 import 'widgets/choose_coin_view.dart';
 import 'widgets/frost_scaffold.dart';
 
@@ -2996,16 +2997,22 @@ class RouteGenerator {
     bool maintainState = true,
     bool fullscreenDialog = false,
   }) {
+    // Every route in this file is built here, so this is where a coin-scoped
+    // page picks up its coin's accent. Doing it per route did not hold: Send
+    // has four argument shapes and three were missed.
+    Widget scoped(BuildContext context) =>
+        CoinScope(args: settings?.arguments, child: builder(context));
+
     if (shouldUseMaterialRoute) {
       return MaterialPageRoute<T>(
-        builder: builder,
+        builder: scoped,
         settings: settings,
         maintainState: maintainState,
         fullscreenDialog: fullscreenDialog,
       );
     } else {
       return CupertinoPageRoute<T>(
-        builder: builder,
+        builder: scoped,
         settings: settings,
         title: title,
         maintainState: maintainState,

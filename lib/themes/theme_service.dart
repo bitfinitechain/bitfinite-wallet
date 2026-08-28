@@ -56,7 +56,11 @@ class ThemeService {
   //     visible edge. Note the spec's border is 1.27:1 against the field, so
   //     it is an affordance, not a WCAG 1.4.11 boundary; darkening it to
   //     >=3:1 is a deliberate open decision, not an oversight.
-  static const _currentDefaultThemeVersion = 31;
+  // 32: coins.icons gains a "pepecoin" entry and the icon file behind it.
+  //     Without it Pepecoin fell through to the bitcoincash placeholder — the
+  //     same fallback BitFinite uses — so the two coins were indistinguishable
+  //     in the wallet list.
+  static const _currentDefaultThemeVersion = 32;
   ThemeService._();
   static ThemeService? _instance;
   static ThemeService get instance => _instance ??= ThemeService._();

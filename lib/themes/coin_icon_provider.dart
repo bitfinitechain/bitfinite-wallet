@@ -30,9 +30,10 @@ final coinIconProvider = Provider.family<String, CryptoCurrency>((ref, coin) {
         return assets.bitcoincash;
       case const (Dogecoin):
         return assets.dogecoin;
-      // TODO(bfx): ship a Pepecoin icon per theme. Dogecoin's is the closest
-      // stand-in — Pepecoin is a Dogecoin fork — and our theme zips have no
-      // pepecoin entry, so V2/V3 themes fall through to the BCH placeholder.
+      // V1 themes only. Their assets are named Dart fields, so a coin added
+      // after the model was written cannot have its own entry — Dogecoin's is
+      // the closest stand-in, Pepecoin being a Dogecoin fork. V2/V3 themes take
+      // the branch below and read a real pepecoin icon from coins.icons.
       case const (Pepecoin):
         return assets.dogecoin;
       case const (Epiccash):

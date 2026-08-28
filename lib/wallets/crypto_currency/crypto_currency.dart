@@ -60,6 +60,15 @@ abstract class CryptoCurrency {
 
   // override in subclass if the currency has tokens on it's network
   // (used for eth currently)
+  /// The coin's own brand colour, when it has a published one.
+  ///
+  /// Only consulted if the active theme defines no colour for this coin. Themes
+  /// carried over from upstream only cover the coins upstream ships, so anything
+  /// added since falls back to the theme's primary and ends up looking like
+  /// every other coin. A published brand colour is a better answer than that,
+  /// and a theme that defines its own still wins.
+  int? get brandColorValue => null;
+
   bool get hasTokenSupport => false;
 
   // Override in subclass if the currency has Tor support:

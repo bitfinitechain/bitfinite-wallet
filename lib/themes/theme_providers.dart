@@ -48,9 +48,15 @@ final pCoinColor = StateProvider.family<Color, CryptoCurrency>(
         themeProvider.select((value) => value.coinColors[coin.mainNetId]),
       ) ??
       // Themes carried over from upstream only define colours for the coins
-      // upstream ships, so they have no entry for BitFinite. Fall back to the
-      // theme's own primary colour rather than a fixed orange, which clashed
-      // with every non-orange theme (e.g. the wallet card rendered orange on
-      // the green Forest theme).
+      // upstream ships, so they have no entry for BitFinite or Pepecoin.
+      //
+      // Prefer the coin's own published brand colour, so a coin that has one is
+      // recognisable instead of wearing the theme's primary like everything
+      // else — Pepecoin rendered in BitFinite blue until this existed.
+      //
+      // Then the theme's primary, rather than a fixed orange, which clashed with
+      // every non-orange theme (the wallet card rendered orange on Forest).
+      // A theme that defines the coin still wins over both.
+      (coin.brandColorValue != null ? Color(coin.brandColorValue!) : null) ??
       ref.watch(themeProvider.select((value) => value.buttonBackPrimary)),
 );

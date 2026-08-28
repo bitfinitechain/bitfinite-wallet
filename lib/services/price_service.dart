@@ -57,12 +57,29 @@ class PriceService extends ChangeNotifier {
   ({Decimal value, double change24h})? getTokenPrice(String contractAddress) =>
       _orNullIfUnpriced(_cachedTokenPrices[contractAddress.toLowerCase()]);
 
+  final Map<CryptoCurrency, List<double>> _cachedSparklines = {};
+
+  /// 7-day hourly price series, or null when the coin has no market.
+  ///
+  /// Gated on getPrice for the same reason that exists: an unlisted coin caches
+  /// a zero price, and a chart drawn from that would be a flat line at zero —
+  /// a made-up claim rather than an absence. Callers render nothing on null.
+  List<double>? getSparkline(CryptoCurrency coin) {
+    if (getPrice(coin) == null) return null;
+    final series = _cachedSparklines[coin];
+    return (series != null && series.length > 1) ? series : null;
+  }
+
   PriceService(this.baseTicker);
 
   Future<void> updatePrice() async {
     final priceMap = await _priceAPI.getPricesAnd24hChange(
       baseCurrency: baseTicker,
     );
+
+    _cachedSparklines
+      ..clear()
+      ..addAll(_priceAPI.sparklines);
 
     bool shouldNotify = false;
     for (final map in priceMap.entries) {

@@ -36,6 +36,7 @@ import '../../../wallets/crypto_currency/coins/banano.dart';
 import '../../../wallets/crypto_currency/coins/firo.dart';
 import '../../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../../wallets/wallet/impl/banano_wallet.dart';
+import '../../../widgets/price_sparkline.dart';
 import '../../../widgets/conditional_parent.dart';
 import '../../../widgets/coin_card.dart';
 import 'wallet_balance_toggle_sheet.dart';
@@ -436,6 +437,25 @@ class WalletSummaryInfo extends ConsumerWidget {
                   context,
                 ).copyWith(color: favText),
               ),
+            ),
+          // Seven days of price, from the series the price API already returns.
+          // Gated on the same price != null as the fiat line above, and
+          // getSparkline gates itself again — a coin with no market gets no
+          // chart rather than a flat line at zero, which would be a claim we
+          // cannot support. Hidden in privacy mode for the same reason the fiat
+          // figure is: the shape still tells you how the holding moved.
+          if (price != null && price.value > Decimal.zero && !privacyMode)
+            Builder(
+              builder: (context) {
+                final series = ref
+                    .read(priceAnd24hChangeNotifierProvider)
+                    .getSparkline(coin);
+                if (series == null) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: PriceSparkline(series: series, color: favText),
+                );
+              },
             ),
         ],
       ),

@@ -121,6 +121,11 @@ class PriceAPI {
       .where((e) => e != null)
       .join(",");
 
+  /// 7-day hourly price series per coin, from the same markets response.
+  /// Absent for any coin the price API does not list — BFX has no market, so it
+  /// has no series, and the UI must render nothing rather than an empty chart.
+  final Map<CryptoCurrency, List<double>> sparklines = {};
+
   Future<Map<CryptoCurrency, ({Decimal value, double change24h})>>
   getPricesAnd24hChange({required String baseCurrency}) async {
     final now = DateTime.now();
@@ -143,7 +148,11 @@ class PriceAPI {
       final uri = Uri.parse(
         "https://api.coingecko.com/api/v3/coins/markets?vs_currency"
         "=${baseCurrency.toLowerCase()}&ids=$_coinIds&order=market_cap_desc"
-        "&per_page=50&page=1&sparkline=false",
+        "&per_page=50&page=1&sparkline=true",
+        // sparkline=true costs no extra request: CoinGecko returns
+        // sparkline_in_7d (168 hourly points) inside this same response.
+        // It does make each response noticeably larger, which is why the
+        // series is only read here and not polled on its own timer.
       );
 
       final coinGeckoResponse = await client.get(
@@ -181,8 +190,25 @@ class PriceAPI {
               : 0.0;
 
           result[coin] = (value: price, change24h: change24h);
+
+          // Kept in a separate map rather than widened into the record above:
+          // that record's shape is depended on by 17 call sites, and none of
+          // them want a price history.
+          final spark = map["sparkline_in_7d"];
+          if (spark is Map && spark["price"] is List) {
+            final series = (spark["price"] as List)
+                .map((e) => double.tryParse(e.toString()))
+                .whereType<double>()
+                .toList();
+            if (series.length > 1) {
+              sparklines[coin] = series;
+            } else {
+              sparklines.remove(coin);
+            }
+          }
         } catch (_) {
           result.remove(coin);
+          sparklines.remove(coin);
         }
       }
 

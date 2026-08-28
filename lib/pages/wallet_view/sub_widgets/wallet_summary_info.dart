@@ -431,7 +431,7 @@ class WalletSummaryInfo extends ConsumerWidget {
                 // value would defeat the point entirely.
                 privacyMode
                     ? "•••• $baseCurrency"
-                    : "${(price.value * balanceToShow.decimal).toAmount(fractionDigits: 2).fiatString(locale: locale)} $baseCurrency",
+                    : "${(price.value * balanceToShow.decimal).toAmount(fractionDigits: 8).fiatString(locale: locale)} $baseCurrency",
                 style: STextStyles.subtitle500(
                   context,
                 ).copyWith(color: favText),

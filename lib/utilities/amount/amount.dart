@@ -9,6 +9,7 @@
  */
 
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:decimal/decimal.dart';
 
@@ -109,7 +110,30 @@ class Amount {
       (m) => "${m.group(0)}${numberSymbols?.GROUP_SEP ?? ","}",
     );
 
-    return "$wholeNumberString$separator${fraction.toStringAsFixed(2).substring(2)}";
+    // Two places is right for dollars, but a coin worth a fraction of a cent
+    // renders as "0.00" — which reads as worthless and contradicts the percent
+    // change shown beside it. Pepecoin surfaced this at $0.00013917; BFX never
+    // could, having no price at all.
+    //
+    // Below one cent, widen until four significant digits are visible, then
+    // drop the trailing zeros that widening introduces. Anything a cent or
+    // larger keeps the familiar two places, and the negative case is left
+    // exactly as it was.
+    int places = 2;
+    if (wholeNumber.toBigInt() == BigInt.zero && fraction > Decimal.fromInt(0)) {
+      final digits = fraction.toStringAsFixed(8).substring(2);
+      final firstSignificant = digits.indexOf(RegExp(r"[1-9]"));
+      if (firstSignificant >= 2) {
+        places = math.min(firstSignificant + 4, 8);
+      }
+    }
+
+    String fractionString = fraction.toStringAsFixed(places).substring(2);
+    if (places > 2) {
+      fractionString = fractionString.replaceFirst(RegExp(r"0+$"), "");
+    }
+
+    return "$wholeNumberString$separator$fractionString";
   }
   // String localizedStringAsFixed({
   //   required String locale,

@@ -171,8 +171,10 @@ class WalletListItem extends ConsumerWidget {
                     );
 
                     if (price != null) {
+                      // 8, not 2: quantising to two decimals here destroyed any
+                      // price below a cent. PEP showed $0.00 beside a +23% change.
                       priceString = price.value
-                          .toAmount(fractionDigits: 2)
+                          .toAmount(fractionDigits: 8)
                           .fiatString(
                             locale: ref.watch(
                               localeServiceChangeNotifierProvider.select(

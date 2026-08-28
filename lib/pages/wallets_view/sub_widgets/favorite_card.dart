@@ -229,8 +229,10 @@ onCoinCardColor(context, ref, coin),
                       if (externalCalls &&
                           total > Amount.zero &&
                           price != null) {
+                        // 8, not 2 — see wallet_list_item: a sub-cent price
+                        // rounds the whole fiat total to zero before display.
                         fiatTotal = (total.decimal * price).toAmount(
-                          fractionDigits: 2,
+                          fractionDigits: 8,
                         );
                       }
 

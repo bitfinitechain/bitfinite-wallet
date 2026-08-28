@@ -18,6 +18,7 @@ import '../pages/receive_view/receive_view.dart';
 import '../pages/send_view/send_view.dart';
 import '../pages/wallet_view/transaction_views/tx_v2/all_transactions_v2_view.dart';
 import '../providers/providers.dart';
+import '../themes/theme_providers.dart';
 import '../themes/stack_colors.dart';
 import '../utilities/assets.dart';
 import '../wallets/crypto_currency/crypto_currency.dart';
@@ -51,16 +52,20 @@ class ReceiveSendSwitchDock extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).extension<StackColors>()!;
+    final accent = ref.watch(pCoinColor(coin));
 
     return WalletNavigationBar(
       floating: true,
+      // The dock belongs to the wallet you are in, so its primary action
+      // wears that coin's colour rather than the theme's generic blue.
+      accentColor: accent,
       // The page you are on is the active one.
       activeLabel: current == TransferTab.receive ? "Receive" : "Send",
       items: [
         WalletNavigationBarItemData(
           label: "Receive",
           icon: const ReceiveNavIcon(),
-          filledIcon: const ReceiveNavIcon(onFilled: true),
+          filledIcon: ReceiveNavIcon(onFilled: true, fill: accent),
           onTap: current == TransferTab.receive
               ? null
               : () => Navigator.of(context).pushReplacementNamed(
@@ -71,7 +76,7 @@ class ReceiveSendSwitchDock extends ConsumerWidget {
         WalletNavigationBarItemData(
           label: "Send",
           icon: const SendNavIcon(),
-          filledIcon: const SendNavIcon(onFilled: true),
+          filledIcon: SendNavIcon(onFilled: true, fill: accent),
           onTap: current == TransferTab.send
               ? null
               : () => Navigator.of(context).pushReplacementNamed(

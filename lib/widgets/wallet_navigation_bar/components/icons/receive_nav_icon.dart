@@ -15,13 +15,22 @@ import '../../../../utilities/hero_ink.dart';
 import '../../../../utilities/assets.dart';
 
 class ReceiveNavIcon extends StatelessWidget {
-  const ReceiveNavIcon({super.key, this.onFilled = false});
+  const ReceiveNavIcon({super.key, this.onFilled = false, this.fill});
 
   /// True when this icon sits on the filled primary pill (the Receive page,
   /// where Receive is the active action). Green on the primary fill is muddy
   /// and low contrast, so the filled state uses the theme's button ink like
   /// the Send icon does.
   final bool onFilled;
+
+  /// The colour of the pill this icon is painted on, when it is on one.
+  ///
+  /// The ink check below is only meaningful against the colour actually behind
+  /// the icon. The dock paints its pill in the wallet's coin colour, which is
+  /// not the theme's primary, so measuring against the primary answered a
+  /// question nobody asked: on Pepecoin the arrow came out white on the wallet
+  /// view and dark on the send screen, from the same widget.
+  final Color? fill;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +39,7 @@ class ReceiveNavIcon extends StatelessWidget {
     // this already follows the theme; only the filled state needed fixing.
     final colors = Theme.of(context).extension<StackColors>()!;
     final tint = onFilled
-        ? readableInk(colors.buttonTextPrimary, colors.buttonBackPrimary)
+        ? readableInk(colors.buttonTextPrimary, fill ?? colors.buttonBackPrimary)
         : colors.accentColorGreen;
     return Container(
       decoration: BoxDecoration(

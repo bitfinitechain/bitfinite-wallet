@@ -15,7 +15,7 @@ import '../../../../utilities/hero_ink.dart';
 import '../../../../utilities/assets.dart';
 
 class SendNavIcon extends StatelessWidget {
-  const SendNavIcon({super.key, this.onFilled = false});
+  const SendNavIcon({super.key, this.onFilled = false, this.fill});
 
   /// True when this icon sits on the filled primary pill.
   ///
@@ -24,6 +24,15 @@ class SendNavIcon extends StatelessWidget {
   /// have no icon at all, which also made Receive (a bright green disc) read as
   /// the active one.
   final bool onFilled;
+
+  /// The colour of the pill this icon is painted on, when it is on one.
+  ///
+  /// The ink check below is only meaningful against the colour actually behind
+  /// the icon. The dock paints its pill in the wallet's coin colour, which is
+  /// not the theme's primary, so measuring against the primary answered a
+  /// question nobody asked: on Pepecoin the arrow came out white on the wallet
+  /// view and dark on the send screen, from the same widget.
+  final Color? fill;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +43,7 @@ class SendNavIcon extends StatelessWidget {
     // On the pill the icon must survive the same check as the label beside it,
     // or the two disagree — Orange's declared white is 3.00:1 on its own fill.
     final tint = onFilled
-        ? readableInk(colors.buttonTextPrimary, colors.buttonBackPrimary)
+        ? readableInk(colors.buttonTextPrimary, fill ?? colors.buttonBackPrimary)
         : colors.buttonBackPrimary;
     return Container(
       decoration: BoxDecoration(

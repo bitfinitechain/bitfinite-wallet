@@ -317,29 +317,44 @@ class _WalletViewState extends ConsumerState<WalletView> {
     }
   }
 
-  Widget _buildNetworkIcon(WalletSyncStatus status) {
-    final colors = Theme.of(context).extension<StackColors>()!;
+  /// [ink] is the hero's ink, because this glyph sits on the hero.
+  ///
+  /// It used to take the theme's status colours, which are chosen against the
+  /// page background. On the hero they land on the coin's own colour: the green
+  /// "synced" glyph measured 1.05:1 on Pepecoin's green and 1.44:1 on BFX's
+  /// blue — the button was there, but on neither coin could you see it.
+  ///
+  /// Recolouring the status hue to reach contrast was tried and rejected: it
+  /// only clears on a mid-tone hero by going dark, which turns green into
+  /// #005349 mud beside the white bell and menu, and on blue it turns the
+  /// offline red into a pale pink that reads as anything but a warning.
+  ///
+  /// So the glyph follows the rule the rest of the hero already follows —
+  /// heroInk, the same white the bell and menu beside it use. No state is lost
+  /// to this: each status draws a *different glyph* (radio, radioSyncing,
+  /// radioProblem), and the chip directly below spells the state out in words.
+  Widget _buildNetworkIcon(WalletSyncStatus status, Color ink) {
     switch (status) {
       case WalletSyncStatus.unableToSync:
         return adaptiveIcon(
           Assets.svg.radioProblem,
           CupertinoIcons.wifi_slash,
           size: 20,
-          color: colors.accentColorRed,
+          color: ink,
         );
       case WalletSyncStatus.synced:
         return adaptiveIcon(
           Assets.svg.radio,
           CupertinoIcons.wifi,
           size: 20,
-          color: colors.accentColorGreen,
+          color: ink,
         );
       case WalletSyncStatus.syncing:
         return adaptiveIcon(
           Assets.svg.radioSyncing,
           CupertinoIcons.arrow_2_circlepath,
           size: 20,
-          color: colors.accentColorYellow,
+          color: ink,
         );
     }
   }
@@ -511,7 +526,8 @@ class _WalletViewState extends ConsumerState<WalletView> {
     // translucent discs behind them). Derived from the hero fill for the same
     // reason as the balance block: the hero is the theme's own colour and is a
     // light orange in some themes, where white ink measures 3.00:1.
-    final onHero = heroInk(ref.watch(pCoinColor(coin)));
+    final accent = ref.watch(pCoinColor(coin));
+    final onHero = heroInk(accent);
 
     final prefs = ref.watch(prefsChangeNotifierProvider);
     final showExchange = prefs.enableExchange;
@@ -524,12 +540,13 @@ class _WalletViewState extends ConsumerState<WalletView> {
                 WalletNavigationBar(
                   // Wallet home: Send is the primary action, per the design.
                   activeLabel: "Send",
+                  accentColor: accent,
                   floating: true,
                   items: [
                     WalletNavigationBarItemData(
                       label: "Receive",
                       icon: const ReceiveNavIcon(),
-                      filledIcon: const ReceiveNavIcon(onFilled: true),
+                      filledIcon: ReceiveNavIcon(onFilled: true, fill: accent),
                       onTap: () {
                         if (mounted) {
                           unawaited(
@@ -581,7 +598,7 @@ class _WalletViewState extends ConsumerState<WalletView> {
                       WalletNavigationBarItemData(
                         label: "Send",
                         icon: const SendNavIcon(),
-                        filledIcon: const SendNavIcon(onFilled: true),
+                        filledIcon: SendNavIcon(onFilled: true, fill: accent),
                         onTap: () {
                           // not sure what this is supposed to accomplish?
                           // switch (ref
@@ -1042,7 +1059,7 @@ class _WalletViewState extends ConsumerState<WalletView> {
                           // blue. Same rule as the address chip: on the hero,
                           // derive from the hero.
                           color: onHero.withOpacity(0.14),
-                          icon: _buildNetworkIcon(_currentSyncStatus),
+                          icon: _buildNetworkIcon(_currentSyncStatus, onHero),
                           onPressed: () {
                             Navigator.of(context).pushNamed(
                               WalletNetworkSettingsView.routeName,
@@ -1410,6 +1427,11 @@ class _WalletViewState extends ConsumerState<WalletView> {
                               ),
                               CustomTextButton(
                                 text: "See all",
+                                // Matches the dock: inside a wallet the accents
+                                // belong to that coin. pCoinColor falls back to
+                                // the theme for a coin without its own, so BFX
+                                // is unchanged.
+                                color: ref.watch(pCoinColor(coin)),
                                 onTap: () {
                                   Navigator.of(context).pushNamed(
                                     ref

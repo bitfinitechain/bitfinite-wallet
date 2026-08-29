@@ -2224,7 +2224,12 @@ class _TxDetailsAmountHeader extends ConsumerWidget {
                     ),
                   ],
                 ),
-              Column(
+              // The headline figure sits in a Row with no width bound, so a
+              // long amount had nowhere to go: -39,967,175.37148800 PEP
+              // overflowed this row by 94px. Expanded hands it the rest of
+              // the row, which is what the scaling below then works within.
+              Expanded(
+                child:               Column(
                 crossAxisAlignment: isDesktop
                     ? CrossAxisAlignment.end
                     : CrossAxisAlignment.start,
@@ -2242,23 +2247,34 @@ class _TxDetailsAmountHeader extends ConsumerWidget {
                       // number the page exists to show. Spec is 24/700, with
                       // incoming in green, using the same accentColorGreen the
                       // transaction list uses so the two agree.
-                      return SelectableText(
-                        "$amountPrefix$formattedAmount",
-                        style: isDesktop
-                            ? detailStyle
-                            : detailStyle.copyWith(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w700,
-                                height: 1.15,
-                                color:
-                                    transaction.type ==
-                                        TransactionType.incoming
-                                    ? colors.accentColorGreen
-                                    : colors.textDark,
-                                fontFeatures: const [
-                                  FontFeature.tabularFigures(),
-                                ],
-                              ),
+                      // Shrink to fit rather than wrap. Digits broken across
+                      // two lines read as a different number, and this string
+                      // reaches 24 characters on a mining wallet:
+                      // "-39,967,175.37148800 PEP". scaleDown only ever
+                      // reduces, so ordinary amounts keep the full 24px.
+                      return FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: isDesktop
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
+                        child: SelectableText(
+                          "$amountPrefix$formattedAmount",
+                          style: isDesktop
+                              ? detailStyle
+                              : detailStyle.copyWith(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.15,
+                                  color:
+                                      transaction.type ==
+                                          TransactionType.incoming
+                                      ? colors.accentColorGreen
+                                      : colors.textDark,
+                                  fontFeatures: const [
+                                    FontFeature.tabularFigures(),
+                                  ],
+                                ),
+                        ),
                       );
                     },
                   ),
@@ -2288,6 +2304,7 @@ class _TxDetailsAmountHeader extends ConsumerWidget {
                       },
                     ),
                 ],
+              ),
               ),
               if (!isDesktop)
                 TxIcon(

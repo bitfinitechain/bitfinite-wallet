@@ -96,10 +96,27 @@ class Pepecoin extends Bip39HDCurrency with ElectrumXCurrencyInterface {
   List<NodeModel> get additionalDefaultNodes =>
       network == CryptoCurrencyNetwork.main
           ? [
+            // Kept as failovers, named for who runs them rather than numbered:
+            // "Pepecoin Electrum 2" told nobody which server they were on when
+            // one of them was the one misbehaving.
+            NodeModel(
+              host: "electrum.pepeblocks.com",
+              port: 50002,
+              name: "PepeBlocks Electrum",
+              id: "${DefaultNodes.defaultNodeIdPrefix}${identifier}_pepeblocks",
+              useSSL: true,
+              enabled: true,
+              coinName: identifier,
+              isFailover: true,
+              isDown: false,
+              torEnabled: true,
+              clearnetEnabled: true,
+              isPrimary: false,
+            ),
             NodeModel(
               host: "electrum.pepe.tips",
               port: 50002,
-              name: "Pepecoin Electrum 2",
+              name: "Pepe Tips Electrum",
               id: "${DefaultNodes.defaultNodeIdPrefix}${identifier}_electrum2",
               useSSL: true,
               enabled: true,
@@ -117,12 +134,27 @@ class Pepecoin extends Bip39HDCurrency with ElectrumXCurrencyInterface {
   Amount get dustLimit =>
       Amount(rawValue: BigInt.from(1000000), fractionDigits: fractionDigits);
 
+  /// Checked against the server's reported `genesis_hash` on every connect;
+  /// a mismatch means the server is serving a different chain.
+  ///
+  /// This carried Dogecoin's hash, inherited when the class was derived from
+  /// dogecoin.dart. That did not fail loudly: the check is wrapped in a
+  /// try/catch that only logs, so the guard has been quietly not-guarding —
+  /// and worse than absent, because Dogecoin's value means a Dogecoin server
+  /// would have *passed* it.
+  ///
+  /// The value below was derived twice, independently: double-SHA256 of the
+  /// block 0 header fetched from the chain, and again by our own ElectrumX,
+  /// which logs `verified genesis block with hash ...` on startup. Both agree.
   @override
   String get genesisHash {
     switch (network) {
       case CryptoCurrencyNetwork.main:
-        return "1a91e3dace36e2be3bf030a65679fe821aa1d6ef92e7c9902eb318182c355691";
+        return "37981c0c48b8d48965376c8a42ece9a0838daadb93ff975cb091f57f8c2a5faa";
       case CryptoCurrencyNetwork.test:
+        // Still Dogecoin's testnet value, and still wrong. Left rather than
+        // guessed: we ship no Pepecoin testnet, so there is no chain to read
+        // the real one from. Anyone enabling it must fix this line first.
         return "bb0a78264637406b6360aad926284d544d7049f45189db5664f3c4d07350559e";
       default:
         throw Exception("Unsupported network: $network");
@@ -205,8 +237,20 @@ class Pepecoin extends Bip39HDCurrency with ElectrumXCurrencyInterface {
   NodeModel defaultNode({required bool isPrimary}) {
     switch (network) {
       case CryptoCurrencyNetwork.main:
+        // Ours, and primary since 2026-08-29. Measured against both public
+        // servers on the same address at the same moment: connect 0.1s vs
+        // 0.6-0.7s, headers.subscribe 0.03s vs ~0.30s, a 435-tx history 0.18s
+        // vs ~0.90s. All three returned identical tip, balance and history, so
+        // this is the same data sooner rather than different data.
+        //
+        // The reason is reliability rather than speed. electrum.pepe.tips spent
+        // a day answering server.version in a second and then hanging forever
+        // on anything touching the chain — a client connects "successfully" and
+        // waits, with nothing to trigger failover — then refused connections
+        // outright, then recovered. Intermittent is the hard case, and running
+        // our own is the only real answer to it.
         return NodeModel(
-          host: "electrum.pepeblocks.com",
+          host: "pepelectrum.bitfinitechain.org",
           port: 50002,
           // NOT DefaultNodes.defaultName: that constant is
           // "${AppConfig.prefix} Default" — literally "BitFinite Default" —

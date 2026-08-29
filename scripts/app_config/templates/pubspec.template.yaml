@@ -170,9 +170,19 @@ dependencies:
   image: ^4.3.0
   wakelock_plus: ^1.2.8
   intl: ^0.19.0
+  # Our fork, same commit. The upstream fork force-pushed away the branch that
+  # contained ba7d7d8, leaving it dangling: still fetchable by explicit SHA and
+  # still visible on github.com, but NOT reachable from any branch — and a
+  # plain clone is what `pub get` does. Every CI build since failed on "Could
+  # not find a file named pubspec.yaml", the v1.4.2 and v2.0.0 releases
+  # included. Local builds kept working because the pub cache already held the
+  # package, which is why two releases went out before anyone noticed.
+  #
+  # Same SHA, so the content is byte-identical to every build we have shipped.
+  # Our fork only keeps it reachable.
   devicelocale:
     git:
-      url: https://github.com/cypherstack/flutter-devicelocale
+      url: https://github.com/bitfinitechain/flutter-devicelocale
       ref: ba7d7d87a3772e972adb1358a5ec9a111b514fce
   device_info_plus: ^10.1.2
   keyboard_dismisser: ^3.0.0

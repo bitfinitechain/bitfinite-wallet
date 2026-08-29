@@ -65,7 +65,13 @@ fi
 # publicly pullable, so no `docker login` is needed. Override with BFX_CI_IMAGE
 # to fall back to upstream (ghcr.io/cypherstack/stackwallet-ci:android) if ours
 # is ever unavailable.
-IMAGE="${BFX_CI_IMAGE:-ghcr.io/bitfinitechain/bitfinitewallet-ci:android}"
+# Pinned by DIGEST, not by tag. A tag is mutable: rebuild the CI image and every
+# release built afterwards has a different toolchain, so an APK that reproduced
+# yesterday stops reproducing today — silently, and only a third party trying to
+# verify it would notice. The digest makes the toolchain part of the release.
+# To move to a new image, pull it, read `docker image inspect --format
+# '{{index .RepoDigests 0}}'`, and change the line below in a commit of its own.
+IMAGE="${BFX_CI_IMAGE:-ghcr.io/bitfinitechain/bitfinitewallet-ci@sha256:193012d6983743632a3c5ccb87851bd192ab8921bed45414453afaaed3bc5f4f}"
 # The CI image is published for linux/amd64 only, and the Dockerfile hardcodes
 # amd64 paths (JAVA_HOME, the Go tarball) while the Android NDK ships no
 # linux-arm64 host toolchain. So pin the platform: on Apple Silicon this runs

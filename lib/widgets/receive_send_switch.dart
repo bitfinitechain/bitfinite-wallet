@@ -22,6 +22,7 @@ import '../themes/theme_providers.dart';
 import '../themes/stack_colors.dart';
 import '../utilities/assets.dart';
 import '../wallets/crypto_currency/crypto_currency.dart';
+import '../wallets/wallet/wallet_mixin_interfaces/view_only_option_interface.dart';
 import 'wallet_navigation_bar/components/icons/coin_control_nav_icon.dart';
 import 'wallet_navigation_bar/components/icons/receive_nav_icon.dart';
 import 'wallet_navigation_bar/components/icons/send_nav_icon.dart';
@@ -54,6 +55,14 @@ class ReceiveSendSwitchDock extends ConsumerWidget {
     final colors = Theme.of(context).extension<StackColors>()!;
     final accent = ref.watch(pCoinColor(coin));
 
+    // A view-only wallet has no keys, so it cannot sign anything. The wallet
+    // view already omits Send for one (`if (!viewOnly)`), but this dock did
+    // not, so opening Receive on a watched address put Send back on screen and
+    // let you walk into a send flow that could never complete. Same predicate,
+    // same outcome, so the rule holds wherever the dock appears.
+    final wallet = ref.watch(pWallets).getWallet(walletId);
+    final viewOnly = wallet is ViewOnlyOptionInterface && wallet.isViewOnly;
+
     return WalletNavigationBar(
       floating: true,
       // The dock belongs to the wallet you are in, so its primary action
@@ -73,17 +82,18 @@ class ReceiveSendSwitchDock extends ConsumerWidget {
                   arguments: walletId,
                 ),
         ),
-        WalletNavigationBarItemData(
-          label: "Send",
-          icon: const SendNavIcon(),
-          filledIcon: SendNavIcon(onFilled: true, fill: accent),
-          onTap: current == TransferTab.send
-              ? null
-              : () => Navigator.of(context).pushReplacementNamed(
-                  SendView.routeName,
-                  arguments: (walletId: walletId, coin: coin),
-                ),
-        ),
+        if (!viewOnly)
+          WalletNavigationBarItemData(
+            label: "Send",
+            icon: const SendNavIcon(),
+            filledIcon: SendNavIcon(onFilled: true, fill: accent),
+            onTap: current == TransferTab.send
+                ? null
+                : () => Navigator.of(context).pushReplacementNamed(
+                    SendView.routeName,
+                    arguments: (walletId: walletId, coin: coin),
+                  ),
+          ),
       ],
       moreItems: <WalletNavigationBarItemData>[
         WalletNavigationBarItemData(

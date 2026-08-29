@@ -271,6 +271,7 @@ import 'wallets/wallet/impl/firo_wallet.dart';
 import 'wallets/wallet/wallet.dart';
 import 'wallets/wallet/wallet_mixin_interfaces/extended_keys_interface.dart';
 import 'widgets/coin_themed.dart';
+import 'widgets/view_only_send_guard.dart';
 import 'widgets/choose_coin_view.dart';
 import 'widgets/frost_scaffold.dart';
 
@@ -291,21 +292,21 @@ class RouteGenerator {
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const IntroView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case DeleteAccountView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const DeleteAccountView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case HomeView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const HomeView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case CreatePinView.routeName:
@@ -313,13 +314,13 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => CreatePinView(popOnSuccess: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const CreatePinView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case StackPrivacyCalls.routeName:
@@ -327,13 +328,13 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => StackPrivacyCalls(isSettings: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const StackPrivacyCalls(isSettings: false),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case ChooseCoinView.routeName:
@@ -345,7 +346,7 @@ class RouteGenerator {
               coinAdditional: args.item2,
               nextRouteName: args.item3,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -355,7 +356,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => ManageExplorerView(coin: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -365,7 +366,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => FiroRescanRecoveryErrorView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -374,14 +375,14 @@ class RouteGenerator {
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const WalletsView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case AddWalletView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const AddWalletView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case EditWalletTokensView.routeName:
@@ -389,7 +390,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => EditWalletTokensView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         } else if (args is Tuple2<String, List<String>>) {
           return getRoute(
@@ -398,7 +399,7 @@ class RouteGenerator {
               walletId: args.item1,
               contractsToMarkSelected: args.item2,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -408,7 +409,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => DesktopTokenView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -418,7 +419,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => DesktopSolTokenView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -428,7 +429,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => SelectWalletForTokenView(entity: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -438,7 +439,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => SelectWalletForSolTokenView(entity: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -447,7 +448,7 @@ class RouteGenerator {
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const AddCustomTokenView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case AddCustomSolanaTokenView.routeName:
@@ -455,7 +456,7 @@ class RouteGenerator {
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => AddCustomSolanaTokenView(walletId: walletId),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case WalletsOverview.routeName:
@@ -463,7 +464,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => WalletsOverview(coin: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -476,7 +477,7 @@ class RouteGenerator {
               contractAddress: args.item1,
               walletId: args.item2,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -489,7 +490,7 @@ class RouteGenerator {
               tokenMint: args.item1,
               walletId: args.item2,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -502,7 +503,7 @@ class RouteGenerator {
               initialValue: args.item1,
               label: args.item2,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -512,7 +513,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => MonkeyView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -522,7 +523,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => SigningView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -532,7 +533,7 @@ class RouteGenerator {
           return getRoute<Address>(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => CompactAddressListView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -545,7 +546,7 @@ class RouteGenerator {
               walletName: args.walletName,
               frostCurrency: args.frostCurrency,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -558,7 +559,7 @@ class RouteGenerator {
               walletName: args.walletName,
               frostCurrency: args.frostCurrency,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -571,7 +572,7 @@ class RouteGenerator {
               walletName: args.walletName,
               frostCurrency: args.frostCurrency,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -580,7 +581,7 @@ class RouteGenerator {
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const FrostStepScaffold(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case FrostMSWalletOptionsView.routeName:
@@ -588,7 +589,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => FrostMSWalletOptionsView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -598,7 +599,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => FrostParticipantsView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -608,7 +609,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => InitiateResharingView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -621,7 +622,7 @@ class RouteGenerator {
               walletId: args.walletId,
               resharers: args.resharers,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -632,7 +633,7 @@ class RouteGenerator {
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) =>
                 FrostSendView(walletId: args.walletId, coin: args.coin),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -658,7 +659,7 @@ class RouteGenerator {
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) =>
                 CoinControlView(walletId: args.item1, type: args.item2),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         } else if (args
             is Tuple4<String, CoinControlViewType, Amount?, Set<UTXO>?>) {
@@ -670,7 +671,7 @@ class RouteGenerator {
               requestedTotal: args.item3,
               selectedUTXOs: args.item4,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -680,7 +681,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => OrdinalsView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -690,7 +691,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => DesktopOrdinalsView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -703,7 +704,7 @@ class RouteGenerator {
               walletId: args.walletId,
               ordinal: args.ordinal,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -716,7 +717,7 @@ class RouteGenerator {
               walletId: args.walletId,
               ordinal: args.ordinal,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -725,7 +726,7 @@ class RouteGenerator {
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const OrdinalsFilterView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case UtxoDetailsView.routeName:
@@ -734,7 +735,7 @@ class RouteGenerator {
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) =>
                 UtxoDetailsView(walletId: args.item2, utxoId: args.item1),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -744,7 +745,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => NameDetailsView(walletId: args.$2, utxoId: args.$1),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -754,7 +755,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => PaynymClaimView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -764,7 +765,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => PaynymHomeView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -774,7 +775,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => AddNewPaynymFollowView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -786,7 +787,7 @@ class RouteGenerator {
             builder: (_) => AppConfig.hasFeature(AppFeature.tor)
                 ? CashFusionView(walletId: args)
                 : throw Exception("Tor not configured in prebuild setup"),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -796,7 +797,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => NamecoinNamesHomeView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -806,7 +807,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => SalviumCreateStakeView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -817,7 +818,7 @@ class RouteGenerator {
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) =>
                 ManageDomainView(walletId: args.walletId, utxo: args.utxo),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -927,7 +928,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => SparkNamesHomeView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -937,7 +938,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => MasternodesHomeView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -952,7 +953,7 @@ class RouteGenerator {
               collateralVout: args['collateralVout'] as int,
               collateralAddress: args['collateralAddress'] as String,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -962,7 +963,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => MasternodeDetailsView(node: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -973,7 +974,7 @@ class RouteGenerator {
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) =>
                 BuySparkNameView(walletId: args.walletId, name: args.name),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         } else if (args
             is ({String walletId, String name, SparkName? nameToRenew})) {
@@ -984,7 +985,7 @@ class RouteGenerator {
               name: args.name,
               nameToRenew: args.nameToRenew,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -997,7 +998,7 @@ class RouteGenerator {
               walletId: args.walletId,
               txData: args.txData,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1008,7 +1009,7 @@ class RouteGenerator {
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) =>
                 SparkNameDetailsView(walletId: args.walletId, name: args.name),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1020,7 +1021,7 @@ class RouteGenerator {
             builder: (_) => AppConfig.hasFeature(AppFeature.tor)
                 ? FusionProgressView(walletId: args)
                 : throw Exception("Tor not configured in prebuild setup"),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1030,7 +1031,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => ChurningView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1040,7 +1041,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => ChurningProgressView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1050,7 +1051,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => DesktopCashFusionView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1060,7 +1061,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => DesktopChurningView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1069,14 +1070,14 @@ class RouteGenerator {
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const ServicesView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case GiftCardsView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const GiftCardsView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case ShopInBitSetupView.routeName:
@@ -1084,7 +1085,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => ShopInBitSetupView(model: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1093,7 +1094,7 @@ class RouteGenerator {
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const CakePayVendorsView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case CakePayCardDetailView.routeName:
@@ -1101,7 +1102,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => CakePayCardDetailView(card: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1111,7 +1112,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => CakePayOrderView(order: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1120,7 +1121,7 @@ class RouteGenerator {
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const CakePayOrdersView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case CakePaySendFromView.routeName:
@@ -1133,7 +1134,7 @@ class RouteGenerator {
               coin: args['coin'] as CryptoCurrency?,
               amount: args['amount'] as Amount?,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1146,7 +1147,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => ShopInBitStep1(model: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1156,7 +1157,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => ShopInBitStep2(model: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1166,7 +1167,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => ShopInBitStep3(model: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1176,7 +1177,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => ShopInBitStep4(model: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1186,7 +1187,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => ShopInBitOrderCreated(model: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1195,14 +1196,14 @@ class RouteGenerator {
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const ShopInBitTicketsView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case ShopInBitSettingsView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const ShopInBitSettingsView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case ShopInBitTicketDetail.routeName:
@@ -1210,7 +1211,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => ShopInBitTicketDetail(model: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1220,7 +1221,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => ShopInBitOfferView(model: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1230,7 +1231,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => ShopInBitShippingView(model: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1240,7 +1241,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => ShopInBitCarFeeView(model: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1253,7 +1254,7 @@ class RouteGenerator {
               model: args.$1,
               invoice: args.$2,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1263,7 +1264,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => ShopInBitPaymentView(model: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1279,7 +1280,7 @@ class RouteGenerator {
               address: args.item3,
               model: args.item4,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1288,7 +1289,7 @@ class RouteGenerator {
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const GlobalSettingsView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case AddressBookView.routeName:
@@ -1296,90 +1297,90 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => AddressBookView(coin: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const AddressBookView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case AddressBookFilterView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const AddressBookFilterView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case StackBackupView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const StackBackupView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case AutoBackupView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const AutoBackupView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case EditAutoBackupView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const EditAutoBackupView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case CreateAutoBackupView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const CreateAutoBackupView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case SecurityView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const SecurityView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case ChangePinView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const ChangePinView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case CreateDuressPinView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const CreateDuressPinView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case AutoLockTimeoutSettingsView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const AutoLockTimeoutSettingsView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case BaseCurrencySettingsView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const BaseCurrencySettingsView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case LanguageSettingsView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const LanguageSettingsView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case TorSettingsView.routeName:
@@ -1388,7 +1389,7 @@ class RouteGenerator {
           builder: (_) => AppConfig.hasFeature(AppFeature.tor)
               ? const TorSettingsView()
               : throw Exception("Tor not configured in prebuild setup"),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case TorSettings.routeName:
@@ -1397,21 +1398,21 @@ class RouteGenerator {
           builder: (_) => AppConfig.hasFeature(AppFeature.tor)
               ? const TorSettings()
               : throw Exception("Tor not configured in prebuild setup"),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case AboutView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const AboutView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case LoggingSettingsView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const LoggingSettingsView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case XPubView.routeName:
@@ -1419,7 +1420,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => XPubView(walletId: args.$1, xpubData: args.$2),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1429,7 +1430,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => ChangeRepresentativeView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1438,77 +1439,77 @@ class RouteGenerator {
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const AppearanceSettingsView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case SyncingPreferencesView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const SyncingPreferencesView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case StartupPreferencesView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const StartupPreferencesView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case StartupWalletSelectionView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const StartupWalletSelectionView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case ManageNodesView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const ManageNodesView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case SyncingOptionsView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const SyncingOptionsView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case WalletSyncingOptionsView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const WalletSyncingOptionsView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case AdvancedSettingsView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const AdvancedSettingsView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case SupportView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const SupportView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case AddAddressBookEntryView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const AddAddressBookEntryView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case RestoreFromFileView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const RestoreFromFileView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case RestoreFromEncryptedStringView.routeName:
@@ -1516,7 +1517,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => RestoreFromEncryptedStringView(encrypted: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1525,7 +1526,7 @@ class RouteGenerator {
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const ManageCoinUnitsView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case EditCoinUnitsView.routeName:
@@ -1533,7 +1534,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => EditCoinUnitsView(coin: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1542,21 +1543,21 @@ class RouteGenerator {
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const CreateBackupInfoView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case CreateBackupView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const CreateBackupView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case HiddenSettings.routeName:
         return getRoute(
           shouldUseMaterialRoute: false,
           builder: (_) => const HiddenSettings(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case CoinNodesView.routeName:
@@ -1564,7 +1565,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => CoinNodesView(coin: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1578,7 +1579,7 @@ class RouteGenerator {
               nodeId: args.item2,
               popRouteName: args.item3,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1589,7 +1590,7 @@ class RouteGenerator {
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) =>
                 EditNoteView(txid: args.item1, walletId: args.item2),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1599,7 +1600,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => EditAddressLabelView(addressLabelId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1610,7 +1611,7 @@ class RouteGenerator {
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) =>
                 EditTradeNoteView(tradeId: args.item1, note: args.item2),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1626,7 +1627,7 @@ class RouteGenerator {
               nodeId: args.item3,
               routeOnSuccessOrDelete: args.item4,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1636,7 +1637,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => ContactDetailsView(contactId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1646,7 +1647,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => AddNewContactAddressView(contactId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1656,7 +1657,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => EditContactNameEmojiView(contactId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1669,7 +1670,7 @@ class RouteGenerator {
               contactId: args.item1,
               addressEntry: args.item2,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1678,7 +1679,7 @@ class RouteGenerator {
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const SystemBrightnessThemeSelectionView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case WalletNetworkSettingsView.routeName:
@@ -1690,7 +1691,7 @@ class RouteGenerator {
               initialSyncStatus: args.item2,
               initialNodeStatus: args.item3,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1700,7 +1701,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => ManageEpicboxView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1719,7 +1720,7 @@ class RouteGenerator {
               epicBoxId: args.epicBoxId,
               routeOnSuccessOrDelete: args.routeOnSuccessOrDelete,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1732,7 +1733,7 @@ class RouteGenerator {
               walletId: args.walletId,
               mnemonic: args.mnemonic,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         } else if (args
             is ({
@@ -1753,7 +1754,7 @@ class RouteGenerator {
               mnemonic: args.mnemonic,
               frostWalletData: args.frostWalletData,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         } else if (args
             is ({
@@ -1768,7 +1769,7 @@ class RouteGenerator {
               mnemonic: args.mnemonic,
               keyData: args.keyData,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         } else if (args
             is ({
@@ -1791,7 +1792,7 @@ class RouteGenerator {
               frostWalletData: args.frostWalletData,
               keyData: args.keyData,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1804,7 +1805,7 @@ class RouteGenerator {
               walletId: args.walletId,
               keyData: args.keyData,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1814,7 +1815,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => WalletSettingsWalletSettingsView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1824,7 +1825,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => RenameWalletView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1834,7 +1835,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => DeleteWalletWarningView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1844,7 +1845,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => CreateOrRestoreWalletView(entity: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1855,7 +1856,7 @@ class RouteGenerator {
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) =>
                 NameYourWalletView(addWalletType: args.item1, coin: args.item2),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1868,7 +1869,7 @@ class RouteGenerator {
               walletName: args.item1,
               coin: args.item2,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1879,7 +1880,7 @@ class RouteGenerator {
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) =>
                 RestoreOptionsView(walletName: args.item1, coin: args.item2),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1890,7 +1891,7 @@ class RouteGenerator {
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) =>
                 NewWalletOptionsView(walletName: args.item1, coin: args.item2),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1906,7 +1907,7 @@ class RouteGenerator {
               restoreBlockHeight: args.item4,
               mnemonicPassphrase: args.item5,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1925,7 +1926,7 @@ class RouteGenerator {
               coin: args.coin,
               restoreBlockHeight: args.restoreBlockHeight,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1938,7 +1939,7 @@ class RouteGenerator {
               wallet: args.item1,
               mnemonic: args.item2,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1951,7 +1952,7 @@ class RouteGenerator {
               wallet: args.item1,
               mnemonic: args.item2,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1967,7 +1968,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => WalletView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1981,7 +1982,7 @@ class RouteGenerator {
               coin: args.item2,
               walletId: args.item3,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -1996,7 +1997,7 @@ class RouteGenerator {
               coin: args.coin,
               walletId: args.walletId,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2015,7 +2016,7 @@ class RouteGenerator {
               coin: args.coin,
               walletId: args.walletId,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2025,7 +2026,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => AllTransactionsView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2035,7 +2036,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => AllTransactionsV2View(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         if (args is ({String walletId, String contractAddress})) {
@@ -2045,7 +2046,7 @@ class RouteGenerator {
               walletId: args.walletId,
               contractAddress: args.contractAddress,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2055,7 +2056,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => TransactionSearchFilterView(coin: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2065,14 +2066,14 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => ReceiveView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         } else if (args is Tuple2<String, EthContract?>) {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) =>
                 ReceiveView(walletId: args.item1, tokenContract: args.item2),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2082,7 +2083,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => FinalizeView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2092,7 +2093,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => EpicFinalizeView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2102,7 +2103,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => WalletAddressesView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2113,7 +2114,7 @@ class RouteGenerator {
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) =>
                 AddressDetailsView(walletId: args.item2, addressId: args.item1),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2122,35 +2123,47 @@ class RouteGenerator {
         if (args is Tuple2<String, CryptoCurrency>) {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
-            builder: (_) => SendView(walletId: args.item1, coin: args.item2),
-            settings: RouteSettings(name: settings.name),
+            builder: (_) => ViewOnlySendGuard(
+              walletId: args.item1,
+              child: SendView(walletId: args.item1, coin: args.item2),
+            ),
+            settings: settings,
           );
         } else if (args
             is Tuple3<String, CryptoCurrency, SendViewAutoFillData>) {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
-            builder: (_) => SendView(
+            builder: (_) => ViewOnlySendGuard(
               walletId: args.item1,
-              coin: args.item2,
-              autoFillData: args.item3,
+              child: SendView(
+                walletId: args.item1,
+                coin: args.item2,
+                autoFillData: args.item3,
+              ),
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         } else if (args is Tuple3<String, CryptoCurrency, PaynymAccountLite>) {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
-            builder: (_) => SendView(
+            builder: (_) => ViewOnlySendGuard(
               walletId: args.item1,
-              coin: args.item2,
-              accountLite: args.item3,
+              child: SendView(
+                walletId: args.item1,
+                coin: args.item2,
+                accountLite: args.item3,
+              ),
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         } else if (args is ({CryptoCurrency coin, String walletId})) {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
-            builder: (_) => SendView(walletId: args.walletId, coin: args.coin),
-            settings: RouteSettings(name: settings.name),
+            builder: (_) => ViewOnlySendGuard(
+              walletId: args.walletId,
+              child: SendView(walletId: args.walletId, coin: args.coin),
+            ),
+            settings: settings,
           );
         }
 
@@ -2160,12 +2173,15 @@ class RouteGenerator {
         if (args is Tuple3<String, CryptoCurrency, EthContract>) {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
-            builder: (_) => TokenSendView(
+            builder: (_) => ViewOnlySendGuard(
               walletId: args.item1,
-              coin: args.item2,
-              tokenContract: args.item3,
+              child: TokenSendView(
+                walletId: args.item1,
+                coin: args.item2,
+                tokenContract: args.item3,
+              ),
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2174,9 +2190,14 @@ class RouteGenerator {
         if (args is (String, String)) {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
-            builder: (_) =>
-                SolTokenSendView(walletId: args.$1, tokenMint: args.$2),
-            settings: RouteSettings(name: settings.name),
+            builder: (_) => ViewOnlySendGuard(
+              walletId: args.$1,
+              child: SolTokenSendView(
+                walletId: args.$1,
+                tokenMint: args.$2,
+              ),
+            ),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2187,7 +2208,7 @@ class RouteGenerator {
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) =>
                 SolTokenReceiveView(walletId: args.$1, tokenMint: args.$2),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2201,7 +2222,7 @@ class RouteGenerator {
               walletId: args.$2,
               onSuccess: args.$3,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2212,7 +2233,7 @@ class RouteGenerator {
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) =>
                 ConfirmNameTransactionView(txData: args.$1, walletId: args.$2),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2232,7 +2253,7 @@ class RouteGenerator {
                 // ),
               ],
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         if (args is Tuple3<String, CryptoCurrency, EthContract?>) {
@@ -2250,7 +2271,7 @@ class RouteGenerator {
                 // ),
               ],
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2260,7 +2281,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => NotificationsView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2281,7 +2302,7 @@ class RouteGenerator {
               initialSyncStatus: args.item3,
               initialNodeStatus: args.item4,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2294,7 +2315,7 @@ class RouteGenerator {
               mnemonic: args.mnemonicWords,
               walletId: args.walletId,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         } else if (args
             is ({
@@ -2315,7 +2336,7 @@ class RouteGenerator {
               walletId: args.walletId,
               frostWalletData: args.frostWalletData,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2328,7 +2349,7 @@ class RouteGenerator {
               data: args.data,
               walletId: args.walletId,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2340,7 +2361,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => Step1View(model: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2350,7 +2371,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => Step2View(model: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2360,7 +2381,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => Step3View(model: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2370,7 +2391,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => Step4View(model: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2385,7 +2406,7 @@ class RouteGenerator {
               walletId: args.item3,
               walletName: args.item4,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2395,7 +2416,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => ChooseAddressFromStackView(coin: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2410,7 +2431,7 @@ class RouteGenerator {
               trade: args.item4,
               address: args.item3,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2423,7 +2444,7 @@ class RouteGenerator {
               coin: args.item1,
               receivingAddress: args.item2,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2433,7 +2454,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => BuyQuotePreviewView(quote: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2443,7 +2464,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => RbfSettingsView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2453,7 +2474,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => SparkInfoView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2463,7 +2484,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => EditRefreshHeightView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2476,7 +2497,7 @@ class RouteGenerator {
               walletId: args.walletId,
               domainName: args.domainName,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2487,27 +2508,27 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => CreatePasswordView(restoreFromSWB: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const CreatePasswordView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case ForgotPasswordDesktopView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const ForgotPasswordDesktopView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case ForgottenPassphraseRestoreFromSWB.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const ForgottenPassphraseRestoreFromSWB(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case DeletePasswordWarningView.routeName:
@@ -2515,7 +2536,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => DeletePasswordWarningView(shouldCreateNew: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2524,28 +2545,28 @@ class RouteGenerator {
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const DesktopHomeView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case DesktopNotificationsView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const DesktopNotificationsView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case DesktopExchangeView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const DesktopExchangeView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case BuyView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const BuyView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case BuyInWalletView.routeName:
@@ -2553,7 +2574,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => BuyInWalletView(coin: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         if (args is Tuple2<CryptoCurrency, EthContract?>) {
@@ -2561,7 +2582,7 @@ class RouteGenerator {
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) =>
                 BuyInWalletView(coin: args.item1, contract: args.item2),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2570,49 +2591,49 @@ class RouteGenerator {
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const DesktopBuyView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case DesktopAllTradesView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const DesktopAllTradesView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case DesktopSettingsView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const DesktopSettingsView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case DesktopServicesView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const DesktopServicesView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case DesktopShopInBitView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const DesktopShopInBitView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case DesktopGiftCardsView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const DesktopGiftCardsView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case MyStackView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const MyStackView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case DesktopWalletView.routeName:
@@ -2620,7 +2641,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => DesktopWalletView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2630,7 +2651,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => DesktopWalletAddressesView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2640,7 +2661,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => SparkCoinsView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2650,7 +2671,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => MwebUtxosView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2660,7 +2681,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => DesktopCoinControlView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2670,7 +2691,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => BoostTransactionView(transaction: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2679,84 +2700,84 @@ class RouteGenerator {
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const BackupRestoreSettings(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case SecuritySettings.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const SecuritySettings(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case CurrencySettings.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const CurrencySettings(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case LanguageOptionSettings.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const LanguageOptionSettings(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case NodesSettings.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const NodesSettings(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case SyncingPreferencesSettings.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const SyncingPreferencesSettings(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case AppearanceOptionSettings.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const AppearanceOptionSettings(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case ManageThemesView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const ManageThemesView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case AdvancedSettings.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const AdvancedSettings(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case DesktopSupportView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const DesktopSupportView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case DesktopAboutView.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const DesktopAboutView(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case DesktopAddressBook.routeName:
         return getRoute(
           shouldUseMaterialRoute: useMaterialPageRoute,
           builder: (_) => const DesktopAddressBook(),
-          settings: RouteSettings(name: settings.name),
+          settings: settings,
         );
 
       case WalletKeysDesktopPopup.routeName:
@@ -2914,7 +2935,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => MyTokensView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2938,7 +2959,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => TokenView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         } else if (args is ({String walletId, bool popPrevious})) {
           return getRoute(
@@ -2947,7 +2968,7 @@ class RouteGenerator {
               walletId: args.walletId,
               popPrevious: args.popPrevious,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2957,7 +2978,7 @@ class RouteGenerator {
           return getRoute(
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) => SolTokenView(walletId: args),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         } else if (args is ({String walletId, bool popPrevious})) {
           return getRoute(
@@ -2966,7 +2987,7 @@ class RouteGenerator {
               walletId: args.walletId,
               popPrevious: args.popPrevious,
             ),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
@@ -2979,7 +3000,7 @@ class RouteGenerator {
             shouldUseMaterialRoute: useMaterialPageRoute,
             builder: (_) =>
                 SparkViewKeyView(walletId: args.$1, sparkViewKeyHex: args.$2),
-            settings: RouteSettings(name: settings.name),
+            settings: settings,
           );
         }
         return _routeError("${settings.name} invalid args: ${args.toString()}");

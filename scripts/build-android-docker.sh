@@ -32,6 +32,35 @@ APP=bitfinite
 VERSION="${VERSION:-0.1.0}"
 BUILD_NUM="${BUILD_NUM:-1}"
 MODE="${1:-debug}"
+
+# A debug build must not claim the production application id.
+#
+# Without this, `scripts/build-android-docker.sh` with no BFX_APP_ID produces an
+# APK whose id is org.bitfinitechain.wallet — the real wallet. It cannot install
+# beside it (same id), so the failure is a signature mismatch, which reads like a
+# keystore problem and sends you looking in the wrong place. Chasing that is how
+# a locally built APK ended up installed over a real wallet.
+#
+# The advice was already written in configure_bitfinite.sh and was still missed,
+# so it is enforced here rather than documented again. Override with
+# BFX_ALLOW_PROD_ID=1 for the rare deliberate case, such as reproducing a
+# release build locally.
+if [ "$MODE" != "release" ] && [ "${BFX_ALLOW_PROD_ID:-0}" != "1" ]; then
+  case "${BFX_APP_ID:-}" in
+    *.debug) : ;;
+    *)
+      echo "refusing to build $MODE with app id '${BFX_APP_ID:-<default: org.bitfinitechain.wallet>}'." >&2
+      echo "" >&2
+      echo "  A debug build sharing the production id cannot be installed" >&2
+      echo "  alongside the real wallet, and overwriting it loses nothing" >&2
+      echo "  visibly until it does." >&2
+      echo "" >&2
+      echo "  Use:  BFX_APP_ID=org.bitfinitechain.wallet.debug $0 $*" >&2
+      echo "  Or:   BFX_ALLOW_PROD_ID=1 $0 $*   # deliberate, overwrites the real app" >&2
+      exit 1
+      ;;
+  esac
+fi
 # Our own CI toolchain image, published to GHCR by build-ci-image.yaml. It is
 # publicly pullable, so no `docker login` is needed. Override with BFX_CI_IMAGE
 # to fall back to upstream (ghcr.io/cypherstack/stackwallet-ci:android) if ours

@@ -1,10 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:socks5_proxy/socks_client.dart';
 
 import '../app_config.dart';
-import '../networking/http.dart';
 import '../services/event_bus/events/global/tor_connection_status_changed_event.dart';
 import '../services/tor_service.dart';
 import '../utilities/logger.dart';
@@ -80,8 +81,6 @@ class EsploraElectrumXClient extends ElectrumXClient {
   final Prefs _esploraPrefs;
   final TorService _esploraTorService;
 
-  final HTTP _http = const HTTP();
-
   // Cloudflare fronts the API and rejects clients with a bare library
   // User-Agent (verified: default curl/urllib get blocked, a browser UA
   // passes), so every request must carry one.
@@ -89,6 +88,33 @@ class EsploraElectrumXClient extends ElectrumXClient {
     "User-Agent": "BitFinite Wallet",
     "Accept": "*/*",
   };
+
+  /// One persistent HttpClient, reused across requests so TLS sessions and
+  /// TCP connections are kept alive. The first cut created a client per
+  /// request (via the HTTP wrapper): a full handshake for every one of the
+  /// hundreds of calls a large-wallet sync makes, and a phone full of
+  /// TIME_WAIT sockets. Rebuilt only when the tor proxy decision changes.
+  HttpClient? _httpClient;
+  ({InternetAddress host, int port})? _httpClientProxy;
+
+  HttpClient _getHttpClient(({InternetAddress host, int port})? proxyInfo) {
+    if (_httpClient == null ||
+        _httpClientProxy?.host != proxyInfo?.host ||
+        _httpClientProxy?.port != proxyInfo?.port) {
+      _httpClient?.close(force: true);
+      final client = HttpClient();
+      client.connectionTimeout = const Duration(seconds: 30);
+      client.idleTimeout = const Duration(seconds: 45);
+      if (proxyInfo != null) {
+        SocksTCPClient.assignToHttpClient(client, [
+          ProxySettings(proxyInfo.host, proxyInfo.port),
+        ]);
+      }
+      _httpClient = client;
+      _httpClientProxy = proxyInfo;
+    }
+    return _httpClient!;
+  }
 
   String? _cachedGenesisHash;
   int? _cachedTipHeight;
@@ -150,19 +176,28 @@ class EsploraElectrumXClient extends ElectrumXClient {
   // ===========================================================================
   // raw http helpers
 
-  Future<String> _getString(String path) async {
-    final response = await _http.get(
-      url: Uri.parse("$_baseUrl$path"),
-      headers: _headers,
-      proxyInfo: _proxyInfo,
-      connectionTimeout: const Duration(seconds: 30),
-    );
-    if (response.code != 200) {
-      throw Exception(
-        "Esplora GET $path failed (${response.code}): ${response.body}",
-      );
-    }
-    return response.body;
+  /// The .timeout() wraps the WHOLE request, not just the connection: a
+  /// stall while reading the response body must throw so the caller's retry
+  /// logic runs, instead of parking the sync forever behind a dead await —
+  /// exactly the hang the first on-device test produced.
+  Future<String> _getString(
+    String path, {
+    Duration timeout = const Duration(seconds: 45),
+  }) async {
+    final client = _getHttpClient(_proxyInfo);
+    return await () async {
+      final request = await client.getUrl(Uri.parse("$_baseUrl$path"));
+      _headers.forEach(request.headers.add);
+      final response = await request.close();
+      final body = await response.transform(utf8.decoder).join();
+      if (response.statusCode != 200) {
+        throw Exception(
+          "Esplora GET $path failed (${response.statusCode}): $body",
+        );
+      }
+      return body;
+    }()
+        .timeout(timeout);
   }
 
   Future<dynamic> _getJson(String path) async => jsonDecode(
@@ -237,18 +272,22 @@ class EsploraElectrumXClient extends ElectrumXClient {
   }
 
   Future<String> _broadcast(String rawTx) async {
-    final response = await _http.post(
-      url: Uri.parse("$_baseUrl/tx"),
-      headers: {..._headers, "Content-Type": "text/plain"},
-      body: rawTx,
-      proxyInfo: _proxyInfo,
-    );
-    if (response.code != 200) {
-      throw Exception(
-        "Esplora broadcast failed (${response.code}): ${response.body}",
-      );
-    }
-    return response.body.trim();
+    final client = _getHttpClient(_proxyInfo);
+    return await () async {
+      final request = await client.postUrl(Uri.parse("$_baseUrl/tx"));
+      _headers.forEach(request.headers.add);
+      request.headers.add("Content-Type", "text/plain");
+      request.write(rawTx);
+      final response = await request.close();
+      final body = await response.transform(utf8.decoder).join();
+      if (response.statusCode != 200) {
+        throw Exception(
+          "Esplora broadcast failed (${response.statusCode}): $body",
+        );
+      }
+      return body.trim();
+    }()
+        .timeout(const Duration(seconds: 60));
   }
 
   /// Electrum scripthash (reversed) -> esplora scripthash (forward).
@@ -384,7 +423,17 @@ class EsploraElectrumXClient extends ElectrumXClient {
   Future<void> checkElectrumAdapter() async {}
 
   @override
-  Future<void> closeAdapter() async {}
+  Future<void> closeAdapter() async {
+    _httpClient?.close(force: true);
+    _httpClient = null;
+    _httpClientProxy = null;
+  }
+
+  /// Transient-failure test shared by the retry paths. A timeout, reset or
+  /// stale keep-alive connection is retryable; an HTTP status error (4xx)
+  /// is not — esplora uses those to mean "no such tx" and similar.
+  bool _isTransient(Object e) =>
+      e is TimeoutException || e is SocketException || e is HttpException;
 
   @override
   Future<dynamic> request({
@@ -433,8 +482,11 @@ class EsploraElectrumXClient extends ElectrumXClient {
       }
     } on WifiOnlyException {
       rethrow;
-    } on SocketException {
-      if (retries > 0) {
+    } catch (e) {
+      if (_isTransient(e) && retries > 0) {
+        // A dead keep-alive connection surfaces as exactly these; a fresh
+        // client on the retry avoids reusing the corpse.
+        await closeAdapter();
         return request(
           command: command,
           args: args,
@@ -479,6 +531,26 @@ class EsploraElectrumXClient extends ElectrumXClient {
     bool verbose = true,
     String? requestID,
   }) async {
+    // The base class routes this through the socket adapter rather than
+    // request(), so it needs its own retry-on-transient wrapper: it is the
+    // hottest call in a large-wallet sync (one per tx + one per prevout).
+    for (int attempt = 0; ; attempt++) {
+      try {
+        return await _getTransactionOnce(txHash: txHash, verbose: verbose);
+      } catch (e) {
+        if (_isTransient(e) && attempt < 2) {
+          await closeAdapter();
+          continue;
+        }
+        rethrow;
+      }
+    }
+  }
+
+  Future<Map<String, dynamic>> _getTransactionOnce({
+    required String txHash,
+    required bool verbose,
+  }) async {
     if (!(await _esploraAllow())) {
       throw WifiOnlyException();
     }
@@ -514,6 +586,14 @@ class EsploraElectrumXClient extends ElectrumXClient {
           "sequence": input["sequence"] as int?,
         });
       } else {
+        // Esplora inlines each input's prevout (value + address), which
+        // bitcoind-verbose does not have. Passed through under a private
+        // key so BellscoinWallet.updateTransactions can price inputs
+        // without fetching every referenced transaction — a pool payout
+        // here consolidates hundreds of 2-BELLS coinbases, so the fetch-
+        // per-input pattern the other coins use costs thousands of round
+        // trips per sync on exactly the wallets worth watching.
+        final prevout = input["prevout"];
         vin.add({
           "txid": input["txid"] as String,
           "vout": input["vout"] as int,
@@ -522,6 +602,14 @@ class EsploraElectrumXClient extends ElectrumXClient {
             "asm": input["scriptsig_asm"] as String?,
           },
           "sequence": input["sequence"] as int?,
+          if (prevout is Map)
+            "_prevout": {
+              "value": _satsToCoinString(BigInt.from(prevout["value"] as int)),
+              "addresses": [
+                if (prevout["scriptpubkey_address"] is String)
+                  prevout["scriptpubkey_address"] as String,
+              ],
+            },
         });
       }
     }

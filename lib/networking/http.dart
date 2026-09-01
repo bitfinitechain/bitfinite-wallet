@@ -154,11 +154,23 @@ class HTTP {
         bytes.addAll(data);
       },
       onDone: () => completer.complete(Uint8List.fromList(bytes)),
-      onError: (Object err, StackTrace s) => Logging.instance.e(
-        "Http wrapper layer listen",
-        error: err,
-        stackTrace: s,
-      ),
+      // Must completeError, not just log: a connection reset mid-body left
+      // the completer forever pending, so the awaiting caller hung and the
+      // whole sync loop stopped issuing requests while the UI said
+      // "Syncing". Found on a Bellscoin view-only restore that issues
+      // hundreds of sequential requests through Cloudflare — one reset is
+      // statistically guaranteed at that volume.
+      onError: (Object err, StackTrace s) {
+        Logging.instance.e(
+          "Http wrapper layer listen",
+          error: err,
+          stackTrace: s,
+        );
+        if (!completer.isCompleted) {
+          completer.completeError(err, s);
+        }
+      },
+      cancelOnError: true,
     );
     return completer.future;
   }

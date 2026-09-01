@@ -219,28 +219,46 @@ class BellscoinWallet<T extends ElectrumXCurrencyInterface>
           final txid = map["txid"] as String;
           final vout = map["vout"] as int;
 
-          final inputTx = await electrumXCachedClient.getTransaction(
-            txHash: txid,
-            cryptoCurrency: cryptoCurrency,
-          );
-
-          final prevOutJson = Map<String, dynamic>.from(
-            (inputTx["vout"] as List).firstWhere((e) => e["n"] == vout) as Map,
-          );
-
-          final prevOut = OutputV2.fromElectrumXJson(
-            prevOutJson,
-            decimalPlaces: cryptoCurrency.fractionDigits,
-            isFullAmountNotSats: true,
-            walletOwns: false, // Doesn't matter here as this is not saved.
-          );
-
           outpoint = OutpointV2.isarCantDoRequiredInDefaultConstructor(
             txid: txid,
             vout: vout,
           );
-          valueStringSats = prevOut.valueStringSats;
-          addresses.addAll(prevOut.addresses);
+
+          final inlinePrevout = map["_prevout"];
+          if (inlinePrevout is Map) {
+            // EsploraElectrumXClient passes esplora's inline prevout
+            // through, so pricing this input costs no extra request. The
+            // fetch below only runs for txs cached before that field
+            // existed — and their prevout txs are usually cached too.
+            valueStringSats = OutputV2.parseOutputAmountString(
+              inlinePrevout["value"].toString(),
+              decimalPlaces: cryptoCurrency.fractionDigits,
+              isFullAmountNotSats: true,
+            );
+            addresses.addAll(
+              (inlinePrevout["addresses"] as List? ?? []).cast<String>(),
+            );
+          } else {
+            final inputTx = await electrumXCachedClient.getTransaction(
+              txHash: txid,
+              cryptoCurrency: cryptoCurrency,
+            );
+
+            final prevOutJson = Map<String, dynamic>.from(
+              (inputTx["vout"] as List).firstWhere((e) => e["n"] == vout)
+                  as Map,
+            );
+
+            final prevOut = OutputV2.fromElectrumXJson(
+              prevOutJson,
+              decimalPlaces: cryptoCurrency.fractionDigits,
+              isFullAmountNotSats: true,
+              walletOwns: false, // Doesn't matter here as this is not saved.
+            );
+
+            valueStringSats = prevOut.valueStringSats;
+            addresses.addAll(prevOut.addresses);
+          }
         }
 
         InputV2 input = InputV2.isarCantDoRequiredInDefaultConstructor(

@@ -218,6 +218,34 @@ Future<bool> testNodeConnection({
 
       break;
 
+    // Must precede ElectrumXCurrencyInterface: Bellscoin mixes that in, but
+    // its backend is an esplora HTTP API, not an Electrum socket — the
+    // generic checkElectrumServer below would always fail against it.
+    case Bellscoin():
+      try {
+        String host = formData.host!.trim();
+        if (!host.startsWith("http://") && !host.startsWith("https://")) {
+          host = (formData.useSSL ?? true) ? "https://$host" : "http://$host";
+        }
+        while (host.endsWith("/")) {
+          host = host.substring(0, host.length - 1);
+        }
+
+        final response = await HTTP().get(
+          url: Uri.parse("$host/blocks/tip/height"),
+          headers: {"User-Agent": "BitFinite Wallet"},
+          proxyInfo: !AppConfig.hasFeature(AppFeature.tor)
+              ? null
+              : read(prefsChangeNotifierProvider).useTor
+              ? read(pTorService).getProxyInfo()
+              : null,
+        );
+
+        testPassed =
+            response.code == 200 && int.tryParse(response.body.trim()) != null;
+      } catch (_) {}
+      break;
+
     case ElectrumXCurrencyInterface():
     case BitcoinFrost():
       try {

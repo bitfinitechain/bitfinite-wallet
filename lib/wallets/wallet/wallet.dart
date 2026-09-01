@@ -27,6 +27,7 @@ import '../crypto_currency/crypto_currency.dart';
 import '../isar/models/wallet_info.dart';
 import '../models/tx_data.dart';
 import 'impl/banano_wallet.dart';
+import 'impl/bellscoin_wallet.dart';
 import 'impl/bitcoin_frost_wallet.dart';
 import 'impl/bitcoin_wallet.dart';
 import 'impl/bitcoincash_wallet.dart';
@@ -355,6 +356,9 @@ abstract class Wallet<T extends CryptoCurrency> {
     switch (walletInfo.coin.runtimeType) {
       case const (Banano):
         return BananoWallet(net);
+
+      case const (Bellscoin):
+        return BellscoinWallet(net);
 
       case const (Bitcoin):
         return BitcoinWallet(net);

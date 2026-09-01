@@ -65,7 +65,12 @@ class ThemeService {
   //     Pepecoin wallet" screen most visibly — fell through to
   //     coin_placeholder, which is BitFinite's own blue logo. Adding a coin
   //     needs all three slots, not just the one you happened to look at.
-  static const _currentDefaultThemeVersion = 33;
+  // 34: Bellscoin lands with all three coins.* slots at once (icons, images,
+  //     secondaries — the version-32/33 lesson applied up front) plus the
+  //     Bellscoin.svg/bellscoin.svg files behind them. White bell on the
+  //     #FFBC42 brand yellow, drawn in the same flat circle style as the
+  //     other small icons.
+  static const _currentDefaultThemeVersion = 34;
   ThemeService._();
   static ThemeService? _instance;
   static ThemeService get instance => _instance ??= ThemeService._();

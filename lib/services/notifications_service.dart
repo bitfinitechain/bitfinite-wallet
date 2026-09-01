@@ -15,6 +15,7 @@ import 'package:flutter/foundation.dart';
 import '../app_config.dart';
 import '../db/hive/db.dart';
 import '../electrumx_rpc/electrumx_client.dart';
+import '../electrumx_rpc/esplora_electrumx_client.dart';
 import '../exceptions/electrumx/no_such_transaction.dart';
 import '../models/exchange/response_objects/trade.dart';
 import '../models/notification_model.dart';
@@ -175,12 +176,23 @@ class NotificationsService extends ChangeNotifier {
                     )
                     .toList();
 
-            final client = ElectrumXClient.from(
-              node: eNode,
-              failovers: failovers,
-              prefs: prefs,
-              cryptoCurrency: wallet.cryptoCurrency,
-            );
+            // Bellscoin's node is an esplora HTTP API, not an Electrum
+            // server; a raw ElectrumXClient would open a TCP socket to the
+            // HTTPS host and hang until timeout, so its confirmation
+            // notifications would silently never fire.
+            final client = wallet.cryptoCurrency is Bellscoin
+                ? EsploraElectrumXClient.from(
+                    node: eNode,
+                    failovers: [],
+                    prefs: prefs,
+                    cryptoCurrency: wallet.cryptoCurrency,
+                  )
+                : ElectrumXClient.from(
+                    node: eNode,
+                    failovers: failovers,
+                    prefs: prefs,
+                    cryptoCurrency: wallet.cryptoCurrency,
+                  );
             final tx = await client.getTransaction(txHash: txid);
 
             int confirmations = tx["confirmations"] as int? ?? 0;

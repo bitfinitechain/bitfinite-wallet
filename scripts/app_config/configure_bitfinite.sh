@@ -92,6 +92,9 @@ final List<CryptoCurrency> _supportedCoins = List.unmodifiable([
   // whole of Pepecoin's public Electrum infrastructure, since the third
   // published host no longer resolves.
   Pepecoin(CryptoCurrencyNetwork.main),
+  // Bellscoin has no Electrum server anywhere (the chain is ~365 GB); it
+  // rides Nintondo's esplora HTTP API through EsploraElectrumXClient.
+  Bellscoin(CryptoCurrencyNetwork.main),
 ]);
 
 // BFX is not on exchanges; swap defaults are unused but the field is required.

@@ -36,6 +36,10 @@ final coinIconProvider = Provider.family<String, CryptoCurrency>((ref, coin) {
       // the branch below and read a real pepecoin icon from coins.icons.
       case const (Pepecoin):
         return assets.dogecoin;
+      // Same V1-theme constraint as Pepecoin above; Bellscoin is a
+      // Doge-family scrypt coin, so Dogecoin's icon is the stand-in.
+      case const (Bellscoin):
+        return assets.dogecoin;
       case const (Epiccash):
         return assets.epicCash;
       case const (Firo):

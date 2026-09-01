@@ -1,6 +1,6 @@
-/* 
+/*
  * This file is part of Stack Wallet.
- * 
+ *
  * Copyright (c) 2023 Cypher Stack
  * All Rights Reserved.
  * The code is distributed under GPLv3 license, see LICENSE file for details.
@@ -10,8 +10,14 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/isar/stack_theme.dart';
+import 'coin_icon_provider.dart';
 import 'theme_providers.dart';
 import '../wallets/crypto_currency/crypto_currency.dart';
+
+// Both providers used to hit the map with a `!`, which CRASHED the moment an
+// external theme (which predates Pepecoin/Bellscoin) had to draw one of our
+// coins. Fall back to the bundled default theme's art, then to the theme's
+// own placeholder, and never assert.
 
 final coinImageProvider = Provider.family<String, CryptoCurrency>((ref, coin) {
   final assets = ref.watch(themeAssetsProvider);
@@ -20,9 +26,20 @@ final coinImageProvider = Provider.family<String, CryptoCurrency>((ref, coin) {
     // just update your wallet or theme
     return assets.stackIcon;
   } else if (assets is ThemeAssetsV2) {
-    return (assets).coinImages[coin.mainNetId]!;
+    return realCoinAsset(
+          assets.coinImages,
+          assets.coinPlaceholder,
+          coin.mainNetId,
+        ) ??
+        bundledThemeCoinAsset(ref, coin, coinImagesOf) ??
+        (assets).coinImages[coin.mainNetId] ??
+        (assets).coinImages.values.first;
   } else {
-    return (assets as ThemeAssetsV3).coinImages[coin.mainNetId]!;
+    final a = assets as ThemeAssetsV3;
+    return realCoinAsset(a.coinImages, a.coinPlaceholder, coin.mainNetId) ??
+        bundledThemeCoinAsset(ref, coin, coinImagesOf) ??
+        a.coinImages[coin.mainNetId] ??
+        a.coinImages.values.first;
   }
 });
 
@@ -34,8 +51,23 @@ final coinImageSecondaryProvider =
     // just update your wallet or theme
     return assets.stackIcon;
   } else if (assets is ThemeAssetsV2) {
-    return (assets).coinSecondaryImages[coin.mainNetId]!;
+    return realCoinAsset(
+          assets.coinSecondaryImages,
+          assets.coinPlaceholder,
+          coin.mainNetId,
+        ) ??
+        bundledThemeCoinAsset(ref, coin, coinSecondaryImagesOf) ??
+        (assets).coinSecondaryImages[coin.mainNetId] ??
+        (assets).coinSecondaryImages.values.first;
   } else {
-    return (assets as ThemeAssetsV3).coinSecondaryImages[coin.mainNetId]!;
+    final a = assets as ThemeAssetsV3;
+    return realCoinAsset(
+          a.coinSecondaryImages,
+          a.coinPlaceholder,
+          coin.mainNetId,
+        ) ??
+        bundledThemeCoinAsset(ref, coin, coinSecondaryImagesOf) ??
+        a.coinSecondaryImages[coin.mainNetId] ??
+        a.coinSecondaryImages.values.first;
   }
 });

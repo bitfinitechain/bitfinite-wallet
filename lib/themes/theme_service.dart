@@ -76,7 +76,14 @@ class ThemeService {
   //     Nothing else in the coin's chain of custody ships vector art: the
   //     node's qt res/src still carries stock Bitcoin Core's logo and
   //     bellscoin.com's sprite holds only social icons.
-  static const _currentDefaultThemeVersion = 35;
+  // 36: colors.coin gains "bellscoin" — dark amber (#845400 light / #8A5804
+  //     dark), replacing the brand gold #FFBC42 the hero wore at launch.
+  //     heroInk is white in every theme and white on the gold measured
+  //     1.68:1; the ambers measure 6.46/6.04 under white with the dark
+  //     theme's hero at 3.03:1 against the page. The bell-bag icon keeps
+  //     the gold; only surfaces carrying white ink darken. The same BFX
+  //     blue-600 lesson, applied to the second coin that needed it.
+  static const _currentDefaultThemeVersion = 36;
   ThemeService._();
   static ThemeService? _instance;
   static ThemeService get instance => _instance ??= ThemeService._();

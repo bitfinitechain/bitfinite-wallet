@@ -184,17 +184,16 @@ class WalletSummaryInfo extends ConsumerWidget {
     // -1.04, so the previous -1.2 was slightly tighter than intended; w800 was
     // also heavier than the design, which relies on size rather than weight to
     // carry the balance.
-    // 44, down from the spec's 52. The chart now leads the hero at the 52 the
-    // balance used to own, and two elements competing at one size is no
-    // hierarchy at all. 44 still outranks everything under it by a wide margin
-    // — the fiat line is 13 — and buys back most of the height the taller chart
-    // costs, so the hero does not grow into the transaction list. The -0.02em
-    // tracking follows the size: -0.02 x 44.
+    // 36, down again from 44 (which was down from the spec's 52): the user
+    // asked for a compact hero that stops crowding the transaction list. 36
+    // still outranks everything under it by a wide margin — the fiat line is
+    // 13 — and hierarchy comes from the gap, not the absolute size. The
+    // -0.02em tracking follows the size: -0.02 x 36.
     final heroStyle = STextStyles.pageTitleH1(context).copyWith(
-      fontSize: 44,
+      fontSize: 36,
       fontWeight: FontWeight.w700,
       height: 1.05,
-      letterSpacing: -0.88,
+      letterSpacing: -0.72,
       color: favText,
       fontFeatures: const [FontFeature.tabularFigures()],
     );
@@ -228,9 +227,9 @@ class WalletSummaryInfo extends ConsumerWidget {
                     .getSparkline(coin);
                 if (series == null) return const SizedBox.shrink();
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.only(bottom: 10),
                   child: Container(
-                        padding: const EdgeInsets.fromLTRB(10, 8, 10, 6),
+                        padding: const EdgeInsets.fromLTRB(8, 6, 8, 4),
                         decoration: BoxDecoration(
                           // A faint well so the line has an edge to sit on;
                           // floating on the hero fill it read as a stray mark.
@@ -242,7 +241,7 @@ class WalletSummaryInfo extends ConsumerWidget {
                         child: PriceSparkline(
                           series: series,
                           color: favText.withOpacity(0.9),
-                          height: 52,
+                          height: 36,
                           // The same formatter as the fiat figure above, so a
                           // price read off the chart and the value printed
                           // over it cannot disagree about how to write a
@@ -341,7 +340,7 @@ class WalletSummaryInfo extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 10),
           if (ref.watch(pWalletInfo(walletId)).isViewOnly)
             FittedBox(
               fit: BoxFit.scaleDown,
@@ -373,7 +372,7 @@ class WalletSummaryInfo extends ConsumerWidget {
                       TextSpan(
                         text: dustPart,
                         style: heroStyle.copyWith(
-                          fontSize: 22,
+                          fontSize: 18,
                           fontWeight: FontWeight.w700,
                           // 0.4 measured 2.21:1 on blue-600 — under even the
                           // 3:1 large-text floor, and these are real satoshi
@@ -386,7 +385,7 @@ class WalletSummaryInfo extends ConsumerWidget {
                     TextSpan(
                       text: " $unitStr",
                       style: heroStyle.copyWith(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.w700,
                         color: favText.withOpacity(0.85),
                       ),
@@ -419,7 +418,7 @@ class WalletSummaryInfo extends ConsumerWidget {
             ),
           if (receivingAddress.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(top: 14),
+              padding: const EdgeInsets.only(top: 10),
               child: GestureDetector(
                 onTap: () {
                   unawaited(HapticFeedback.lightImpact());
@@ -436,7 +435,7 @@ class WalletSummaryInfo extends ConsumerWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
-                    vertical: 8,
+                    vertical: 6,
                   ),
                   decoration: BoxDecoration(
                     // Derived from the hero ink, NOT from the page theme.

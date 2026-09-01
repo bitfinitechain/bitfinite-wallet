@@ -1286,7 +1286,7 @@ class _WalletViewState extends ConsumerState<WalletView> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 6),
                         Center(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1320,11 +1320,11 @@ class _WalletViewState extends ConsumerState<WalletView> {
                               // point sits on the page background, which is what
                               // makes the rounded corners visible at all.
                               //
-                              // Matched to the 24px corner radius: at 16 the
-                              // address chip crowded the curve, which reads as
-                              // the block being too small for its contents
-                              // rather than as a deliberate edge.
-                              const SizedBox(height: 24),
+                              // 18 as part of the compact-hero pass: the chip
+                              // still clears the 32px curve, and the reclaimed
+                              // height goes to the transaction list. At 16 the
+                              // chip crowded the curve, so this is the floor.
+                              const SizedBox(height: 18),
                             ],
                           ),
                         ),

@@ -230,6 +230,28 @@ class ElectrumXClient {
     await getElectrumAdapter()?.close();
   }
 
+  /// Drop a channel whose server has stopped answering.
+  ///
+  /// A request deadline expiring means the socket still speaks TCP but the
+  /// far end went silent — the electrum.pepe.tips failure mode: it accepted
+  /// connections, answered server.version, then hung forever on anything
+  /// touching chain data. Without this, the next request queues on the same
+  /// wedged peer and pays the timeout again (or, before timeouts existed,
+  /// waited forever). The close is fire-and-forget: flushing a dead SSL
+  /// socket can itself block, and we only need the channel forgotten.
+  Future<void> _dropWedgedChannel() async {
+    _electrumAdapterChannel = null;
+    try {
+      final (client, _) = await ClientManager.sharedInstance.remove(
+        cryptoCurrency: cryptoCurrency,
+      );
+      client?.close().ignore();
+    } catch (_) {
+      // Nothing registered, or the subscription cancel failed — either way
+      // the channel reference is gone, which is what matters.
+    }
+  }
+
   Future<void> checkElectrumAdapter() async {
     await _adapterMutex.protect(() async {
       ({InternetAddress host, int port})? proxyInfo;
@@ -370,7 +392,15 @@ class ElectrumXClient {
     }
 
     try {
-      final response = await getElectrumAdapter()!.request(command, args);
+      // requestTimeout was accepted by this method since the Stack Wallet
+      // fork point and never applied — json_rpc_2's sendRequest only
+      // completes on a response or channel close, so a server that accepted
+      // the connection and went silent hung this await forever, with the
+      // refresh mutex held: the wallet stayed "Syncing" until app restart
+      // and nothing ever triggered failover.
+      final response = await getElectrumAdapter()!
+          .request(command, args)
+          .timeout(requestTimeout);
 
       if (response is Map &&
           response.keys.contains("error") &&
@@ -424,6 +454,9 @@ class ElectrumXClient {
     } catch (e, s) {
       final errorMessage = e.toString();
       Logging.instance.w("$host $e", error: e, stackTrace: s);
+      if (e is TimeoutException) {
+        await _dropWedgedChannel();
+      }
       if (errorMessage.contains("JSON-RPC error")) {
         currentFailoverIndex = _failovers.length;
       }
@@ -471,7 +504,9 @@ class ElectrumXClient {
           futures.add(getElectrumAdapter()!.request(command, arg));
         }
       });
-      final response = await Future.wait(futures);
+      // Same missing-deadline hang as request(): one silent server parked
+      // the whole batch forever. The timeout covers the batch as a unit.
+      final response = await Future.wait(futures).timeout(requestTimeout);
 
       // We cannot modify the response list as the order and length are related
       // to the order and length of the batched requests!
@@ -521,6 +556,9 @@ class ElectrumXClient {
         rethrow;
       }
     } catch (e) {
+      if (e is TimeoutException) {
+        await _dropWedgedChannel();
+      }
       if (currentFailoverIndex < _failovers.length - 1) {
         currentFailoverIndex++;
         return batchRequest(
@@ -842,10 +880,18 @@ class ElectrumXClient {
   }) async {
     Logging.instance.d("attempting to fetch blockchain.transaction.get...");
     await checkElectrumAdapter();
-    final dynamic response = await getElectrumAdapter()!.request(
-      'blockchain.transaction.get',
-      [txHash, verbose],
-    );
+    // The hottest call in a wallet sync (one per tx plus one per input's
+    // prev-tx), and it bypasses request() — so it needs its own deadline or
+    // a silent server wedges updateTransactions with the refresh mutex held.
+    final dynamic response;
+    try {
+      response = await getElectrumAdapter()!
+          .request('blockchain.transaction.get', [txHash, verbose])
+          .timeout(const Duration(seconds: 60));
+    } on TimeoutException {
+      await _dropWedgedChannel();
+      rethrow;
+    }
     Logging.instance.d("Fetching blockchain.transaction.get finished");
 
     if (!verbose) {
@@ -1378,7 +1424,14 @@ class ElectrumXClient {
   /// }
   Future<Map<String, dynamic>> getFeeRate({String? requestID}) async {
     await checkElectrumAdapter();
-    return await getElectrumAdapter()!.getFeeRate();
+    try {
+      return await getElectrumAdapter()!.getFeeRate().timeout(
+        const Duration(seconds: 60),
+      );
+    } on TimeoutException {
+      await _dropWedgedChannel();
+      rethrow;
+    }
   }
 
   /// Return the estimated transaction fee per kilobyte for a transaction to be

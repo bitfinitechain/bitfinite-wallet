@@ -69,11 +69,16 @@ class ClientManager {
           _heightCompleters[key]!.complete(event.height);
         }
       },
-      onError: (Object err, StackTrace s) => Logging.instance.e(
-        "ClientManager listen",
-        error: err,
-        stackTrace: s,
-      ),
+      onError: (Object err, StackTrace s) {
+        Logging.instance.e("ClientManager listen", error: err, stackTrace: s);
+        // Same lesson as networking/http.dart's _bodyBytes: an error that is
+        // only logged leaves the completer pending forever, and so hangs
+        // whoever awaits it. Fail the height future so getChainHeightFor
+        // throws instead of wedging the first step of every refresh.
+        if (!(_heightCompleters[key]?.isCompleted ?? true)) {
+          _heightCompleters[key]!.completeError(err, s);
+        }
+      },
     );
   }
 
@@ -105,7 +110,27 @@ class ClientManager {
       }
     }
 
-    return _heights[key] ?? await _heightCompleters[key]!.future;
+    // The completer only completes when the server answers the initial
+    // headers.subscribe. A server that accepts the connection and goes
+    // silent (the electrum.pepe.tips failure mode) never does, and this is
+    // the FIRST await in every wallet refresh — without a deadline the
+    // wallet wedges at 0% "Syncing" until app restart. On timeout the
+    // client is dropped so the next attempt reconnects instead of waiting
+    // on the same dead subscription.
+    try {
+      return _heights[key] ??
+          await _heightCompleters[key]!.future.timeout(
+            const Duration(seconds: 60),
+          );
+    } on TimeoutException {
+      try {
+        final (client, _) = await remove(cryptoCurrency: cryptoCurrency);
+        client?.close().ignore();
+      } catch (_) {
+        // The reference is gone either way.
+      }
+      rethrow;
+    }
   }
 
   Future<(ElectrumClient?, TorPlainNetworkOption?)> remove({

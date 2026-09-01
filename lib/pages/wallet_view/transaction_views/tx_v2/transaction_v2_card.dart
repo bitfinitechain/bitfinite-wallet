@@ -12,11 +12,11 @@ import '../../../../providers/global/locale_provider.dart';
 import '../../../../providers/global/prefs_provider.dart';
 import '../../../../providers/global/price_provider.dart';
 import '../../../../providers/global/wallets_provider.dart';
+import '../../../../providers/wallet/transaction_note_provider.dart';
 import '../../../../themes/stack_colors.dart';
 import '../../../../utilities/amount/amount.dart';
 import '../../../../utilities/amount/amount_formatter.dart';
 import '../../../../utilities/constants.dart';
-import '../../../../utilities/format.dart';
 import '../../../../utilities/text_styles.dart';
 import '../../../../utilities/util.dart';
 import '../../../../wallets/crypto_currency/crypto_currency.dart';
@@ -48,22 +48,51 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
 
   bool get isTokenTx => tokenContract != null;
 
-  String whatIsIt(CryptoCurrency coin, int currentHeight) =>
-      _transaction.isCancelled && coin is Ethereum
-      ? "Failed"
-      : _transaction.statusLabel(
-          currentChainHeight: currentHeight,
-          minConfirms: ref
-              .read(pWallets)
-              .getWallet(walletId)
-              .cryptoCurrency
-              .minConfirms,
-          minCoinbaseConfirms: ref
-              .read(pWallets)
-              .getWallet(walletId)
-              .cryptoCurrency
-              .minCoinbaseConfirms,
-        );
+  /// Redesign: the row's title is the transaction's DIRECTION; its state
+  /// (confirming, cancelled) moved into the subtitle where it is context,
+  /// not identity. A row that renames itself from "Receiving" to "Received"
+  /// is one thing changing state, and the title staying put makes that
+  /// legible.
+  String _titleLabel() {
+    if (_transaction.isCancelled) {
+      return coin is Ethereum ? "Failed" : "Cancelled";
+    }
+    if (_transaction.subType == TransactionSubType.cashFusion) {
+      return "Fusion";
+    }
+    switch (_transaction.type) {
+      case TransactionType.outgoing:
+        return "Sent";
+      case TransactionType.incoming:
+        return "Received";
+      case TransactionType.sentToSelf:
+        return "Sent to self";
+      case TransactionType.unknown:
+        return "Unknown";
+    }
+  }
+
+  /// "9:59 · 6 confirmations" | "9:59 · <the user's note>" | "9:59".
+  ///
+  /// Confirmations show while they are still news (under 10); after that the
+  /// note takes the slot if one exists. The date is NOT here — the list's
+  /// day headers carry it, so the row repeats nothing.
+  String _subtitle(int currentHeight, String? note) {
+    final date = DateTime.fromMillisecondsSinceEpoch(
+      _transaction.timestamp * 1000,
+    );
+    final minutes = date.minute < 10 ? "0${date.minute}" : "${date.minute}";
+    final time = "${date.hour}:$minutes";
+
+    final confirms = _transaction.getConfirmations(currentHeight);
+    if (confirms < 10) {
+      return "$time · $confirms confirmation${confirms == 1 ? "" : "s"}";
+    }
+    if (note != null && note.isNotEmpty) {
+      return "$time · $note";
+    }
+    return time;
+  }
 
   @override
   void initState() {
@@ -223,132 +252,118 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
             }
           },
           child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Row(
-              children: [
-                TxIcon(
-                  transaction: _transaction,
-                  coin: coin,
-                  currentHeight: currentHeight,
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    // crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Flexible(
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: ConditionalParent(
-                                condition:
-                                    coin is Firo &&
-                                    _transaction.isInstantLock &&
-                                    !_transaction.isConfirmed(
-                                      currentHeight,
-                                      coin.minConfirms,
-                                      coin.minCoinbaseConfirms,
-                                    ),
-                                builder: (child) => Row(
-                                  children: [
-                                    child,
+            padding: const EdgeInsets.all(10),
+            child: Builder(
+              builder: (context) {
+                // Redesign row: [icon] [Sent / time·context] ... [amount /
+                // fiat]. The ticker is gone from the amount — every row in
+                // this list is the same coin and the hero already names it.
+                final note = ref
+                    .watch(
+                      pTransactionNote((
+                        walletId: walletId,
+                        txid: _transaction.txid,
+                      )),
+                    )
+                    ?.value;
 
-                                    const SizedBox(width: 10),
-                                    const CoinTickerTag(ticker: "INSTANT"),
-                                  ],
+                final formattedAmount = ref
+                    .watch(pAmountFormatter(coin))
+                    .format(
+                      amount,
+                      tokenContract: tokenContract,
+                      withUnitName: false,
+                    );
+
+                return Row(
+                  children: [
+                    TxIcon(
+                      transaction: _transaction,
+                      coin: coin,
+                      currentHeight: currentHeight,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ConditionalParent(
+                            condition:
+                                coin is Firo &&
+                                _transaction.isInstantLock &&
+                                !_transaction.isConfirmed(
+                                  currentHeight,
+                                  coin.minConfirms,
+                                  coin.minCoinbaseConfirms,
                                 ),
-                                child: Text(
-                                  whatIsIt(coin, currentHeight),
-                                  style: STextStyles.itemSubtitle12(context),
-                                ),
+                            builder: (child) => Row(
+                              children: [
+                                child,
+                                const SizedBox(width: 10),
+                                const CoinTickerTag(ticker: "INSTANT"),
+                              ],
+                            ),
+                            child: Text(
+                              _titleLabel(),
+                              style: STextStyles.itemSubtitle12(
+                                context,
+                              ).copyWith(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(
+                                  context,
+                                ).extension<StackColors>()!.textDark,
                               ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          const SizedBox(width: 10),
-                          Flexible(
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Builder(
-                                builder: (context) {
-                                  final formattedAmount = ref
-                                      .watch(pAmountFormatter(coin))
-                                      .format(
-                                        amount,
-                                        tokenContract: tokenContract,
-                                      );
-
-                                  return Text(
-                                    // Privacy mode masks per-row amounts too:
-                                    // hiding the balance while listing every
-                                    // transaction underneath it is not privacy.
-                                    privacyMode
-                                        ? "••••"
-                                        : "$prefix$formattedAmount",
-                                    style: STextStyles.itemSubtitle12(context)
-                                        .copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          color:
-                                              _transaction.type ==
-                                                      TransactionType.incoming
-                                                  ? Theme.of(context)
-                                                        .extension<
-                                                          StackColors
-                                                        >()!
-                                                        .accentColorGreen
-                                                  : null,
-                                        ),
-                                  );
-                                },
-                              ),
-                            ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _subtitle(currentHeight, note),
+                            style: STextStyles.label(context),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        // crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Flexible(
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                Format.extractDateFrom(_transaction.timestamp),
-                                style: STextStyles.label(context),
-                              ),
-                            ),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          // Privacy mode masks per-row amounts too: hiding
+                          // the balance while listing every transaction
+                          // underneath it is not privacy.
+                          privacyMode ? "••••" : "$prefix$formattedAmount",
+                          style: STextStyles.itemSubtitle12(context).copyWith(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            fontFeatures: const [
+                              FontFeature.tabularFigures(),
+                            ],
+                            color:
+                                _transaction.type == TransactionType.incoming
+                                ? Theme.of(
+                                    context,
+                                  ).extension<StackColors>()!.accentColorGreen
+                                : Theme.of(
+                                    context,
+                                  ).extension<StackColors>()!.textDark,
                           ),
-                          if (price != null) const SizedBox(width: 10),
-                          if (price != null)
-                            Flexible(
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Builder(
-                                  builder: (context) {
-                                    final formattedFiat =
-                                        (amount.decimal * price!)
-                                            .toAmount(fractionDigits: 2)
-                                            .fiatString(locale: locale);
-
-                                    return Text(
-                                      privacyMode
-                                          ? "•••• $baseCurrency"
-                                          : "$prefix$formattedFiat $baseCurrency",
-                                      style: STextStyles.label(context),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                        ),
+                        if (price != null) const SizedBox(height: 2),
+                        if (price != null)
+                          Text(
+                            privacyMode
+                                ? "•••• $baseCurrency"
+                                : "$prefix${(amount.decimal * price!).toAmount(fractionDigits: 2).fiatString(locale: locale)} $baseCurrency",
+                            style: STextStyles.label(context),
+                          ),
+                      ],
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ),

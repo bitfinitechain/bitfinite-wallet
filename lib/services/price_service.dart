@@ -70,6 +70,20 @@ class PriceService extends ChangeNotifier {
     return (series != null && series.length > 1) ? series : null;
   }
 
+  /// Price series for the hero chart's range selector. 7 days comes from the
+  /// sparkline the price poll already carries (no extra request); 1 and 30
+  /// days are fetched lazily and cached by PriceAPI. Same unlisted-coin gate
+  /// as [getSparkline]: no market, no chart, never a flat line at zero.
+  Future<List<double>?> getRangeSeries(CryptoCurrency coin, int days) async {
+    if (getPrice(coin) == null) return null;
+    if (days == 7) return getSparkline(coin);
+    return await _priceAPI.getMarketChart(
+      coin: coin,
+      days: days,
+      baseCurrency: baseTicker,
+    );
+  }
+
   PriceService(this.baseTicker);
 
   Future<void> updatePrice() async {

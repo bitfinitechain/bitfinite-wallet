@@ -42,6 +42,24 @@ import '../../../widgets/coin_card.dart';
 import 'wallet_balance_toggle_sheet.dart';
 import 'wallet_sync_chip.dart';
 
+/// Selected hero-chart range in days, per wallet. 7 is the default because it
+/// is the only range that costs no extra network request (the price poll
+/// already carries the 7-day sparkline).
+final _chartRangeDaysProvider = StateProvider.family<int, String>(
+  (ref, walletId) => 7,
+);
+
+/// Series for the selected range. A provider rather than a FutureBuilder so
+/// switching ranges and rebuilding the hero does not refetch on every frame —
+/// PriceAPI caches 5 minutes per coin+range underneath this.
+final _heroSeriesProvider = FutureProvider.autoDispose
+    .family<List<double>?, ({String walletId, int days})>((ref, arg) async {
+      final coin = ref.watch(pWalletCoin(arg.walletId));
+      return await ref
+          .watch(priceAnd24hChangeNotifierProvider)
+          .getRangeSeries(coin, arg.days);
+    });
+
 class WalletSummaryInfo extends ConsumerWidget {
   const WalletSummaryInfo({
     super.key,
@@ -213,45 +231,19 @@ class WalletSummaryInfo extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Seven days of price, from the series the price API already returns.
-          // Gated on the same price != null as the fiat line above, and
-          // getSparkline gates itself again — a coin with no market gets no
-          // chart rather than a flat line at zero, which would be a claim we
-          // cannot support. Hidden in privacy mode for the same reason the fiat
-          // figure is: the shape still tells you how the holding moved.
+          // The chart card: current price, a change figure, a range selector
+          // (24H / 7D / 30D) and the series for whichever range is selected.
+          // Gated on price != null — a coin with no market gets no chart, not
+          // a flat line at zero. Hidden in privacy mode for the same reason
+          // the fiat figure is: the shape still tells you how it moved.
           if (price != null && price.value > Decimal.zero && !privacyMode)
-            Builder(
-              builder: (context) {
-                final series = ref
-                    .read(priceAnd24hChangeNotifierProvider)
-                    .getSparkline(coin);
-                if (series == null) return const SizedBox.shrink();
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Container(
-                        padding: const EdgeInsets.fromLTRB(8, 6, 8, 4),
-                        decoration: BoxDecoration(
-                          // A faint well so the line has an edge to sit on;
-                          // floating on the hero fill it read as a stray mark.
-                          // Same white the text uses, far quieter, so it follows
-                          // whatever coin colour the hero takes.
-                          color: favText.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: PriceSparkline(
-                          series: series,
-                          color: favText.withOpacity(0.9),
-                          height: 36,
-                          // The same formatter as the fiat figure above, so a
-                          // price read off the chart and the value printed
-                          // over it cannot disagree about how to write a
-                          // number smaller than a cent.
-                          format: (v) =>
-                              "${Decimal.parse(v.toString()).toAmount(fractionDigits: 8).fiatString(locale: locale)} $baseCurrency",
-                        ),
-                      ),
-                );
-              },
+            _HeroChartCard(
+              walletId: walletId,
+              favText: favText,
+              heroFill: ref.watch(pCoinColor(coin)),
+              price: price,
+              locale: locale,
+              baseCurrency: baseCurrency,
             ),
           Row(
             children: [
@@ -341,19 +333,9 @@ class WalletSummaryInfo extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 10),
-          if (ref.watch(pWalletInfo(walletId)).isViewOnly)
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: SelectableText(
-                "(View only)",
-                style: STextStyles.pageTitleH1(
-                  context,
-                // w600/18px is not "large text" by WCAG (that needs w700 at
-                // >=18.66px), so this owes the full 4.5:1. 0.7 measured
-                // 4.03:1; 0.8 gives 4.84:1 and matches the other hero labels.
-                ).copyWith(fontSize: 18, color: favText.withOpacity(heroEmphasis(favText, 0.8))),
-              ),
-            ),
+          // "(View only)" used to sit here; the redesign moves that fact to
+          // the app bar as the wallet's account-type subtitle (WATCH ONLY),
+          // where it labels the wallet rather than interrupting the balance.
           GestureDetector(
             behavior: HitTestBehavior.opaque,
             // Tap the balance to change how many decimals are shown, per coin
@@ -405,15 +387,42 @@ class WalletSummaryInfo extends ConsumerWidget {
           if (price != null && price.value > Decimal.zero)
             Padding(
               padding: const EdgeInsets.only(top: 4, bottom: 2),
-              child: Text(
-                // Masked too: hiding the BFX figure while showing its fiat
-                // value would defeat the point entirely.
-                privacyMode
-                    ? "•••• $baseCurrency"
-                    : "≈ ${(price.value * balanceToShow.decimal).toAmount(fractionDigits: 8).fiatString(locale: locale)} $baseCurrency",
-                style: STextStyles.subtitle500(
-                  context,
-                ).copyWith(color: favText.withOpacity(heroEmphasis(favText, 0.78)), fontSize: 13),
+              child: Builder(
+                builder: (context) {
+                  final fiatNow = price!.value * balanceToShow.decimal;
+                  final fiatStr =
+                      "≈ ${fiatNow.toAmount(fractionDigits: 8).fiatString(locale: locale)} $baseCurrency";
+
+                  // "today" = the 24h change of the HOLDING's fiat value:
+                  // balance x (price_now - price_24h_ago), derived from the
+                  // same change24h the price rows use, so the two cannot
+                  // disagree. Rendered in the hero ink, not green/red — a
+                  // coloured figure on an arbitrary coin fill cannot promise
+                  // contrast (green on Bells gold measures under 2:1); the
+                  // sign carries the direction.
+                  String todayStr = "";
+                  final c = price.change24h;
+                  if (c.isFinite && (100 + c).abs() > 0.001) {
+                    final delta = fiatNow.toDouble() * c / (100 + c);
+                    final sign = delta < 0 ? "-" : "+";
+                    final deltaStr = Decimal.parse(
+                      delta.abs().toStringAsFixed(8),
+                    ).toAmount(fractionDigits: 8).fiatString(locale: locale);
+                    todayStr = "  ·  $sign$deltaStr $baseCurrency today";
+                  }
+
+                  return Text(
+                    // Masked too: hiding the BFX figure while showing its
+                    // fiat value would defeat the point entirely.
+                    privacyMode ? "•••• $baseCurrency" : "$fiatStr$todayStr",
+                    style: STextStyles.subtitle500(context).copyWith(
+                      color: favText.withOpacity(
+                        heroEmphasis(favText, 0.78),
+                      ),
+                      fontSize: 13,
+                    ),
+                  );
+                },
               ),
             ),
           if (receivingAddress.isNotEmpty)
@@ -489,6 +498,199 @@ class WalletSummaryInfo extends ConsumerWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// The hero's price-chart card: price + change + 24H/7D/30D selector + line.
+///
+/// The change figure is computed from the ENDPOINTS OF THE SERIES ON SCREEN,
+/// not from the API's change24h — a "+1.02%" sitting beside an active 7D pill
+/// must be the 7-day change, or the card contradicts its own chart. Every ink
+/// derives from favText so the card follows any coin colour and either ink
+/// polarity.
+class _HeroChartCard extends ConsumerWidget {
+  const _HeroChartCard({
+    required this.walletId,
+    required this.favText,
+    required this.heroFill,
+    required this.price,
+    required this.locale,
+    required this.baseCurrency,
+  });
+
+  final String walletId;
+  final Color favText;
+  final Color heroFill;
+  final ({double change24h, Decimal value}) price;
+  final String locale;
+  final String baseCurrency;
+
+  static const _ranges = [(label: "24H", days: 1), (label: "7D", days: 7), (label: "30D", days: 30)];
+
+  String _formatPrice(Decimal v) {
+    // Sub-cent coins need more than the fiat 2dp or every price reads 0.00;
+    // trim trailing zeros so PEP shows 0.0001157, not 0.00011570.
+    if (v >= Decimal.one) {
+      return v.toStringAsFixed(2);
+    }
+    var s = v.toStringAsFixed(8);
+    while (s.endsWith("0")) {
+      s = s.substring(0, s.length - 1);
+    }
+    return s.endsWith(".") ? "${s}0" : s;
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final days = ref.watch(_chartRangeDaysProvider(walletId));
+    final seriesAsync = ref.watch(
+      _heroSeriesProvider((walletId: walletId, days: days)),
+    );
+    final series = seriesAsync.asData?.value;
+
+    // No 7D series at all means the coin has no market data worth a card.
+    final fallback = ref.watch(priceAnd24hChangeNotifierProvider).getSparkline(
+      ref.watch(pWalletCoin(walletId)),
+    );
+    if (series == null && fallback == null && seriesAsync is! AsyncLoading) {
+      return const SizedBox.shrink();
+    }
+
+    String? changeStr;
+    if (series != null && series.length > 1 && series.first != 0) {
+      final pct = (series.last - series.first) / series.first * 100;
+      final sign = pct < 0 ? "-" : "+";
+      changeStr = "$sign${pct.abs().toStringAsFixed(2)}%";
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(10, 8, 10, 6),
+        decoration: BoxDecoration(
+          // A faint well so the line has an edge to sit on; same ink the
+          // text uses, far quieter, so it follows any coin colour.
+          color: favText.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      children: [
+                        Text(
+                          "${_formatPrice(price.value)} $baseCurrency",
+                          style: STextStyles.subtitle500(context).copyWith(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: favText.withOpacity(
+                              heroEmphasis(favText, 0.92),
+                            ),
+                            fontFeatures: const [
+                              FontFeature.tabularFigures(),
+                            ],
+                          ),
+                        ),
+                        if (changeStr != null) const SizedBox(width: 6),
+                        if (changeStr != null)
+                          Text(
+                            changeStr,
+                            // Hero ink, not green/red: a coloured delta on an
+                            // arbitrary coin fill cannot promise contrast.
+                            // The sign carries the direction.
+                            style: STextStyles.subtitle500(context).copyWith(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: favText.withOpacity(
+                                heroEmphasis(favText, 0.78),
+                              ),
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                for (final r in _ranges)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => ref
+                          .read(_chartRangeDaysProvider(walletId).notifier)
+                          .state = r.days,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          // Active pill inverts: ink-coloured fill carrying
+                          // the hero colour as its text, which is readable by
+                          // construction (it is the same pairing as the hero
+                          // itself, reversed).
+                          color: r.days == days ? favText : null,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          r.label,
+                          style: STextStyles.subtitle500(context).copyWith(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
+                            color: r.days == days
+                                ? heroFill
+                                : favText.withOpacity(
+                                    heroEmphasis(favText, 0.78),
+                                  ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            if (series != null)
+              PriceSparkline(
+                series: series,
+                color: favText.withOpacity(0.9),
+                height: 36,
+                spanHours: days * 24.0,
+                // The pills already say what the chart spans.
+                idleLabel: "",
+                // The same formatter as the fiat figure below the balance, so
+                // a price read off the chart and the value printed over it
+                // cannot disagree about how to write a number under a cent.
+                format: (v) =>
+                    "${Decimal.parse(v.toString()).toAmount(fractionDigits: 8).fiatString(locale: locale)} $baseCurrency",
+              )
+            else
+              SizedBox(
+                height: 36,
+                child: Center(
+                  child: SizedBox(
+                    height: 14,
+                    width: 14,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: favText.withOpacity(0.5),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

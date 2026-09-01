@@ -18,6 +18,7 @@ import '../../../../models/isar/models/blockchain_data/transaction.dart';
 import '../../../../models/isar/models/blockchain_data/v2/transaction_v2.dart';
 import '../../../../providers/db/main_db_provider.dart';
 import '../../../../providers/global/wallets_provider.dart';
+import '../../../../themes/stack_colors.dart';
 import '../../../../utilities/constants.dart';
 import '../../../../utilities/util.dart';
 import '../../../../wallets/crypto_currency/crypto_currency.dart';
@@ -113,6 +114,38 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
     return processed;
   }
 
+  /// Redesign: rows carry only their time; the date moves into section
+  /// headers ("TODAY", "31 AUG") interleaved into the list as Strings.
+  /// The list is already sorted newest-first, so one pass suffices.
+  List<Object> _withDateHeaders(List<Object> items) {
+    final out = <Object>[];
+    String? last;
+    for (final item in items) {
+      final ts = item is TransactionV2
+          ? item.timestamp
+          : (item as FusionTxGroup).transactions.first.timestamp;
+      final label = _dayLabel(ts);
+      if (label != last) {
+        out.add(label);
+        last = label;
+      }
+      out.add(item);
+    }
+    return out;
+  }
+
+  String _dayLabel(int timestamp) {
+    final d = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final day = DateTime(d.year, d.month, d.day);
+    if (day == today) return "TODAY";
+    if (day == today.subtract(const Duration(days: 1))) return "YESTERDAY";
+    final base = "${d.day} ${Constants.monthMapShort[d.month]}".toUpperCase();
+    // The year only where it is not this year — "31 AUG" needs no 2026.
+    return d.year == now.year ? base : "$base ${d.year}";
+  }
+
   void _rebuildData() {
     _transactions.sort((a, b) {
       final compare = b.timestamp.compareTo(a.timestamp);
@@ -121,7 +154,7 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
       }
       return compare;
     });
-    _txns = _processData(_transactions);
+    _txns = _withDateHeaders(_processData(_transactions));
   }
 
   @override
@@ -190,7 +223,9 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
             },
             child: Util.isDesktop
                 ? PaginatedListView(
-                    items: _txns,
+                    // Desktop keeps its paginated flat list; headers are a
+                    // mobile treatment and pagination would orphan them.
+                    items: _txns.where((e) => e is! String).toList(),
                     itemBuilder: (context, tx, position) {
                       final radius = switch (position) {
                         PageItemPosition.first => _borderRadiusFirst,
@@ -221,6 +256,9 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
                         radius = _borderRadiusFirst;
                       }
                       final tx = _txns[index];
+                      if (tx is String) {
+                        return _DateHeader(label: tx);
+                      }
                       if (shouldWrap) {
                         return Column(
                           children: [
@@ -236,5 +274,31 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
                     },
                   ),
           );
+  }
+}
+
+/// A day-section header row: "TODAY", "YESTERDAY", "31 AUG", "5 JAN 2025".
+class _DateHeader extends StatelessWidget {
+  const _DateHeader({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, top: 10, bottom: 6),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 1.0,
+            color: Theme.of(context).extension<StackColors>()!.textSubtitle1,
+          ),
+        ),
+      ),
+    );
   }
 }

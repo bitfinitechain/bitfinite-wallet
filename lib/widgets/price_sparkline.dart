@@ -25,6 +25,8 @@ class PriceSparkline extends StatefulWidget {
     required this.format,
     this.height = 38,
     this.strokeWidth = 2,
+    this.spanHours = 7 * 24,
+    this.idleLabel = "7 days",
   });
 
   /// Oldest point first. Fewer than two points cannot describe a change, so
@@ -41,6 +43,15 @@ class PriceSparkline extends StatefulWidget {
 
   final double height;
   final double strokeWidth;
+
+  /// How much time the whole series spans, for the "Nd ago" readout. The
+  /// series carries no timestamps, so spacing derives from this. 168 matches
+  /// the original 7-day sparkline; the hero's range selector passes 24/720.
+  final double spanHours;
+
+  /// Corner label when nothing is being read. The hero's chart card passes ""
+  /// because its range pills already say what the chart spans.
+  final String idleLabel;
 
   @override
   State<PriceSparkline> createState() => _PriceSparklineState();
@@ -76,7 +87,7 @@ class _PriceSparklineState extends State<PriceSparkline> {
   String _ago(int i) {
     final n = widget.series.length;
     if (i >= n - 1) return "now";
-    final hours = ((n - 1 - i) * (7 * 24 / (n - 1))).round();
+    final hours = ((n - 1 - i) * (widget.spanHours / (n - 1))).round();
     if (hours < 1) return "now";
     if (hours < 24) return "${hours}h ago";
     return "${(hours / 24).round()}d ago";
@@ -88,7 +99,7 @@ class _PriceSparklineState extends State<PriceSparkline> {
 
     final i = _active;
     final caption = i == null
-        ? "7 days"
+        ? widget.idleLabel
         : "${widget.format(widget.series[i])} · ${_ago(i)}";
 
     return LayoutBuilder(
@@ -144,8 +155,8 @@ class _PriceSparklineState extends State<PriceSparkline> {
                   child: Semantics(
                     label: i == null
                         ? (widget.series.last >= widget.series.first
-                              ? "Price chart, up over the last seven days"
-                              : "Price chart, down over the last seven days")
+                              ? "Price chart, up over the shown range"
+                              : "Price chart, down over the shown range")
                         : "${widget.format(widget.series[i])}, ${_ago(i)}",
                     child: const SizedBox.expand(),
                   ),

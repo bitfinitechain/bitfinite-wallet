@@ -127,6 +127,64 @@ class PriceAPI {
   /// has no series, and the UI must render nothing rather than an empty chart.
   final Map<CryptoCurrency, List<double>> sparklines = {};
 
+  // Redesign: the hero chart gained 24H/30D ranges beside the bundled 7D
+  // sparkline. Those need their own market_chart call, fetched lazily on
+  // first selection and cached per coin+range+currency, because CoinGecko's
+  // free tier rate-limits hard and the price poll already runs every minute.
+  final Map<String, (DateTime, List<double>)> _marketChartCache = {};
+  static const _marketChartCacheLife = Duration(minutes: 5);
+
+  Future<List<double>?> getMarketChart({
+    required CryptoCurrency coin,
+    required int days,
+    required String baseCurrency,
+  }) async {
+    final id = _coinToIdMap[coin.runtimeType];
+    if (id == null) return null;
+
+    final key = "$id:$days:${baseCurrency.toLowerCase()}";
+    final cached = _marketChartCache[key];
+    if (cached != null &&
+        DateTime.now().difference(cached.$1) < _marketChartCacheLife) {
+      return cached.$2;
+    }
+
+    try {
+      final uri = Uri.parse(
+        "https://api.coingecko.com/api/v3/coins/$id/market_chart"
+        "?vs_currency=${baseCurrency.toLowerCase()}&days=$days",
+      );
+
+      final response = await client.get(
+        url: uri,
+        headers: {'Content-Type': 'application/json'},
+        proxyInfo: !AppConfig.hasFeature(AppFeature.tor)
+            ? null
+            : Prefs.instance.useTor
+            ? TorService.sharedInstance.getProxyInfo()
+            : null,
+      );
+
+      final json = jsonDecode(response.body);
+      final prices = json["prices"] as List?;
+      if (prices != null && prices.length > 1) {
+        final series = prices
+            .map((e) => ((e as List)[1] as num).toDouble())
+            .toList(growable: false);
+        _marketChartCache[key] = (DateTime.now(), series);
+        return series;
+      }
+    } catch (e, s) {
+      Logging.instance.w(
+        "getMarketChart($id, $days) failed",
+        error: e,
+        stackTrace: s,
+      );
+    }
+    // A stale series beats an empty chart flash on a transient failure.
+    return cached?.$2;
+  }
+
   Future<Map<CryptoCurrency, ({Decimal value, double change24h})>>
   getPricesAnd24hChange({required String baseCurrency}) async {
     final now = DateTime.now();

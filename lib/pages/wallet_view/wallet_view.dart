@@ -118,6 +118,7 @@ import '../signing/signing_view.dart';
 import '../spark_names/spark_names_home_view.dart';
 import '../token_view/my_tokens_view.dart';
 import 'sub_widgets/transactions_list.dart';
+import 'sub_widgets/wallet_action_bar.dart';
 import 'sub_widgets/wallet_summary.dart';
 import 'transaction_views/all_transactions_view.dart';
 import 'transaction_views/tx_v2/all_transactions_v2_view.dart';
@@ -537,13 +538,12 @@ class _WalletViewState extends ConsumerState<WalletView> {
 
     final viewOnly = wallet is ViewOnlyOptionInterface && wallet.isViewOnly;
 
-    final Widget walletDock =
-                WalletNavigationBar(
-                  // Wallet home: Send is the primary action, per the design.
-                  activeLabel: "Send",
-                  accentColor: accent,
-                  floating: true,
-                  items: [
+    // Redesign: the floating icon dock became a two-button action bar
+    // (WalletActionBar). The item lists keep their existing construction so
+    // every coin-conditional entry (Finalize, Sign, Swap, Buy, Names,
+    // Tokens, …) survives — anything beyond Receive/Send lands in the bar's
+    // "more" sheet instead of disappearing.
+    final dockItems = <WalletNavigationBarItemData>[
                     WalletNavigationBarItemData(
                       label: "Receive",
                       icon: const ReceiveNavIcon(),
@@ -656,8 +656,8 @@ class _WalletViewState extends ConsumerState<WalletView> {
                           );
                         },
                       ),
-                  ],
-                  moreItems: <WalletNavigationBarItemData>[
+    ];
+    final dockMoreItems = <WalletNavigationBarItemData>[
                     if (ref.watch(
                       pWallets.select(
                         (value) => value
@@ -921,9 +921,13 @@ class _WalletViewState extends ConsumerState<WalletView> {
                           ).pushNamed(GiftCardsView.routeName);
                         },
                       ),
-                  ],
-                )
-    ;
+    ];
+
+    final Widget walletDock = WalletActionBar(
+      items: dockItems,
+      moreItems: dockMoreItems,
+      viewOnly: viewOnly,
+    );
 
     return ConditionalParent(
       condition: _rescanningOnOpen,
@@ -1032,15 +1036,38 @@ class _WalletViewState extends ConsumerState<WalletView> {
                       ),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: Text(
-                          ref.watch(pWalletName(walletId)),
-                          // navBarTitle resolves to textDark — a page colour,
-                          // dark in the light theme — which is unreadable on
-                          // the blue hero. On the hero, ink comes from the hero.
-                          style: STextStyles.navBarTitle(
-                            context,
-                          ).copyWith(color: onHero),
-                          overflow: TextOverflow.ellipsis,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              ref.watch(pWalletName(walletId)),
+                              // navBarTitle resolves to textDark — a page
+                              // colour, dark in the light theme — which is
+                              // unreadable on the blue hero. On the hero,
+                              // ink comes from the hero.
+                              style: STextStyles.navBarTitle(
+                                context,
+                              ).copyWith(color: onHero, height: 1.1),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            // Redesign: the account type labels the wallet in
+                            // the header — WATCH ONLY replaces the
+                            // "(View only)" line the hero body used to carry.
+                            Text(
+                              viewOnly ? "WATCH ONLY" : "MAIN ACCOUNT",
+                              style: STextStyles.subtitle500(context).copyWith(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 1.1,
+                                height: 1.2,
+                                color: onHero.withOpacity(
+                                  heroEmphasis(onHero, 0.78),
+                                ),
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
                       ),
                     ],

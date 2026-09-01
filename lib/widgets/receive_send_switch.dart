@@ -18,26 +18,29 @@ import '../pages/receive_view/receive_view.dart';
 import '../pages/send_view/send_view.dart';
 import '../pages/wallet_view/transaction_views/tx_v2/all_transactions_v2_view.dart';
 import '../providers/providers.dart';
-import '../themes/theme_providers.dart';
 import '../themes/stack_colors.dart';
 import '../utilities/assets.dart';
+import '../utilities/text_styles.dart';
 import '../wallets/crypto_currency/crypto_currency.dart';
 import '../wallets/wallet/wallet_mixin_interfaces/view_only_option_interface.dart';
+import 'desktop/primary_button.dart';
+import 'desktop/secondary_button.dart';
 import 'wallet_navigation_bar/components/icons/coin_control_nav_icon.dart';
-import 'wallet_navigation_bar/components/icons/receive_nav_icon.dart';
-import 'wallet_navigation_bar/components/icons/send_nav_icon.dart';
-import 'wallet_navigation_bar/components/wallet_navigation_bar_item.dart';
-import 'wallet_navigation_bar/wallet_navigation_bar.dart';
 
 /// Which Receive/Send flow the page is currently showing.
 enum TransferTab { receive, send }
 
-/// The wallet dock, on the Receive/Send pages. It is the *same* floating
-/// WalletNavigationBar used on the wallet view — Receive / Send / More — so
-/// navigation reads as one language everywhere. Receive/Send jump between the
-/// two flows via pushReplacement (the back stack stays clean; both still pop to
-/// the wallet view), the action for the current page is disabled, and More
-/// opens an overflow sheet (All transactions, plus Coin control when enabled).
+/// The Receive/Send pages' bottom controls, in the SAME language as the
+/// wallet home's action bar — the redesign replaced the floating icon dock
+/// there, and a page that keeps the old dock reads as a different app.
+///
+/// Same grammar as the home bar: Send is the coin-filled primary, Receive the
+/// secondary, extras (All transactions, Coin control) behind "···". The
+/// button for the page you are on is a no-op — pressing "where you already
+/// are" navigates nowhere — and the other switches flows via pushReplacement
+/// so both still pop back to the wallet view. A view-only wallet gets no
+/// Send here at all: the wallet home already explains the lock; inside the
+/// transfer flow it would only repeat itself.
 class ReceiveSendSwitchDock extends ConsumerWidget {
   const ReceiveSendSwitchDock({
     super.key,
@@ -50,77 +53,117 @@ class ReceiveSendSwitchDock extends ConsumerWidget {
   final String walletId;
   final CryptoCurrency coin;
 
+  void _showExtrasSheet(BuildContext context, WidgetRef ref) {
+    final colors = Theme.of(context).extension<StackColors>()!;
+    final coinControl = ref.read(prefsChangeNotifierProvider).enableCoinControl;
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: colors.popupBG,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: SvgPicture.asset(
+                  Assets.svg.list,
+                  width: 20,
+                  height: 20,
+                  color: colors.bottomNavIconIcon,
+                ),
+                title: Text(
+                  "All transactions",
+                  style: STextStyles.w500_14(context),
+                ),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushNamed(
+                    AllTransactionsV2View.routeName,
+                    arguments: walletId,
+                  );
+                },
+              ),
+              if (coinControl)
+                ListTile(
+                  leading: const CoinControlNavIcon(),
+                  title: Text(
+                    "Coin control",
+                    style: STextStyles.w500_14(context),
+                  ),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pushNamed(
+                      CoinControlView.routeName,
+                      arguments: Tuple2(walletId, CoinControlViewType.manage),
+                    );
+                  },
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).extension<StackColors>()!;
-    final accent = ref.watch(pCoinColor(coin));
 
-    // A view-only wallet has no keys, so it cannot sign anything. The wallet
-    // view already omits Send for one (`if (!viewOnly)`), but this dock did
-    // not, so opening Receive on a watched address put Send back on screen and
-    // let you walk into a send flow that could never complete. Same predicate,
-    // same outcome, so the rule holds wherever the dock appears.
+    // A view-only wallet has no keys, so it cannot sign anything. Same
+    // predicate as the wallet home, same outcome, wherever the bar appears.
     final wallet = ref.watch(pWallets).getWallet(walletId);
     final viewOnly = wallet is ViewOnlyOptionInterface && wallet.isViewOnly;
 
-    return WalletNavigationBar(
-      floating: true,
-      // The dock belongs to the wallet you are in, so its primary action
-      // wears that coin's colour rather than the theme's generic blue.
-      accentColor: accent,
-      // The page you are on is the active one.
-      activeLabel: current == TransferTab.receive ? "Receive" : "Send",
-      items: [
-        WalletNavigationBarItemData(
-          label: "Receive",
-          icon: const ReceiveNavIcon(),
-          filledIcon: ReceiveNavIcon(onFilled: true, fill: accent),
-          onTap: current == TransferTab.receive
-              ? null
-              : () => Navigator.of(context).pushReplacementNamed(
-                  ReceiveView.routeName,
-                  arguments: walletId,
-                ),
-        ),
-        if (!viewOnly)
-          WalletNavigationBarItemData(
-            label: "Send",
-            icon: const SendNavIcon(),
-            filledIcon: SendNavIcon(onFilled: true, fill: accent),
-            onTap: current == TransferTab.send
-                ? null
-                : () => Navigator.of(context).pushReplacementNamed(
-                    SendView.routeName,
-                    arguments: (walletId: walletId, coin: coin),
-                  ),
-          ),
-      ],
-      moreItems: <WalletNavigationBarItemData>[
-        WalletNavigationBarItemData(
-          label: "All transactions",
-          icon: SvgPicture.asset(
-            Assets.svg.list,
-            width: 20,
-            height: 20,
-            color: colors.bottomNavIconIcon,
-          ),
-          onTap: () => Navigator.of(context).pushNamed(
-            AllTransactionsV2View.routeName,
-            arguments: walletId,
-          ),
-        ),
-        if (ref.watch(
-          prefsChangeNotifierProvider.select((value) => value.enableCoinControl),
-        ))
-          WalletNavigationBarItemData(
-            label: "Coin control",
-            icon: const CoinControlNavIcon(),
-            onTap: () => Navigator.of(context).pushNamed(
-              CoinControlView.routeName,
-              arguments: Tuple2(walletId, CoinControlViewType.manage),
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: SecondaryButton(
+                label: "Receive",
+                onPressed: current == TransferTab.receive
+                    // No-op rather than disabled-grey: this button is "you
+                    // are here", not "unavailable".
+                    ? () {}
+                    : () => Navigator.of(context).pushReplacementNamed(
+                        ReceiveView.routeName,
+                        arguments: walletId,
+                      ),
+              ),
             ),
-          ),
-      ],
+            if (!viewOnly) const SizedBox(width: 12),
+            if (!viewOnly)
+              Expanded(
+                child: PrimaryButton(
+                  label: "Send",
+                  onPressed: current == TransferTab.send
+                      ? () {}
+                      : () => Navigator.of(context).pushReplacementNamed(
+                          SendView.routeName,
+                          arguments: (walletId: walletId, coin: coin),
+                        ),
+                ),
+              ),
+            const SizedBox(width: 12),
+            SecondaryButton(
+              width: 56,
+              icon: Icon(
+                Icons.more_horiz,
+                size: 22,
+                color: colors.buttonTextSecondary,
+              ),
+              onPressed: () => _showExtrasSheet(context, ref),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

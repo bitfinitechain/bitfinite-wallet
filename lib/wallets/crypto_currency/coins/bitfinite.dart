@@ -366,4 +366,17 @@ class Bitfinite extends Bip39HDCurrency with ElectrumXCurrencyInterface {
   // ("Transaction fee cannot be less than vSize"). 1200 (1.2 sat/vByte) keeps a
   // margin above the 1 sat/vByte floor while staying negligibly cheap on BFX.
   BigInt get defaultFeeRate => BigInt.from(1200);
+
+  /// Brand blue-700 #2258E6, so BFX keeps its identity under EXTERNAL themes.
+  ///
+  /// The bundled light/dark themes still win via colors.coin (blue-600 light,
+  /// blue-700 dark) — this is only the fallback the five external themes hit.
+  /// Without it, pCoinColor fell through to the theme's own primary and BFX
+  /// wallets wore Forest teal or OceanBreeze blue while Pepecoin and
+  /// Bellscoin kept their published colours: the one coin that IS the product
+  /// was the only one losing its face. Blue-700 rather than blue-600 because
+  /// it is the step measured to pass both sides (5.82:1 under white ink,
+  /// 3.14:1 against the dark page) — the same reason the dark theme uses it.
+  @override
+  int get brandColorValue => 0xFF2258E6;
 }

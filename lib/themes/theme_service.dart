@@ -87,7 +87,11 @@ class ThemeService {
   //     Leather Brown, contrast-tuned (#7E5832 light / #855D35 dark; the
   //     published #8C6239 puts 0.8-opacity labels at 4.10:1). Bell Bag Gold
   //     #F3C532 measures 1.64:1 under white ink and stays in the icon only.
-  static const _currentDefaultThemeVersion = 37;
+  // 38: bellscoin returns to Bell Bag Gold #F3C532 — the palette's lead
+  //     colour — because heroInk() is now adaptive (white or near-black by
+  //     contrast), so a light fill no longer forces a darkened surface.
+  //     White on the gold is 1.64:1; the dark ink it now takes is 11.08:1.
+  static const _currentDefaultThemeVersion = 38;
   ThemeService._();
   static ThemeService? _instance;
   static ThemeService get instance => _instance ??= ThemeService._();

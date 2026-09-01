@@ -28,6 +28,7 @@ import '../models/add_wallet_list_entity/add_wallet_list_entity.dart';
 import '../providers/global/wallets_provider.dart';
 import '../themes/stack_colors.dart';
 import '../themes/theme_providers.dart';
+import '../utilities/hero_ink.dart';
 import '../wallets/crypto_currency/crypto_currency.dart';
 
 class CoinThemed extends ConsumerWidget {
@@ -90,9 +91,14 @@ class CoinThemed extends ConsumerWidget {
               infoItemIcons: accent,
               bottomNavIconIconHighlighted: accent,
               numpadBackDefault: accent,
-              // Text ON the accent stays the theme's, because the accent is a
-              // fill and its readable ink is a property of the theme's contrast
-              // pairing, not of the coin.
+              // Text ON the accent adapts to the accent. The earlier comment
+              // here claimed the theme's pairing could stay — true while every
+              // coin colour was dark enough for white ink, false the day Bells
+              // brought Bell Bag Gold (#F3C532, white 1.64:1): the units
+              // editor's Save button shipped white-on-gold. readableInk keeps
+              // the theme's ink wherever it genuinely reads and flips to dark
+              // ink only where it fails, so BFX and PEP buttons are untouched.
+              buttonTextPrimary: readableInk(colors.buttonTextPrimary, accent),
             )
             as StackColors;
 

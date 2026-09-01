@@ -14,6 +14,7 @@ import 'dart:io';
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:isar_community/isar.dart';
@@ -997,6 +998,19 @@ class _WalletViewState extends ConsumerState<WalletView> {
                   backgroundColor: Colors.transparent,
                   elevation: 0,
                   scrolledUnderElevation: 0,
+                  // The status bar sits ON the hero (extendBodyBehindAppBar),
+                  // so its glyphs must follow the hero's ink polarity, not
+                  // the app theme: white system icons over Bells' gold hero
+                  // in dark mode were as invisible as white text was.
+                  systemOverlayStyle: SystemUiOverlayStyle(
+                    statusBarColor: Colors.transparent,
+                    statusBarIconBrightness: onHero == Colors.white
+                        ? Brightness.light
+                        : Brightness.dark,
+                    statusBarBrightness: onHero == Colors.white
+                        ? Brightness.dark
+                        : Brightness.light,
+                  ),
                   leading: AppBarBackButton(
                     // Matches the other hero buttons: without this it falls
                     // back to the page background and reads as a solid white

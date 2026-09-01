@@ -292,14 +292,14 @@ class WalletSummaryInfo extends ConsumerWidget {
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 1.2,
-                            color: favText.withOpacity(0.8),
+                            color: favText.withOpacity(heroEmphasis(favText, 0.8)),
                           ),
                         ),
                       ),
                       const SizedBox(width: 5),
                       SvgPicture.asset(
                         Assets.svg.chevronDown,
-                        color: favText.withOpacity(0.8),
+                        color: favText.withOpacity(heroEmphasis(favText, 0.8)),
                         width: 8,
                         height: 4,
                       ),
@@ -327,7 +327,7 @@ class WalletSummaryInfo extends ConsumerWidget {
                     privacyMode ? Assets.svg.eyeSlash : Assets.svg.eye,
                     // Same ink as the label; on the hero everything derives
                     // from the hero, never from the page theme.
-                    color: favText.withOpacity(0.8),
+                    color: favText.withOpacity(heroEmphasis(favText, 0.8)),
                     width: 18,
                     height: 18,
                   ),
@@ -351,7 +351,7 @@ class WalletSummaryInfo extends ConsumerWidget {
                 // w600/18px is not "large text" by WCAG (that needs w700 at
                 // >=18.66px), so this owes the full 4.5:1. 0.7 measured
                 // 4.03:1; 0.8 gives 4.84:1 and matches the other hero labels.
-                ).copyWith(fontSize: 18, color: favText.withOpacity(0.8)),
+                ).copyWith(fontSize: 18, color: favText.withOpacity(heroEmphasis(favText, 0.8))),
               ),
             ),
           GestureDetector(
@@ -379,7 +379,7 @@ class WalletSummaryInfo extends ConsumerWidget {
                           // digits of the balance, not decoration. 0.62 gives
                           // 3.46:1 and still reads as secondary against the
                           // 52px full-opacity main part.
-                          color: favText.withOpacity(0.62),
+                          color: favText.withOpacity(heroEmphasis(favText, 0.62)),
                         ),
                       ),
                     TextSpan(
@@ -387,7 +387,7 @@ class WalletSummaryInfo extends ConsumerWidget {
                       style: heroStyle.copyWith(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: favText.withOpacity(0.85),
+                        color: favText.withOpacity(heroEmphasis(favText, 0.85)),
                       ),
                     ),
                   ],
@@ -413,7 +413,7 @@ class WalletSummaryInfo extends ConsumerWidget {
                     : "≈ ${(price.value * balanceToShow.decimal).toAmount(fractionDigits: 8).fiatString(locale: locale)} $baseCurrency",
                 style: STextStyles.subtitle500(
                   context,
-                ).copyWith(color: favText.withOpacity(0.78), fontSize: 13),
+                ).copyWith(color: favText.withOpacity(heroEmphasis(favText, 0.78)), fontSize: 13),
               ),
             ),
           if (receivingAddress.isNotEmpty)
@@ -470,7 +470,7 @@ class WalletSummaryInfo extends ConsumerWidget {
                           // 5.94:1 — comfortably AA. The same 0.92 on the old
                           // #2F6BFF was 4.05:1 and failed.
                           fontSize: 13,
-                          color: favText.withOpacity(0.92),
+                          color: favText.withOpacity(heroEmphasis(favText, 0.92)),
                           fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
@@ -481,7 +481,7 @@ class WalletSummaryInfo extends ConsumerWidget {
                         height: 14,
                         // The only affordance signalling the chip is tappable,
                         // so it has to be findable rather than decorative.
-                        color: favText.withOpacity(0.8),
+                        color: favText.withOpacity(heroEmphasis(favText, 0.8)),
                       ),
                     ],
                   ),

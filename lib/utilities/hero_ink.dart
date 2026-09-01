@@ -9,17 +9,51 @@
 
 import 'package:flutter/material.dart';
 
-/// Ink for content sitting on the wallet hero.
+/// Ink for content sitting on the wallet hero — adaptive since 2026-09-01.
 ///
-/// **Always white, in every theme, by design direction.** The hero is the
-/// product's signature surface and reads as one thing across the whole theme
-/// set; flipping it to dark ink on the lighter fills (Orange `#F36B43`,
-/// Fruit Sorbet `#F95369`, OLED Black `#F26822`) broke that and was rejected.
+/// History, because the old rule is in session notes as "do not fix": this
+/// was **always white by design direction** when the hero only ever wore the
+/// theme's own colour. Multi-coin heroes broke that premise — Bellscoin's
+/// official Bell Bag Gold #F3C532 puts white ink at 1.64:1, and the first
+/// "fix" (darkening the surface) traded away the brand colour. The user then
+/// asked for a rule that works for ANY coin colour, which is this:
 ///
-/// This is a deliberate override of contrast, not an oversight: white on
-/// Orange measures 3.00:1. It is kept in a function rather than inlined so the
-/// rule has one home and one place to change if that call is ever revisited.
-Color heroInk(Color hero) => Colors.white;
+/// **White when white passes AA (>= 4.5:1); otherwise whichever of white and
+/// near-black ink carries more contrast.** BFX blue keeps white ink
+/// unchanged; Bells gold and Doge-like golds take dark ink; Pepecoin's
+/// mid-green — where white had been quietly failing at 3.57:1 — flips to
+/// dark ink and finally passes. The 4.5 gate (rather than a pure max) keeps
+/// white, the product's signature look, wherever it is legitimate.
+///
+/// Everything on the hero must derive from this one value (and scale its
+/// de-emphasis through [heroEmphasis]) — never from the page theme.
+Color heroInk(Color hero) {
+  final white = _contrast(Colors.white, hero);
+  if (white >= 4.5) return Colors.white;
+  return _contrast(kInkDark, hero) > white ? kInkDark : Colors.white;
+}
+
+/// Maps a white-ink de-emphasis opacity to the dark-ink equivalent.
+///
+/// The shipped opacities (0.80 labels, 0.78 fiat, 0.62 dust, 0.85 unit,
+/// 0.92 address) were measured against white-on-blue. Dark ink on a
+/// mid-luminance fill has less headroom — on Pepecoin green, dark ink at
+/// 0.80 lands at 3.91:1 — so each step rides higher. Measured on the two
+/// worst supported fills (Pepecoin #269B4D, Bells gold #F3C532):
+/// labels 0.90 -> 4.54/9.05, fiat 0.88 -> 4.41 (the Forest precedent)/8.65,
+/// dust 0.75 -> 3.64/6.09 (large-text floor), unit 0.92 -> 4.6+/9.5,
+/// address 0.95 -> 4.80/10.1. Scrim/fill opacities (<= 0.25) pass through
+/// untouched: they are surfaces, not text.
+double heroEmphasis(Color ink, double whiteTunedOpacity) {
+  if (ink == Colors.white) return whiteTunedOpacity;
+  // Not a const map: double keys are const_map_key_not_primitive_equality.
+  if (whiteTunedOpacity == 0.8) return 0.9;
+  if (whiteTunedOpacity == 0.78) return 0.88;
+  if (whiteTunedOpacity == 0.62) return 0.75;
+  if (whiteTunedOpacity == 0.85) return 0.92;
+  if (whiteTunedOpacity == 0.92) return 0.95;
+  return whiteTunedOpacity;
+}
 
 /// Ink for content on any *other* filled surface — dock pills, the dock itself.
 ///

@@ -145,22 +145,15 @@ class Bellscoin extends Bip39HDCurrency with ElectrumXCurrencyInterface {
     }
   }
 
-  /// Leather Brown from the official Bells palette, deepened one contrast
-  /// step — NOT Bell Bag Gold. The palette's gold #F3C532 measures 1.64:1
-  /// under white, and heroInk() is white in every theme by design, so the
-  /// gold lives in the ICON (it literally is the bag's colour) while the
-  /// surfaces carrying white ink wear the palette's brown. The published
-  /// #8C6239 itself puts the 0.8-opacity hero labels at 4.10:1 — under the
-  /// 4.5 floor — hence the tuned steps, the same way Brandkit documents the
-  /// BFX blues.
+  /// Bell Bag Gold #F3C532, the lead colour of the official Bells palette.
   ///
-  /// #855D35 measured: 5.81:1 under white, 4.41:1 under the 0.8 labels (the
-  /// signed-off Forest precedent), 3.14:1 against the dark page #12151C.
-  /// The bundled light theme overrides with #7E5832 via colors.coin (6.31:1
-  /// under white, labels 4.73:1); this value is the fallback external themes
-  /// use, so it must hold up on its own.
+  /// Wearable at last because heroInk() is now ADAPTIVE: on this gold, white
+  /// measures 1.64:1 so the hero takes near-black ink (11.08:1) instead —
+  /// the earlier fixes darkened the SURFACE to keep white ink, which traded
+  /// the brand colour away. See hero_ink.dart for the rule and the measured
+  /// opacity matrix; coin_card already adapted on its own.
   @override
-  int get brandColorValue => 0xFF855D35;
+  int get brandColorValue => 0xFFF3C532;
 
   @override
   int get minConfirms => 1;

@@ -83,7 +83,11 @@ class ThemeService {
   //     theme's hero at 3.03:1 against the page. The bell-bag icon keeps
   //     the gold; only surfaces carrying white ink darken. The same BFX
   //     blue-600 lesson, applied to the second coin that needed it.
-  static const _currentDefaultThemeVersion = 36;
+  // 37: bellscoin coin colour moves onto the official Bells palette —
+  //     Leather Brown, contrast-tuned (#7E5832 light / #855D35 dark; the
+  //     published #8C6239 puts 0.8-opacity labels at 4.10:1). Bell Bag Gold
+  //     #F3C532 measures 1.64:1 under white ink and stays in the icon only.
+  static const _currentDefaultThemeVersion = 37;
   ThemeService._();
   static ThemeService? _instance;
   static ThemeService get instance => _instance ??= ThemeService._();

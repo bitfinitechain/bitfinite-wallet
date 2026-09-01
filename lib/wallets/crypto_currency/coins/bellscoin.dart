@@ -145,18 +145,22 @@ class Bellscoin extends Bip39HDCurrency with ElectrumXCurrencyInterface {
     }
   }
 
-  /// A dark amber, NOT the brand gold. The bell-bag icon carries #FFBC42 (the
-  /// Nintondo `primary`); this value paints the HERO and the wallet cards,
-  /// which put white ink on the fill — heroInk() is white in every theme by
-  /// design — and white on #FFBC42 measures 1.68:1. Same lesson as BFX's
-  /// blue-600 move: the surface must carry the ink.
+  /// Leather Brown from the official Bells palette, deepened one contrast
+  /// step — NOT Bell Bag Gold. The palette's gold #F3C532 measures 1.64:1
+  /// under white, and heroInk() is white in every theme by design, so the
+  /// gold lives in the ICON (it literally is the bag's colour) while the
+  /// surfaces carrying white ink wear the palette's brown. The published
+  /// #8C6239 itself puts the 0.8-opacity hero labels at 4.10:1 — under the
+  /// 4.5 floor — hence the tuned steps, the same way Brandkit documents the
+  /// BFX blues.
   ///
-  /// #8A5804 measured: 6.04:1 under white, 4.53:1 under the 0.8-opacity hero
-  /// labels, 3.03:1 against the dark page #12151C. The bundled light theme
-  /// overrides this with #845400 via colors.coin (6.46:1 under white); this
-  /// value is the fallback external themes use, so it must pass on its own.
+  /// #855D35 measured: 5.81:1 under white, 4.41:1 under the 0.8 labels (the
+  /// signed-off Forest precedent), 3.14:1 against the dark page #12151C.
+  /// The bundled light theme overrides with #7E5832 via colors.coin (6.31:1
+  /// under white, labels 4.73:1); this value is the fallback external themes
+  /// use, so it must hold up on its own.
   @override
-  int get brandColorValue => 0xFF8A5804;
+  int get brandColorValue => 0xFF855D35;
 
   @override
   int get minConfirms => 1;

@@ -70,7 +70,13 @@ class ThemeService {
   //     Bellscoin.svg/bellscoin.svg files behind them. White bell on the
   //     #FFBC42 brand yellow, drawn in the same flat circle style as the
   //     other small icons.
-  static const _currentDefaultThemeVersion = 34;
+  // 35: that hand-drawn bell replaced with the OFFICIAL Bells mark — the
+  //     bell-bag-with-star vector from Nintondo's own website repo
+  //     (Nintondo/website src/assets/bells.svg, 1024x1024, plain paths).
+  //     Nothing else in the coin's chain of custody ships vector art: the
+  //     node's qt res/src still carries stock Bitcoin Core's logo and
+  //     bellscoin.com's sprite holds only social icons.
+  static const _currentDefaultThemeVersion = 35;
   ThemeService._();
   static ThemeService? _instance;
   static ThemeService get instance => _instance ??= ThemeService._();

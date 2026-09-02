@@ -125,31 +125,38 @@ class ReceiveSendSwitchDock extends ConsumerWidget {
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         child: Row(
           children: [
+            // The CURRENT tab wears the coin-filled primary — the bar is a
+            // "you are here" indicator, so the active state must follow the
+            // page (per the mockups: Send page shows a green-filled Send on
+            // Pepecoin; Receive page shows a filled Receive). The first cut
+            // kept Send always-primary, which read as Send being active
+            // while you stood on Receive. The active button is a no-op
+            // rather than disabled-grey: it is "here", not "unavailable".
             Expanded(
-              child: SecondaryButton(
-                label: "Receive",
-                onPressed: current == TransferTab.receive
-                    // No-op rather than disabled-grey: this button is "you
-                    // are here", not "unavailable".
-                    ? () {}
-                    : () => Navigator.of(context).pushReplacementNamed(
-                        ReceiveView.routeName,
-                        arguments: walletId,
-                      ),
-              ),
+              child: current == TransferTab.receive
+                  ? PrimaryButton(label: "Receive", onPressed: () {})
+                  : SecondaryButton(
+                      label: "Receive",
+                      onPressed: () =>
+                          Navigator.of(context).pushReplacementNamed(
+                            ReceiveView.routeName,
+                            arguments: walletId,
+                          ),
+                    ),
             ),
             if (!viewOnly) const SizedBox(width: 12),
             if (!viewOnly)
               Expanded(
-                child: PrimaryButton(
-                  label: "Send",
-                  onPressed: current == TransferTab.send
-                      ? () {}
-                      : () => Navigator.of(context).pushReplacementNamed(
-                          SendView.routeName,
-                          arguments: (walletId: walletId, coin: coin),
-                        ),
-                ),
+                child: current == TransferTab.send
+                    ? PrimaryButton(label: "Send", onPressed: () {})
+                    : SecondaryButton(
+                        label: "Send",
+                        onPressed: () =>
+                            Navigator.of(context).pushReplacementNamed(
+                              SendView.routeName,
+                              arguments: (walletId: walletId, coin: coin),
+                            ),
+                      ),
               ),
             const SizedBox(width: 12),
             SecondaryButton(

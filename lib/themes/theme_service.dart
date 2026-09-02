@@ -91,7 +91,12 @@ class ThemeService {
   //     colour — because heroInk() is now adaptive (white or near-black by
   //     contrast), so a light fill no longer forces a darkened surface.
   //     White on the gold is 1.64:1; the dark ink it now takes is 11.08:1.
-  static const _currentDefaultThemeVersion = 38;
+  // 39: BitFinite finally gets its own coins.* art — the Brandkit circle
+  //     mark (proper blue-600) at 512px, PNG-in-SVG like the placeholder it
+  //     replaces. Registered in all three slots at once, and the bundled-
+  //     theme fallback then serves it under external themes too, ending the
+  //     teal-placeholder ₿ the externals painted BFX with.
+  static const _currentDefaultThemeVersion = 39;
   ThemeService._();
   static ThemeService? _instance;
   static ThemeService get instance => _instance ??= ThemeService._();

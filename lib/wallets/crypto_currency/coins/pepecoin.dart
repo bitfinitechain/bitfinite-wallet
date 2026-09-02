@@ -127,6 +127,27 @@ class Pepecoin extends Bip39HDCurrency with ElectrumXCurrencyInterface {
               clearnetEnabled: true,
               isPrimary: false,
             ),
+            // Last-resort failover: a TLS relay on our own infrastructure in
+            // front of a community-operated backup server whose operator
+            // asked not to be named publicly. The relay terminates our cert
+            // and forwards over verified TLS, so neither this file nor the
+            // shipped APK carries their hostname. It shares a box with the
+            // primary, so it covers a dead ElectrumX, not a dead box — which
+            // is why it sits behind the two independent public servers.
+            NodeModel(
+              host: "pepelectrum.bitfinitechain.org",
+              port: 50012,
+              name: "BitFinite Pepecoin Backup",
+              id: "${DefaultNodes.defaultNodeIdPrefix}${identifier}_relay",
+              useSSL: true,
+              enabled: true,
+              coinName: identifier,
+              isFailover: true,
+              isDown: false,
+              torEnabled: true,
+              clearnetEnabled: true,
+              isPrimary: false,
+            ),
           ]
           : const [];
 

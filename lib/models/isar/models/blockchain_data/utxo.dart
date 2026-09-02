@@ -72,7 +72,16 @@ class UTXO {
   late final String? otherData;
 
   int getConfirmations(int currentChainHeight) {
-    if (blockTime == null || blockHash == null) return 0;
+    // Height is the only thing confirmations actually depend on, and an
+    // output still in the mempool reports height 0, which the check below
+    // catches.
+    //
+    // blockTime and blockHash used to be required here too. They only ever
+    // come from fetching the output's whole transaction, which updateUTXOs
+    // deliberately skips for deeply confirmed outputs on addresses too large
+    // to fetch one by one. Requiring them made those outputs read as zero
+    // confirmations, so an address whose total balance was exact reported
+    // nearly all of it as unconfirmed and almost nothing as available.
     if (blockHeight == null || blockHeight! <= 0) return 0;
     return _isMonero()
         ? max(0, currentChainHeight - (blockHeight!))

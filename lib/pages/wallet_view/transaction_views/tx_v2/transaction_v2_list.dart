@@ -23,6 +23,7 @@ import '../../../../utilities/constants.dart';
 import '../../../../utilities/util.dart';
 import '../../../../wallets/crypto_currency/crypto_currency.dart';
 import '../../../../wallets/isar/models/wallet_info.dart';
+import '../../../../wallets/isar/providers/wallet_info_provider.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/cash_fusion_interface.dart';
 import '../../../../widgets/loading_indicator.dart';
 import '../../../../widgets/paginated_list_view.dart';
@@ -156,20 +157,25 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
       return compare;
     });
     _txns = _withDateHeaders(_processData(_transactions));
+  }
 
-    // A shortened list must say so. Showing the most recent few thousand of a
-    // pool address's history as though it were everything would be a claim we
-    // cannot support, so the count the sync recorded is surfaced here.
-    final total =
-        ref
-                .read(pWallets)
-                .getWallet(widget.walletId)
-                .info
-                .otherData[WalletInfoKeys.historyTruncatedTotal]
-            as int?;
+  /// The list with a truncation notice on front, when the sync recorded one.
+  ///
+  /// A shortened list must say so. Showing the most recent thousand of a pool
+  /// address's history as though it were everything would be a claim we cannot
+  /// support.
+  ///
+  /// Built here rather than in [_rebuildData] because that only runs when the
+  /// transaction query fires, and the sync records the count afterwards. Read
+  /// there, the very first sync of a big address showed a short list with no
+  /// explanation, which is the exact thing this notice exists to prevent.
+  /// [pWalletInfo] watches the record, so it lands as soon as it is written.
+  List<Object> _withTruncationNotice(WalletInfo info) {
+    final total = info.otherData[WalletInfoKeys.historyTruncatedTotal] as int?;
     if (total != null && total > _transactions.length) {
-      _txns = [_TruncationNotice(total), ..._txns];
+      return [_TruncationNotice(total), ..._txns];
     }
+    return _txns;
   }
 
   @override
@@ -232,6 +238,7 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
     if (_txns.isEmpty) {
       return const NoTransActionsFound();
     }
+    final txns = _withTruncationNotice(ref.watch(pWalletInfo(widget.walletId)));
     return RefreshIndicator(
             onRefresh: () async {
               await ref.read(pWallets).getWallet(widget.walletId).refresh();
@@ -240,7 +247,7 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
                 ? PaginatedListView(
                     // Desktop keeps its paginated flat list; headers are a
                     // mobile treatment and pagination would orphan them.
-                    items: _txns.where((e) => e is! String).toList(),
+                    items: txns.where((e) => e is! String).toList(),
                     itemBuilder: (context, tx, position) {
                       final radius = switch (position) {
                         PageItemPosition.first => _borderRadiusFirst,
@@ -256,21 +263,21 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.only(bottom: 92),
-                    itemCount: _txns.length,
+                    itemCount: txns.length,
                     itemBuilder: (context, index) {
                       BorderRadius? radius;
                       bool shouldWrap = false;
-                      if (_txns.length == 1) {
+                      if (txns.length == 1) {
                         radius = BorderRadius.circular(
                           Constants.size.circularBorderRadius,
                         );
-                      } else if (index == _txns.length - 1) {
+                      } else if (index == txns.length - 1) {
                         radius = _borderRadiusLast;
                         shouldWrap = true;
                       } else if (index == 0) {
                         radius = _borderRadiusFirst;
                       }
-                      final tx = _txns[index];
+                      final tx = txns[index];
                       if (tx is String) {
                         return _DateHeader(label: tx);
                       }

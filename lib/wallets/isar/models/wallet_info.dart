@@ -584,4 +584,10 @@ abstract class WalletInfoKeys {
       "solanaCustomTokenMintAddressesKey";
   static const String firoMasternodeCollateralDismissed =
       "firoMasternodeCollateralDismissedKey";
+
+  /// Total transactions the address really has, stored only when a sync had
+  /// to stop short of walking all of them. Absent means nothing was skipped.
+  /// The transaction list reads this to say so out loud rather than showing a
+  /// truncated list as if it were complete.
+  static const String historyTruncatedTotal = "historyTruncatedTotalKey";
 }

@@ -9,6 +9,7 @@ import '../../../utilities/amount/amount.dart';
 import '../../../utilities/extensions/extensions.dart';
 import '../../../utilities/logger.dart';
 import '../../crypto_currency/crypto_currency.dart';
+import '../../isar/models/wallet_info.dart';
 import '../../crypto_currency/interfaces/electrumx_currency_interface.dart';
 import '../intermediate/bip39_hd_wallet.dart';
 import '../wallet_mixin_interfaces/coin_control_interface.dart';
@@ -74,37 +75,73 @@ class PepecoinWallet<T extends ElectrumXCurrencyInterface>
     final allAddressesSet = {...receivingAddresses, ...changeAddresses};
 
     // Fetch history from ElectrumX.
-    final List<Map<String, dynamic>> allTxHashes = await fetchHistory(
+    final List<Map<String, dynamic>> fullHistory = await fetchHistory(
       allAddressesSet,
     );
 
-    // Only parse new txs (not in db yet).
-    final List<Map<String, dynamic>> allTransactions = [];
+    // Exchange and pool addresses carry tens of thousands of transactions and
+    // cannot be walked in full; see maxHistoryToWalk for the measurements.
+    // The balance is unaffected because it comes from UTXOs.
+    final allTxHashes = capHistory(fullHistory);
+    final truncated = fullHistory.length > allTxHashes.length;
+    if (truncated) {
+      Logging.instance.w(
+        "${info.name}: address history is ${fullHistory.length} txs, "
+        "walking the most recent ${allTxHashes.length}. Balance is unaffected.",
+      );
+    }
+    await info.updateOtherData(
+      newEntries: {
+        WalletInfoKeys.historyTruncatedTotal: truncated
+            ? fullHistory.length
+            : null,
+      },
+      isar: mainDB.isar,
+    );
+
+    // Work out which of those we do not already hold, then fetch them in
+    // batches rather than one round trip each.
+    final List<String> needed = [];
+    final Map<String, dynamic> heightByTxid = {};
     for (final txHash in allTxHashes) {
-      // Check for duplicates by searching for tx by tx_hash in db.
+      final txid = txHash["tx_hash"] as String;
+      heightByTxid[txid] = txHash["height"];
+
       final storedTx = await mainDB.isar.transactionV2s
           .where()
-          .txidWalletIdEqualTo(txHash["tx_hash"] as String, walletId)
+          .txidWalletIdEqualTo(txid, walletId)
           .findFirst();
 
       if (storedTx == null ||
           storedTx.height == null ||
           (storedTx.height != null && storedTx.height! <= 0)) {
-        // Tx not in db yet.
-        final tx = await electrumXCachedClient.getTransaction(
-          txHash: txHash["tx_hash"] as String,
-          verbose: true,
-          cryptoCurrency: cryptoCurrency,
-        );
+        needed.add(txid);
+      }
+    }
 
-        // Only tx to list once.
-        if (allTransactions.indexWhere(
-              (e) => e["txid"] == tx["txid"] as String,
-            ) ==
-            -1) {
-          tx["height"] = txHash["height"];
-          allTransactions.add(tx);
+    final fetched = await fetchTransactionsBulk(needed);
+
+    // Every input needs its previous transaction to be priced. Collecting the
+    // ids first means one batched pass instead of a round trip per input,
+    // which on a 8.5-inputs-per-tx address was most of the sync time.
+    final Set<String> prevoutIds = {};
+    for (final tx in fetched.values) {
+      for (final vin in (tx["vin"] as List? ?? [])) {
+        final map = Map<String, dynamic>.from(vin as Map);
+        if (map["coinbase"] == null && map["txid"] is String) {
+          prevoutIds.add(map["txid"] as String);
         }
+      }
+    }
+    final prevouts = await fetchTransactionsBulk(prevoutIds);
+
+    final List<Map<String, dynamic>> allTransactions = [];
+    for (final txid in needed) {
+      final tx = fetched[txid];
+      if (tx == null) continue;
+      if (allTransactions.indexWhere((e) => e["txid"] == tx["txid"]) == -1) {
+        tx["height"] = heightByTxid[txid];
+        allTransactions.add(tx);
       }
     }
 
@@ -135,10 +172,14 @@ class PepecoinWallet<T extends ElectrumXCurrencyInterface>
           final txid = map["txid"] as String;
           final vout = map["vout"] as int;
 
-          final inputTx = await electrumXCachedClient.getTransaction(
-            txHash: txid,
-            cryptoCurrency: cryptoCurrency,
-          );
+          // Already fetched in the batched pass above; the single fetch is
+          // only a safety net for an id the batch could not return.
+          final inputTx =
+              prevouts[txid] ??
+              await electrumXCachedClient.getTransaction(
+                txHash: txid,
+                cryptoCurrency: cryptoCurrency,
+              );
 
           final prevOutJson = Map<String, dynamic>.from(
             (inputTx["vout"] as List).firstWhere((e) => e["n"] == vout) as Map,

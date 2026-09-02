@@ -323,6 +323,17 @@ class ElectrumXClient {
         useUseSSL = _failovers[currentFailoverIndex].useSSL;
       }
 
+      // A StreamChannel can only be listened to once, and constructing an
+      // ElectrumClient listens to it. So if we are about to build a client,
+      // any channel still held in this field belongs to a client that no
+      // longer exists: dropped after a timeout, or removed by another wallet
+      // sharing this coin's registration. Reusing it throws "Bad state:
+      // Stream has already been listened to", which aborts the whole refresh
+      // and shows the wallet as Offline. Connect fresh instead.
+      if (getElectrumAdapter() == null) {
+        _electrumAdapterChannel = null;
+      }
+
       _electrumAdapterChannel ??= await electrum_adapter.connect(
         useHost,
         port: usePort,

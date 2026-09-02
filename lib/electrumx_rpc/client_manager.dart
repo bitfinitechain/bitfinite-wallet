@@ -123,12 +123,19 @@ class ClientManager {
             const Duration(seconds: 60),
           );
     } on TimeoutException {
-      try {
-        final (client, _) = await remove(cryptoCurrency: cryptoCurrency);
-        client?.close().ignore();
-      } catch (_) {
-        // The reference is gone either way.
-      }
+      // Deliberately does NOT remove the client here.
+      //
+      // Removing it leaves ElectrumXClient still holding the old
+      // StreamChannel in a field this class cannot reach, so the next
+      // checkElectrumAdapter sees "channel present, adapter missing" and
+      // builds a second ElectrumClient over a channel that is already being
+      // listened to. That throws "Bad state: Stream has already been listened
+      // to", which killed the whole refresh and showed the wallet as Offline.
+      //
+      // Teardown belongs to the side that owns both references, so this just
+      // reports the timeout and lets ElectrumXInterface.fetchChainHeight
+      // retry through electrumXClient, which nulls the channel and the
+      // registration together.
       rethrow;
     }
   }

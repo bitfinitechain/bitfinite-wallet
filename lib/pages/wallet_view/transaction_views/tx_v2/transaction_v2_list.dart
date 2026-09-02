@@ -22,6 +22,7 @@ import '../../../../themes/stack_colors.dart';
 import '../../../../utilities/constants.dart';
 import '../../../../utilities/util.dart';
 import '../../../../wallets/crypto_currency/crypto_currency.dart';
+import '../../../../wallets/isar/models/wallet_info.dart';
 import '../../../../wallets/wallet/wallet_mixin_interfaces/cash_fusion_interface.dart';
 import '../../../../widgets/loading_indicator.dart';
 import '../../../../widgets/paginated_list_view.dart';
@@ -155,6 +156,20 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
       return compare;
     });
     _txns = _withDateHeaders(_processData(_transactions));
+
+    // A shortened list must say so. Showing the most recent few thousand of a
+    // pool address's history as though it were everything would be a claim we
+    // cannot support, so the count the sync recorded is surfaced here.
+    final total =
+        ref
+                .read(pWallets)
+                .getWallet(widget.walletId)
+                .info
+                .otherData[WalletInfoKeys.historyTruncatedTotal]
+            as int?;
+    if (total != null && total > _transactions.length) {
+      _txns = [_TruncationNotice(total), ..._txns];
+    }
   }
 
   @override
@@ -259,6 +274,9 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
                       if (tx is String) {
                         return _DateHeader(label: tx);
                       }
+                      if (tx is _TruncationNotice) {
+                        return _TruncationBanner(total: tx.total);
+                      }
                       if (shouldWrap) {
                         return Column(
                           children: [
@@ -298,6 +316,54 @@ class _DateHeader extends StatelessWidget {
             color: Theme.of(context).extension<StackColors>()!.textSubtitle1,
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Marker for the list: this address has more history than was synced.
+class _TruncationNotice {
+  const _TruncationNotice(this.total);
+  final int total;
+}
+
+/// Says plainly that the list below is partial, and that the balance is not.
+///
+/// Exchange and pool addresses run to tens of thousands of transactions, which
+/// cannot be walked in one sync. The balance stays exact because it is derived
+/// from unspent outputs rather than from this list, and saying both halves out
+/// loud is the point: a short list with no explanation reads as a wrong list.
+class _TruncationBanner extends StatelessWidget {
+  const _TruncationBanner({required this.total});
+
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<StackColors>()!;
+    return Container(
+      margin: const EdgeInsets.only(top: 8, bottom: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: colors.popupBG,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: colors.textSubtitle1.withOpacity(0.15),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline, size: 18, color: colors.textSubtitle1),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              "This address has about $total transactions, too many to load "
+              "in full. Showing the most recent. The balance above is exact.",
+              style: TextStyle(fontSize: 12, color: colors.textSubtitle1),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1612,6 +1612,139 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
     }
   }
 
+  /// How many transactions one sync will walk before it stops.
+  ///
+  /// Measured 2026-09-02 against two real Pepecoin whale addresses, because
+  /// watch-only restores of them hung at 70% forever:
+  ///
+  ///   CoinEx vault  31,629 txs, 8.5 inputs each, 120 ms/call  -> 10.1 hours
+  ///   Litecoin pool 45,301 txs, 1.0 input each, 1002 ms/call  -> 25.2 hours
+  ///
+  /// Those are not slow syncs, they are syncs that never end, and any dropped
+  /// connection in that window restarts them. 5,000 sits far above any real
+  /// personal wallet (an active miner's payout address measured 279) and far
+  /// below an exchange or pool address, so it only ever bites the cases that
+  /// could not finish anyway.
+  ///
+  /// The cap is only half the fix. Batching (see [fetchTransactionsBulk])
+  /// measured against the same two addresses on 2026-09-02:
+  ///
+  ///   Litecoin pool  916 ms/tx sequential -> 14 ms batched  (65x)
+  ///   CoinEx vault   337 ms/tx sequential -> 40 ms batched  (8.3x)
+  ///
+  /// which is what brings a capped walk down to minutes, and an ordinary
+  /// wallet down to seconds. The first sync pays it once; the tx cache
+  /// covers every sync after that.
+  ///
+  /// Capping is safe for the number people actually care about: updateBalance
+  /// reads UTXOs, never history, so a capped wallet still shows an exact
+  /// balance. Only the visible list is short, and [WalletInfoKeys
+  /// .historyTruncatedTotal] records that so the UI can say so.
+  ///
+  /// Set to 1000 rather than 5000 because the server gets a vote. Walking
+  /// 5000 transactions on top of a large unspent set made our own Electrum
+  /// server answer with JSON-RPC -101 "excessive resource usage" and close
+  /// the connection, which is the server behaving correctly. 1000 is still
+  /// more than three times the busiest personal wallet measured, and it is
+  /// far more list than anyone scrolls.
+  int get maxHistoryToWalk => 1000;
+
+  /// Above this many unspent outputs, updateUTXOs stops fetching the
+  /// transaction behind every deeply confirmed one. See updateUTXOs for what
+  /// that trades away and why the balance stays exact.
+  ///
+  /// 2000 is deliberately far above any personal wallet, including a miner
+  /// paid per block for years, so the accurate path stays the normal path and
+  /// only genuinely unservable addresses take the other one.
+  int get deepUtxoScanThreshold => 2000;
+
+  /// Newest-first, truncated to [maxHistoryToWalk].
+  ///
+  /// Unconfirmed entries carry height 0 or -1 from the server, which would
+  /// sort as the oldest things in the list, so they are pinned to the top
+  /// where they belong.
+  List<Map<String, dynamic>> capHistory(List<Map<String, dynamic>> history) {
+    if (history.length <= maxHistoryToWalk) return history;
+
+    final sorted = [...history];
+    int rank(Map<String, dynamic> e) {
+      final h = e["height"];
+      final height = h is int ? h : int.tryParse("$h") ?? 0;
+      return height <= 0 ? 1 << 30 : height;
+    }
+
+    sorted.sort((a, b) => rank(b).compareTo(rank(a)));
+    return sorted.sublist(0, maxHistoryToWalk);
+  }
+
+  /// Fetch many transactions at once, returned as txid -> verbose tx.
+  ///
+  /// The per-transaction loop this replaces was the whole reason a big
+  /// address could not sync: one round trip per transaction, plus one per
+  /// input to price it. Batching sends them a chunk per round trip instead,
+  /// which is where the order-of-magnitude comes from.
+  ///
+  /// Everything still goes through CachedElectrumXClient, so anything already
+  /// in the tx cache costs nothing, and a server that cannot batch (or a
+  /// chunk that fails) falls back to the old sequential path rather than
+  /// losing the wallet's history.
+  Future<Map<String, Map<String, dynamic>>> fetchTransactionsBulk(
+    Iterable<String> txids,
+  ) async {
+    final unique = txids.toSet().toList(growable: false);
+    final Map<String, Map<String, dynamic>> result = {};
+    if (unique.isEmpty) return result;
+
+    // 50 rather than 100: a pool payout transaction pays hundreds of miners
+    // at once, so fifty of them in one response is already megabytes.
+    const chunkSize = 50;
+    final canBatch = await serverCanBatch;
+
+    for (int i = 0; i < unique.length; i += chunkSize) {
+      final end = i + chunkSize;
+      final chunk = unique.sublist(i, end > unique.length ? unique.length : end);
+
+      if (canBatch) {
+        try {
+          final txns = await electrumXCachedClient.getBatchTransactions(
+            txHashes: chunk,
+            cryptoCurrency: cryptoCurrency,
+          );
+          for (final tx in txns) {
+            final txid = tx["txid"];
+            // A batch can carry an error entry in place of a result; skipping
+            // it here lets the sequential fallback below pick it up next sync
+            // instead of writing a malformed transaction to the db.
+            if (txid is String) {
+              result[txid] = tx;
+            }
+          }
+          if (chunk.every(result.containsKey)) {
+            continue;
+          }
+        } catch (e, s) {
+          Logging.instance.w(
+            "fetchTransactionsBulk batch of ${chunk.length} failed, "
+            "falling back to sequential",
+            error: e,
+            stackTrace: s,
+          );
+        }
+      }
+
+      for (final txid in chunk) {
+        if (result.containsKey(txid)) continue;
+        result[txid] = await electrumXCachedClient.getTransaction(
+          txHash: txid,
+          verbose: true,
+          cryptoCurrency: cryptoCurrency,
+        );
+      }
+    }
+
+    return result;
+  }
+
   Future<UTXO> parseUTXO({required Map<String, dynamic> jsonUTXO}) async {
     final txn = await electrumXCachedClient.getTransaction(
       txHash: jsonUTXO["tx_hash"] as String,
@@ -2026,6 +2159,10 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
 
     try {
       final fetchedUtxoList = <List<Map<String, dynamic>>>[];
+      // Which address each entry in fetchedUtxoList came from. Kept in step
+      // by hand because empty results are skipped, so the two lists cannot be
+      // matched up by index against allAddresses afterwards.
+      final utxoOwners = <String>[];
 
       if (await serverCanBatch) {
         final Map<int, List<List<dynamic>>> batchArgs = {};
@@ -2047,9 +2184,16 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
           final response = await electrumXClient.getBatchUTXOs(
             args: batchArgs[i]!,
           );
-          for (final entry in response) {
+          for (int k = 0; k < response.length; k++) {
+            final entry = response[k];
             if (entry.isNotEmpty) {
               fetchedUtxoList.add(entry);
+              final addressIndex = i * batchSizeMax + k;
+              utxoOwners.add(
+                addressIndex < allAddresses.length
+                    ? allAddresses[addressIndex].value
+                    : "",
+              );
             }
           }
         }
@@ -2062,18 +2206,122 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
           final utxos = await electrumXClient.getUTXOs(scripthash: scriptHash);
           if (utxos.isNotEmpty) {
             fetchedUtxoList.add(utxos);
+            utxoOwners.add(allAddresses[i].value);
           }
         }
       }
 
+      int utxoCount = 0;
+      for (final list in fetchedUtxoList) {
+        utxoCount += list.length;
+      }
+
+      // parseUTXO fetches the transaction behind every unspent output, one
+      // round trip each. That is fine for a personal wallet and impossible
+      // for a mining pool: a Pepecoin pool address measured 44,689 unspent
+      // outputs, because it collects rewards and never consolidates. Unlike
+      // history this cannot be capped, since the balance IS the sum of these
+      // outputs. 44,689 fetches got us JSON-RPC -101 "excessive resource
+      // usage" from our own server, so the wallet sat on "Syncing" forever
+      // and showed 0.
+      //
+      // Past minCoinbaseConfirms an output does not need its transaction:
+      //
+      //   value        listunspent already gave it
+      //   blockHeight  listunspent already gave it
+      //   address      is the address we asked about
+      //   isCoinbase   only picks which confirm threshold applies, and this
+      //                deep both answers are "confirmed and spendable"
+      //
+      // so the balance stays exact to the satoshi, which is what the wallet
+      // shows and what the truncation notice promises. What the deep path
+      // gives up is checkBlockUTXO, plus the cosmetic blockHash and
+      // blockTime. checkBlockUTXO's job here is flagging BIP47 notification
+      // outputs, which are dust sent to the notification address, so outputs
+      // near the dust limit are excluded from this path and still parsed the
+      // accurate way. Recent outputs are always parsed the accurate way.
+      //
+      // Below deepUtxoScanThreshold nothing changes at all: an ordinary
+      // wallet takes the same path it always did.
+      final bool deepScan = utxoCount > deepUtxoScanThreshold;
+      final int tipHeight = deepScan ? await chainHeight : 0;
+      final int dustGuard = cryptoCurrency.dustLimit.raw.toInt() * 4;
+
+      // The deep path records isCoinbase as false, so it must only be taken
+      // past real coinbase maturity. Do not trust minCoinbaseConfirms for
+      // that: it defaults to minConfirms, and most coins never override it,
+      // so Pepecoin reports 1 and BitFinite reports 0. A pool address is
+      // exactly the wallet that holds fresh block rewards, so taking those
+      // numbers at face value would show an immature reward as spendable.
+      // 100 is the Bitcoin-derived maturity these chains inherit.
+      final int deepConfirms = cryptoCurrency.minCoinbaseConfirms > 100
+          ? cryptoCurrency.minCoinbaseConfirms
+          : 100;
+
+      if (!deepScan) {
+        // Warm the tx cache so the per-UTXO calls below are served locally.
+        // Warming rather than passing a map down because NamecoinWallet
+        // overrides parseUTXO, so adding a parameter would break it.
+        final utxoTxids = <String>[];
+        for (final list in fetchedUtxoList) {
+          for (final utxo in list) {
+            final txid = utxo["tx_hash"];
+            if (txid is String) utxoTxids.add(txid);
+          }
+        }
+        if (utxoTxids.length > 1) {
+          await fetchTransactionsBulk(utxoTxids);
+        }
+      }
+
       final List<UTXO> outputArray = [];
+      int deepCount = 0;
 
       for (int i = 0; i < fetchedUtxoList.length; i++) {
         for (int j = 0; j < fetchedUtxoList[i].length; j++) {
-          final utxo = await parseUTXO(jsonUTXO: fetchedUtxoList[i][j]);
+          final json = fetchedUtxoList[i][j];
 
-          outputArray.add(utxo);
+          if (deepScan) {
+            final height = json["height"];
+            final txid = json["tx_hash"];
+            final value = json["value"];
+            if (height is int &&
+                height > 0 &&
+                txid is String &&
+                value is int &&
+                value > dustGuard &&
+                tipHeight - height + 1 >= deepConfirms) {
+              outputArray.add(
+                UTXO(
+                  walletId: walletId,
+                  txid: txid,
+                  vout: json["tx_pos"] as int,
+                  value: value,
+                  name: "",
+                  isBlocked: false,
+                  blockedReason: null,
+                  isCoinbase: false,
+                  blockHash: null,
+                  blockHeight: height,
+                  blockTime: null,
+                  address: utxoOwners[i],
+                ),
+              );
+              deepCount++;
+              continue;
+            }
+          }
+
+          outputArray.add(await parseUTXO(jsonUTXO: json));
         }
+      }
+
+      if (deepCount > 0) {
+        Logging.instance.i(
+          "${info.name}: $utxoCount unspent outputs, "
+          "$deepCount taken from listunspent without fetching their "
+          "transactions. Balance is exact.",
+        );
       }
 
       return await mainDB.updateUTXOs(walletId, outputArray);

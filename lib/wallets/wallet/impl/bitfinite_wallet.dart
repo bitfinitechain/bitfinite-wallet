@@ -18,6 +18,7 @@ import '../../../utilities/extensions/extensions.dart';
 import '../../../utilities/logger.dart';
 import '../../../utilities/prefs.dart';
 import '../../crypto_currency/crypto_currency.dart';
+import '../../isar/models/wallet_info.dart';
 import '../../crypto_currency/interfaces/electrumx_currency_interface.dart';
 import '../intermediate/bip39_hd_wallet.dart';
 import '../wallet_mixin_interfaces/bcash_interface.dart';
@@ -121,23 +122,52 @@ class BitfiniteWallet<T extends ElectrumXCurrencyInterface>
 
     final allAddressesSet = {...receivingAddresses, ...changeAddresses};
 
-    final List<Map<String, dynamic>> allTxHashes = await fetchHistory(
+    final List<Map<String, dynamic>> fullHistory = await fetchHistory(
       allAddressesSet,
     );
 
-    final List<Map<String, dynamic>> allTransactions = [];
-
-    for (final txHash in allTxHashes) {
-      final tx = await electrumXCachedClient.getTransaction(
-        txHash: txHash["tx_hash"] as String,
-        verbose: true,
-        cryptoCurrency: cryptoCurrency,
+    // See maxHistoryToWalk: a pool or exchange address cannot be walked in
+    // full. Balance is unaffected, it comes from UTXOs.
+    final allTxHashes = capHistory(fullHistory);
+    final truncated = fullHistory.length > allTxHashes.length;
+    if (truncated) {
+      Logging.instance.w(
+        "${info.name}: address history is ${fullHistory.length} txs, "
+        "walking the most recent ${allTxHashes.length}. Balance is unaffected.",
       );
+    }
+    await info.updateOtherData(
+      newEntries: {
+        WalletInfoKeys.historyTruncatedTotal: truncated
+            ? fullHistory.length
+            : null,
+      },
+      isar: mainDB.isar,
+    );
 
-      if (allTransactions.indexWhere(
-            (e) => e["txid"] == tx["txid"] as String,
-          ) ==
-          -1) {
+    // This wallet re-reads every transaction each sync rather than skipping
+    // ones already stored, so it leans entirely on the tx cache. Batching the
+    // fetch is what keeps that affordable once an address has real history.
+    final fetched = await fetchTransactionsBulk(
+      allTxHashes.map((e) => e["tx_hash"] as String),
+    );
+
+    final Set<String> prevoutIds = {};
+    for (final tx in fetched.values) {
+      for (final vin in (tx["vin"] as List? ?? [])) {
+        final map = Map<String, dynamic>.from(vin as Map);
+        if (map["coinbase"] == null && map["txid"] is String) {
+          prevoutIds.add(map["txid"] as String);
+        }
+      }
+    }
+    final prevouts = await fetchTransactionsBulk(prevoutIds);
+
+    final List<Map<String, dynamic>> allTransactions = [];
+    for (final txHash in allTxHashes) {
+      final tx = fetched[txHash["tx_hash"] as String];
+      if (tx == null) continue;
+      if (allTransactions.indexWhere((e) => e["txid"] == tx["txid"]) == -1) {
         tx["height"] = txHash["height"];
         allTransactions.add(tx);
       }
@@ -166,10 +196,14 @@ class BitfiniteWallet<T extends ElectrumXCurrencyInterface>
           final txid = map["txid"] as String;
           final vout = map["vout"] as int;
 
-          final inputTx = await electrumXCachedClient.getTransaction(
-            txHash: txid,
-            cryptoCurrency: cryptoCurrency,
-          );
+          // Fetched in the batched pass above; the single call is only a
+          // safety net for an id the batch could not return.
+          final inputTx =
+              prevouts[txid] ??
+              await electrumXCachedClient.getTransaction(
+                txHash: txid,
+                cryptoCurrency: cryptoCurrency,
+              );
 
           try {
             final prevOutJson = Map<String, dynamic>.from(

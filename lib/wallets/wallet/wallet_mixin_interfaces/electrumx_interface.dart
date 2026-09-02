@@ -25,6 +25,7 @@ import '../../../utilities/enums/fee_rate_type_enum.dart';
 import '../../../utilities/extensions/extensions.dart';
 import '../../../utilities/logger.dart';
 import '../../../utilities/paynym_is_api.dart';
+import '../../crypto_currency/coins/bitfinite.dart';
 import '../../crypto_currency/coins/firo.dart';
 import '../../crypto_currency/interfaces/electrumx_currency_interface.dart';
 import '../../isar/models/wallet_info.dart';
@@ -84,6 +85,19 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
   Future<bool> get serverCanBatch async {
     // Firo server added batching without incrementing version number...
     if (cryptoCurrency is Firo) {
+      return true;
+    }
+
+    // Same story, our own server. It reports "bitfinite-electrs/1.1.3", which
+    // the parse below cannot read at all, so this returned false and every
+    // BitFinite wallet fetched one transaction per round trip: exactly the
+    // cost the batching work was meant to remove. Verified 2026-09-02 that
+    // the server answers a three call JSON-RPC batch in 0.08s.
+    //
+    // Bellscoin is unaffected and must stay unaffected: it talks to esplora
+    // over HTTP through an adapter that reports "esplora 1.4" precisely so
+    // this returns false.
+    if (cryptoCurrency is Bitfinite) {
       return true;
     }
 

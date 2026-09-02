@@ -17,6 +17,7 @@ import '../../../../themes/stack_colors.dart';
 import '../../../../utilities/amount/amount.dart';
 import '../../../../utilities/amount/amount_formatter.dart';
 import '../../../../utilities/constants.dart';
+import '../../../../utilities/mining_payouts.dart';
 import '../../../../utilities/text_styles.dart';
 import '../../../../utilities/util.dart';
 import '../../../../wallets/crypto_currency/crypto_currency.dart';
@@ -64,6 +65,13 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
       case TransactionType.outgoing:
         return "Sent";
       case TransactionType.incoming:
+        // A block reward or a pool payout is still money arriving, but a
+        // miner reads a run of identical "Received" rows and cannot tell
+        // earnings apart from someone paying them. Naming it is the whole
+        // difference.
+        if (isMiningPayout(_transaction, coin)) {
+          return "Payout";
+        }
         return "Received";
       case TransactionType.sentToSelf:
         return "Sent to self";

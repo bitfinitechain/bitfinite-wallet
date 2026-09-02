@@ -117,6 +117,7 @@ import '../settings_views/wallet_settings_view/wallet_settings_view.dart';
 import '../signing/signing_view.dart';
 import '../spark_names/spark_names_home_view.dart';
 import '../token_view/my_tokens_view.dart';
+import 'sub_widgets/mining_payout_card.dart';
 import 'sub_widgets/transactions_list.dart';
 import 'sub_widgets/wallet_action_bar.dart';
 import 'sub_widgets/wallet_summary.dart';
@@ -1451,6 +1452,12 @@ class _WalletViewState extends ConsumerState<WalletView> {
                               ],
                             ),
                           ),
+                        // Renders nothing unless mining has actually paid into
+                        // this wallet, so an ordinary wallet is unchanged.
+                        MiningPayoutCard(
+                          walletId: widget.walletId,
+                          coin: coin,
+                        ),
                         const SizedBox(height: 20),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),

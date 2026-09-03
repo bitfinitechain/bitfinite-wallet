@@ -17,6 +17,7 @@ import '../../../providers/wallet/public_private_balance_state_provider.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/amount/amount.dart';
 import '../../../utilities/amount/amount_formatter.dart';
+import '../../../utilities/compact_amount.dart';
 import '../../../utilities/text_styles.dart';
 import '../../../utilities/util.dart';
 import '../../../wallets/crypto_currency/coins/solana.dart';
@@ -88,15 +89,34 @@ class WalletInfoRowBalance extends ConsumerWidget {
       }
     }
 
-    return Text(
-      ref
-          .watch(pAmountFormatter(info.coin))
-          .format(totalBalance, tokenContract: contract),
-      style: Util.isDesktop
-          ? STextStyles.desktopTextExtraSmall(context).copyWith(
-              color: Theme.of(context).extension<StackColors>()!.textSubtitle1,
-            )
-          : STextStyles.itemSubtitle(context),
+    // Every other balance surface in the app protects itself from a long
+    // number and this one did not: a bare Text in a fixed-height row, so at
+    // maximum precision 4,946,671,530.20654321 PEP wrapped to a second line
+    // the row had no room for and came out clipped. Same treatment as the
+    // hero — drop the sub-coin dust past eight whole digits, keeping the
+    // magnitude exact — with scale-down as the backstop for whatever the
+    // rule still lets through.
+    final formatter = ref.watch(pAmountFormatter(info.coin));
+    final numStr = formatter.format(
+      totalBalance,
+      tokenContract: contract,
+      withUnitName: false,
+    );
+    final unit = contract?.symbol ?? info.coin.ticker;
+    final label = "${withoutDustDecimals(numStr) ?? numStr} $unit";
+
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: Alignment.centerLeft,
+      child: Text(
+        label,
+        maxLines: 1,
+        style: Util.isDesktop
+            ? STextStyles.desktopTextExtraSmall(context).copyWith(
+                color: Theme.of(context).extension<StackColors>()!.textSubtitle1,
+              )
+            : STextStyles.itemSubtitle(context),
+      ),
     );
   }
 }

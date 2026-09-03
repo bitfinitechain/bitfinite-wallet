@@ -88,6 +88,55 @@ class WalletActionBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<StackColors>()!;
 
+    // The dock floats over a scrolling page, so it has to hide what passes
+    // behind it. It used to be transparent and rely on a fade applied to the
+    // whole page, which failed twice over: the fade began at 88% of the
+    // viewport while the dock is taller than that, so rows arrived under the
+    // buttons still at full opacity, and whatever cleared the dock was then
+    // cut by the system navigation bar instead of ending anywhere.
+    //
+    // An opaque bar with a short gradient above it is the fix and is also
+    // cheaper — the page-wide ShaderMask cost a saveLayer on every frame of
+    // every scroll. The gradient fades a row into the bar rather than letting
+    // it slide under a hard edge.
+    //
+    // Painted in popupBG, the card surface, not in `background`: a theme that
+    // ships a background IMAGE leaves `background` transparent so the artwork
+    // shows through, and a bar painted in it covers nothing at all — which is
+    // exactly how the first cut of this shipped, opaque on the bundled themes
+    // and see-through on a downloaded one. popupBG has to be opaque or the
+    // transaction cards it paints would not be readable either. alphaBlend is
+    // the backstop for a theme that makes even that translucent.
+    final bar = _opaque(colors.popupBG, Theme.of(context).brightness);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          height: 28,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [bar.withOpacity(0), bar],
+            ),
+          ),
+        ),
+        ColoredBox(color: bar, child: _buttons(context, colors)),
+      ],
+    );
+  }
+
+  /// [c] over the theme's own floor, so the result can be relied on to hide
+  /// whatever scrolls behind it.
+  static Color _opaque(Color c, Brightness brightness) => c.alpha == 255
+      ? c
+      : Color.alphaBlend(
+          c,
+          brightness == Brightness.dark ? Colors.black : Colors.white,
+        );
+
+  Widget _buttons(BuildContext context, StackColors colors) {
     final receive = _byLabel("Receive");
     final send = _byLabel("Send");
     final extras = [
@@ -98,7 +147,7 @@ class WalletActionBar extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
         child: Row(
         children: [
           if (receive != null)

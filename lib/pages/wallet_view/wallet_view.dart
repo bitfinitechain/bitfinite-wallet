@@ -1290,25 +1290,12 @@ class _WalletViewState extends ConsumerState<WalletView> {
                       // whole screen the moment you move. The AppBar is a real
                       // AppBar and stays put, so the back button, the wallet
                       // name and the menu never scroll away.
-                      // Fades the last few percent of the page so rows
-                      // dissolve under the floating dock instead of being
-                      // sliced by it. The old layout faded the list box; the
-                      // page is the scrolling thing now, so the mask moved here.
-                      child: ShaderMask(
-                        blendMode: BlendMode.dstOut,
-                        shaderCallback: (Rect bounds) {
-                          return const LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.transparent,
-                              Colors.white,
-                            ],
-                            stops: [0.0, 0.88, 1.0],
-                          ).createShader(bounds);
-                        },
-                        child: CustomScrollView(
+                      // The page used to be wrapped in a ShaderMask that faded
+                      // its last 12%, so rows would dissolve under the dock.
+                      // The dock paints its own opaque bar and gradient now,
+                      // which covers the whole of it rather than a fixed
+                      // fraction of the viewport, and costs no saveLayer.
+                      child: CustomScrollView(
                           // Always scrollable so pull-to-refresh works even when
                           // the content is shorter than the screen.
                           physics: const AlwaysScrollableScrollPhysics(),
@@ -1549,9 +1536,14 @@ class _WalletViewState extends ConsumerState<WalletView> {
                             // scroll instead of owning a second one. The last row
                             // already pads itself past the floating dock.
                             SliverPadding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                              ),
+                              // Bottom padding is the dock's opaque height, so
+                              // the last transaction can be scrolled clear of
+                              // it. The sliver path was missing this entirely
+                              // (the old ListView path had it), so the final
+                              // row could never be read in full. Sits outside
+                              // DecoratedSliver, so it is space under the card
+                              // rather than space inside it.
+                              padding: const EdgeInsets.fromLTRB(14, 0, 14, 96),
                               // One grouped card for the whole history rather
                               // than a stack of separate ones. DecoratedSliver
                               // paints behind the sliver itself, so the card
@@ -1585,7 +1577,6 @@ class _WalletViewState extends ConsumerState<WalletView> {
                             ),
                           ],
                         ),
-                      ),
                     ),
                     Positioned(left: 0, right: 0, bottom: 0, child: walletDock),
                   ],

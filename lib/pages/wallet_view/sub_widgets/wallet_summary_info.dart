@@ -211,6 +211,7 @@ class WalletSummaryInfo extends ConsumerWidget {
     // from the fill. Every label here is built from favText, so this one value
     // carries the whole block.
     final favText = heroInk(kHeroSurface);
+    final colors = Theme.of(context).extension<StackColors>()!;
     final receivingAddress = ref.watch(pWalletReceivingAddress(walletId));
     // Spec: 52px / 700 / letter-spacing -0.02em, tabular. -0.02em at 52px is
     // -1.04, so the previous -1.2 was slightly tighter than intended; w800 was
@@ -414,30 +415,57 @@ class WalletSummaryInfo extends ConsumerWidget {
                   // "today" = the 24h change of the HOLDING's fiat value:
                   // balance x (price_now - price_24h_ago), derived from the
                   // same change24h the price rows use, so the two cannot
-                  // disagree. Rendered in the hero ink, not green/red — a
-                  // coloured figure on an arbitrary coin fill cannot promise
-                  // contrast (green on Bells gold measures under 2:1); the
-                  // sign carries the direction.
+                  // disagree.
                   String todayStr = "";
+                  bool todayDown = false;
                   final c = price.change24h;
                   if (c.isFinite && (100 + c).abs() > 0.001) {
                     final delta = fiatNow.toDouble() * c / (100 + c);
-                    final sign = delta < 0 ? "-" : "+";
+                    todayDown = delta < 0;
+                    final sign = todayDown ? "-" : "+";
                     final deltaStr = Decimal.parse(
                       delta.abs().toStringAsFixed(8),
                     ).toAmount(fractionDigits: 8).fiatString(locale: locale);
-                    todayStr = "  ·  $sign$deltaStr $baseCurrency today";
+                    todayStr = "$sign$deltaStr $baseCurrency today";
                   }
 
-                  return Text(
-                    // Masked too: hiding the BFX figure while showing its
-                    // fiat value would defeat the point entirely.
-                    privacyMode ? "•••• $baseCurrency" : "$fiatStr$todayStr",
-                    style: STextStyles.subtitle500(context).copyWith(
-                      color: favText.withOpacity(
-                        heroEmphasis(favText, 0.78),
-                      ),
-                      fontSize: 13,
+                  final base = STextStyles.subtitle500(context).copyWith(
+                    color: favText.withOpacity(heroEmphasis(favText, 0.78)),
+                    fontSize: 13,
+                  );
+
+                  // Masked too: hiding the BFX figure while showing its fiat
+                  // value would defeat the point entirely.
+                  if (privacyMode) {
+                    return Text("•••• $baseCurrency", style: base);
+                  }
+
+                  // Only the delta takes the colour. The fiat figure beside it
+                  // is the balance restated, not a movement, and colouring it
+                  // would claim the whole holding had gone up.
+                  //
+                  // The sign is still there: colour alone is not a way to say
+                  // "down" to a reader who cannot tell these two hues apart.
+                  return Text.rich(
+                    TextSpan(
+                      style: base,
+                      children: [
+                        TextSpan(text: fiatStr),
+                        if (todayStr.isNotEmpty) ...[
+                          const TextSpan(text: "  ·  "),
+                          TextSpan(
+                            text: todayStr,
+                            style: base.copyWith(
+                              color: onHeroSignal(
+                                todayDown
+                                    ? colors.accentColorRed
+                                    : colors.accentColorGreen,
+                              ),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   );
                 },
@@ -583,10 +611,16 @@ class _HeroChartCard extends ConsumerWidget {
       changeStr = "$sign${pct.abs().toStringAsFixed(2)}%";
     }
 
+    // Up green, down red, both the theme's own — the same two colours the
+    // transaction list uses for a received and a sent amount, so a rise in the
+    // hero and a payment below it are not two unrelated greens. They were
+    // hardcoded here while the hero was the coin's colour and the theme's
+    // values could not be trusted to contrast with it.
+    final colors = Theme.of(context).extension<StackColors>()!;
     final bool down = changeStr != null && changeStr.startsWith("-");
-    final Color deltaColor = down
-        ? const Color(0xFFFF8A8A)
-        : const Color(0xFF5FD08A);
+    final Color deltaColor = onHeroSignal(
+      down ? colors.accentColorRed : colors.accentColorGreen,
+    );
 
     // Two rows, not one. Squeezing price, line and pills onto a single 44px
     // row left the sparkline about a third of the hero's width, which is not

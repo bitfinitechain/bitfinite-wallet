@@ -77,19 +77,29 @@ class _WalletSyncChipState extends ConsumerState<WalletSyncChip> {
       WalletSyncStatus.unableToSync => "Offline",
     };
 
-    // Offline is the one state worth spending colour on, so it takes the whole
-    // pill instead of a dot. A filled alarm reads on any coin colour; the red
-    // dot it replaces measured 1.15:1 on BFX's blue and 1.72:1 on Pepecoin's
-    // green — present, but nothing anyone would notice.
+    // Offline escalates from a dot to the whole pill: it is the one state that
+    // needs to be noticed rather than merely reported, and a red dot alone was
+    // too quiet to do it.
     final alarm = _status == WalletSyncStatus.unableToSync;
-    final alarmFill = Theme.of(context).extension<StackColors>()!.accentColorRed;
+    final colors = Theme.of(context).extension<StackColors>()!;
+    final alarmFill = colors.accentColorRed;
 
-    // Synced and syncing keep hero ink rather than their status colour, for the
-    // same reason as the network glyph above: those colours are chosen against
-    // the page background, and on this chip's scrim over a green hero the green
-    // dot measured 1.05:1. The word beside it already carries the state.
     final pillFill = alarm ? alarmFill : favText.withOpacity(0.16);
     final pillInk = alarm ? readableInk(Colors.white, alarmFill) : favText;
+
+    // The dot carries the state in colour; the word beside it stays hero ink so
+    // the pill still reads as one object. Green when synced, amber while it
+    // works, both from the theme.
+    //
+    // These used to be hero ink too, because the hero was the coin's colour and
+    // a green dot measured 1.05:1 on Pepecoin's green. The hero is a fixed dark
+    // neutral now, so the status colour is safe here — onHeroSignal is what
+    // guarantees that for a theme whose green is darker than the bundled ones.
+    final dotColor = switch (_status) {
+      WalletSyncStatus.synced => onHeroSignal(colors.accentColorGreen),
+      WalletSyncStatus.syncing => onHeroSignal(colors.accentColorYellow),
+      WalletSyncStatus.unableToSync => pillInk,
+    };
 
     return GestureDetector(
       onTap: _refresh,
@@ -108,7 +118,7 @@ class _WalletSyncChipState extends ConsumerState<WalletSyncChip> {
                 height: 8,
                 child: CircularProgressIndicator(
                   strokeWidth: 1.5,
-                  color: pillInk,
+                  color: dotColor,
                 ),
               )
             else
@@ -116,7 +126,7 @@ class _WalletSyncChipState extends ConsumerState<WalletSyncChip> {
                 width: 6,
                 height: 6,
                 decoration: BoxDecoration(
-                  color: pillInk,
+                  color: dotColor,
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),

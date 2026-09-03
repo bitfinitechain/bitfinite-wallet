@@ -70,6 +70,30 @@ Color readableInk(Color preferred, Color surface, {double min = 4.0}) {
       : kInkDark;
 }
 
+/// A theme's own signal colour (green up, red down, amber busy), made safe to
+/// use on [kHeroSurface].
+///
+/// The hero used to refuse status colours outright and render every figure in
+/// hero ink, because a coin-coloured hero could not promise contrast for them —
+/// green on Bellscoin gold measured under 2:1. That objection died with the
+/// coin-coloured hero: the surface is one fixed dark neutral now, so a colour
+/// only has to clear one known background.
+///
+/// The theme still chooses the hue. Its greens and reds are authored against
+/// the PAGE, though, and a theme with a deep forest green would sit at 2.5:1 on
+/// this surface, so the colour is lifted toward white only as far as it takes
+/// to clear the floor. A theme whose colour already reads is returned
+/// untouched, which is every bundled theme.
+Color onHeroSignal(Color themeColor, {double min = 4.5}) {
+  var c = themeColor;
+  // 0.08 a step, capped, so a colour that cannot be rescued lands on something
+  // near white rather than looping.
+  for (var i = 0; i < 24 && _contrast(c, kHeroSurface) < min; i++) {
+    c = Color.lerp(c, Colors.white, 0.08)!;
+  }
+  return c;
+}
+
 /// A near-black rather than pure black: on a saturated fill pure black reads as
 /// a hole punched in the surface.
 const Color kInkDark = Color(0xFF14161A);

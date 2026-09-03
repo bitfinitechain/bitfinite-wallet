@@ -136,61 +136,56 @@ class _NodesSettings extends ConsumerState<NodesSettings> {
                         style: STextStyles.desktopTextExtraExtraSmall(context),
                       ),
                       const SizedBox(height: 20),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(
-                          Constants.size.circularBorderRadius,
-                        ),
-                        child: TextField(
-                          autocorrect: !isDesktop,
-                          enableSuggestions: !isDesktop,
-                          controller: searchNodeController,
-                          focusNode: searchNodeFocusNode,
-                          onChanged: (newString) {
-                            setState(() => filter = newString);
-                          },
-                          style: STextStyles.field(context),
-                          decoration:
-                              standardInputDecoration(
-                                "Search",
-                                searchNodeFocusNode,
-                                context,
-                              ).copyWith(
-                                prefixIcon: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 16,
-                                  ),
-                                  child: SvgPicture.asset(
-                                    Assets.svg.search,
-                                    width: 16,
-                                    height: 16,
-                                  ),
+                      TextField(
+                        autocorrect: !isDesktop,
+                        enableSuggestions: !isDesktop,
+                        controller: searchNodeController,
+                        focusNode: searchNodeFocusNode,
+                        onChanged: (newString) {
+                          setState(() => filter = newString);
+                        },
+                        style: STextStyles.field(context),
+                        decoration:
+                            standardInputDecoration(
+                              "Search",
+                              searchNodeFocusNode,
+                              context,
+                            ).copyWith(
+                              prefixIcon: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 16,
                                 ),
-                                suffixIcon: searchNodeController.text.isNotEmpty
-                                    ? Padding(
-                                        padding: const EdgeInsets.only(
-                                          right: 0,
-                                        ),
-                                        child: UnconstrainedBox(
-                                          child: Row(
-                                            children: [
-                                              TextFieldIconButton(
-                                                child: const XIcon(),
-                                                onTap: () async {
-                                                  setState(() {
-                                                    searchNodeController.text =
-                                                        "";
-                                                    filter = "";
-                                                  });
-                                                },
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      )
-                                    : null,
+                                child: SvgPicture.asset(
+                                  Assets.svg.search,
+                                  width: 16,
+                                  height: 16,
+                                ),
                               ),
-                        ),
+                              suffixIcon: searchNodeController.text.isNotEmpty
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(
+                                        right: 0,
+                                      ),
+                                      child: UnconstrainedBox(
+                                        child: Row(
+                                          children: [
+                                            TextFieldIconButton(
+                                              child: const XIcon(),
+                                              onTap: () async {
+                                                setState(() {
+                                                  searchNodeController.text =
+                                                      "";
+                                                  filter = "";
+                                                });
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                  : null,
+                            ),
                       ),
                     ],
                   ),

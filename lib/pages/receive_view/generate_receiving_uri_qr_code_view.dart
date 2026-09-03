@@ -383,67 +383,62 @@ class _GenerateUriQrCodeViewState extends State<GenerateUriQrCodeView> {
               textAlign: TextAlign.left,
             ),
             SizedBox(height: isDesktop ? 10 : 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(
-                Constants.size.circularBorderRadius,
-              ),
-              child: TextField(
-                autocorrect: Util.isDesktop ? false : true,
-                enableSuggestions: Util.isDesktop ? false : true,
-                controller: amountController,
-                focusNode: _amountFocusNode,
-                style:
+            TextField(
+              autocorrect: Util.isDesktop ? false : true,
+              enableSuggestions: Util.isDesktop ? false : true,
+              controller: amountController,
+              focusNode: _amountFocusNode,
+              style:
+                  isDesktop
+                      ? STextStyles.desktopTextExtraExtraSmall(
+                        context,
+                      ).copyWith(
+                        color:
+                            Theme.of(
+                              context,
+                            ).extension<StackColors>()!.textFieldDefaultText,
+                        height: 1.8,
+                      )
+                      : STextStyles.field(context),
+              keyboardType:
+                  Util.isDesktop
+                      ? null
+                      : const TextInputType.numberWithOptions(decimal: true),
+              onChanged: (_) => setState(() {}),
+              decoration: standardInputDecoration(
+                "Amount",
+                _amountFocusNode,
+                context,
+              ).copyWith(
+                contentPadding:
                     isDesktop
-                        ? STextStyles.desktopTextExtraExtraSmall(
-                          context,
-                        ).copyWith(
-                          color:
-                              Theme.of(
-                                context,
-                              ).extension<StackColors>()!.textFieldDefaultText,
-                          height: 1.8,
+                        ? const EdgeInsets.only(
+                          left: 16,
+                          top: 11,
+                          bottom: 12,
+                          right: 5,
                         )
-                        : STextStyles.field(context),
-                keyboardType:
-                    Util.isDesktop
-                        ? null
-                        : const TextInputType.numberWithOptions(decimal: true),
-                onChanged: (_) => setState(() {}),
-                decoration: standardInputDecoration(
-                  "Amount",
-                  _amountFocusNode,
-                  context,
-                ).copyWith(
-                  contentPadding:
-                      isDesktop
-                          ? const EdgeInsets.only(
-                            left: 16,
-                            top: 11,
-                            bottom: 12,
-                            right: 5,
-                          )
-                          : null,
-                  suffixIcon:
-                      amountController.text.isNotEmpty
-                          ? Padding(
-                            padding: const EdgeInsets.only(right: 0),
-                            child: UnconstrainedBox(
-                              child: Row(
-                                children: [
-                                  TextFieldIconButton(
-                                    child: const XIcon(),
-                                    onTap: () async {
-                                      setState(() {
-                                        amountController.text = "";
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
+                        : null,
+                suffixIcon:
+                    amountController.text.isNotEmpty
+                        ? Padding(
+                          padding: const EdgeInsets.only(right: 0),
+                          child: UnconstrainedBox(
+                            child: Row(
+                              children: [
+                                TextFieldIconButton(
+                                  child: const XIcon(),
+                                  onTap: () async {
+                                    setState(() {
+                                      amountController.text = "";
+                                    });
+                                  },
+                                ),
+                              ],
                             ),
-                          )
-                          : null,
-                ),
+                          ),
+                        )
+                        : null,
               ),
             ),
             SizedBox(height: isDesktop ? 20 : 12),
@@ -463,63 +458,58 @@ class _GenerateUriQrCodeViewState extends State<GenerateUriQrCodeView> {
               textAlign: TextAlign.left,
             ),
             SizedBox(height: isDesktop ? 10 : 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(
-                Constants.size.circularBorderRadius,
-              ),
-              child: TextField(
-                autocorrect: Util.isDesktop ? false : true,
-                enableSuggestions: Util.isDesktop ? false : true,
-                controller: noteController,
-                focusNode: _noteFocusNode,
-                style:
+            TextField(
+              autocorrect: Util.isDesktop ? false : true,
+              enableSuggestions: Util.isDesktop ? false : true,
+              controller: noteController,
+              focusNode: _noteFocusNode,
+              style:
+                  isDesktop
+                      ? STextStyles.desktopTextExtraExtraSmall(
+                        context,
+                      ).copyWith(
+                        color:
+                            Theme.of(
+                              context,
+                            ).extension<StackColors>()!.textFieldDefaultText,
+                        height: 1.8,
+                      )
+                      : STextStyles.field(context),
+              onChanged: (_) => setState(() {}),
+              decoration: standardInputDecoration(
+                "Note",
+                _noteFocusNode,
+                context,
+              ).copyWith(
+                contentPadding:
                     isDesktop
-                        ? STextStyles.desktopTextExtraExtraSmall(
-                          context,
-                        ).copyWith(
-                          color:
-                              Theme.of(
-                                context,
-                              ).extension<StackColors>()!.textFieldDefaultText,
-                          height: 1.8,
+                        ? const EdgeInsets.only(
+                          left: 16,
+                          top: 11,
+                          bottom: 12,
+                          right: 5,
                         )
-                        : STextStyles.field(context),
-                onChanged: (_) => setState(() {}),
-                decoration: standardInputDecoration(
-                  "Note",
-                  _noteFocusNode,
-                  context,
-                ).copyWith(
-                  contentPadding:
-                      isDesktop
-                          ? const EdgeInsets.only(
-                            left: 16,
-                            top: 11,
-                            bottom: 12,
-                            right: 5,
-                          )
-                          : null,
-                  suffixIcon:
-                      noteController.text.isNotEmpty
-                          ? Padding(
-                            padding: const EdgeInsets.only(right: 0),
-                            child: UnconstrainedBox(
-                              child: Row(
-                                children: [
-                                  TextFieldIconButton(
-                                    child: const XIcon(),
-                                    onTap: () async {
-                                      setState(() {
-                                        noteController.text = "";
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
+                        : null,
+                suffixIcon:
+                    noteController.text.isNotEmpty
+                        ? Padding(
+                          padding: const EdgeInsets.only(right: 0),
+                          child: UnconstrainedBox(
+                            child: Row(
+                              children: [
+                                TextFieldIconButton(
+                                  child: const XIcon(),
+                                  onTap: () async {
+                                    setState(() {
+                                      noteController.text = "";
+                                    });
+                                  },
+                                ),
+                              ],
                             ),
-                          )
-                          : null,
-                ),
+                          ),
+                        )
+                        : null,
               ),
             ),
             SizedBox(height: isDesktop ? 20 : 8),

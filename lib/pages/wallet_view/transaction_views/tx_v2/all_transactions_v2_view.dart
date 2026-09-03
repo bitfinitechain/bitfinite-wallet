@@ -406,72 +406,67 @@ class _AllTransactionsV2ViewState extends ConsumerState<AllTransactionsV2View> {
                     child: ConditionalParent(
                       condition: !isDesktop,
                       builder: (child) => Expanded(child: child),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(
-                          Constants.size.circularBorderRadius,
-                        ),
-                        child: TextField(
-                          autocorrect: !isDesktop,
-                          enableSuggestions: !isDesktop,
-                          controller: _searchController,
-                          focusNode: searchFieldFocusNode,
-                          onChanged: (value) {
-                            setState(() {
-                              _searchString = value;
-                            });
-                          },
-                          style: isDesktop
-                              ? STextStyles.desktopTextExtraSmall(
-                                  context,
-                                ).copyWith(
-                                  color: Theme.of(context)
-                                      .extension<StackColors>()!
-                                      .textFieldActiveText,
-                                  height: 1.8,
-                                )
-                              : STextStyles.field(context),
-                          decoration:
-                              standardInputDecoration(
-                                "Search...",
-                                searchFieldFocusNode,
+                      child: TextField(
+                        autocorrect: !isDesktop,
+                        enableSuggestions: !isDesktop,
+                        controller: _searchController,
+                        focusNode: searchFieldFocusNode,
+                        onChanged: (value) {
+                          setState(() {
+                            _searchString = value;
+                          });
+                        },
+                        style: isDesktop
+                            ? STextStyles.desktopTextExtraSmall(
                                 context,
-                                desktopMed: isDesktop,
                               ).copyWith(
-                                prefixIcon: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: isDesktop ? 12 : 10,
-                                    vertical: isDesktop ? 18 : 16,
-                                  ),
-                                  child: adaptiveIcon(
-                                    Assets.svg.search,
-                                    CupertinoIcons.search,
-                                    size: isDesktop ? 20 : 16,
-                                  ),
+                                color: Theme.of(context)
+                                    .extension<StackColors>()!
+                                    .textFieldActiveText,
+                                height: 1.8,
+                              )
+                            : STextStyles.field(context),
+                        decoration:
+                            standardInputDecoration(
+                              "Search...",
+                              searchFieldFocusNode,
+                              context,
+                              desktopMed: isDesktop,
+                            ).copyWith(
+                              prefixIcon: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: isDesktop ? 12 : 10,
+                                  vertical: isDesktop ? 18 : 16,
                                 ),
-                                suffixIcon: _searchController.text.isNotEmpty
-                                    ? Padding(
-                                        padding: const EdgeInsets.only(
-                                          right: 0,
-                                        ),
-                                        child: UnconstrainedBox(
-                                          child: Row(
-                                            children: [
-                                              TextFieldIconButton(
-                                                child: const XIcon(),
-                                                onTap: () async {
-                                                  setState(() {
-                                                    _searchController.text = "";
-                                                    _searchString = "";
-                                                  });
-                                                },
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      )
-                                    : null,
+                                child: adaptiveIcon(
+                                  Assets.svg.search,
+                                  CupertinoIcons.search,
+                                  size: isDesktop ? 20 : 16,
+                                ),
                               ),
-                        ),
+                              suffixIcon: _searchController.text.isNotEmpty
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(
+                                        right: 0,
+                                      ),
+                                      child: UnconstrainedBox(
+                                        child: Row(
+                                          children: [
+                                            TextFieldIconButton(
+                                              child: const XIcon(),
+                                              onTap: () async {
+                                                setState(() {
+                                                  _searchController.text = "";
+                                                  _searchString = "";
+                                                });
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                  : null,
+                            ),
                       ),
                     ),
                   ),

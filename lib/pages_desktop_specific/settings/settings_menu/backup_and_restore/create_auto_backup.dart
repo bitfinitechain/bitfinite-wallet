@@ -390,92 +390,87 @@ class _CreateAutoBackup extends ConsumerState<CreateAutoBackup> {
                       textAlign: TextAlign.left,
                     ),
                   ),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                    Constants.size.circularBorderRadius,
-                  ),
-                  child: TextField(
-                    key: const Key("createBackupPasswordFieldKey1"),
-                    focusNode: passphraseFocusNode,
-                    controller: passphraseController,
-                    style: STextStyles.field(context),
-                    obscureText: hidePassword,
-                    enableSuggestions: false,
-                    autocorrect: false,
-                    decoration:
-                        standardInputDecoration(
-                          "Create passphrase",
-                          passphraseFocusNode,
-                          context,
-                        ).copyWith(
-                          labelStyle: isDesktop
-                              ? STextStyles.fieldLabel(context)
-                              : null,
-                          suffixIcon: UnconstrainedBox(
-                            child: Row(
-                              children: [
-                                const SizedBox(width: 16),
-                                GestureDetector(
-                                  key: const Key(
-                                    "createBackupPasswordFieldShowPasswordButtonKey",
-                                  ),
-                                  onTap: () async {
-                                    setState(() {
-                                      hidePassword = !hidePassword;
-                                    });
-                                  },
-                                  child: SvgPicture.asset(
-                                    hidePassword
-                                        ? Assets.svg.eye
-                                        : Assets.svg.eyeSlash,
-                                    color: Theme.of(
-                                      context,
-                                    ).extension<StackColors>()!.textDark3,
-                                    width: 16,
-                                    height: 16,
-                                  ),
+                TextField(
+                  key: const Key("createBackupPasswordFieldKey1"),
+                  focusNode: passphraseFocusNode,
+                  controller: passphraseController,
+                  style: STextStyles.field(context),
+                  obscureText: hidePassword,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  decoration:
+                      standardInputDecoration(
+                        "Create passphrase",
+                        passphraseFocusNode,
+                        context,
+                      ).copyWith(
+                        labelStyle: isDesktop
+                            ? STextStyles.fieldLabel(context)
+                            : null,
+                        suffixIcon: UnconstrainedBox(
+                          child: Row(
+                            children: [
+                              const SizedBox(width: 16),
+                              GestureDetector(
+                                key: const Key(
+                                  "createBackupPasswordFieldShowPasswordButtonKey",
                                 ),
-                                const SizedBox(width: 12),
-                              ],
-                            ),
+                                onTap: () async {
+                                  setState(() {
+                                    hidePassword = !hidePassword;
+                                  });
+                                },
+                                child: SvgPicture.asset(
+                                  hidePassword
+                                      ? Assets.svg.eye
+                                      : Assets.svg.eyeSlash,
+                                  color: Theme.of(
+                                    context,
+                                  ).extension<StackColors>()!.textDark3,
+                                  width: 16,
+                                  height: 16,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                            ],
                           ),
                         ),
-                    onChanged: (newValue) {
-                      if (newValue.isEmpty) {
-                        setState(() {
-                          passwordFeedback = "";
-                        });
-                        return;
-                      }
-                      final result = zxcvbn.evaluate(newValue);
-                      String suggestionsAndTips = "";
-                      for (final sug in result.feedback.suggestions!.toSet()) {
-                        suggestionsAndTips += "$sug\n";
-                      }
-                      suggestionsAndTips += result.feedback.warning!;
-                      String feedback =
-                          // "Password Strength: ${((result.score! / 4.0) * 100).toInt()}%\n"
-                          suggestionsAndTips;
-
-                      passwordStrength = result.score! / 4;
-
-                      // hack fix to format back string returned from zxcvbn
-                      if (feedback.contains("phrasesNo need")) {
-                        feedback = feedback.replaceFirst(
-                          "phrasesNo need",
-                          "phrases\nNo need",
-                        );
-                      }
-
-                      if (feedback.endsWith("\n")) {
-                        feedback = feedback.substring(0, feedback.length - 2);
-                      }
-
+                      ),
+                  onChanged: (newValue) {
+                    if (newValue.isEmpty) {
                       setState(() {
-                        passwordFeedback = feedback;
+                        passwordFeedback = "";
                       });
-                    },
-                  ),
+                      return;
+                    }
+                    final result = zxcvbn.evaluate(newValue);
+                    String suggestionsAndTips = "";
+                    for (final sug in result.feedback.suggestions!.toSet()) {
+                      suggestionsAndTips += "$sug\n";
+                    }
+                    suggestionsAndTips += result.feedback.warning!;
+                    String feedback =
+                        // "Password Strength: ${((result.score! / 4.0) * 100).toInt()}%\n"
+                        suggestionsAndTips;
+
+                    passwordStrength = result.score! / 4;
+
+                    // hack fix to format back string returned from zxcvbn
+                    if (feedback.contains("phrasesNo need")) {
+                      feedback = feedback.replaceFirst(
+                        "phrasesNo need",
+                        "phrases\nNo need",
+                      );
+                    }
+
+                    if (feedback.endsWith("\n")) {
+                      feedback = feedback.substring(0, feedback.length - 2);
+                    }
+
+                    setState(() {
+                      passwordFeedback = feedback;
+                    });
+                  },
                 ),
                 if (passphraseFocusNode.hasFocus ||
                     passphraseRepeatFocusNode.hasFocus ||
@@ -526,59 +521,54 @@ class _CreateAutoBackup extends ConsumerState<CreateAutoBackup> {
                     ),
                   ),
                 const SizedBox(height: 16),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                    Constants.size.circularBorderRadius,
-                  ),
-                  child: TextField(
-                    key: const Key("createBackupPasswordFieldKey2"),
-                    focusNode: passphraseRepeatFocusNode,
-                    controller: passphraseRepeatController,
-                    style: STextStyles.field(context),
-                    obscureText: hidePassword,
-                    enableSuggestions: false,
-                    autocorrect: false,
-                    decoration:
-                        standardInputDecoration(
-                          "Confirm passphrase",
-                          passphraseRepeatFocusNode,
-                          context,
-                        ).copyWith(
-                          labelStyle: STextStyles.fieldLabel(context),
-                          suffixIcon: UnconstrainedBox(
-                            child: Row(
-                              children: [
-                                const SizedBox(width: 16),
-                                GestureDetector(
-                                  key: const Key(
-                                    "createBackupPasswordFieldShowPasswordButtonKey",
-                                  ),
-                                  onTap: () async {
-                                    setState(() {
-                                      hidePassword = !hidePassword;
-                                    });
-                                  },
-                                  child: SvgPicture.asset(
-                                    hidePassword
-                                        ? Assets.svg.eye
-                                        : Assets.svg.eyeSlash,
-                                    color: Theme.of(
-                                      context,
-                                    ).extension<StackColors>()!.textDark3,
-                                    width: 16,
-                                    height: 16,
-                                  ),
+                TextField(
+                  key: const Key("createBackupPasswordFieldKey2"),
+                  focusNode: passphraseRepeatFocusNode,
+                  controller: passphraseRepeatController,
+                  style: STextStyles.field(context),
+                  obscureText: hidePassword,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  decoration:
+                      standardInputDecoration(
+                        "Confirm passphrase",
+                        passphraseRepeatFocusNode,
+                        context,
+                      ).copyWith(
+                        labelStyle: STextStyles.fieldLabel(context),
+                        suffixIcon: UnconstrainedBox(
+                          child: Row(
+                            children: [
+                              const SizedBox(width: 16),
+                              GestureDetector(
+                                key: const Key(
+                                  "createBackupPasswordFieldShowPasswordButtonKey",
                                 ),
-                                const SizedBox(width: 12),
-                              ],
-                            ),
+                                onTap: () async {
+                                  setState(() {
+                                    hidePassword = !hidePassword;
+                                  });
+                                },
+                                child: SvgPicture.asset(
+                                  hidePassword
+                                      ? Assets.svg.eye
+                                      : Assets.svg.eyeSlash,
+                                  color: Theme.of(
+                                    context,
+                                  ).extension<StackColors>()!.textDark3,
+                                  width: 16,
+                                  height: 16,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                            ],
                           ),
                         ),
-                    onChanged: (newValue) {
-                      setState(() {});
-                      // TODO: ? check if passwords match?
-                    },
-                  ),
+                      ),
+                  onChanged: (newValue) {
+                    setState(() {});
+                    // TODO: ? check if passwords match?
+                  },
                 ),
               ],
             ),

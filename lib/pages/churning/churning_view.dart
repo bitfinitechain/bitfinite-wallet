@@ -216,32 +216,27 @@ class _ChurnViewState extends ConsumerState<ChurningView> {
                           if (_option == ChurnOption.custom)
                             const SizedBox(height: 10),
                           if (_option == ChurnOption.custom)
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(
-                                Constants.size.circularBorderRadius,
-                              ),
-                              child: TextField(
-                                autocorrect: false,
-                                enableSuggestions: false,
-                                controller: churningRoundController,
-                                focusNode: churningRoundFocusNode,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                ],
-                                keyboardType: TextInputType.number,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _enableStartButton = value.isNotEmpty;
-                                  });
-                                },
-                                style: STextStyles.field(context),
-                                decoration: standardInputDecoration(
-                                  "Number of churns",
-                                  churningRoundFocusNode,
-                                  context,
-                                ).copyWith(
-                                  labelText: "Enter number of churns..",
-                                ),
+                            TextField(
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              controller: churningRoundController,
+                              focusNode: churningRoundFocusNode,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
+                              keyboardType: TextInputType.number,
+                              onChanged: (value) {
+                                setState(() {
+                                  _enableStartButton = value.isNotEmpty;
+                                });
+                              },
+                              style: STextStyles.field(context),
+                              decoration: standardInputDecoration(
+                                "Number of churns",
+                                churningRoundFocusNode,
+                                context,
+                              ).copyWith(
+                                labelText: "Enter number of churns..",
                               ),
                             ),
                           const SizedBox(height: 16),

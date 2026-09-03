@@ -808,106 +808,101 @@ class _SolTokenSendViewState extends ConsumerState<SolTokenSendView> {
                               textAlign: TextAlign.left,
                             ),
                             const SizedBox(height: 8),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(
-                                Constants.size.circularBorderRadius,
+                            TextField(
+                              key: const Key(
+                                "solTokenSendViewAddressFieldKey",
                               ),
-                              child: TextField(
-                                key: const Key(
-                                  "solTokenSendViewAddressFieldKey",
-                                ),
-                                controller: sendToController,
-                                readOnly: false,
-                                autocorrect: false,
-                                enableSuggestions: false,
-                                toolbarOptions: const ToolbarOptions(
-                                  copy: false,
-                                  cut: false,
-                                  paste: true,
-                                  selectAll: false,
-                                ),
-                                onChanged: (newValue) {
-                                  _address = newValue.trim();
-                                  _updatePreviewButtonState(
-                                    _address,
-                                    _amountToSend,
-                                  );
+                              controller: sendToController,
+                              readOnly: false,
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              toolbarOptions: const ToolbarOptions(
+                                copy: false,
+                                cut: false,
+                                paste: true,
+                                selectAll: false,
+                              ),
+                              onChanged: (newValue) {
+                                _address = newValue.trim();
+                                _updatePreviewButtonState(
+                                  _address,
+                                  _amountToSend,
+                                );
 
-                                  setState(() {
-                                    _addressToggleFlag = newValue.isNotEmpty;
-                                  });
-                                },
-                                focusNode: _addressFocusNode,
-                                style: STextStyles.field(context),
-                                decoration:
-                                    standardInputDecoration(
-                                      "Enter Solana address",
-                                      _addressFocusNode,
-                                      context,
-                                    ).copyWith(
-                                      contentPadding: const EdgeInsets.only(
-                                        left: 16,
-                                        top: 6,
-                                        bottom: 8,
-                                        right: 5,
-                                      ),
-                                      suffixIcon: Padding(
-                                        padding: sendToController.text.isEmpty
-                                            ? const EdgeInsets.only(right: 8)
-                                            : const EdgeInsets.only(right: 0),
-                                        child: UnconstrainedBox(
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
-                                            children: [
-                                              _addressToggleFlag
-                                                  ? TextFieldIconButton(
-                                                      key: const Key(
-                                                        "solTokenSendViewClearAddressFieldButtonKey",
-                                                      ),
-                                                      onTap: () {
-                                                        sendToController.text =
-                                                            "";
-                                                        _address = "";
-                                                        _updatePreviewButtonState(
-                                                          _address,
-                                                          _amountToSend,
-                                                        );
-                                                        setState(() {
-                                                          _addressToggleFlag =
-                                                              false;
-                                                        });
-                                                      },
-                                                      child: const XIcon(),
-                                                    )
-                                                  : TextFieldIconButton(
-                                                      key: const Key(
-                                                        "solTokenSendViewPasteAddressFieldButtonKey",
-                                                      ),
-                                                      onTap:
-                                                          _onTokenSendViewPasteAddressFieldButtonPressed,
-                                                      child:
-                                                          sendToController
-                                                              .text
-                                                              .isEmpty
-                                                          ? const ClipboardIcon()
-                                                          : const XIcon(),
+                                setState(() {
+                                  _addressToggleFlag = newValue.isNotEmpty;
+                                });
+                              },
+                              focusNode: _addressFocusNode,
+                              style: STextStyles.field(context),
+                              decoration:
+                                  standardInputDecoration(
+                                    "Enter Solana address",
+                                    _addressFocusNode,
+                                    context,
+                                  ).copyWith(
+                                    contentPadding: const EdgeInsets.only(
+                                      left: 16,
+                                      top: 6,
+                                      bottom: 8,
+                                      right: 5,
+                                    ),
+                                    suffixIcon: Padding(
+                                      padding: sendToController.text.isEmpty
+                                          ? const EdgeInsets.only(right: 8)
+                                          : const EdgeInsets.only(right: 0),
+                                      child: UnconstrainedBox(
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceAround,
+                                          children: [
+                                            _addressToggleFlag
+                                                ? TextFieldIconButton(
+                                                    key: const Key(
+                                                      "solTokenSendViewClearAddressFieldButtonKey",
                                                     ),
-                                              if (sendToController.text.isEmpty)
-                                                TextFieldIconButton(
-                                                  key: const Key(
-                                                    "solSendViewScanQrButtonKey",
+                                                    onTap: () {
+                                                      sendToController.text =
+                                                          "";
+                                                      _address = "";
+                                                      _updatePreviewButtonState(
+                                                        _address,
+                                                        _amountToSend,
+                                                      );
+                                                      setState(() {
+                                                        _addressToggleFlag =
+                                                            false;
+                                                      });
+                                                    },
+                                                    child: const XIcon(),
+                                                  )
+                                                : TextFieldIconButton(
+                                                    key: const Key(
+                                                      "solTokenSendViewPasteAddressFieldButtonKey",
+                                                    ),
+                                                    onTap:
+                                                        _onTokenSendViewPasteAddressFieldButtonPressed,
+                                                    child:
+                                                        sendToController
+                                                            .text
+                                                            .isEmpty
+                                                        ? const ClipboardIcon()
+                                                        : const XIcon(),
                                                   ),
-                                                  onTap:
-                                                      _onTokenSendViewScanQrButtonPressed,
-                                                  child: const QrCodeIcon(),
+                                            if (sendToController.text.isEmpty)
+                                              TextFieldIconButton(
+                                                key: const Key(
+                                                  "solSendViewScanQrButtonKey",
                                                 ),
-                                            ],
-                                          ),
+                                                onTap:
+                                                    _onTokenSendViewScanQrButtonPressed,
+                                                child: const QrCodeIcon(),
+                                              ),
+                                          ],
                                         ),
                                       ),
                                     ),
-                              ),
+                                  ),
                             ),
                             Builder(
                               builder: (_) {
@@ -941,93 +936,88 @@ class _SolTokenSendViewState extends ConsumerState<SolTokenSendView> {
                               },
                             ),
                             const SizedBox(height: 10),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(
-                                Constants.size.circularBorderRadius,
-                              ),
-                              child: TextField(
-                                key: const Key("sendViewMemoFieldKey"),
-                                controller: memoController,
-                                readOnly: false,
-                                autocorrect: false,
-                                enableSuggestions: false,
-                                focusNode: _memoFocus,
-                                style: STextStyles.field(context),
-                                onChanged: (_) {
-                                  setState(() {});
-                                },
-                                decoration:
-                                    standardInputDecoration(
-                                      "Enter memo (optional)",
-                                      _memoFocus,
-                                      context,
-                                    ).copyWith(
-                                      counterText: '',
-                                      contentPadding: const EdgeInsets.only(
-                                        left: 16,
-                                        top: 6,
-                                        bottom: 8,
-                                        right: 5,
-                                      ),
-                                      suffixIcon: Padding(
-                                        padding: memoController.text.isEmpty
-                                            ? const EdgeInsets.only(right: 8)
-                                            : const EdgeInsets.only(right: 0),
-                                        child: UnconstrainedBox(
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
-                                            children: [
-                                              memoController.text.isNotEmpty
-                                                  ? TextFieldIconButton(
-                                                      semanticsLabel:
-                                                          "Clear Button. Clears The Memo Field Input.",
-                                                      key: const Key(
-                                                        "sendSolTokenViewClearMemoFieldButtonKey",
-                                                      ),
-                                                      onTap: () {
-                                                        memoController.text =
-                                                            "";
-                                                        setState(() {});
-                                                      },
-                                                      child: const XIcon(),
-                                                    )
-                                                  : TextFieldIconButton(
-                                                      semanticsLabel:
-                                                          "Paste Button. Pastes From Clipboard To Memo Field Input.",
-                                                      key: const Key(
-                                                        "sendSolTokenViewPasteMemoFieldButtonKey",
-                                                      ),
-                                                      onTap: () async {
-                                                        final ClipboardData?
-                                                        data = await clipboard
-                                                            .getData(
-                                                              Clipboard
-                                                                  .kTextPlain,
-                                                            );
-                                                        if (data?.text !=
-                                                                null &&
-                                                            data!
-                                                                .text!
-                                                                .isNotEmpty) {
-                                                          final String content =
-                                                              data.text!.trim();
-
-                                                          memoController.text =
-                                                              content.trim();
-
-                                                          setState(() {});
-                                                        }
-                                                      },
-                                                      child:
-                                                          const ClipboardIcon(),
+                            TextField(
+                              key: const Key("sendViewMemoFieldKey"),
+                              controller: memoController,
+                              readOnly: false,
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              focusNode: _memoFocus,
+                              style: STextStyles.field(context),
+                              onChanged: (_) {
+                                setState(() {});
+                              },
+                              decoration:
+                                  standardInputDecoration(
+                                    "Enter memo (optional)",
+                                    _memoFocus,
+                                    context,
+                                  ).copyWith(
+                                    counterText: '',
+                                    contentPadding: const EdgeInsets.only(
+                                      left: 16,
+                                      top: 6,
+                                      bottom: 8,
+                                      right: 5,
+                                    ),
+                                    suffixIcon: Padding(
+                                      padding: memoController.text.isEmpty
+                                          ? const EdgeInsets.only(right: 8)
+                                          : const EdgeInsets.only(right: 0),
+                                      child: UnconstrainedBox(
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceAround,
+                                          children: [
+                                            memoController.text.isNotEmpty
+                                                ? TextFieldIconButton(
+                                                    semanticsLabel:
+                                                        "Clear Button. Clears The Memo Field Input.",
+                                                    key: const Key(
+                                                      "sendSolTokenViewClearMemoFieldButtonKey",
                                                     ),
-                                            ],
-                                          ),
+                                                    onTap: () {
+                                                      memoController.text =
+                                                          "";
+                                                      setState(() {});
+                                                    },
+                                                    child: const XIcon(),
+                                                  )
+                                                : TextFieldIconButton(
+                                                    semanticsLabel:
+                                                        "Paste Button. Pastes From Clipboard To Memo Field Input.",
+                                                    key: const Key(
+                                                      "sendSolTokenViewPasteMemoFieldButtonKey",
+                                                    ),
+                                                    onTap: () async {
+                                                      final ClipboardData?
+                                                      data = await clipboard
+                                                          .getData(
+                                                            Clipboard
+                                                                .kTextPlain,
+                                                          );
+                                                      if (data?.text !=
+                                                              null &&
+                                                          data!
+                                                              .text!
+                                                              .isNotEmpty) {
+                                                        final String content =
+                                                            data.text!.trim();
+
+                                                        memoController.text =
+                                                            content.trim();
+
+                                                        setState(() {});
+                                                      }
+                                                    },
+                                                    child:
+                                                        const ClipboardIcon(),
+                                                  ),
+                                          ],
                                         ),
                                       ),
                                     ),
-                              ),
+                                  ),
                             ),
                             const SizedBox(height: 12),
                             Row(
@@ -1169,49 +1159,44 @@ class _SolTokenSendViewState extends ConsumerState<SolTokenSendView> {
                               textAlign: TextAlign.left,
                             ),
                             const SizedBox(height: 8),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(
-                                Constants.size.circularBorderRadius,
-                              ),
-                              child: TextField(
-                                autocorrect: Util.isDesktop ? false : true,
-                                enableSuggestions: Util.isDesktop
-                                    ? false
-                                    : true,
-                                controller: noteController,
-                                focusNode: _noteFocusNode,
-                                style: STextStyles.field(context),
-                                onChanged: (_) => setState(() {}),
-                                decoration:
-                                    standardInputDecoration(
-                                      "Type something...",
-                                      _noteFocusNode,
-                                      context,
-                                    ).copyWith(
-                                      suffixIcon: noteController.text.isNotEmpty
-                                          ? Padding(
-                                              padding: const EdgeInsets.only(
-                                                right: 0,
+                            TextField(
+                              autocorrect: Util.isDesktop ? false : true,
+                              enableSuggestions: Util.isDesktop
+                                  ? false
+                                  : true,
+                              controller: noteController,
+                              focusNode: _noteFocusNode,
+                              style: STextStyles.field(context),
+                              onChanged: (_) => setState(() {}),
+                              decoration:
+                                  standardInputDecoration(
+                                    "Type something...",
+                                    _noteFocusNode,
+                                    context,
+                                  ).copyWith(
+                                    suffixIcon: noteController.text.isNotEmpty
+                                        ? Padding(
+                                            padding: const EdgeInsets.only(
+                                              right: 0,
+                                            ),
+                                            child: UnconstrainedBox(
+                                              child: Row(
+                                                children: [
+                                                  TextFieldIconButton(
+                                                    child: const XIcon(),
+                                                    onTap: () async {
+                                                      setState(() {
+                                                        noteController.text =
+                                                            "";
+                                                      });
+                                                    },
+                                                  ),
+                                                ],
                                               ),
-                                              child: UnconstrainedBox(
-                                                child: Row(
-                                                  children: [
-                                                    TextFieldIconButton(
-                                                      child: const XIcon(),
-                                                      onTap: () async {
-                                                        setState(() {
-                                                          noteController.text =
-                                                              "";
-                                                        });
-                                                      },
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            )
-                                          : null,
-                                    ),
-                              ),
+                                            ),
+                                          )
+                                        : null,
+                                  ),
                             ),
                             const SizedBox(height: 12),
                             Text(

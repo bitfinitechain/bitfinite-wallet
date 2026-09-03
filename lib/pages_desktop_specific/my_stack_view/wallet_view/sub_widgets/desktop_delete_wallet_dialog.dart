@@ -155,77 +155,72 @@ class _DesktopDeleteWalletDialog
                   ),
                 ),
                 const SizedBox(height: 24),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                    Constants.size.circularBorderRadius,
+                TextField(
+                  key: const Key("desktopDeleteWalletPasswordFieldKey"),
+                  focusNode: passwordFocusNode,
+                  controller: passwordController,
+                  style: STextStyles.desktopTextMedium(context).copyWith(
+                    height: 2,
                   ),
-                  child: TextField(
-                    key: const Key("desktopDeleteWalletPasswordFieldKey"),
-                    focusNode: passwordFocusNode,
-                    controller: passwordController,
-                    style: STextStyles.desktopTextMedium(context).copyWith(
-                      height: 2,
-                    ),
-                    obscureText: hidePassword,
-                    enableSuggestions: false,
-                    autocorrect: false,
-                    autofocus: true,
-                    onSubmitted: (_) {
-                      if (_continueEnabled) {
-                        enterPassphrase();
-                      }
-                    },
-                    decoration: standardInputDecoration(
-                      "Enter password",
-                      passwordFocusNode,
-                      context,
-                    ).copyWith(
-                      labelStyle: STextStyles.fieldLabel(context),
-                      suffixIcon: UnconstrainedBox(
-                        child: SizedBox(
-                          height: 70,
-                          child: Row(
-                            children: [
-                              const SizedBox(
-                                width: 24,
+                  obscureText: hidePassword,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  autofocus: true,
+                  onSubmitted: (_) {
+                    if (_continueEnabled) {
+                      enterPassphrase();
+                    }
+                  },
+                  decoration: standardInputDecoration(
+                    "Enter password",
+                    passwordFocusNode,
+                    context,
+                  ).copyWith(
+                    labelStyle: STextStyles.fieldLabel(context),
+                    suffixIcon: UnconstrainedBox(
+                      child: SizedBox(
+                        height: 70,
+                        child: Row(
+                          children: [
+                            const SizedBox(
+                              width: 24,
+                            ),
+                            GestureDetector(
+                              key: const Key(
+                                "desktopDeleteWalletShowPasswordButtonKey",
                               ),
-                              GestureDetector(
-                                key: const Key(
-                                  "desktopDeleteWalletShowPasswordButtonKey",
-                                ),
-                                onTap: () async {
-                                  setState(() {
-                                    hidePassword = !hidePassword;
-                                  });
-                                },
-                                child: MouseRegion(
-                                  cursor: SystemMouseCursors.click,
-                                  child: SvgPicture.asset(
-                                    hidePassword
-                                        ? Assets.svg.eye
-                                        : Assets.svg.eyeSlash,
-                                    color: Theme.of(context)
-                                        .extension<StackColors>()!
-                                        .textDark3,
-                                    width: 24,
-                                    height: 24,
-                                  ),
+                              onTap: () async {
+                                setState(() {
+                                  hidePassword = !hidePassword;
+                                });
+                              },
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.click,
+                                child: SvgPicture.asset(
+                                  hidePassword
+                                      ? Assets.svg.eye
+                                      : Assets.svg.eyeSlash,
+                                  color: Theme.of(context)
+                                      .extension<StackColors>()!
+                                      .textDark3,
+                                  width: 24,
+                                  height: 24,
                                 ),
                               ),
-                              const SizedBox(
-                                width: 12,
-                              ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(
+                              width: 12,
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    onChanged: (newValue) {
-                      setState(() {
-                        _continueEnabled = passwordController.text.isNotEmpty;
-                      });
-                    },
                   ),
+                  onChanged: (newValue) {
+                    setState(() {
+                      _continueEnabled = passwordController.text.isNotEmpty;
+                    });
+                  },
                 ),
                 const SizedBox(height: 50),
                 Row(

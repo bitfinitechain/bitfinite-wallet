@@ -339,69 +339,104 @@ class _Step2ViewState extends ConsumerState<Step2View> {
                               ],
                             ),
                             const SizedBox(height: 4),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(
-                                Constants.size.circularBorderRadius,
+                            TextField(
+                              onTap: () {},
+                              key: const Key(
+                                "recipientExchangeStep2ViewAddressFieldKey",
                               ),
-                              child: TextField(
-                                onTap: () {},
-                                key: const Key(
-                                  "recipientExchangeStep2ViewAddressFieldKey",
-                                ),
-                                controller: _toController,
-                                readOnly: false,
-                                autocorrect: false,
-                                enableSuggestions: false,
-                                // inputFormatters: <TextInputFormatter>[
-                                //   FilteringTextInputFormatter.allow(RegExp("[a-zA-Z0-9]{34}")),
-                                // ],
-                                toolbarOptions: const ToolbarOptions(
-                                  copy: false,
-                                  cut: false,
-                                  paste: true,
-                                  selectAll: false,
-                                ),
-                                focusNode: _toFocusNode,
-                                style: STextStyles.field(context),
-                                onChanged: (value) {
-                                  model.recipientAddress = _toController.text;
-                                  setState(() {
-                                    enableNext =
-                                        _toController.text.isNotEmpty &&
-                                        (_refundController.text.isNotEmpty ||
-                                            !supportsRefund);
-                                  });
-                                },
-                                decoration:
-                                    standardInputDecoration(
-                                      "Enter the ${model.receiveTicker.toUpperCase()} payout address",
-                                      _toFocusNode,
-                                      context,
-                                    ).copyWith(
-                                      contentPadding: const EdgeInsets.only(
-                                        left: 16,
-                                        top: 6,
-                                        bottom: 8,
-                                        right: 5,
-                                      ),
-                                      suffixIcon: Padding(
-                                        padding: _toController.text.isEmpty
-                                            ? const EdgeInsets.only(right: 8)
-                                            : const EdgeInsets.only(right: 0),
-                                        child: UnconstrainedBox(
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
-                                            children: [
-                                              _toController.text.isNotEmpty
-                                                  ? TextFieldIconButton(
-                                                      key: const Key(
-                                                        "sendViewClearAddressFieldButtonKey",
-                                                      ),
-                                                      onTap: () {
-                                                        _toController.text = "";
+                              controller: _toController,
+                              readOnly: false,
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              // inputFormatters: <TextInputFormatter>[
+                              //   FilteringTextInputFormatter.allow(RegExp("[a-zA-Z0-9]{34}")),
+                              // ],
+                              toolbarOptions: const ToolbarOptions(
+                                copy: false,
+                                cut: false,
+                                paste: true,
+                                selectAll: false,
+                              ),
+                              focusNode: _toFocusNode,
+                              style: STextStyles.field(context),
+                              onChanged: (value) {
+                                model.recipientAddress = _toController.text;
+                                setState(() {
+                                  enableNext =
+                                      _toController.text.isNotEmpty &&
+                                      (_refundController.text.isNotEmpty ||
+                                          !supportsRefund);
+                                });
+                              },
+                              decoration:
+                                  standardInputDecoration(
+                                    "Enter the ${model.receiveTicker.toUpperCase()} payout address",
+                                    _toFocusNode,
+                                    context,
+                                  ).copyWith(
+                                    contentPadding: const EdgeInsets.only(
+                                      left: 16,
+                                      top: 6,
+                                      bottom: 8,
+                                      right: 5,
+                                    ),
+                                    suffixIcon: Padding(
+                                      padding: _toController.text.isEmpty
+                                          ? const EdgeInsets.only(right: 8)
+                                          : const EdgeInsets.only(right: 0),
+                                      child: UnconstrainedBox(
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceAround,
+                                          children: [
+                                            _toController.text.isNotEmpty
+                                                ? TextFieldIconButton(
+                                                    key: const Key(
+                                                      "sendViewClearAddressFieldButtonKey",
+                                                    ),
+                                                    onTap: () {
+                                                      _toController.text = "";
+                                                      model.recipientAddress =
+                                                          _toController.text;
+
+                                                      setState(() {
+                                                        enableNext =
+                                                            _toController
+                                                                .text
+                                                                .isNotEmpty &&
+                                                            (_refundController
+                                                                    .text
+                                                                    .isNotEmpty ||
+                                                                !supportsRefund);
+                                                      });
+                                                    },
+                                                    child: const XIcon(),
+                                                  )
+                                                : TextFieldIconButton(
+                                                    key: const Key(
+                                                      "sendViewPasteAddressFieldButtonKey",
+                                                    ),
+                                                    onTap: () async {
+                                                      final ClipboardData?
+                                                      data = await clipboard
+                                                          .getData(
+                                                            Clipboard
+                                                                .kTextPlain,
+                                                          );
+                                                      if (data?.text !=
+                                                              null &&
+                                                          data!
+                                                              .text!
+                                                              .isNotEmpty) {
+                                                        final content = data
+                                                            .text!
+                                                            .trim();
+
+                                                        _toController.text =
+                                                            content;
                                                         model.recipientAddress =
-                                                            _toController.text;
+                                                            _toController
+                                                                .text;
 
                                                         setState(() {
                                                           enableNext =
@@ -413,128 +448,88 @@ class _Step2ViewState extends ConsumerState<Step2View> {
                                                                       .isNotEmpty ||
                                                                   !supportsRefund);
                                                         });
-                                                      },
-                                                      child: const XIcon(),
-                                                    )
-                                                  : TextFieldIconButton(
-                                                      key: const Key(
-                                                        "sendViewPasteAddressFieldButtonKey",
-                                                      ),
-                                                      onTap: () async {
-                                                        final ClipboardData?
-                                                        data = await clipboard
-                                                            .getData(
-                                                              Clipboard
-                                                                  .kTextPlain,
-                                                            );
-                                                        if (data?.text !=
-                                                                null &&
-                                                            data!
-                                                                .text!
-                                                                .isNotEmpty) {
-                                                          final content = data
-                                                              .text!
-                                                              .trim();
-
-                                                          _toController.text =
-                                                              content;
-                                                          model.recipientAddress =
-                                                              _toController
-                                                                  .text;
-
-                                                          setState(() {
-                                                            enableNext =
-                                                                _toController
-                                                                    .text
-                                                                    .isNotEmpty &&
-                                                                (_refundController
-                                                                        .text
-                                                                        .isNotEmpty ||
-                                                                    !supportsRefund);
-                                                          });
-                                                        }
-                                                      },
-                                                      child:
-                                                          _toController
-                                                              .text
-                                                              .isEmpty
-                                                          ? const ClipboardIcon()
-                                                          : const XIcon(),
-                                                    ),
-                                              if (_toController.text.isEmpty)
-                                                TextFieldIconButton(
-                                                  key: const Key(
-                                                    "sendViewAddressBookButtonKey",
+                                                      }
+                                                    },
+                                                    child:
+                                                        _toController
+                                                            .text
+                                                            .isEmpty
+                                                        ? const ClipboardIcon()
+                                                        : const XIcon(),
                                                   ),
-                                                  onTap: () {
+                                            if (_toController.text.isEmpty)
+                                              TextFieldIconButton(
+                                                key: const Key(
+                                                  "sendViewAddressBookButtonKey",
+                                                ),
+                                                onTap: () {
+                                                  ref
+                                                          .read(
+                                                            exchangeFlowIsActiveStateProvider
+                                                                .state,
+                                                          )
+                                                          .state =
+                                                      true;
+                                                  Navigator.of(
+                                                    context,
+                                                  ).pushNamed(AddressBookView.routeName).then((
+                                                    _,
+                                                  ) {
                                                     ref
                                                             .read(
                                                               exchangeFlowIsActiveStateProvider
                                                                   .state,
                                                             )
                                                             .state =
-                                                        true;
-                                                    Navigator.of(
-                                                      context,
-                                                    ).pushNamed(AddressBookView.routeName).then((
-                                                      _,
-                                                    ) {
+                                                        false;
+
+                                                    final address = ref
+                                                        .read(
+                                                          exchangeFromAddressBookAddressStateProvider
+                                                              .state,
+                                                        )
+                                                        .state;
+                                                    if (address.isNotEmpty) {
+                                                      _toController.text =
+                                                          address;
+                                                      model.recipientAddress =
+                                                          _toController.text;
                                                       ref
                                                               .read(
-                                                                exchangeFlowIsActiveStateProvider
+                                                                exchangeFromAddressBookAddressStateProvider
                                                                     .state,
                                                               )
                                                               .state =
-                                                          false;
-
-                                                      final address = ref
-                                                          .read(
-                                                            exchangeFromAddressBookAddressStateProvider
-                                                                .state,
-                                                          )
-                                                          .state;
-                                                      if (address.isNotEmpty) {
-                                                        _toController.text =
-                                                            address;
-                                                        model.recipientAddress =
-                                                            _toController.text;
-                                                        ref
-                                                                .read(
-                                                                  exchangeFromAddressBookAddressStateProvider
-                                                                      .state,
-                                                                )
-                                                                .state =
-                                                            "";
-                                                      }
-                                                      setState(() {
-                                                        enableNext =
-                                                            _toController
-                                                                .text
-                                                                .isNotEmpty &&
-                                                            (_refundController
-                                                                    .text
-                                                                    .isNotEmpty ||
-                                                                !supportsRefund);
-                                                      });
+                                                          "";
+                                                    }
+                                                    setState(() {
+                                                      enableNext =
+                                                          _toController
+                                                              .text
+                                                              .isNotEmpty &&
+                                                          (_refundController
+                                                                  .text
+                                                                  .isNotEmpty ||
+                                                              !supportsRefund);
                                                     });
-                                                  },
-                                                  child:
-                                                      const AddressBookIcon(),
+                                                  });
+                                                },
+                                                child:
+                                                    const AddressBookIcon(),
+                                              ),
+                                            if (_toController.text.isEmpty)
+                                              TextFieldIconButton(
+                                                key: const Key(
+                                                  "sendViewScanQrButtonKey",
                                                 ),
-                                              if (_toController.text.isEmpty)
-                                                TextFieldIconButton(
-                                                  key: const Key(
-                                                    "sendViewScanQrButtonKey",
-                                                  ),
-                                                  onTap: _onToQrTapped,
-                                                  child: const QrCodeIcon(),
-                                                ),
-                                            ],
-                                          ),
+                                                onTap: _onToQrTapped,
+                                                child: const QrCodeIcon(),
+                                              ),
+                                          ],
                                         ),
                                       ),
                                     ),
-                              ),
+                                  ),
                             ),
                             const SizedBox(height: 6),
                             RoundedWhiteContainer(
@@ -607,71 +602,106 @@ class _Step2ViewState extends ConsumerState<Step2View> {
                               ),
                             if (supportsRefund) const SizedBox(height: 4),
                             if (supportsRefund)
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(
-                                  Constants.size.circularBorderRadius,
+                              TextField(
+                                key: const Key(
+                                  "refundExchangeStep2ViewAddressFieldKey",
                                 ),
-                                child: TextField(
-                                  key: const Key(
-                                    "refundExchangeStep2ViewAddressFieldKey",
-                                  ),
-                                  controller: _refundController,
-                                  readOnly: false,
-                                  autocorrect: false,
-                                  enableSuggestions: false,
-                                  // inputFormatters: <TextInputFormatter>[
-                                  //   FilteringTextInputFormatter.allow(RegExp("[a-zA-Z0-9]{34}")),
-                                  // ],
-                                  toolbarOptions: const ToolbarOptions(
-                                    copy: false,
-                                    cut: false,
-                                    paste: true,
-                                    selectAll: false,
-                                  ),
-                                  focusNode: _refundFocusNode,
-                                  style: STextStyles.field(context),
-                                  onChanged: (value) {
-                                    model.refundAddress =
-                                        _refundController.text;
-                                    setState(() {
-                                      enableNext =
-                                          _toController.text.isNotEmpty &&
-                                          _refundController.text.isNotEmpty;
-                                    });
-                                  },
-                                  decoration:
-                                      standardInputDecoration(
-                                        "Enter ${model.sendTicker.toUpperCase()} refund address",
-                                        _refundFocusNode,
-                                        context,
-                                      ).copyWith(
-                                        contentPadding: const EdgeInsets.only(
-                                          left: 16,
-                                          top: 6,
-                                          bottom: 8,
-                                          right: 5,
-                                        ),
-                                        suffixIcon: Padding(
-                                          padding:
-                                              _refundController.text.isEmpty
-                                              ? const EdgeInsets.only(right: 16)
-                                              : const EdgeInsets.only(right: 0),
-                                          child: UnconstrainedBox(
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
-                                              children: [
-                                                _refundController
-                                                        .text
-                                                        .isNotEmpty
-                                                    ? TextFieldIconButton(
-                                                        key: const Key(
-                                                          "sendViewClearAddressFieldButtonKey",
-                                                        ),
-                                                        onTap: () {
+                                controller: _refundController,
+                                readOnly: false,
+                                autocorrect: false,
+                                enableSuggestions: false,
+                                // inputFormatters: <TextInputFormatter>[
+                                //   FilteringTextInputFormatter.allow(RegExp("[a-zA-Z0-9]{34}")),
+                                // ],
+                                toolbarOptions: const ToolbarOptions(
+                                  copy: false,
+                                  cut: false,
+                                  paste: true,
+                                  selectAll: false,
+                                ),
+                                focusNode: _refundFocusNode,
+                                style: STextStyles.field(context),
+                                onChanged: (value) {
+                                  model.refundAddress =
+                                      _refundController.text;
+                                  setState(() {
+                                    enableNext =
+                                        _toController.text.isNotEmpty &&
+                                        _refundController.text.isNotEmpty;
+                                  });
+                                },
+                                decoration:
+                                    standardInputDecoration(
+                                      "Enter ${model.sendTicker.toUpperCase()} refund address",
+                                      _refundFocusNode,
+                                      context,
+                                    ).copyWith(
+                                      contentPadding: const EdgeInsets.only(
+                                        left: 16,
+                                        top: 6,
+                                        bottom: 8,
+                                        right: 5,
+                                      ),
+                                      suffixIcon: Padding(
+                                        padding:
+                                            _refundController.text.isEmpty
+                                            ? const EdgeInsets.only(right: 16)
+                                            : const EdgeInsets.only(right: 0),
+                                        child: UnconstrainedBox(
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                            children: [
+                                              _refundController
+                                                      .text
+                                                      .isNotEmpty
+                                                  ? TextFieldIconButton(
+                                                      key: const Key(
+                                                        "sendViewClearAddressFieldButtonKey",
+                                                      ),
+                                                      onTap: () {
+                                                        _refundController
+                                                                .text =
+                                                            "";
+                                                        model.refundAddress =
+                                                            _refundController
+                                                                .text;
+
+                                                        setState(() {
+                                                          enableNext =
+                                                              _toController
+                                                                  .text
+                                                                  .isNotEmpty &&
+                                                              _refundController
+                                                                  .text
+                                                                  .isNotEmpty;
+                                                        });
+                                                      },
+                                                      child: const XIcon(),
+                                                    )
+                                                  : TextFieldIconButton(
+                                                      key: const Key(
+                                                        "sendViewPasteAddressFieldButtonKey",
+                                                      ),
+                                                      onTap: () async {
+                                                        final ClipboardData?
+                                                        data = await clipboard
+                                                            .getData(
+                                                              Clipboard
+                                                                  .kTextPlain,
+                                                            );
+                                                        if (data?.text !=
+                                                                null &&
+                                                            data!
+                                                                .text!
+                                                                .isNotEmpty) {
+                                                          final content = data
+                                                              .text!
+                                                              .trim();
+
                                                           _refundController
                                                                   .text =
-                                                              "";
+                                                              content;
                                                           model.refundAddress =
                                                               _refundController
                                                                   .text;
@@ -685,127 +715,87 @@ class _Step2ViewState extends ConsumerState<Step2View> {
                                                                     .text
                                                                     .isNotEmpty;
                                                           });
-                                                        },
-                                                        child: const XIcon(),
-                                                      )
-                                                    : TextFieldIconButton(
-                                                        key: const Key(
-                                                          "sendViewPasteAddressFieldButtonKey",
-                                                        ),
-                                                        onTap: () async {
-                                                          final ClipboardData?
-                                                          data = await clipboard
-                                                              .getData(
-                                                                Clipboard
-                                                                    .kTextPlain,
-                                                              );
-                                                          if (data?.text !=
-                                                                  null &&
-                                                              data!
-                                                                  .text!
-                                                                  .isNotEmpty) {
-                                                            final content = data
-                                                                .text!
-                                                                .trim();
-
+                                                        }
+                                                      },
+                                                      child:
+                                                          _refundController
+                                                              .text
+                                                              .isEmpty
+                                                          ? const ClipboardIcon()
+                                                          : const XIcon(),
+                                                    ),
+                                              if (_refundController
+                                                  .text
+                                                  .isEmpty)
+                                                TextFieldIconButton(
+                                                  key: const Key(
+                                                    "sendViewAddressBookButtonKey",
+                                                  ),
+                                                  onTap: () {
+                                                    ref
+                                                            .read(
+                                                              exchangeFlowIsActiveStateProvider
+                                                                  .state,
+                                                            )
+                                                            .state =
+                                                        true;
+                                                    Navigator.of(context)
+                                                        .pushNamed(
+                                                          AddressBookView
+                                                              .routeName,
+                                                        )
+                                                        .then((_) {
+                                                          ref
+                                                                  .read(
+                                                                    exchangeFlowIsActiveStateProvider
+                                                                        .state,
+                                                                  )
+                                                                  .state =
+                                                              false;
+                                                          final address = ref
+                                                              .read(
+                                                                exchangeFromAddressBookAddressStateProvider
+                                                                    .state,
+                                                              )
+                                                              .state;
+                                                          if (address
+                                                              .isNotEmpty) {
                                                             _refundController
                                                                     .text =
-                                                                content;
+                                                                address;
                                                             model.refundAddress =
                                                                 _refundController
                                                                     .text;
-
-                                                            setState(() {
-                                                              enableNext =
-                                                                  _toController
-                                                                      .text
-                                                                      .isNotEmpty &&
-                                                                  _refundController
-                                                                      .text
-                                                                      .isNotEmpty;
-                                                            });
                                                           }
-                                                        },
-                                                        child:
-                                                            _refundController
-                                                                .text
-                                                                .isEmpty
-                                                            ? const ClipboardIcon()
-                                                            : const XIcon(),
-                                                      ),
-                                                if (_refundController
-                                                    .text
-                                                    .isEmpty)
-                                                  TextFieldIconButton(
-                                                    key: const Key(
-                                                      "sendViewAddressBookButtonKey",
-                                                    ),
-                                                    onTap: () {
-                                                      ref
-                                                              .read(
-                                                                exchangeFlowIsActiveStateProvider
-                                                                    .state,
-                                                              )
-                                                              .state =
-                                                          true;
-                                                      Navigator.of(context)
-                                                          .pushNamed(
-                                                            AddressBookView
-                                                                .routeName,
-                                                          )
-                                                          .then((_) {
-                                                            ref
-                                                                    .read(
-                                                                      exchangeFlowIsActiveStateProvider
-                                                                          .state,
-                                                                    )
-                                                                    .state =
-                                                                false;
-                                                            final address = ref
-                                                                .read(
-                                                                  exchangeFromAddressBookAddressStateProvider
-                                                                      .state,
-                                                                )
-                                                                .state;
-                                                            if (address
-                                                                .isNotEmpty) {
-                                                              _refundController
-                                                                      .text =
-                                                                  address;
-                                                              model.refundAddress =
-                                                                  _refundController
-                                                                      .text;
-                                                            }
-                                                            setState(() {
-                                                              enableNext =
-                                                                  _toController
-                                                                      .text
-                                                                      .isNotEmpty &&
-                                                                  _refundController
-                                                                      .text
-                                                                      .isNotEmpty;
-                                                            });
+                                                          setState(() {
+                                                            enableNext =
+                                                                _toController
+                                                                    .text
+                                                                    .isNotEmpty &&
+                                                                _refundController
+                                                                    .text
+                                                                    .isNotEmpty;
                                                           });
-                                                    },
-                                                    child:
-                                                        const AddressBookIcon(),
+                                                        });
+                                                  },
+                                                  child:
+                                                      const AddressBookIcon(),
+                                                ),
+                                              if (_refundController
+                                                  .text
+                                                  .isEmpty)
+                                                TextFieldIconButton(
+                                                  key: const Key(
+                                                    "sendViewScanQrButtonKey",
                                                   ),
-                                                if (_refundController
-                                                    .text
-                                                    .isEmpty)
-                                                  TextFieldIconButton(
-                                                    key: const Key(
-                                                      "sendViewScanQrButtonKey",
-                                                    ),
-                                                    onTap: _onRefundQrTapped,
-                                                    child: const QrCodeIcon(),
-                                                  ),
-                                              ],
-                                            ),
+                                                  onTap: _onRefundQrTapped,
+                                                  child: const QrCodeIcon(),
+                                                ),
+                                            ],
                                           ),
                                         ),
                                       ),
-                                ),
+                                    ),
                               ),
                             if (supportsRefund) const SizedBox(height: 6),
                             if (supportsRefund)

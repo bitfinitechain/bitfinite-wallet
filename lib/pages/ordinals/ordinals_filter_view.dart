@@ -585,61 +585,56 @@ class _OrdinalsFilterViewState extends ConsumerState<OrdinalsFilterView> {
         SizedBox(height: isDesktop ? 10 : 8),
         Padding(
           padding: EdgeInsets.only(right: isDesktop ? 32 : 0),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(
-              Constants.size.circularBorderRadius,
-            ),
-            child: TextField(
-              autocorrect: Util.isDesktop ? false : true,
-              enableSuggestions: Util.isDesktop ? false : true,
-              key: const Key("OrdinalsInscriptionFieldKey"),
-              controller: _inscriptionTextEditingController,
-              focusNode: inscriptionTextFieldFocusNode,
-              onChanged: (_) => setState(() {}),
-              style: isDesktop
-                  ? STextStyles.desktopTextExtraSmall(context).copyWith(
-                      color: Theme.of(
-                        context,
-                      ).extension<StackColors>()!.textDark,
-                      height: 1.8,
-                    )
-                  : STextStyles.field(context),
-              decoration:
-                  standardInputDecoration(
-                    "Enter inscription number...",
-                    keywordTextFieldFocusNode,
-                    context,
-                    desktopMed: isDesktop,
-                  ).copyWith(
-                    contentPadding: isDesktop
-                        ? const EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 16,
-                          )
-                        : null,
-                    suffixIcon:
-                        _inscriptionTextEditingController.text.isNotEmpty
-                        ? Padding(
-                            padding: const EdgeInsets.only(right: 0),
-                            child: UnconstrainedBox(
-                              child: Row(
-                                children: [
-                                  TextFieldIconButton(
-                                    child: const XIcon(),
-                                    onTap: () async {
-                                      setState(() {
-                                        _inscriptionTextEditingController.text =
-                                            "";
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
+          child: TextField(
+            autocorrect: Util.isDesktop ? false : true,
+            enableSuggestions: Util.isDesktop ? false : true,
+            key: const Key("OrdinalsInscriptionFieldKey"),
+            controller: _inscriptionTextEditingController,
+            focusNode: inscriptionTextFieldFocusNode,
+            onChanged: (_) => setState(() {}),
+            style: isDesktop
+                ? STextStyles.desktopTextExtraSmall(context).copyWith(
+                    color: Theme.of(
+                      context,
+                    ).extension<StackColors>()!.textDark,
+                    height: 1.8,
+                  )
+                : STextStyles.field(context),
+            decoration:
+                standardInputDecoration(
+                  "Enter inscription number...",
+                  keywordTextFieldFocusNode,
+                  context,
+                  desktopMed: isDesktop,
+                ).copyWith(
+                  contentPadding: isDesktop
+                      ? const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 16,
+                        )
+                      : null,
+                  suffixIcon:
+                      _inscriptionTextEditingController.text.isNotEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.only(right: 0),
+                          child: UnconstrainedBox(
+                            child: Row(
+                              children: [
+                                TextFieldIconButton(
+                                  child: const XIcon(),
+                                  onTap: () async {
+                                    setState(() {
+                                      _inscriptionTextEditingController.text =
+                                          "";
+                                    });
+                                  },
+                                ),
+                              ],
                             ),
-                          )
-                        : null,
-                  ),
-            ),
+                          ),
+                        )
+                      : null,
+                ),
           ),
         ),
         SizedBox(height: isDesktop ? 32 : 24),
@@ -657,59 +652,54 @@ class _OrdinalsFilterViewState extends ConsumerState<OrdinalsFilterView> {
         SizedBox(height: isDesktop ? 10 : 8),
         Padding(
           padding: EdgeInsets.only(right: isDesktop ? 32 : 0),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(
-              Constants.size.circularBorderRadius,
-            ),
-            child: TextField(
-              autocorrect: Util.isDesktop ? false : true,
-              enableSuggestions: Util.isDesktop ? false : true,
-              key: const Key("OrdinalsViewKeywordFieldKey"),
-              controller: _keywordTextEditingController,
-              focusNode: keywordTextFieldFocusNode,
-              style: isDesktop
-                  ? STextStyles.desktopTextExtraSmall(context).copyWith(
-                      color: Theme.of(
-                        context,
-                      ).extension<StackColors>()!.textDark,
-                      height: 1.8,
-                    )
-                  : STextStyles.field(context),
-              onChanged: (_) => setState(() {}),
-              decoration:
-                  standardInputDecoration(
-                    "Type keyword...",
-                    keywordTextFieldFocusNode,
-                    context,
-                    desktopMed: isDesktop,
-                  ).copyWith(
-                    contentPadding: isDesktop
-                        ? const EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 16,
-                          )
-                        : null,
-                    suffixIcon: _keywordTextEditingController.text.isNotEmpty
-                        ? Padding(
-                            padding: const EdgeInsets.only(right: 0),
-                            child: UnconstrainedBox(
-                              child: Row(
-                                children: [
-                                  TextFieldIconButton(
-                                    child: const XIcon(),
-                                    onTap: () async {
-                                      setState(() {
-                                        _keywordTextEditingController.text = "";
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
+          child: TextField(
+            autocorrect: Util.isDesktop ? false : true,
+            enableSuggestions: Util.isDesktop ? false : true,
+            key: const Key("OrdinalsViewKeywordFieldKey"),
+            controller: _keywordTextEditingController,
+            focusNode: keywordTextFieldFocusNode,
+            style: isDesktop
+                ? STextStyles.desktopTextExtraSmall(context).copyWith(
+                    color: Theme.of(
+                      context,
+                    ).extension<StackColors>()!.textDark,
+                    height: 1.8,
+                  )
+                : STextStyles.field(context),
+            onChanged: (_) => setState(() {}),
+            decoration:
+                standardInputDecoration(
+                  "Type keyword...",
+                  keywordTextFieldFocusNode,
+                  context,
+                  desktopMed: isDesktop,
+                ).copyWith(
+                  contentPadding: isDesktop
+                      ? const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 16,
+                        )
+                      : null,
+                  suffixIcon: _keywordTextEditingController.text.isNotEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.only(right: 0),
+                          child: UnconstrainedBox(
+                            child: Row(
+                              children: [
+                                TextFieldIconButton(
+                                  child: const XIcon(),
+                                  onTap: () async {
+                                    setState(() {
+                                      _keywordTextEditingController.text = "";
+                                    });
+                                  },
+                                ),
+                              ],
                             ),
-                          )
-                        : null,
-                  ),
-            ),
+                          ),
+                        )
+                      : null,
+                ),
           ),
         ),
         if (!isDesktop) const Spacer(),

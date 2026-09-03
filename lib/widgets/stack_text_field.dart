@@ -52,13 +52,20 @@ InputDecoration standardInputDecoration(
         : STextStyles.fieldLabel(context),
     // A white field on the tinted page measures 1.08:1 — without a border the
     // control has no visible edge at all. The design's #E4E4E7 hairline is what
-    // makes it readable as an input. Radius matches the ClipRRect these fields
-    // are wrapped in, so the stroke follows the corner instead of being cut.
+    // makes it readable as an input, and it is now also what gives the field
+    // its rounded shape: the ClipRRect that used to do that was removed from
+    // every call site, because it cropped the floating label.
     enabledBorder: _defaultFieldBorder(context),
     focusedBorder: _defaultFieldBorder(context),
-    errorBorder: InputBorder.none,
     disabledBorder: _defaultFieldBorder(context),
-    focusedErrorBorder: InputBorder.none,
+    // The error states used to be InputBorder.none, so a field that failed
+    // validation lost its outline — and with it its shape. That was survivable
+    // only because every call site wrapped the field in a ClipRRect that
+    // rounded the fill by hand. Those wrappers are gone (they cropped the
+    // floating label in half), so the shape has to come from the decoration in
+    // every state, not just the happy ones.
+    errorBorder: _defaultFieldBorder(context),
+    focusedErrorBorder: _defaultFieldBorder(context),
   );
 }
 
@@ -114,65 +121,60 @@ class _FullTextFieldState extends State<FullTextField> {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(
-        Constants.size.circularBorderRadius,
-      ),
-      child: TextField(
-        controller: controller,
-        autocorrect: false,
-        enableSuggestions: false,
-        onChanged: (newValue) {
-          widget.onChanged?.call(newValue);
-        },
-        focusNode: focusNode,
-        style: STextStyles.field(context),
-        decoration: standardInputDecoration(
-          widget.label,
-          focusNode,
-          context,
-        ).copyWith(
-          contentPadding: const EdgeInsets.only(
-            left: 16,
-            top: 6,
-            bottom: 8,
-            right: 5,
-          ),
-          suffixIcon: Padding(
-            padding: controller.text.isEmpty
-                ? const EdgeInsets.only(right: 8)
-                : const EdgeInsets.only(right: 0),
-            child: UnconstrainedBox(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  TextFieldIconButton(
-                    onTap: () async {
-                      if (_hasValue) {
-                        controller.text = "";
+    return TextField(
+      controller: controller,
+      autocorrect: false,
+      enableSuggestions: false,
+      onChanged: (newValue) {
+        widget.onChanged?.call(newValue);
+      },
+      focusNode: focusNode,
+      style: STextStyles.field(context),
+      decoration: standardInputDecoration(
+        widget.label,
+        focusNode,
+        context,
+      ).copyWith(
+        contentPadding: const EdgeInsets.only(
+          left: 16,
+          top: 6,
+          bottom: 8,
+          right: 5,
+        ),
+        suffixIcon: Padding(
+          padding: controller.text.isEmpty
+              ? const EdgeInsets.only(right: 8)
+              : const EdgeInsets.only(right: 0),
+          child: UnconstrainedBox(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                TextFieldIconButton(
+                  onTap: () async {
+                    if (_hasValue) {
+                      controller.text = "";
 
+                      setState(() {
+                        _hasValue = false;
+                      });
+                    } else {
+                      final data =
+                          await Clipboard.getData(Clipboard.kTextPlain);
+                      if (data?.text != null && data!.text!.isNotEmpty) {
+                        final content = data.text!.trim();
+
+                        controller.text = content;
                         setState(() {
-                          _hasValue = false;
+                          _hasValue = content.isNotEmpty;
                         });
-                      } else {
-                        final data =
-                            await Clipboard.getData(Clipboard.kTextPlain);
-                        if (data?.text != null && data!.text!.isNotEmpty) {
-                          final content = data.text!.trim();
-
-                          controller.text = content;
-                          setState(() {
-                            _hasValue = content.isNotEmpty;
-                          });
-                        }
                       }
+                    }
 
-                      widget.onChanged?.call(controller.text);
-                    },
-                    child: _hasValue ? const XIcon() : const ClipboardIcon(),
-                  ),
-                ],
-              ),
+                    widget.onChanged?.call(controller.text);
+                  },
+                  child: _hasValue ? const XIcon() : const ClipboardIcon(),
+                ),
+              ],
             ),
           ),
         ),

@@ -325,180 +325,170 @@ class _RestoreFrostMsWalletViewState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(
-                Constants.size.circularBorderRadius,
-              ),
-              child: TextField(
-                key: const Key("frConfigTextFieldKey"),
-                controller: configFieldController,
-                onChanged: (_) {
-                  setState(() {
-                    _configEmpty = configFieldController.text.isEmpty;
-                  });
-                },
-                focusNode: configFocusNode,
-                readOnly: false,
-                autocorrect: false,
-                enableSuggestions: false,
-                style: STextStyles.field(context),
-                decoration:
-                    standardInputDecoration(
-                      "Enter config",
-                      configFocusNode,
-                      context,
-                    ).copyWith(
-                      contentPadding: const EdgeInsets.only(
-                        left: 16,
-                        top: 6,
-                        bottom: 8,
-                        right: 5,
-                      ),
-                      suffixIcon: Padding(
-                        padding: _configEmpty
-                            ? const EdgeInsets.only(right: 8)
-                            : const EdgeInsets.only(right: 0),
-                        child: UnconstrainedBox(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              !_configEmpty
-                                  ? TextFieldIconButton(
-                                      semanticsLabel:
-                                          "Clear Button. Clears The Config Field.",
-                                      key: const Key("frConfigClearButtonKey"),
-                                      onTap: () {
-                                        configFieldController.text = "";
+            TextField(
+              key: const Key("frConfigTextFieldKey"),
+              controller: configFieldController,
+              onChanged: (_) {
+                setState(() {
+                  _configEmpty = configFieldController.text.isEmpty;
+                });
+              },
+              focusNode: configFocusNode,
+              readOnly: false,
+              autocorrect: false,
+              enableSuggestions: false,
+              style: STextStyles.field(context),
+              decoration:
+                  standardInputDecoration(
+                    "Enter config",
+                    configFocusNode,
+                    context,
+                  ).copyWith(
+                    contentPadding: const EdgeInsets.only(
+                      left: 16,
+                      top: 6,
+                      bottom: 8,
+                      right: 5,
+                    ),
+                    suffixIcon: Padding(
+                      padding: _configEmpty
+                          ? const EdgeInsets.only(right: 8)
+                          : const EdgeInsets.only(right: 0),
+                      child: UnconstrainedBox(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            !_configEmpty
+                                ? TextFieldIconButton(
+                                    semanticsLabel:
+                                        "Clear Button. Clears The Config Field.",
+                                    key: const Key("frConfigClearButtonKey"),
+                                    onTap: () {
+                                      configFieldController.text = "";
 
-                                        setState(() {
-                                          _configEmpty = true;
-                                        });
-                                      },
-                                      child: const XIcon(),
-                                    )
-                                  : TextFieldIconButton(
-                                      semanticsLabel:
-                                          "Paste Button. Pastes From Clipboard To Config Field Input.",
-                                      key: const Key("frConfigPasteButtonKey"),
-                                      onTap: () async {
-                                        final ClipboardData? data =
-                                            await Clipboard.getData(
-                                              Clipboard.kTextPlain,
-                                            );
-                                        if (data?.text != null &&
-                                            data!.text!.isNotEmpty) {
-                                          configFieldController.text = data
-                                              .text!
-                                              .trim();
-                                        }
+                                      setState(() {
+                                        _configEmpty = true;
+                                      });
+                                    },
+                                    child: const XIcon(),
+                                  )
+                                : TextFieldIconButton(
+                                    semanticsLabel:
+                                        "Paste Button. Pastes From Clipboard To Config Field Input.",
+                                    key: const Key("frConfigPasteButtonKey"),
+                                    onTap: () async {
+                                      final ClipboardData? data =
+                                          await Clipboard.getData(
+                                            Clipboard.kTextPlain,
+                                          );
+                                      if (data?.text != null &&
+                                          data!.text!.isNotEmpty) {
+                                        configFieldController.text = data
+                                            .text!
+                                            .trim();
+                                      }
 
-                                        setState(() {
-                                          _configEmpty = configFieldController
-                                              .text
-                                              .isEmpty;
-                                        });
-                                      },
-                                      child: _configEmpty
-                                          ? const ClipboardIcon()
-                                          : const XIcon(),
-                                    ),
-                              if (_configEmpty)
-                                TextFieldIconButton(
-                                  semanticsLabel:
-                                      "Scan QR Button. Opens Camera For Scanning QR Code.",
-                                  key: const Key("frConfigScanQrButtonKey"),
-                                  onTap: scanQr,
-                                  child: const QrCodeIcon(),
-                                ),
-                            ],
-                          ),
+                                      setState(() {
+                                        _configEmpty = configFieldController
+                                            .text
+                                            .isEmpty;
+                                      });
+                                    },
+                                    child: _configEmpty
+                                        ? const ClipboardIcon()
+                                        : const XIcon(),
+                                  ),
+                            if (_configEmpty)
+                              TextFieldIconButton(
+                                semanticsLabel:
+                                    "Scan QR Button. Opens Camera For Scanning QR Code.",
+                                key: const Key("frConfigScanQrButtonKey"),
+                                onTap: scanQr,
+                                child: const QrCodeIcon(),
+                              ),
+                          ],
                         ),
                       ),
                     ),
-              ),
+                  ),
             ),
             const SizedBox(height: 16),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(
-                Constants.size.circularBorderRadius,
-              ),
-              child: TextField(
-                key: const Key("frMyNameTextFieldKey"),
-                controller: keysFieldController,
-                onChanged: (_) {
-                  setState(() {
-                    _keysEmpty = keysFieldController.text.isEmpty;
-                  });
-                },
-                focusNode: keysFocusNode,
-                readOnly: false,
-                autocorrect: false,
-                enableSuggestions: false,
-                style: STextStyles.field(context),
-                decoration:
-                    standardInputDecoration(
-                      "Keys",
-                      keysFocusNode,
-                      context,
-                    ).copyWith(
-                      contentPadding: const EdgeInsets.only(
-                        left: 16,
-                        top: 6,
-                        bottom: 8,
-                        right: 5,
-                      ),
-                      suffixIcon: Padding(
-                        padding: _keysEmpty
-                            ? const EdgeInsets.only(right: 8)
-                            : const EdgeInsets.only(right: 0),
-                        child: UnconstrainedBox(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              !_keysEmpty
-                                  ? TextFieldIconButton(
-                                      semanticsLabel:
-                                          "Clear Button. Clears The Keys Field.",
-                                      key: const Key("frMyNameClearButtonKey"),
-                                      onTap: () {
-                                        keysFieldController.text = "";
+            TextField(
+              key: const Key("frMyNameTextFieldKey"),
+              controller: keysFieldController,
+              onChanged: (_) {
+                setState(() {
+                  _keysEmpty = keysFieldController.text.isEmpty;
+                });
+              },
+              focusNode: keysFocusNode,
+              readOnly: false,
+              autocorrect: false,
+              enableSuggestions: false,
+              style: STextStyles.field(context),
+              decoration:
+                  standardInputDecoration(
+                    "Keys",
+                    keysFocusNode,
+                    context,
+                  ).copyWith(
+                    contentPadding: const EdgeInsets.only(
+                      left: 16,
+                      top: 6,
+                      bottom: 8,
+                      right: 5,
+                    ),
+                    suffixIcon: Padding(
+                      padding: _keysEmpty
+                          ? const EdgeInsets.only(right: 8)
+                          : const EdgeInsets.only(right: 0),
+                      child: UnconstrainedBox(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            !_keysEmpty
+                                ? TextFieldIconButton(
+                                    semanticsLabel:
+                                        "Clear Button. Clears The Keys Field.",
+                                    key: const Key("frMyNameClearButtonKey"),
+                                    onTap: () {
+                                      keysFieldController.text = "";
 
-                                        setState(() {
-                                          _keysEmpty = true;
-                                        });
-                                      },
-                                      child: const XIcon(),
-                                    )
-                                  : TextFieldIconButton(
-                                      semanticsLabel:
-                                          "Paste Button. Pastes From Clipboard To Keys Field.",
-                                      key: const Key("frKeysPasteButtonKey"),
-                                      onTap: () async {
-                                        final ClipboardData? data =
-                                            await Clipboard.getData(
-                                              Clipboard.kTextPlain,
-                                            );
-                                        if (data?.text != null &&
-                                            data!.text!.isNotEmpty) {
-                                          keysFieldController.text = data.text!
-                                              .trim();
-                                        }
+                                      setState(() {
+                                        _keysEmpty = true;
+                                      });
+                                    },
+                                    child: const XIcon(),
+                                  )
+                                : TextFieldIconButton(
+                                    semanticsLabel:
+                                        "Paste Button. Pastes From Clipboard To Keys Field.",
+                                    key: const Key("frKeysPasteButtonKey"),
+                                    onTap: () async {
+                                      final ClipboardData? data =
+                                          await Clipboard.getData(
+                                            Clipboard.kTextPlain,
+                                          );
+                                      if (data?.text != null &&
+                                          data!.text!.isNotEmpty) {
+                                        keysFieldController.text = data.text!
+                                            .trim();
+                                      }
 
-                                        setState(() {
-                                          _keysEmpty =
-                                              keysFieldController.text.isEmpty;
-                                        });
-                                      },
-                                      child: _keysEmpty
-                                          ? const ClipboardIcon()
-                                          : const XIcon(),
-                                    ),
-                            ],
-                          ),
+                                      setState(() {
+                                        _keysEmpty =
+                                            keysFieldController.text.isEmpty;
+                                      });
+                                    },
+                                    child: _keysEmpty
+                                        ? const ClipboardIcon()
+                                        : const XIcon(),
+                                  ),
+                          ],
                         ),
                       ),
                     ),
-              ),
+                  ),
             ),
             const SizedBox(height: 16),
             if (!Util.isDesktop) const Spacer(),

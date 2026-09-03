@@ -490,44 +490,39 @@ class _FrostSendViewState extends ConsumerState<FrostSendView> {
               textAlign: TextAlign.left,
             ),
             const SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(
-                Constants.size.circularBorderRadius,
-              ),
-              child: TextField(
-                autocorrect: Util.isDesktop ? false : true,
-                enableSuggestions: Util.isDesktop ? false : true,
-                controller: noteController,
-                focusNode: _noteFocusNode,
-                style: STextStyles.field(context),
-                onChanged: (_) => setState(() {}),
-                decoration:
-                    standardInputDecoration(
-                      "Type something...",
-                      _noteFocusNode,
-                      context,
-                    ).copyWith(
-                      suffixIcon: noteController.text.isNotEmpty
-                          ? Padding(
-                              padding: const EdgeInsets.only(right: 0),
-                              child: UnconstrainedBox(
-                                child: Row(
-                                  children: [
-                                    TextFieldIconButton(
-                                      child: const XIcon(),
-                                      onTap: () async {
-                                        setState(() {
-                                          noteController.text = "";
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                ),
+            TextField(
+              autocorrect: Util.isDesktop ? false : true,
+              enableSuggestions: Util.isDesktop ? false : true,
+              controller: noteController,
+              focusNode: _noteFocusNode,
+              style: STextStyles.field(context),
+              onChanged: (_) => setState(() {}),
+              decoration:
+                  standardInputDecoration(
+                    "Type something...",
+                    _noteFocusNode,
+                    context,
+                  ).copyWith(
+                    suffixIcon: noteController.text.isNotEmpty
+                        ? Padding(
+                            padding: const EdgeInsets.only(right: 0),
+                            child: UnconstrainedBox(
+                              child: Row(
+                                children: [
+                                  TextFieldIconButton(
+                                    child: const XIcon(),
+                                    onTap: () async {
+                                      setState(() {
+                                        noteController.text = "";
+                                      });
+                                    },
+                                  ),
+                                ],
                               ),
-                            )
-                          : null,
-                    ),
-              ),
+                            ),
+                          )
+                        : null,
+                  ),
             ),
             const SizedBox(height: 12),
             Padding(

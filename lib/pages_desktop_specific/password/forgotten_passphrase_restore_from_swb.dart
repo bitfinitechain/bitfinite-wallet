@@ -315,69 +315,64 @@ class _ForgottenPassphraseRestoreFromSWBState
                   ),
                 ),
                 const SizedBox(height: 16),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                    Constants.size.circularBorderRadius,
-                  ),
-                  child: TextField(
-                    key: const Key("restoreFromFilePasswordFieldKey"),
-                    focusNode: passwordFocusNode,
-                    controller: passwordController,
-                    style: STextStyles.desktopTextMedium(
-                      context,
-                    ).copyWith(height: 2),
-                    obscureText: hidePassword,
-                    enableSuggestions: false,
-                    autocorrect: false,
-                    decoration:
-                        standardInputDecoration(
-                          "Enter passphrase",
-                          passwordFocusNode,
-                          context,
-                        ).copyWith(
-                          suffixIcon: UnconstrainedBox(
-                            child: SizedBox(
-                              height: 70,
-                              child: Row(
-                                children: [
-                                  const SizedBox(width: 24),
-                                  GestureDetector(
-                                    key: const Key(
-                                      "restoreFromFilePasswordFieldShowPasswordButtonKey",
-                                    ),
-                                    onTap: () async {
-                                      setState(() {
-                                        hidePassword = !hidePassword;
-                                      });
-                                    },
-                                    child: MouseRegion(
-                                      cursor: SystemMouseCursors.click,
-                                      child: SvgPicture.asset(
-                                        hidePassword
-                                            ? Assets.svg.eye
-                                            : Assets.svg.eyeSlash,
-                                        color: Theme.of(
-                                          context,
-                                        ).extension<StackColors>()!.textDark3,
-                                        width: 24,
-                                        height: 24,
-                                      ),
+                TextField(
+                  key: const Key("restoreFromFilePasswordFieldKey"),
+                  focusNode: passwordFocusNode,
+                  controller: passwordController,
+                  style: STextStyles.desktopTextMedium(
+                    context,
+                  ).copyWith(height: 2),
+                  obscureText: hidePassword,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  decoration:
+                      standardInputDecoration(
+                        "Enter passphrase",
+                        passwordFocusNode,
+                        context,
+                      ).copyWith(
+                        suffixIcon: UnconstrainedBox(
+                          child: SizedBox(
+                            height: 70,
+                            child: Row(
+                              children: [
+                                const SizedBox(width: 24),
+                                GestureDetector(
+                                  key: const Key(
+                                    "restoreFromFilePasswordFieldShowPasswordButtonKey",
+                                  ),
+                                  onTap: () async {
+                                    setState(() {
+                                      hidePassword = !hidePassword;
+                                    });
+                                  },
+                                  child: MouseRegion(
+                                    cursor: SystemMouseCursors.click,
+                                    child: SvgPicture.asset(
+                                      hidePassword
+                                          ? Assets.svg.eye
+                                          : Assets.svg.eyeSlash,
+                                      color: Theme.of(
+                                        context,
+                                      ).extension<StackColors>()!.textDark3,
+                                      width: 24,
+                                      height: 24,
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(width: 12),
+                              ],
                             ),
                           ),
                         ),
-                    onChanged: (newValue) {
-                      setState(() {
-                        _enableButton =
-                            passwordController.text.isNotEmpty &&
-                            fileLocationController.text.isNotEmpty;
-                      });
-                    },
-                  ),
+                      ),
+                  onChanged: (newValue) {
+                    setState(() {
+                      _enableButton =
+                          passwordController.text.isNotEmpty &&
+                          fileLocationController.text.isNotEmpty;
+                    });
+                  },
                 ),
                 const SizedBox(height: 24),
                 PrimaryButton(

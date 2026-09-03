@@ -274,57 +274,52 @@ class _ExchangeCurrencySelectionViewState
           mainAxisSize: isDesktop ? MainAxisSize.min : MainAxisSize.max,
           children: [
             if (!isDesktop) const SizedBox(height: 16),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(
-                Constants.size.circularBorderRadius,
-              ),
-              child: TextField(
-                autofocus: isDesktop,
-                autocorrect: !isDesktop,
-                enableSuggestions: !isDesktop,
-                controller: _searchController,
-                focusNode: _searchFocusNode,
-                onChanged: (value) => setState(() => _searchString = value),
-                style: STextStyles.field(context),
-                decoration: standardInputDecoration(
-                  "Search",
-                  _searchFocusNode,
-                  context,
-                  desktopMed: isDesktop,
-                ).copyWith(
-                  prefixIcon: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 16,
-                    ),
-                    child: SvgPicture.asset(
-                      Assets.svg.search,
-                      width: 16,
-                      height: 16,
-                    ),
+            TextField(
+              autofocus: isDesktop,
+              autocorrect: !isDesktop,
+              enableSuggestions: !isDesktop,
+              controller: _searchController,
+              focusNode: _searchFocusNode,
+              onChanged: (value) => setState(() => _searchString = value),
+              style: STextStyles.field(context),
+              decoration: standardInputDecoration(
+                "Search",
+                _searchFocusNode,
+                context,
+                desktopMed: isDesktop,
+              ).copyWith(
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 16,
                   ),
-                  suffixIcon:
-                      _searchController.text.isNotEmpty
-                          ? Padding(
-                            padding: const EdgeInsets.only(right: 0),
-                            child: UnconstrainedBox(
-                              child: Row(
-                                children: [
-                                  TextFieldIconButton(
-                                    child: const XIcon(),
-                                    onTap: () async {
-                                      setState(() {
-                                        _searchController.text = "";
-                                        _searchString = "";
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                          : null,
+                  child: SvgPicture.asset(
+                    Assets.svg.search,
+                    width: 16,
+                    height: 16,
+                  ),
                 ),
+                suffixIcon:
+                    _searchController.text.isNotEmpty
+                        ? Padding(
+                          padding: const EdgeInsets.only(right: 0),
+                          child: UnconstrainedBox(
+                            child: Row(
+                              children: [
+                                TextFieldIconButton(
+                                  child: const XIcon(),
+                                  onTap: () async {
+                                    setState(() {
+                                      _searchController.text = "";
+                                      _searchString = "";
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                        : null,
               ),
             ),
             const SizedBox(height: 20),

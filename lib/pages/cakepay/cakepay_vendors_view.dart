@@ -269,38 +269,35 @@ class _SearchField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDesktop = Util.isDesktop;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(Constants.size.circularBorderRadius),
-      child: TextField(
-        controller: controller,
-        focusNode: focusNode,
-        style: isDesktop
-            ? STextStyles.desktopTextExtraSmall(context).copyWith(
-                color: Theme.of(
-                  context,
-                ).extension<StackColors>()!.textFieldActiveText,
-              )
-            : STextStyles.field(context),
-        decoration:
-            standardInputDecoration(
-              "Search gift cards",
-              focusNode,
-              context,
-            ).copyWith(
-              prefixIcon: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 16,
-                ),
-                child: SvgPicture.asset(
-                  Assets.svg.search,
-                  width: 16,
-                  height: 16,
-                ),
+    return TextField(
+      controller: controller,
+      focusNode: focusNode,
+      style: isDesktop
+          ? STextStyles.desktopTextExtraSmall(context).copyWith(
+              color: Theme.of(
+                context,
+              ).extension<StackColors>()!.textFieldActiveText,
+            )
+          : STextStyles.field(context),
+      decoration:
+          standardInputDecoration(
+            "Search gift cards",
+            focusNode,
+            context,
+          ).copyWith(
+            prefixIcon: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 16,
+              ),
+              child: SvgPicture.asset(
+                Assets.svg.search,
+                width: 16,
+                height: 16,
               ),
             ),
-        onSubmitted: onSubmitted,
-      ),
+          ),
+      onSubmitted: onSubmitted,
     );
   }
 }

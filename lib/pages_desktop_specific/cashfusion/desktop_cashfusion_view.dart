@@ -362,60 +362,50 @@ class _DesktopCashFusion extends ConsumerState<DesktopCashFusionView> {
                         const SizedBox(
                           height: 12,
                         ),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(
-                            Constants.size.circularBorderRadius,
-                          ),
-                          child: TextField(
-                            autocorrect: false,
-                            enableSuggestions: false,
-                            controller: serverController,
-                            focusNode: serverFocusNode,
-                            onChanged: (value) {
-                              setState(() {
-                                _enableStartButton = value.isNotEmpty &&
-                                    portController.text.isNotEmpty &&
-                                    fusionRoundController.text.isNotEmpty;
-                              });
-                            },
-                            style: STextStyles.field(context),
-                            decoration: standardInputDecoration(
-                              "Server",
-                              serverFocusNode,
-                              context,
-                              desktopMed: true,
-                            ),
+                        TextField(
+                          autocorrect: false,
+                          enableSuggestions: false,
+                          controller: serverController,
+                          focusNode: serverFocusNode,
+                          onChanged: (value) {
+                            setState(() {
+                              _enableStartButton = value.isNotEmpty &&
+                                  portController.text.isNotEmpty &&
+                                  fusionRoundController.text.isNotEmpty;
+                            });
+                          },
+                          style: STextStyles.field(context),
+                          decoration: standardInputDecoration(
+                            "Server",
+                            serverFocusNode,
+                            context,
+                            desktopMed: true,
                           ),
                         ),
                         const SizedBox(
                           height: 12,
                         ),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(
-                            Constants.size.circularBorderRadius,
-                          ),
-                          child: TextField(
-                            autocorrect: false,
-                            enableSuggestions: false,
-                            controller: portController,
-                            focusNode: portFocusNode,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
-                            onChanged: (value) {
-                              setState(() {
-                                _enableStartButton = value.isNotEmpty &&
-                                    serverController.text.isNotEmpty &&
-                                    fusionRoundController.text.isNotEmpty;
-                              });
-                            },
-                            style: STextStyles.field(context),
-                            decoration: standardInputDecoration(
-                              "Port",
-                              portFocusNode,
-                              context,
-                              desktopMed: true,
-                            ),
+                        TextField(
+                          autocorrect: false,
+                          enableSuggestions: false,
+                          controller: portController,
+                          focusNode: portFocusNode,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              _enableStartButton = value.isNotEmpty &&
+                                  serverController.text.isNotEmpty &&
+                                  fusionRoundController.text.isNotEmpty;
+                            });
+                          },
+                          style: STextStyles.field(context),
+                          decoration: standardInputDecoration(
+                            "Port",
+                            portFocusNode,
+                            context,
+                            desktopMed: true,
                           ),
                         ),
                         const SizedBox(
@@ -538,36 +528,31 @@ class _DesktopCashFusion extends ConsumerState<DesktopCashFusionView> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(
-                                      Constants.size.circularBorderRadius,
-                                    ),
-                                    child: TextField(
-                                      autocorrect: false,
-                                      enableSuggestions: false,
-                                      controller: fusionRoundController,
-                                      focusNode: fusionRoundFocusNode,
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.digitsOnly,
-                                      ],
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _enableStartButton = value
-                                                  .isNotEmpty &&
-                                              serverController
-                                                  .text.isNotEmpty &&
-                                              portController.text.isNotEmpty;
-                                        });
-                                      },
-                                      style: STextStyles.field(context),
-                                      decoration: standardInputDecoration(
-                                        "Number of fusions",
-                                        fusionRoundFocusNode,
-                                        context,
-                                        desktopMed: true,
-                                      ).copyWith(
-                                        labelText: "Enter number of fusions..",
-                                      ),
+                                  TextField(
+                                    autocorrect: false,
+                                    enableSuggestions: false,
+                                    controller: fusionRoundController,
+                                    focusNode: fusionRoundFocusNode,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _enableStartButton = value
+                                                .isNotEmpty &&
+                                            serverController
+                                                .text.isNotEmpty &&
+                                            portController.text.isNotEmpty;
+                                      });
+                                    },
+                                    style: STextStyles.field(context),
+                                    decoration: standardInputDecoration(
+                                      "Number of fusions",
+                                      fusionRoundFocusNode,
+                                      context,
+                                      desktopMed: true,
+                                    ).copyWith(
+                                      labelText: "Enter number of fusions..",
                                     ),
                                   ),
                                 ],

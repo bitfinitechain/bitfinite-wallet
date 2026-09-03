@@ -222,60 +222,55 @@ class _RestoreFromFileViewState extends ConsumerState<RestoreFromFileView> {
                   textAlign: TextAlign.left,
                 ),
               ),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(
-                Constants.size.circularBorderRadius,
-              ),
-              child: TextField(
-                key: const Key("restoreFromFilePasswordFieldKey"),
-                focusNode: passwordFocusNode,
-                controller: passwordController,
-                style: STextStyles.field(context),
-                obscureText: hidePassword,
-                enableSuggestions: false,
-                autocorrect: false,
-                decoration:
-                    standardInputDecoration(
-                      "Enter passphrase",
-                      passwordFocusNode,
-                      context,
-                    ).copyWith(
-                      labelStyle: isDesktop
-                          ? STextStyles.fieldLabel(context)
-                          : null,
-                      suffixIcon: UnconstrainedBox(
-                        child: Row(
-                          children: [
-                            const SizedBox(width: 16),
-                            GestureDetector(
-                              key: const Key(
-                                "restoreFromFilePasswordFieldShowPasswordButtonKey",
-                              ),
-                              onTap: () async {
-                                setState(() {
-                                  hidePassword = !hidePassword;
-                                });
-                              },
-                              child: SvgPicture.asset(
-                                hidePassword
-                                    ? Assets.svg.eye
-                                    : Assets.svg.eyeSlash,
-                                color: Theme.of(
-                                  context,
-                                ).extension<StackColors>()!.textDark3,
-                                width: 16,
-                                height: 16,
-                              ),
+            TextField(
+              key: const Key("restoreFromFilePasswordFieldKey"),
+              focusNode: passwordFocusNode,
+              controller: passwordController,
+              style: STextStyles.field(context),
+              obscureText: hidePassword,
+              enableSuggestions: false,
+              autocorrect: false,
+              decoration:
+                  standardInputDecoration(
+                    "Enter passphrase",
+                    passwordFocusNode,
+                    context,
+                  ).copyWith(
+                    labelStyle: isDesktop
+                        ? STextStyles.fieldLabel(context)
+                        : null,
+                    suffixIcon: UnconstrainedBox(
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 16),
+                          GestureDetector(
+                            key: const Key(
+                              "restoreFromFilePasswordFieldShowPasswordButtonKey",
                             ),
-                            const SizedBox(width: 12),
-                          ],
-                        ),
+                            onTap: () async {
+                              setState(() {
+                                hidePassword = !hidePassword;
+                              });
+                            },
+                            child: SvgPicture.asset(
+                              hidePassword
+                                  ? Assets.svg.eye
+                                  : Assets.svg.eyeSlash,
+                              color: Theme.of(
+                                context,
+                              ).extension<StackColors>()!.textDark3,
+                              width: 16,
+                              height: 16,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                        ],
                       ),
                     ),
-                onChanged: (newValue) {
-                  setState(() {});
-                },
-              ),
+                  ),
+              onChanged: (newValue) {
+                setState(() {});
+              },
             ),
             const SizedBox(height: 16),
             if (!isDesktop) const Spacer(),

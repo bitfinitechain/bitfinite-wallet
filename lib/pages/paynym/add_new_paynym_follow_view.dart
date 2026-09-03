@@ -359,56 +359,51 @@ class _AddNewPaynymFollowViewState
                 ],
               ),
             if (!isDesktop)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(
-                  Constants.size.circularBorderRadius,
-                ),
-                child: TextField(
-                  autocorrect: !isDesktop,
-                  enableSuggestions: !isDesktop,
-                  controller: _searchController,
-                  focusNode: searchFieldFocusNode,
-                  onChanged: (value) {
-                    setState(() {
-                      _searchString = value;
-                    });
-                  },
-                  style: STextStyles.field(context),
-                  decoration:
-                      standardInputDecoration(
-                        "Paste payment code",
-                        searchFieldFocusNode,
-                        context,
-                        desktopMed: isDesktop,
-                      ).copyWith(
-                        suffixIcon: Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: UnconstrainedBox(
-                            child: Row(
-                              children: [
-                                _searchController.text.isNotEmpty
-                                    ? TextFieldIconButton(
-                                        onTap: _clear,
-                                        child: const XIcon(),
-                                      )
-                                    : TextFieldIconButton(
-                                        key: const Key(
-                                          "paynymPasteAddressFieldButtonKey",
-                                        ),
-                                        onTap: _paste,
-                                        child: const ClipboardIcon(),
+              TextField(
+                autocorrect: !isDesktop,
+                enableSuggestions: !isDesktop,
+                controller: _searchController,
+                focusNode: searchFieldFocusNode,
+                onChanged: (value) {
+                  setState(() {
+                    _searchString = value;
+                  });
+                },
+                style: STextStyles.field(context),
+                decoration:
+                    standardInputDecoration(
+                      "Paste payment code",
+                      searchFieldFocusNode,
+                      context,
+                      desktopMed: isDesktop,
+                    ).copyWith(
+                      suffixIcon: Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: UnconstrainedBox(
+                          child: Row(
+                            children: [
+                              _searchController.text.isNotEmpty
+                                  ? TextFieldIconButton(
+                                      onTap: _clear,
+                                      child: const XIcon(),
+                                    )
+                                  : TextFieldIconButton(
+                                      key: const Key(
+                                        "paynymPasteAddressFieldButtonKey",
                                       ),
-                                TextFieldIconButton(
-                                  key: const Key("paynymScanQrButtonKey"),
-                                  onTap: _scanQr,
-                                  child: const QrCodeIcon(),
-                                ),
-                              ],
-                            ),
+                                      onTap: _paste,
+                                      child: const ClipboardIcon(),
+                                    ),
+                              TextFieldIconButton(
+                                key: const Key("paynymScanQrButtonKey"),
+                                onTap: _scanQr,
+                                child: const QrCodeIcon(),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                ),
+                    ),
               ),
             if (!isDesktop) const SizedBox(height: 12),
             if (!isDesktop)

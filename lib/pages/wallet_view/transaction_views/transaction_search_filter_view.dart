@@ -395,82 +395,77 @@ class _TransactionSearchViewState
         SizedBox(height: isDesktop ? 10 : 8),
         Padding(
           padding: EdgeInsets.only(right: isDesktop ? 32 : 0),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(
-              Constants.size.circularBorderRadius,
-            ),
-            child: TextField(
-              autocorrect: Util.isDesktop ? false : true,
-              enableSuggestions: Util.isDesktop ? false : true,
-              key: const Key("transactionSearchViewAmountFieldKey"),
-              controller: _amountTextEditingController,
-              focusNode: amountTextFieldFocusNode,
-              onChanged: (_) => setState(() {}),
-              keyboardType: Util.isDesktop
-                  ? null
-                  : const TextInputType.numberWithOptions(
-                      signed: false,
-                      decimal: true,
-                    ),
-              inputFormatters: [
-                AmountInputFormatter(
-                  decimals: widget.coin.fractionDigits,
-                  unit: ref.watch(pAmountUnit(widget.coin)),
-                  locale: ref.watch(
-                    localeServiceChangeNotifierProvider.select(
-                      (value) => value.locale,
-                    ),
+          child: TextField(
+            autocorrect: Util.isDesktop ? false : true,
+            enableSuggestions: Util.isDesktop ? false : true,
+            key: const Key("transactionSearchViewAmountFieldKey"),
+            controller: _amountTextEditingController,
+            focusNode: amountTextFieldFocusNode,
+            onChanged: (_) => setState(() {}),
+            keyboardType: Util.isDesktop
+                ? null
+                : const TextInputType.numberWithOptions(
+                    signed: false,
+                    decimal: true,
+                  ),
+            inputFormatters: [
+              AmountInputFormatter(
+                decimals: widget.coin.fractionDigits,
+                unit: ref.watch(pAmountUnit(widget.coin)),
+                locale: ref.watch(
+                  localeServiceChangeNotifierProvider.select(
+                    (value) => value.locale,
                   ),
                 ),
-                // // regex to validate a crypto amount with 8 decimal places
-                // TextInputFormatter.withFunction((oldValue, newValue) =>
-                //     RegExp(r'^([0-9]*[,.]?[0-9]{0,8}|[,.][0-9]{0,8})$')
-                //             .hasMatch(newValue.text)
-                //         ? newValue
-                //         : oldValue),
-              ],
-              style: isDesktop
-                  ? STextStyles.desktopTextExtraSmall(context).copyWith(
-                      color: Theme.of(
-                        context,
-                      ).extension<StackColors>()!.textDark,
-                      height: 1.8,
-                    )
-                  : STextStyles.field(context),
-              decoration:
-                  standardInputDecoration(
-                    "Enter ${widget.coin.ticker} amount...",
-                    keywordTextFieldFocusNode,
-                    context,
-                    desktopMed: isDesktop,
-                  ).copyWith(
-                    contentPadding: isDesktop
-                        ? const EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 16,
-                          )
-                        : null,
-                    suffixIcon: _amountTextEditingController.text.isNotEmpty
-                        ? Padding(
-                            padding: const EdgeInsets.only(right: 0),
-                            child: UnconstrainedBox(
-                              child: Row(
-                                children: [
-                                  TextFieldIconButton(
-                                    child: const XIcon(),
-                                    onTap: () async {
-                                      setState(() {
-                                        _amountTextEditingController.text = "";
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
+              ),
+              // // regex to validate a crypto amount with 8 decimal places
+              // TextInputFormatter.withFunction((oldValue, newValue) =>
+              //     RegExp(r'^([0-9]*[,.]?[0-9]{0,8}|[,.][0-9]{0,8})$')
+              //             .hasMatch(newValue.text)
+              //         ? newValue
+              //         : oldValue),
+            ],
+            style: isDesktop
+                ? STextStyles.desktopTextExtraSmall(context).copyWith(
+                    color: Theme.of(
+                      context,
+                    ).extension<StackColors>()!.textDark,
+                    height: 1.8,
+                  )
+                : STextStyles.field(context),
+            decoration:
+                standardInputDecoration(
+                  "Enter ${widget.coin.ticker} amount...",
+                  keywordTextFieldFocusNode,
+                  context,
+                  desktopMed: isDesktop,
+                ).copyWith(
+                  contentPadding: isDesktop
+                      ? const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 16,
+                        )
+                      : null,
+                  suffixIcon: _amountTextEditingController.text.isNotEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.only(right: 0),
+                          child: UnconstrainedBox(
+                            child: Row(
+                              children: [
+                                TextFieldIconButton(
+                                  child: const XIcon(),
+                                  onTap: () async {
+                                    setState(() {
+                                      _amountTextEditingController.text = "";
+                                    });
+                                  },
+                                ),
+                              ],
                             ),
-                          )
-                        : null,
-                  ),
-            ),
+                          ),
+                        )
+                      : null,
+                ),
           ),
         ),
         SizedBox(height: isDesktop ? 32 : 24),
@@ -488,59 +483,54 @@ class _TransactionSearchViewState
         SizedBox(height: isDesktop ? 10 : 8),
         Padding(
           padding: EdgeInsets.only(right: isDesktop ? 32 : 0),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(
-              Constants.size.circularBorderRadius,
-            ),
-            child: TextField(
-              autocorrect: Util.isDesktop ? false : true,
-              enableSuggestions: Util.isDesktop ? false : true,
-              key: const Key("transactionSearchViewKeywordFieldKey"),
-              controller: _keywordTextEditingController,
-              focusNode: keywordTextFieldFocusNode,
-              style: isDesktop
-                  ? STextStyles.desktopTextExtraSmall(context).copyWith(
-                      color: Theme.of(
-                        context,
-                      ).extension<StackColors>()!.textDark,
-                      height: 1.8,
-                    )
-                  : STextStyles.field(context),
-              onChanged: (_) => setState(() {}),
-              decoration:
-                  standardInputDecoration(
-                    "Type keyword...",
-                    keywordTextFieldFocusNode,
-                    context,
-                    desktopMed: isDesktop,
-                  ).copyWith(
-                    contentPadding: isDesktop
-                        ? const EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 16,
-                          )
-                        : null,
-                    suffixIcon: _keywordTextEditingController.text.isNotEmpty
-                        ? Padding(
-                            padding: const EdgeInsets.only(right: 0),
-                            child: UnconstrainedBox(
-                              child: Row(
-                                children: [
-                                  TextFieldIconButton(
-                                    child: const XIcon(),
-                                    onTap: () async {
-                                      setState(() {
-                                        _keywordTextEditingController.text = "";
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
+          child: TextField(
+            autocorrect: Util.isDesktop ? false : true,
+            enableSuggestions: Util.isDesktop ? false : true,
+            key: const Key("transactionSearchViewKeywordFieldKey"),
+            controller: _keywordTextEditingController,
+            focusNode: keywordTextFieldFocusNode,
+            style: isDesktop
+                ? STextStyles.desktopTextExtraSmall(context).copyWith(
+                    color: Theme.of(
+                      context,
+                    ).extension<StackColors>()!.textDark,
+                    height: 1.8,
+                  )
+                : STextStyles.field(context),
+            onChanged: (_) => setState(() {}),
+            decoration:
+                standardInputDecoration(
+                  "Type keyword...",
+                  keywordTextFieldFocusNode,
+                  context,
+                  desktopMed: isDesktop,
+                ).copyWith(
+                  contentPadding: isDesktop
+                      ? const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 16,
+                        )
+                      : null,
+                  suffixIcon: _keywordTextEditingController.text.isNotEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.only(right: 0),
+                          child: UnconstrainedBox(
+                            child: Row(
+                              children: [
+                                TextFieldIconButton(
+                                  child: const XIcon(),
+                                  onTap: () async {
+                                    setState(() {
+                                      _keywordTextEditingController.text = "";
+                                    });
+                                  },
+                                ),
+                              ],
                             ),
-                          )
-                        : null,
-                  ),
-            ),
+                          ),
+                        )
+                      : null,
+                ),
           ),
         ),
         if (!isDesktop) const Spacer(),

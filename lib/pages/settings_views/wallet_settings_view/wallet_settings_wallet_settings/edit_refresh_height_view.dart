@@ -192,56 +192,51 @@ class _EditRefreshHeightViewState extends ConsumerState<EditRefreshHeightView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(
-                Constants.size.circularBorderRadius,
-              ),
-              child: TextField(
-                key: const Key("restoreHeightFieldKey"),
-                controller: _controller,
-                focusNode: _focusNode,
-                style: Util.isDesktop
-                    ? STextStyles.desktopTextMedium(context).copyWith(height: 2)
-                    : STextStyles.field(context),
-                enableSuggestions: false,
-                autocorrect: false,
-                autofocus: true,
-                onSubmitted: (_) => _save(),
-                onChanged: (_) => setState(() {}),
-                decoration:
-                    standardInputDecoration(
-                      "Restore height",
-                      _focusNode,
-                      context,
-                    ).copyWith(
-                      suffixIcon: _controller.text.isNotEmpty
-                          ? Padding(
-                              padding: const EdgeInsets.only(right: 0),
-                              child: UnconstrainedBox(
-                                child: ConditionalParent(
-                                  condition: Util.isDesktop,
-                                  builder: (child) =>
-                                      SizedBox(height: 70, child: child),
-                                  child: Row(
-                                    children: [
-                                      TextFieldIconButton(
-                                        child: const XIcon(),
-                                        onTap: () async {
-                                          setState(() {
-                                            _controller.text = "";
-                                          });
-                                        },
-                                      ),
-                                    ],
-                                  ),
+            TextField(
+              key: const Key("restoreHeightFieldKey"),
+              controller: _controller,
+              focusNode: _focusNode,
+              style: Util.isDesktop
+                  ? STextStyles.desktopTextMedium(context).copyWith(height: 2)
+                  : STextStyles.field(context),
+              enableSuggestions: false,
+              autocorrect: false,
+              autofocus: true,
+              onSubmitted: (_) => _save(),
+              onChanged: (_) => setState(() {}),
+              decoration:
+                  standardInputDecoration(
+                    "Restore height",
+                    _focusNode,
+                    context,
+                  ).copyWith(
+                    suffixIcon: _controller.text.isNotEmpty
+                        ? Padding(
+                            padding: const EdgeInsets.only(right: 0),
+                            child: UnconstrainedBox(
+                              child: ConditionalParent(
+                                condition: Util.isDesktop,
+                                builder: (child) =>
+                                    SizedBox(height: 70, child: child),
+                                child: Row(
+                                  children: [
+                                    TextFieldIconButton(
+                                      child: const XIcon(),
+                                      onTap: () async {
+                                        setState(() {
+                                          _controller.text = "";
+                                        });
+                                      },
+                                    ),
+                                  ],
                                 ),
                               ),
-                            )
-                          : Util.isDesktop
-                          ? const SizedBox(height: 70)
-                          : null,
-                    ),
-              ),
+                            ),
+                          )
+                        : Util.isDesktop
+                        ? const SizedBox(height: 70)
+                        : null,
+                  ),
             ),
             Util.isDesktop ? const SizedBox(height: 32) : const Spacer(),
             PrimaryButton(label: "Save", onPressed: _save),

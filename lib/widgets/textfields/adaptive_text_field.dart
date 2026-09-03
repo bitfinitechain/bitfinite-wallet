@@ -122,90 +122,85 @@ class _AdaptiveTextFieldState extends State<AdaptiveTextField> {
       mainAxisSize: .min,
       crossAxisAlignment: .start,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(
-            Constants.size.circularBorderRadius,
-          ),
-          child: TextField(
-            minLines: widget.minLines,
-            maxLines: widget.maxLines,
-            style: Util.isDesktop
-                ? STextStyles.field(context).copyWith(fontSize: 16)
-                : STextStyles.field(context),
-            controller: controller,
-            focusNode: _focusNode,
-            onChanged: widget.onChanged,
-            onTap: widget.onTap,
-            readOnly: widget.readOnly,
-            enabled: widget.enabled,
-            autocorrect: widget.autocorrect,
-            enableSuggestions: widget.enableSuggestions,
-            onSubmitted: widget.onSubmitted,
-            keyboardType: widget.keyboardType,
-            inputFormatters: widget.inputFormatters,
-            decoration:
-                standardInputDecoration(
-                  widget.labelText,
-                  _focusNode,
-                  context,
-                ).copyWith(
-                  hintText: widget.hintText,
-                  suffixText:
-                      (widget.suffixIcons?.isNotEmpty != true &&
-                          !widget.showPasteClearButton)
-                      ? widget.suffixText
-                      : null,
-                  contentPadding:
-                      widget.contentPadding ??
-                      (Util.isDesktop
-                          ? const EdgeInsets.only(
-                              left: 12,
-                              top: 11,
-                              bottom: 12,
-                              right: 5,
-                            )
-                          : const EdgeInsets.only(
-                              left: 10,
-                              top: 12,
-                              bottom: 8,
-                              right: 5,
-                            )),
-                  suffixIcon: widget.suffixIcons?.isNotEmpty == true
-                      ? Padding(
-                          padding: controller.text.isEmpty
-                              ? const EdgeInsets.only(right: 8)
-                              : const EdgeInsets.only(right: 0),
-                          child: UnconstrainedBox(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: widget.suffixIcons!,
-                            ),
+        TextField(
+          minLines: widget.minLines,
+          maxLines: widget.maxLines,
+          style: Util.isDesktop
+              ? STextStyles.field(context).copyWith(fontSize: 16)
+              : STextStyles.field(context),
+          controller: controller,
+          focusNode: _focusNode,
+          onChanged: widget.onChanged,
+          onTap: widget.onTap,
+          readOnly: widget.readOnly,
+          enabled: widget.enabled,
+          autocorrect: widget.autocorrect,
+          enableSuggestions: widget.enableSuggestions,
+          onSubmitted: widget.onSubmitted,
+          keyboardType: widget.keyboardType,
+          inputFormatters: widget.inputFormatters,
+          decoration:
+              standardInputDecoration(
+                widget.labelText,
+                _focusNode,
+                context,
+              ).copyWith(
+                hintText: widget.hintText,
+                suffixText:
+                    (widget.suffixIcons?.isNotEmpty != true &&
+                        !widget.showPasteClearButton)
+                    ? widget.suffixText
+                    : null,
+                contentPadding:
+                    widget.contentPadding ??
+                    (Util.isDesktop
+                        ? const EdgeInsets.only(
+                            left: 12,
+                            top: 11,
+                            bottom: 12,
+                            right: 5,
+                          )
+                        : const EdgeInsets.only(
+                            left: 10,
+                            top: 12,
+                            bottom: 8,
+                            right: 5,
+                          )),
+                suffixIcon: widget.suffixIcons?.isNotEmpty == true
+                    ? Padding(
+                        padding: controller.text.isEmpty
+                            ? const EdgeInsets.only(right: 8)
+                            : const EdgeInsets.only(right: 0),
+                        child: UnconstrainedBox(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: widget.suffixIcons!,
                           ),
-                        )
-                      : widget.showPasteClearButton
-                      ? TextFieldIconButton(
-                          onTap: () async {
-                            if (controller.text.isEmpty) {
-                              final ClipboardData? data =
-                                  await Clipboard.getData(Clipboard.kTextPlain);
-                              if (data?.text != null &&
-                                  data!.text!.isNotEmpty) {
-                                final content = data.text!.trim();
-                                controller.text = content;
-                              }
-                            } else {
-                              controller.text = "";
+                        ),
+                      )
+                    : widget.showPasteClearButton
+                    ? TextFieldIconButton(
+                        onTap: () async {
+                          if (controller.text.isEmpty) {
+                            final ClipboardData? data =
+                                await Clipboard.getData(Clipboard.kTextPlain);
+                            if (data?.text != null &&
+                                data!.text!.isNotEmpty) {
+                              final content = data.text!.trim();
+                              controller.text = content;
                             }
+                          } else {
+                            controller.text = "";
+                          }
 
-                            if (mounted) setState(() {});
-                          },
-                          child: controller.text.isNotEmpty
-                              ? const XIcon()
-                              : const ClipboardIcon(),
-                        )
-                      : null,
-                ),
-          ),
+                          if (mounted) setState(() {});
+                        },
+                        child: controller.text.isNotEmpty
+                            ? const XIcon()
+                            : const ClipboardIcon(),
+                      )
+                    : null,
+              ),
         ),
         if (widget.errorText != null)
           Padding(

@@ -463,55 +463,50 @@ class _SeedRestoreOptionState extends ConsumerState<SeedRestoreOption> {
                   onTap: widget.dateChooserFunction,
                   controller: widget.dateController,
                 )
-              : ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                    Constants.size.circularBorderRadius,
-                  ),
-                  child: TextField(
-                    focusNode: widget.blockHeightFocusNode,
-                    controller: widget.blockHeightController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    textInputAction: TextInputAction.done,
-                    style: Util.isDesktop
-                        ? STextStyles.desktopTextMedium(
-                            context,
-                          ).copyWith(height: 2)
-                        : STextStyles.field(context),
-                    onChanged: (value) {
-                      setState(() {
-                        _blockFieldEmpty = value.isEmpty;
-                      });
-                    },
-                    decoration:
-                        standardInputDecoration(
-                          "Start scanning from...",
-                          widget.blockHeightFocusNode,
+              : TextField(
+                  focusNode: widget.blockHeightFocusNode,
+                  controller: widget.blockHeightController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  textInputAction: TextInputAction.done,
+                  style: Util.isDesktop
+                      ? STextStyles.desktopTextMedium(
                           context,
-                        ).copyWith(
-                          suffixIcon: UnconstrainedBox(
-                            child: TextFieldIconButton(
-                              child: Semantics(
-                                label:
-                                    "Clear Block Height Field Button. Clears the block height field",
-                                excludeSemantics: true,
-                                child: !_blockFieldEmpty
-                                    ? XIcon(
-                                        width: Util.isDesktop ? 24 : 16,
-                                        height: Util.isDesktop ? 24 : 16,
-                                      )
-                                    : const SizedBox.shrink(),
-                              ),
-                              onTap: () {
-                                widget.blockHeightController.text = "";
-                                setState(() {
-                                  _blockFieldEmpty = true;
-                                });
-                              },
+                        ).copyWith(height: 2)
+                      : STextStyles.field(context),
+                  onChanged: (value) {
+                    setState(() {
+                      _blockFieldEmpty = value.isEmpty;
+                    });
+                  },
+                  decoration:
+                      standardInputDecoration(
+                        "Start scanning from...",
+                        widget.blockHeightFocusNode,
+                        context,
+                      ).copyWith(
+                        suffixIcon: UnconstrainedBox(
+                          child: TextFieldIconButton(
+                            child: Semantics(
+                              label:
+                                  "Clear Block Height Field Button. Clears the block height field",
+                              excludeSemantics: true,
+                              child: !_blockFieldEmpty
+                                  ? XIcon(
+                                      width: Util.isDesktop ? 24 : 16,
+                                      height: Util.isDesktop ? 24 : 16,
+                                    )
+                                  : const SizedBox.shrink(),
                             ),
+                            onTap: () {
+                              widget.blockHeightController.text = "";
+                              setState(() {
+                                _blockFieldEmpty = true;
+                              });
+                            },
                           ),
                         ),
-                  ),
+                      ),
                 ),
         if (isCnAnd25 ||
             widget.coin is Epiccash ||
@@ -661,65 +656,60 @@ class _SeedRestoreOptionState extends ConsumerState<SeedRestoreOption> {
               child: Column(
                 children: [
                   if (widget.coin is Firo) const SizedBox(height: 8),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(
-                      Constants.size.circularBorderRadius,
-                    ),
-                    child: TextField(
-                      key: const Key("mnemonicPassphraseFieldKey1"),
-                      focusNode: widget.pwFocusNode,
-                      controller: widget.pwController,
-                      style: Util.isDesktop
-                          ? STextStyles.desktopTextMedium(
-                              context,
-                            ).copyWith(height: 2)
-                          : STextStyles.field(context),
-                      obscureText: _hidePassword,
-                      enableSuggestions: false,
-                      autocorrect: false,
-                      decoration:
-                          standardInputDecoration(
-                            widget.coin is CryptonoteCurrency
-                                ? "Seed Offset"
-                                : "BIP39 passphrase",
-                            widget.pwFocusNode,
+                  TextField(
+                    key: const Key("mnemonicPassphraseFieldKey1"),
+                    focusNode: widget.pwFocusNode,
+                    controller: widget.pwController,
+                    style: Util.isDesktop
+                        ? STextStyles.desktopTextMedium(
                             context,
-                          ).copyWith(
-                            suffixIcon: UnconstrainedBox(
-                              child: ConditionalParent(
-                                condition: Util.isDesktop,
-                                builder: (child) =>
-                                    SizedBox(height: 70, child: child),
-                                child: Row(
-                                  children: [
-                                    SizedBox(width: Util.isDesktop ? 24 : 16),
-                                    GestureDetector(
-                                      key: const Key(
-                                        "mnemonicPassphraseFieldShowPasswordButtonKey",
-                                      ),
-                                      onTap: () async {
-                                        setState(() {
-                                          _hidePassword = !_hidePassword;
-                                        });
-                                      },
-                                      child: SvgPicture.asset(
-                                        _hidePassword
-                                            ? Assets.svg.eye
-                                            : Assets.svg.eyeSlash,
-                                        color: Theme.of(
-                                          context,
-                                        ).extension<StackColors>()!.textDark3,
-                                        width: Util.isDesktop ? 24 : 16,
-                                        height: Util.isDesktop ? 24 : 16,
-                                      ),
+                          ).copyWith(height: 2)
+                        : STextStyles.field(context),
+                    obscureText: _hidePassword,
+                    enableSuggestions: false,
+                    autocorrect: false,
+                    decoration:
+                        standardInputDecoration(
+                          widget.coin is CryptonoteCurrency
+                              ? "Seed Offset"
+                              : "BIP39 passphrase",
+                          widget.pwFocusNode,
+                          context,
+                        ).copyWith(
+                          suffixIcon: UnconstrainedBox(
+                            child: ConditionalParent(
+                              condition: Util.isDesktop,
+                              builder: (child) =>
+                                  SizedBox(height: 70, child: child),
+                              child: Row(
+                                children: [
+                                  SizedBox(width: Util.isDesktop ? 24 : 16),
+                                  GestureDetector(
+                                    key: const Key(
+                                      "mnemonicPassphraseFieldShowPasswordButtonKey",
                                     ),
-                                    const SizedBox(width: 12),
-                                  ],
-                                ),
+                                    onTap: () async {
+                                      setState(() {
+                                        _hidePassword = !_hidePassword;
+                                      });
+                                    },
+                                    child: SvgPicture.asset(
+                                      _hidePassword
+                                          ? Assets.svg.eye
+                                          : Assets.svg.eyeSlash,
+                                      color: Theme.of(
+                                        context,
+                                      ).extension<StackColors>()!.textDark3,
+                                      width: Util.isDesktop ? 24 : 16,
+                                      height: Util.isDesktop ? 24 : 16,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                ],
                               ),
                             ),
                           ),
-                    ),
+                        ),
                   ),
                   const SizedBox(height: 8),
                   RoundedWhiteContainer(
@@ -826,55 +816,50 @@ class _ViewOnlyRestoreOptionState extends ConsumerState<ViewOnlyRestoreOption> {
                   onTap: widget.dateChooserFunction,
                   controller: widget.dateController,
                 )
-              : ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                    Constants.size.circularBorderRadius,
-                  ),
-                  child: TextField(
-                    focusNode: widget.blockHeightFocusNode,
-                    controller: widget.blockHeightController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    textInputAction: TextInputAction.done,
-                    style: Util.isDesktop
-                        ? STextStyles.desktopTextMedium(
-                            context,
-                          ).copyWith(height: 2)
-                        : STextStyles.field(context),
-                    onChanged: (value) {
-                      setState(() {
-                        _blockFieldEmpty = value.isEmpty;
-                      });
-                    },
-                    decoration:
-                        standardInputDecoration(
-                          "Start scanning from...",
-                          widget.blockHeightFocusNode,
+              : TextField(
+                  focusNode: widget.blockHeightFocusNode,
+                  controller: widget.blockHeightController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  textInputAction: TextInputAction.done,
+                  style: Util.isDesktop
+                      ? STextStyles.desktopTextMedium(
                           context,
-                        ).copyWith(
-                          suffixIcon: UnconstrainedBox(
-                            child: TextFieldIconButton(
-                              child: Semantics(
-                                label:
-                                    "Clear Block Height Field Button. Clears the block height field",
-                                excludeSemantics: true,
-                                child: !_blockFieldEmpty
-                                    ? XIcon(
-                                        width: Util.isDesktop ? 24 : 16,
-                                        height: Util.isDesktop ? 24 : 16,
-                                      )
-                                    : const SizedBox.shrink(),
-                              ),
-                              onTap: () {
-                                widget.blockHeightController.text = "";
-                                setState(() {
-                                  _blockFieldEmpty = true;
-                                });
-                              },
+                        ).copyWith(height: 2)
+                      : STextStyles.field(context),
+                  onChanged: (value) {
+                    setState(() {
+                      _blockFieldEmpty = value.isEmpty;
+                    });
+                  },
+                  decoration:
+                      standardInputDecoration(
+                        "Start scanning from...",
+                        widget.blockHeightFocusNode,
+                        context,
+                      ).copyWith(
+                        suffixIcon: UnconstrainedBox(
+                          child: TextFieldIconButton(
+                            child: Semantics(
+                              label:
+                                  "Clear Block Height Field Button. Clears the block height field",
+                              excludeSemantics: true,
+                              child: !_blockFieldEmpty
+                                  ? XIcon(
+                                      width: Util.isDesktop ? 24 : 16,
+                                      height: Util.isDesktop ? 24 : 16,
+                                    )
+                                  : const SizedBox.shrink(),
                             ),
+                            onTap: () {
+                              widget.blockHeightController.text = "";
+                              setState(() {
+                                _blockFieldEmpty = true;
+                              });
+                            },
                           ),
                         ),
-                  ),
+                      ),
                 ),
         if (showDateOption) const SizedBox(height: 8),
         if (showDateOption)

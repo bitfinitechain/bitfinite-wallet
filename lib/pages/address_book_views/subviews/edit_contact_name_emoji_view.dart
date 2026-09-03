@@ -277,43 +277,38 @@ class _EditContactNameEmojiViewState
               if (isDesktop) const SizedBox(width: 8),
               if (isDesktop)
                 Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(
-                      Constants.size.circularBorderRadius,
-                    ),
-                    child: TextField(
-                      autocorrect: Util.isDesktop ? false : true,
-                      enableSuggestions: Util.isDesktop ? false : true,
-                      controller: nameController,
-                      focusNode: nameFocusNode,
-                      style: STextStyles.field(context),
-                      onChanged: (_) => setState(() {}),
-                      decoration: standardInputDecoration(
-                        "Enter contact name",
-                        nameFocusNode,
-                        context,
-                      ).copyWith(
-                        suffixIcon:
-                            nameController.text.isNotEmpty
-                                ? Padding(
-                                  padding: const EdgeInsets.only(right: 0),
-                                  child: UnconstrainedBox(
-                                    child: Row(
-                                      children: [
-                                        TextFieldIconButton(
-                                          child: const XIcon(),
-                                          onTap: () async {
-                                            setState(() {
-                                              nameController.text = "";
-                                            });
-                                          },
-                                        ),
-                                      ],
-                                    ),
+                  child: TextField(
+                    autocorrect: Util.isDesktop ? false : true,
+                    enableSuggestions: Util.isDesktop ? false : true,
+                    controller: nameController,
+                    focusNode: nameFocusNode,
+                    style: STextStyles.field(context),
+                    onChanged: (_) => setState(() {}),
+                    decoration: standardInputDecoration(
+                      "Enter contact name",
+                      nameFocusNode,
+                      context,
+                    ).copyWith(
+                      suffixIcon:
+                          nameController.text.isNotEmpty
+                              ? Padding(
+                                padding: const EdgeInsets.only(right: 0),
+                                child: UnconstrainedBox(
+                                  child: Row(
+                                    children: [
+                                      TextFieldIconButton(
+                                        child: const XIcon(),
+                                        onTap: () async {
+                                          setState(() {
+                                            nameController.text = "";
+                                          });
+                                        },
+                                      ),
+                                    ],
                                   ),
-                                )
-                                : null,
-                      ),
+                                ),
+                              )
+                              : null,
                     ),
                   ),
                 ),
@@ -321,43 +316,38 @@ class _EditContactNameEmojiViewState
           ),
           if (!isDesktop) const SizedBox(height: 8),
           if (!isDesktop)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(
-                Constants.size.circularBorderRadius,
-              ),
-              child: TextField(
-                autocorrect: Util.isDesktop ? false : true,
-                enableSuggestions: Util.isDesktop ? false : true,
-                controller: nameController,
-                focusNode: nameFocusNode,
-                style: STextStyles.field(context),
-                onChanged: (_) => setState(() {}),
-                decoration: standardInputDecoration(
-                  "Enter contact name",
-                  nameFocusNode,
-                  context,
-                ).copyWith(
-                  suffixIcon:
-                      nameController.text.isNotEmpty
-                          ? Padding(
-                            padding: const EdgeInsets.only(right: 0),
-                            child: UnconstrainedBox(
-                              child: Row(
-                                children: [
-                                  TextFieldIconButton(
-                                    child: const XIcon(),
-                                    onTap: () async {
-                                      setState(() {
-                                        nameController.text = "";
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
+            TextField(
+              autocorrect: Util.isDesktop ? false : true,
+              enableSuggestions: Util.isDesktop ? false : true,
+              controller: nameController,
+              focusNode: nameFocusNode,
+              style: STextStyles.field(context),
+              onChanged: (_) => setState(() {}),
+              decoration: standardInputDecoration(
+                "Enter contact name",
+                nameFocusNode,
+                context,
+              ).copyWith(
+                suffixIcon:
+                    nameController.text.isNotEmpty
+                        ? Padding(
+                          padding: const EdgeInsets.only(right: 0),
+                          child: UnconstrainedBox(
+                            child: Row(
+                              children: [
+                                TextFieldIconButton(
+                                  child: const XIcon(),
+                                  onTap: () async {
+                                    setState(() {
+                                      nameController.text = "";
+                                    });
+                                  },
+                                ),
+                              ],
                             ),
-                          )
-                          : null,
-                ),
+                          ),
+                        )
+                        : null,
               ),
             ),
           const Spacer(),

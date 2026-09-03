@@ -355,32 +355,27 @@ class _DesktopChurning extends ConsumerState<DesktopChurningView> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(
-                                      Constants.size.circularBorderRadius,
-                                    ),
-                                    child: TextField(
-                                      autocorrect: false,
-                                      enableSuggestions: false,
-                                      controller: churningRoundController,
-                                      focusNode: churningRoundFocusNode,
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.digitsOnly,
-                                      ],
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _enableStartButton = value.isNotEmpty;
-                                        });
-                                      },
-                                      style: STextStyles.field(context),
-                                      decoration: standardInputDecoration(
-                                        "Number of churns",
-                                        churningRoundFocusNode,
-                                        context,
-                                        desktopMed: true,
-                                      ).copyWith(
-                                        labelText: "Enter number of churns..",
-                                      ),
+                                  TextField(
+                                    autocorrect: false,
+                                    enableSuggestions: false,
+                                    controller: churningRoundController,
+                                    focusNode: churningRoundFocusNode,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _enableStartButton = value.isNotEmpty;
+                                      });
+                                    },
+                                    style: STextStyles.field(context),
+                                    decoration: standardInputDecoration(
+                                      "Number of churns",
+                                      churningRoundFocusNode,
+                                      context,
+                                      desktopMed: true,
+                                    ).copyWith(
+                                      labelText: "Enter number of churns..",
                                     ),
                                   ),
                                 ],

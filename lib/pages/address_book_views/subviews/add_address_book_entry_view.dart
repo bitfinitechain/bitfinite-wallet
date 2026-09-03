@@ -365,65 +365,60 @@ class _AddAddressBookEntryViewState
                                 const SizedBox(width: 8),
                                 SizedBox(
                                   width: isDesktop ? 450 : null,
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(
-                                      Constants.size.circularBorderRadius,
-                                    ),
-                                    child: TextField(
-                                      autocorrect:
-                                          Util.isDesktop ? false : true,
-                                      enableSuggestions:
-                                          Util.isDesktop ? false : true,
-                                      controller: nameController,
-                                      focusNode: nameFocusNode,
-                                      style: STextStyles.field(context),
-                                      decoration: standardInputDecoration(
-                                        "Enter contact name",
-                                        nameFocusNode,
+                                  child: TextField(
+                                    autocorrect:
+                                        Util.isDesktop ? false : true,
+                                    enableSuggestions:
+                                        Util.isDesktop ? false : true,
+                                    controller: nameController,
+                                    focusNode: nameFocusNode,
+                                    style: STextStyles.field(context),
+                                    decoration: standardInputDecoration(
+                                      "Enter contact name",
+                                      nameFocusNode,
+                                      context,
+                                    ).copyWith(
+                                      labelStyle: STextStyles.fieldLabel(
                                         context,
-                                      ).copyWith(
-                                        labelStyle: STextStyles.fieldLabel(
-                                          context,
-                                        ),
-                                        suffixIcon:
-                                            ref
-                                                    .read(
-                                                      contactNameIsNotEmptyStateProvider
-                                                          .state,
-                                                    )
-                                                    .state
-                                                ? Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                        right: 0,
-                                                      ),
-                                                  child: UnconstrainedBox(
-                                                    child: Row(
-                                                      children: [
-                                                        TextFieldIconButton(
-                                                          child: const XIcon(),
-                                                          onTap: () async {
-                                                            setState(() {
-                                                              nameController
-                                                                  .text = "";
-                                                            });
-                                                          },
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                )
-                                                : null,
                                       ),
-                                      onChanged: (newValue) {
-                                        ref
-                                            .read(
-                                              contactNameIsNotEmptyStateProvider
-                                                  .state,
-                                            )
-                                            .state = newValue.isNotEmpty;
-                                      },
+                                      suffixIcon:
+                                          ref
+                                                  .read(
+                                                    contactNameIsNotEmptyStateProvider
+                                                        .state,
+                                                  )
+                                                  .state
+                                              ? Padding(
+                                                padding:
+                                                    const EdgeInsets.only(
+                                                      right: 0,
+                                                    ),
+                                                child: UnconstrainedBox(
+                                                  child: Row(
+                                                    children: [
+                                                      TextFieldIconButton(
+                                                        child: const XIcon(),
+                                                        onTap: () async {
+                                                          setState(() {
+                                                            nameController
+                                                                .text = "";
+                                                          });
+                                                        },
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              )
+                                              : null,
                                     ),
+                                    onChanged: (newValue) {
+                                      ref
+                                          .read(
+                                            contactNameIsNotEmptyStateProvider
+                                                .state,
+                                          )
+                                          .state = newValue.isNotEmpty;
+                                    },
                                   ),
                                 ),
                               ],
@@ -531,60 +526,55 @@ class _AddAddressBookEntryViewState
                                   ),
                                 ),
                                 const SizedBox(height: 8),
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(
-                                    Constants.size.circularBorderRadius,
-                                  ),
-                                  child: TextField(
-                                    autocorrect: Util.isDesktop ? false : true,
-                                    enableSuggestions:
-                                        Util.isDesktop ? false : true,
-                                    controller: nameController,
-                                    focusNode: nameFocusNode,
-                                    style: STextStyles.field(context),
-                                    decoration: standardInputDecoration(
-                                      "Enter contact name",
-                                      nameFocusNode,
-                                      context,
-                                    ).copyWith(
-                                      suffixIcon:
-                                          ref
-                                                  .read(
-                                                    contactNameIsNotEmptyStateProvider
-                                                        .state,
-                                                  )
-                                                  .state
-                                              ? Padding(
-                                                padding: const EdgeInsets.only(
-                                                  right: 0,
+                                TextField(
+                                  autocorrect: Util.isDesktop ? false : true,
+                                  enableSuggestions:
+                                      Util.isDesktop ? false : true,
+                                  controller: nameController,
+                                  focusNode: nameFocusNode,
+                                  style: STextStyles.field(context),
+                                  decoration: standardInputDecoration(
+                                    "Enter contact name",
+                                    nameFocusNode,
+                                    context,
+                                  ).copyWith(
+                                    suffixIcon:
+                                        ref
+                                                .read(
+                                                  contactNameIsNotEmptyStateProvider
+                                                      .state,
+                                                )
+                                                .state
+                                            ? Padding(
+                                              padding: const EdgeInsets.only(
+                                                right: 0,
+                                              ),
+                                              child: UnconstrainedBox(
+                                                child: Row(
+                                                  children: [
+                                                    TextFieldIconButton(
+                                                      child: const XIcon(),
+                                                      onTap: () async {
+                                                        setState(() {
+                                                          nameController
+                                                              .text = "";
+                                                        });
+                                                      },
+                                                    ),
+                                                  ],
                                                 ),
-                                                child: UnconstrainedBox(
-                                                  child: Row(
-                                                    children: [
-                                                      TextFieldIconButton(
-                                                        child: const XIcon(),
-                                                        onTap: () async {
-                                                          setState(() {
-                                                            nameController
-                                                                .text = "";
-                                                          });
-                                                        },
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              )
-                                              : null,
-                                    ),
-                                    onChanged: (newValue) {
-                                      ref
-                                          .read(
-                                            contactNameIsNotEmptyStateProvider
-                                                .state,
-                                          )
-                                          .state = newValue.isNotEmpty;
-                                    },
+                                              ),
+                                            )
+                                            : null,
                                   ),
+                                  onChanged: (newValue) {
+                                    ref
+                                        .read(
+                                          contactNameIsNotEmptyStateProvider
+                                              .state,
+                                        )
+                                        .state = newValue.isNotEmpty;
+                                  },
                                 ),
                               ],
                             ),

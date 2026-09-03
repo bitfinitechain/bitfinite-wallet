@@ -118,70 +118,65 @@ class _DesktopUnlockAppDialogState
               ),
             ),
             const SizedBox(height: 24),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(
-                Constants.size.circularBorderRadius,
-              ),
-              child: TextField(
-                key: const Key("desktopUnlockAppPasswordFieldKey"),
-                focusNode: passwordFocusNode,
-                controller: passwordController,
-                style: STextStyles.desktopTextMedium(
-                  context,
-                ).copyWith(height: 2),
-                obscureText: hidePassword,
-                enableSuggestions: false,
-                autocorrect: false,
-                autofocus: true,
-                onSubmitted: (_) {
-                  if (_confirmEnabled) {
-                    _confirmPressed();
-                  }
-                },
-                decoration: standardInputDecoration(
-                  "Enter password",
-                  passwordFocusNode,
-                  context,
-                ).copyWith(
-                  suffixIcon: UnconstrainedBox(
-                    child: SizedBox(
-                      height: 70,
-                      child: Row(
-                        children: [
-                          const SizedBox(width: 24),
-                          GestureDetector(
-                            key: const Key(
-                              "desktopUnlockAppPasswordFieldShowPasswordButtonKey",
-                            ),
-                            onTap: () async {
-                              setState(() {
-                                hidePassword = !hidePassword;
-                              });
-                            },
-                            child: SvgPicture.asset(
-                              hidePassword
-                                  ? Assets.svg.eye
-                                  : Assets.svg.eyeSlash,
-                              color:
-                                  Theme.of(
-                                    context,
-                                  ).extension<StackColors>()!.textDark3,
-                              width: 24,
-                              height: 24,
-                            ),
+            TextField(
+              key: const Key("desktopUnlockAppPasswordFieldKey"),
+              focusNode: passwordFocusNode,
+              controller: passwordController,
+              style: STextStyles.desktopTextMedium(
+                context,
+              ).copyWith(height: 2),
+              obscureText: hidePassword,
+              enableSuggestions: false,
+              autocorrect: false,
+              autofocus: true,
+              onSubmitted: (_) {
+                if (_confirmEnabled) {
+                  _confirmPressed();
+                }
+              },
+              decoration: standardInputDecoration(
+                "Enter password",
+                passwordFocusNode,
+                context,
+              ).copyWith(
+                suffixIcon: UnconstrainedBox(
+                  child: SizedBox(
+                    height: 70,
+                    child: Row(
+                      children: [
+                        const SizedBox(width: 24),
+                        GestureDetector(
+                          key: const Key(
+                            "desktopUnlockAppPasswordFieldShowPasswordButtonKey",
                           ),
-                          const SizedBox(width: 12),
-                        ],
-                      ),
+                          onTap: () async {
+                            setState(() {
+                              hidePassword = !hidePassword;
+                            });
+                          },
+                          child: SvgPicture.asset(
+                            hidePassword
+                                ? Assets.svg.eye
+                                : Assets.svg.eyeSlash,
+                            color:
+                                Theme.of(
+                                  context,
+                                ).extension<StackColors>()!.textDark3,
+                            width: 24,
+                            height: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                      ],
                     ),
                   ),
                 ),
-                onChanged: (newValue) {
-                  setState(() {
-                    _confirmEnabled = passwordController.text.isNotEmpty;
-                  });
-                },
               ),
+              onChanged: (newValue) {
+                setState(() {
+                  _confirmEnabled = passwordController.text.isNotEmpty;
+                });
+              },
             ),
             const SizedBox(height: 48),
             Row(

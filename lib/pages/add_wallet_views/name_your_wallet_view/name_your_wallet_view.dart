@@ -243,87 +243,82 @@ class _NameYourWalletViewState extends ConsumerState<NameYourWalletView> {
                 : STextStyles.subtitle(context),
       ),
       SizedBox(height: isDesktop ? 40 : 16),
-      ClipRRect(
-        borderRadius: BorderRadius.circular(
-          Constants.size.circularBorderRadius,
-        ),
-        child: TextField(
-          autocorrect: Util.isDesktop ? false : true,
-          enableSuggestions: Util.isDesktop ? false : true,
-          onChanged: (string) {
-            if (string.isEmpty) {
-              if (_nextEnabled) {
-                setState(() {
-                  _nextEnabled = false;
-                  _showDiceIcon = true;
-                });
-              }
-            } else {
-              if (!_nextEnabled) {
-                setState(() {
-                  _nextEnabled = true;
-                  _showDiceIcon = false;
-                });
-              }
+      TextField(
+        autocorrect: Util.isDesktop ? false : true,
+        enableSuggestions: Util.isDesktop ? false : true,
+        onChanged: (string) {
+          if (string.isEmpty) {
+            if (_nextEnabled) {
+              setState(() {
+                _nextEnabled = false;
+                _showDiceIcon = true;
+              });
             }
-          },
-          focusNode: textFieldFocusNode,
-          controller: textEditingController,
-          style:
-              isDesktop
-                  ? STextStyles.desktopTextMedium(context).copyWith(height: 2)
-                  : STextStyles.field(context),
-          decoration: standardInputDecoration(
-            "Enter wallet name",
-            textFieldFocusNode,
-            context,
-          ).copyWith(
-            suffixIcon: Padding(
-              padding: EdgeInsets.only(right: isDesktop ? 6 : 0),
-              child: UnconstrainedBox(
-                child: Row(
-                  children: [
-                    TextFieldIconButton(
-                      key: const Key("genRandomWalletNameButtonKey"),
-                      child:
-                          _showDiceIcon
-                              ? Semantics(
-                                label:
-                                    "Generate Random Wallet Name Button. Generates A Random Name For Wallet.",
-                                excludeSemantics: true,
-                                child: DiceIcon(
-                                  width: isDesktop ? 20 : 17,
-                                  height: isDesktop ? 20 : 17,
-                                ),
-                              )
-                              : Semantics(
-                                label:
-                                    "Clear Wallet Name Field Button. Clears the wallet name field.",
-                                excludeSemantics: true,
-                                child: XIcon(
-                                  width: isDesktop ? 21 : 18,
-                                  height: isDesktop ? 21 : 18,
-                                ),
+          } else {
+            if (!_nextEnabled) {
+              setState(() {
+                _nextEnabled = true;
+                _showDiceIcon = false;
+              });
+            }
+          }
+        },
+        focusNode: textFieldFocusNode,
+        controller: textEditingController,
+        style:
+            isDesktop
+                ? STextStyles.desktopTextMedium(context).copyWith(height: 2)
+                : STextStyles.field(context),
+        decoration: standardInputDecoration(
+          "Enter wallet name",
+          textFieldFocusNode,
+          context,
+        ).copyWith(
+          suffixIcon: Padding(
+            padding: EdgeInsets.only(right: isDesktop ? 6 : 0),
+            child: UnconstrainedBox(
+              child: Row(
+                children: [
+                  TextFieldIconButton(
+                    key: const Key("genRandomWalletNameButtonKey"),
+                    child:
+                        _showDiceIcon
+                            ? Semantics(
+                              label:
+                                  "Generate Random Wallet Name Button. Generates A Random Name For Wallet.",
+                              excludeSemantics: true,
+                              child: DiceIcon(
+                                width: isDesktop ? 20 : 17,
+                                height: isDesktop ? 20 : 17,
                               ),
-                      onTap: () async {
-                        if (_showDiceIcon) {
-                          textEditingController.text =
-                              await _generateRandomWalletName();
-                          setState(() {
-                            _nextEnabled = true;
-                            _showDiceIcon = false;
-                          });
-                        } else {
-                          textEditingController.text = "";
-                          setState(() {
-                            _nextEnabled = false;
-                            _showDiceIcon = true;
-                          });
-                        }
-                      },
-                    ),
-                  ],
-                ),
+                            )
+                            : Semantics(
+                              label:
+                                  "Clear Wallet Name Field Button. Clears the wallet name field.",
+                              excludeSemantics: true,
+                              child: XIcon(
+                                width: isDesktop ? 21 : 18,
+                                height: isDesktop ? 21 : 18,
+                              ),
+                            ),
+                    onTap: () async {
+                      if (_showDiceIcon) {
+                        textEditingController.text =
+                            await _generateRandomWalletName();
+                        setState(() {
+                          _nextEnabled = true;
+                          _showDiceIcon = false;
+                        });
+                      } else {
+                        textEditingController.text = "";
+                        setState(() {
+                          _nextEnabled = false;
+                          _showDiceIcon = true;
+                        });
+                      }
+                    },
+                  ),
+                ],
               ),
             ),
           ),

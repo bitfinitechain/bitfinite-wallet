@@ -280,114 +280,99 @@ class _AddEditEpicBoxViewState extends ConsumerState<AddEditEpicBoxView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                    Constants.size.circularBorderRadius,
-                  ),
-                  child: TextField(
-                    autocorrect: false,
-                    enableSuggestions: false,
-                    controller: _nameController,
-                    focusNode: _nameFocusNode,
-                    style: STextStyles.field(context),
-                    decoration:
-                        standardInputDecoration(
-                          "Server name",
-                          _nameFocusNode,
-                          context,
-                        ).copyWith(
-                          suffixIcon: _nameController.text.isNotEmpty
-                              ? Padding(
-                                  padding: const EdgeInsets.only(right: 0),
-                                  child: UnconstrainedBox(
-                                    child: TextFieldIconButton(
-                                      child: const XIcon(),
-                                      onTap: () {
-                                        _nameController.clear();
-                                        setState(() {});
-                                      },
-                                    ),
+                TextField(
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  controller: _nameController,
+                  focusNode: _nameFocusNode,
+                  style: STextStyles.field(context),
+                  decoration:
+                      standardInputDecoration(
+                        "Server name",
+                        _nameFocusNode,
+                        context,
+                      ).copyWith(
+                        suffixIcon: _nameController.text.isNotEmpty
+                            ? Padding(
+                                padding: const EdgeInsets.only(right: 0),
+                                child: UnconstrainedBox(
+                                  child: TextFieldIconButton(
+                                    child: const XIcon(),
+                                    onTap: () {
+                                      _nameController.clear();
+                                      setState(() {});
+                                    },
                                   ),
-                                )
-                              : null,
-                        ),
-                    onChanged: (_) => setState(() {}),
-                  ),
+                                ),
+                              )
+                            : null,
+                      ),
+                  onChanged: (_) => setState(() {}),
                 ),
                 const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                    Constants.size.circularBorderRadius,
-                  ),
-                  child: TextField(
-                    autocorrect: false,
-                    enableSuggestions: false,
-                    controller: _hostController,
-                    focusNode: _hostFocusNode,
-                    style: STextStyles.field(context),
-                    decoration:
-                        standardInputDecoration(
-                          "Host",
-                          _hostFocusNode,
-                          context,
-                        ).copyWith(
-                          suffixIcon: _hostController.text.isNotEmpty
-                              ? Padding(
-                                  padding: const EdgeInsets.only(right: 0),
-                                  child: UnconstrainedBox(
-                                    child: TextFieldIconButton(
-                                      child: const XIcon(),
-                                      onTap: () {
-                                        _hostController.clear();
-                                        setState(() {});
-                                      },
-                                    ),
+                TextField(
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  controller: _hostController,
+                  focusNode: _hostFocusNode,
+                  style: STextStyles.field(context),
+                  decoration:
+                      standardInputDecoration(
+                        "Host",
+                        _hostFocusNode,
+                        context,
+                      ).copyWith(
+                        suffixIcon: _hostController.text.isNotEmpty
+                            ? Padding(
+                                padding: const EdgeInsets.only(right: 0),
+                                child: UnconstrainedBox(
+                                  child: TextFieldIconButton(
+                                    child: const XIcon(),
+                                    onTap: () {
+                                      _hostController.clear();
+                                      setState(() {});
+                                    },
                                   ),
-                                )
-                              : null,
-                        ),
-                    onChanged: (_) => setState(() {}),
-                  ),
+                                ),
+                              )
+                            : null,
+                      ),
+                  onChanged: (_) => setState(() {}),
                 ),
                 const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                    Constants.size.circularBorderRadius,
-                  ),
-                  child: TextField(
-                    autocorrect: false,
-                    enableSuggestions: false,
-                    controller: _portController,
-                    focusNode: _portFocusNode,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    keyboardType: TextInputType.number,
-                    style: STextStyles.field(context),
-                    decoration:
-                        standardInputDecoration(
-                          "Port",
-                          _portFocusNode,
-                          context,
-                        ).copyWith(
-                          suffixIcon: _portController.text.isNotEmpty
-                              ? Padding(
-                                  padding: const EdgeInsets.only(right: 0),
-                                  child: UnconstrainedBox(
-                                    child: TextFieldIconButton(
-                                      child: const XIcon(),
-                                      onTap: () {
-                                        _portController.clear();
-                                        setState(() {});
-                                      },
-                                    ),
+                TextField(
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  controller: _portController,
+                  focusNode: _portFocusNode,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  keyboardType: TextInputType.number,
+                  style: STextStyles.field(context),
+                  decoration:
+                      standardInputDecoration(
+                        "Port",
+                        _portFocusNode,
+                        context,
+                      ).copyWith(
+                        suffixIcon: _portController.text.isNotEmpty
+                            ? Padding(
+                                padding: const EdgeInsets.only(right: 0),
+                                child: UnconstrainedBox(
+                                  child: TextFieldIconButton(
+                                    child: const XIcon(),
+                                    onTap: () {
+                                      _portController.clear();
+                                      setState(() {});
+                                    },
                                   ),
-                                )
-                              : null,
-                        ),
-                    onChanged: (value) {
-                      port = int.tryParse(value);
-                      setState(() {});
-                    },
-                  ),
+                                ),
+                              )
+                            : null,
+                      ),
+                  onChanged: (value) {
+                    port = int.tryParse(value);
+                    setState(() {});
+                  },
                 ),
                 const SizedBox(height: 8),
                 Row(

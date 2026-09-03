@@ -1744,188 +1744,183 @@ class _DesktopSendState extends ConsumerState<DesktopSend> {
         if (!isPaynymSend &&
             !((isMimblewimblecoin || isEpiccash) &&
                 ref.watch(pIsSlatepack(widget.walletId))))
-          ClipRRect(
-            borderRadius: BorderRadius.circular(
-              Constants.size.circularBorderRadius,
+          TextField(
+            minLines: 1,
+            maxLines: 5,
+            key: const Key("sendViewAddressFieldKey"),
+            controller: sendToController,
+            readOnly: false,
+            autocorrect: false,
+            enableSuggestions: false,
+            // inputFormatters: <TextInputFormatter>[
+            //   FilteringTextInputFormatter.allow(
+            //       RegExp("[a-zA-Z0-9]{34}")),
+            // ],
+            toolbarOptions: const ToolbarOptions(
+              copy: false,
+              cut: false,
+              paste: true,
+              selectAll: false,
             ),
-            child: TextField(
-              minLines: 1,
-              maxLines: 5,
-              key: const Key("sendViewAddressFieldKey"),
-              controller: sendToController,
-              readOnly: false,
-              autocorrect: false,
-              enableSuggestions: false,
-              // inputFormatters: <TextInputFormatter>[
-              //   FilteringTextInputFormatter.allow(
-              //       RegExp("[a-zA-Z0-9]{34}")),
-              // ],
-              toolbarOptions: const ToolbarOptions(
-                copy: false,
-                cut: false,
-                paste: true,
-                selectAll: false,
-              ),
-              onChanged: (newValue) async {
-                final trimmed = newValue;
+            onChanged: (newValue) async {
+              final trimmed = newValue;
 
-                if ((trimmed.length - (_address?.length ?? 0)).abs() > 1 ||
-                    trimmed.contains(':')) {
-                  final parsed = AddressUtils.parsePaymentUri(
-                    trimmed,
-                    logging: Logging.instance,
-                  );
-                  if (parsed != null) {
-                    _setOpReturnData(parsed.additionalParams['op_return']);
-                    _applyUri(parsed);
-                  } else {
-                    _setOpReturnData(null);
-                    await _checkSparkNameAndOrSetAddress(newValue);
-                  }
+              if ((trimmed.length - (_address?.length ?? 0)).abs() > 1 ||
+                  trimmed.contains(':')) {
+                final parsed = AddressUtils.parsePaymentUri(
+                  trimmed,
+                  logging: Logging.instance,
+                );
+                if (parsed != null) {
+                  _setOpReturnData(parsed.additionalParams['op_return']);
+                  _applyUri(parsed);
                 } else {
                   _setOpReturnData(null);
-                  await _checkSparkNameAndOrSetAddress(
-                    newValue,
-                    setController: false,
-                  );
+                  await _checkSparkNameAndOrSetAddress(newValue);
                 }
+              } else {
+                _setOpReturnData(null);
+                await _checkSparkNameAndOrSetAddress(
+                  newValue,
+                  setController: false,
+                );
+              }
 
-                _setValidAddressProviders(_address);
+              _setValidAddressProviders(_address);
 
-                setState(() {
-                  _addressToggleFlag = newValue.isNotEmpty;
-                });
-              },
-              focusNode: _addressFocusNode,
-              style: STextStyles.desktopTextExtraSmall(context).copyWith(
-                color: Theme.of(
+              setState(() {
+                _addressToggleFlag = newValue.isNotEmpty;
+              });
+            },
+            focusNode: _addressFocusNode,
+            style: STextStyles.desktopTextExtraSmall(context).copyWith(
+              color: Theme.of(
+                context,
+              ).extension<StackColors>()!.textFieldActiveText,
+              height: 1.8,
+            ),
+            decoration:
+                standardInputDecoration(
+                  ref.watch(pIsSlatepack(widget.walletId))
+                      ? "Enter ${coin.ticker} address (optional)"
+                      : "Enter ${coin.ticker} address",
+                  _addressFocusNode,
                   context,
-                ).extension<StackColors>()!.textFieldActiveText,
-                height: 1.8,
-              ),
-              decoration:
-                  standardInputDecoration(
-                    ref.watch(pIsSlatepack(widget.walletId))
-                        ? "Enter ${coin.ticker} address (optional)"
-                        : "Enter ${coin.ticker} address",
-                    _addressFocusNode,
-                    context,
-                    desktopMed: true,
-                  ).copyWith(
-                    contentPadding: const EdgeInsets.only(
-                      left: 16,
-                      top: 11,
-                      bottom: 12,
-                      right: 5,
-                    ),
-                    suffixIcon: Padding(
-                      padding: sendToController.text.isEmpty
-                          ? const EdgeInsets.only(right: 8)
-                          : const EdgeInsets.only(right: 0),
-                      child: UnconstrainedBox(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _addressToggleFlag
-                                ? TextFieldIconButton(
-                                    key: const Key(
-                                      "sendViewClearAddressFieldButtonKey",
-                                    ),
-                                    onTap: () {
-                                      sendToController.text = "";
-                                      _address = "";
-                                      _setOpReturnData(null);
-                                      _setValidAddressProviders(_address);
-                                      setState(() {
-                                        _addressToggleFlag = false;
-                                      });
-                                    },
-                                    child: const XIcon(),
-                                  )
-                                : TextFieldIconButton(
-                                    key: const Key(
-                                      "sendViewPasteAddressFieldButtonKey",
-                                    ),
-                                    onTap: pasteAddress,
-                                    child: sendToController.text.isEmpty
-                                        ? const ClipboardIcon()
-                                        : const XIcon(),
+                  desktopMed: true,
+                ).copyWith(
+                  contentPadding: const EdgeInsets.only(
+                    left: 16,
+                    top: 11,
+                    bottom: 12,
+                    right: 5,
+                  ),
+                  suffixIcon: Padding(
+                    padding: sendToController.text.isEmpty
+                        ? const EdgeInsets.only(right: 8)
+                        : const EdgeInsets.only(right: 0),
+                    child: UnconstrainedBox(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _addressToggleFlag
+                              ? TextFieldIconButton(
+                                  key: const Key(
+                                    "sendViewClearAddressFieldButtonKey",
                                   ),
-                            if (sendToController.text.isEmpty)
-                              TextFieldIconButton(
-                                key: const Key("sendViewAddressBookButtonKey"),
-                                onTap: () async {
-                                  final entry =
-                                      await showDialog<ContactAddressEntry?>(
-                                        context: context,
-                                        builder: (context) => DesktopDialog(
-                                          maxWidth: 696,
-                                          maxHeight: 600,
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                          left: 32,
-                                                        ),
-                                                    child: Text(
-                                                      "Address book",
-                                                      style:
-                                                          STextStyles.desktopH3(
-                                                            context,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                  const DesktopDialogCloseButton(),
-                                                ],
-                                              ),
-                                              Expanded(
-                                                child:
-                                                    AddressBookAddressChooser(
-                                                      coin: coin,
-                                                    ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-
-                                  if (entry != null) {
+                                  onTap: () {
+                                    sendToController.text = "";
+                                    _address = "";
                                     _setOpReturnData(null);
-                                    sendToController.text =
-                                        entry.other ?? entry.label;
-
-                                    _address = entry.address;
-
                                     _setValidAddressProviders(_address);
-
                                     setState(() {
-                                      _addressToggleFlag = true;
+                                      _addressToggleFlag = false;
                                     });
-                                  }
-                                },
-                                child: const AddressBookIcon(),
-                              ),
-                            if (sendToController.text.isEmpty)
-                              TextFieldIconButton(
-                                semanticsLabel:
-                                    "Scan QR Button. Opens Camera For Scanning QR Code.",
-                                key: const Key("sendViewScanQrButtonKey"),
-                                onTap: scanWebcam,
-                                child: const QrCodeIcon(),
-                              ),
-                          ],
-                        ),
+                                  },
+                                  child: const XIcon(),
+                                )
+                              : TextFieldIconButton(
+                                  key: const Key(
+                                    "sendViewPasteAddressFieldButtonKey",
+                                  ),
+                                  onTap: pasteAddress,
+                                  child: sendToController.text.isEmpty
+                                      ? const ClipboardIcon()
+                                      : const XIcon(),
+                                ),
+                          if (sendToController.text.isEmpty)
+                            TextFieldIconButton(
+                              key: const Key("sendViewAddressBookButtonKey"),
+                              onTap: () async {
+                                final entry =
+                                    await showDialog<ContactAddressEntry?>(
+                                      context: context,
+                                      builder: (context) => DesktopDialog(
+                                        maxWidth: 696,
+                                        maxHeight: 600,
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        left: 32,
+                                                      ),
+                                                  child: Text(
+                                                    "Address book",
+                                                    style:
+                                                        STextStyles.desktopH3(
+                                                          context,
+                                                        ),
+                                                  ),
+                                                ),
+                                                const DesktopDialogCloseButton(),
+                                              ],
+                                            ),
+                                            Expanded(
+                                              child:
+                                                  AddressBookAddressChooser(
+                                                    coin: coin,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+
+                                if (entry != null) {
+                                  _setOpReturnData(null);
+                                  sendToController.text =
+                                      entry.other ?? entry.label;
+
+                                  _address = entry.address;
+
+                                  _setValidAddressProviders(_address);
+
+                                  setState(() {
+                                    _addressToggleFlag = true;
+                                  });
+                                }
+                              },
+                              child: const AddressBookIcon(),
+                            ),
+                          if (sendToController.text.isEmpty)
+                            TextFieldIconButton(
+                              semanticsLabel:
+                                  "Scan QR Button. Opens Camera For Scanning QR Code.",
+                              key: const Key("sendViewScanQrButtonKey"),
+                              onTap: scanWebcam,
+                              child: const QrCodeIcon(),
+                            ),
+                        ],
                       ),
                     ),
                   ),
-            ),
+                ),
           ),
         if (!isPaynymSend &&
             !((isMimblewimblecoin || isEpiccash) &&
@@ -2044,64 +2039,59 @@ class _DesktopSendState extends ConsumerState<DesktopSend> {
         if (hasOptionalMemo || ref.watch(pValidSparkSendToAddress))
           const SizedBox(height: 10),
         if (hasOptionalMemo || ref.watch(pValidSparkSendToAddress))
-          ClipRRect(
-            borderRadius: BorderRadius.circular(
-              Constants.size.circularBorderRadius,
+          TextField(
+            maxLength: (coin is Firo) ? 31 : null,
+            minLines: 1,
+            maxLines: 5,
+            key: const Key("sendViewMemoFieldKey"),
+            controller: memoController,
+            readOnly: false,
+            autocorrect: false,
+            enableSuggestions: false,
+            focusNode: _memoFocus,
+            onChanged: (_) {
+              setState(() {});
+            },
+            style: STextStyles.desktopTextExtraSmall(context).copyWith(
+              color: Theme.of(
+                context,
+              ).extension<StackColors>()!.textFieldActiveText,
+              height: 1.8,
             ),
-            child: TextField(
-              maxLength: (coin is Firo) ? 31 : null,
-              minLines: 1,
-              maxLines: 5,
-              key: const Key("sendViewMemoFieldKey"),
-              controller: memoController,
-              readOnly: false,
-              autocorrect: false,
-              enableSuggestions: false,
-              focusNode: _memoFocus,
-              onChanged: (_) {
-                setState(() {});
-              },
-              style: STextStyles.desktopTextExtraSmall(context).copyWith(
-                color: Theme.of(
+            decoration:
+                standardInputDecoration(
+                  "Enter memo (optional)",
+                  _memoFocus,
                   context,
-                ).extension<StackColors>()!.textFieldActiveText,
-                height: 1.8,
-              ),
-              decoration:
-                  standardInputDecoration(
-                    "Enter memo (optional)",
-                    _memoFocus,
-                    context,
-                    desktopMed: true,
-                  ).copyWith(
-                    counterText: '',
-                    contentPadding: const EdgeInsets.only(
-                      left: 16,
-                      top: 11,
-                      bottom: 12,
-                      right: 5,
-                    ),
-                    suffixIcon: Padding(
-                      padding: memoController.text.isEmpty
-                          ? const EdgeInsets.only(right: 8)
-                          : const EdgeInsets.only(right: 0),
-                      child: UnconstrainedBox(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            TextFieldIconButton(
-                              key: const Key("sendViewPasteMemoButtonKey"),
-                              onTap: pasteMemo,
-                              child: memoController.text.isEmpty
-                                  ? const ClipboardIcon()
-                                  : const XIcon(),
-                            ),
-                          ],
-                        ),
+                  desktopMed: true,
+                ).copyWith(
+                  counterText: '',
+                  contentPadding: const EdgeInsets.only(
+                    left: 16,
+                    top: 11,
+                    bottom: 12,
+                    right: 5,
+                  ),
+                  suffixIcon: Padding(
+                    padding: memoController.text.isEmpty
+                        ? const EdgeInsets.only(right: 8)
+                        : const EdgeInsets.only(right: 0),
+                    child: UnconstrainedBox(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          TextFieldIconButton(
+                            key: const Key("sendViewPasteMemoButtonKey"),
+                            onTap: pasteMemo,
+                            child: memoController.text.isEmpty
+                                ? const ClipboardIcon()
+                                : const XIcon(),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-            ),
+                ),
           ),
         if (!isPaynymSend) const SizedBox(height: 20),
         if (coin is! NanoCurrency &&
@@ -2132,41 +2122,36 @@ class _DesktopSendState extends ConsumerState<DesktopSend> {
           ),
         if (coin is Ethereum) const SizedBox(height: 10),
         if (coin is Ethereum)
-          ClipRRect(
-            borderRadius: BorderRadius.circular(
-              Constants.size.circularBorderRadius,
+          TextField(
+            minLines: 1,
+            maxLines: 1,
+            key: const Key("sendViewNonceFieldKey"),
+            controller: nonceController,
+            readOnly: false,
+            autocorrect: false,
+            enableSuggestions: false,
+            keyboardType: const TextInputType.numberWithOptions(),
+            focusNode: _nonceFocusNode,
+            style: STextStyles.desktopTextExtraSmall(context).copyWith(
+              color: Theme.of(
+                context,
+              ).extension<StackColors>()!.textFieldActiveText,
+              height: 1.8,
             ),
-            child: TextField(
-              minLines: 1,
-              maxLines: 1,
-              key: const Key("sendViewNonceFieldKey"),
-              controller: nonceController,
-              readOnly: false,
-              autocorrect: false,
-              enableSuggestions: false,
-              keyboardType: const TextInputType.numberWithOptions(),
-              focusNode: _nonceFocusNode,
-              style: STextStyles.desktopTextExtraSmall(context).copyWith(
-                color: Theme.of(
+            decoration:
+                standardInputDecoration(
+                  "Leave empty to auto select nonce",
+                  _nonceFocusNode,
                   context,
-                ).extension<StackColors>()!.textFieldActiveText,
-                height: 1.8,
-              ),
-              decoration:
-                  standardInputDecoration(
-                    "Leave empty to auto select nonce",
-                    _nonceFocusNode,
-                    context,
-                    desktopMed: true,
-                  ).copyWith(
-                    contentPadding: const EdgeInsets.only(
-                      left: 16,
-                      top: 11,
-                      bottom: 12,
-                      right: 5,
-                    ),
+                  desktopMed: true,
+                ).copyWith(
+                  contentPadding: const EdgeInsets.only(
+                    left: 16,
+                    top: 11,
+                    bottom: 12,
+                    right: 5,
                   ),
-            ),
+                ),
           ),
         const SizedBox(height: 36),
         PrimaryButton(

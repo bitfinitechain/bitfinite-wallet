@@ -354,69 +354,59 @@ class _AutoBackupViewState extends ConsumerState<AutoBackupView> {
                         style: STextStyles.smallMed12(context),
                       ),
                       const SizedBox(height: 10),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(
-                          Constants.size.circularBorderRadius,
+                      TextField(
+                        key: const Key(
+                          "backupSavedToFileLocationTextFieldKey",
                         ),
-                        child: TextField(
-                          key: const Key(
-                            "backupSavedToFileLocationTextFieldKey",
-                          ),
-                          focusNode: fileLocationFocusNode,
-                          controller: fileLocationController,
-                          enabled: false,
-                          style: STextStyles.field(context).copyWith(
-                            color: Theme.of(context)
-                                .extension<StackColors>()!
-                                .textDark
-                                .withOpacity(0.5),
-                          ),
-                          readOnly: true,
-                          enableSuggestions: false,
-                          autocorrect: false,
-                          toolbarOptions: const ToolbarOptions(
-                            copy: true,
-                            cut: false,
-                            paste: false,
-                            selectAll: true,
-                          ),
-                          decoration: standardInputDecoration(
-                            "Saved to",
-                            fileLocationFocusNode,
-                            context,
-                          ),
+                        focusNode: fileLocationFocusNode,
+                        controller: fileLocationController,
+                        enabled: false,
+                        style: STextStyles.field(context).copyWith(
+                          color: Theme.of(context)
+                              .extension<StackColors>()!
+                              .textDark
+                              .withOpacity(0.5),
+                        ),
+                        readOnly: true,
+                        enableSuggestions: false,
+                        autocorrect: false,
+                        toolbarOptions: const ToolbarOptions(
+                          copy: true,
+                          cut: false,
+                          paste: false,
+                          selectAll: true,
+                        ),
+                        decoration: standardInputDecoration(
+                          "Saved to",
+                          fileLocationFocusNode,
+                          context,
                         ),
                       ),
                       const SizedBox(height: 10),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(
-                          Constants.size.circularBorderRadius,
+                      TextField(
+                        key: const Key("backupPasswordFieldKey"),
+                        focusNode: passwordFocusNode,
+                        controller: passwordController,
+                        enabled: false,
+                        style: STextStyles.field(context).copyWith(
+                          color: Theme.of(context)
+                              .extension<StackColors>()!
+                              .textDark
+                              .withOpacity(0.5),
                         ),
-                        child: TextField(
-                          key: const Key("backupPasswordFieldKey"),
-                          focusNode: passwordFocusNode,
-                          controller: passwordController,
-                          enabled: false,
-                          style: STextStyles.field(context).copyWith(
-                            color: Theme.of(context)
-                                .extension<StackColors>()!
-                                .textDark
-                                .withOpacity(0.5),
-                          ),
-                          obscureText: true,
-                          enableSuggestions: false,
-                          autocorrect: false,
-                          toolbarOptions: const ToolbarOptions(
-                            copy: true,
-                            cut: false,
-                            paste: false,
-                            selectAll: true,
-                          ),
-                          decoration: standardInputDecoration(
-                            "Passphrase",
-                            passwordFocusNode,
-                            context,
-                          ),
+                        obscureText: true,
+                        enableSuggestions: false,
+                        autocorrect: false,
+                        toolbarOptions: const ToolbarOptions(
+                          copy: true,
+                          cut: false,
+                          paste: false,
+                          selectAll: true,
+                        ),
+                        decoration: standardInputDecoration(
+                          "Passphrase",
+                          passwordFocusNode,
+                          context,
                         ),
                       ),
                       const SizedBox(height: 12),

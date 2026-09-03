@@ -803,120 +803,115 @@ class _TokenSendViewState extends ConsumerState<TokenSendView> {
                               textAlign: TextAlign.left,
                             ),
                             const SizedBox(height: 8),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(
-                                Constants.size.circularBorderRadius,
+                            TextField(
+                              key: const Key("tokenSendViewAddressFieldKey"),
+                              controller: sendToController,
+                              readOnly: false,
+                              autocorrect: false,
+                              enableSuggestions: false,
+                              toolbarOptions: const ToolbarOptions(
+                                copy: false,
+                                cut: false,
+                                paste: true,
+                                selectAll: false,
                               ),
-                              child: TextField(
-                                key: const Key("tokenSendViewAddressFieldKey"),
-                                controller: sendToController,
-                                readOnly: false,
-                                autocorrect: false,
-                                enableSuggestions: false,
-                                toolbarOptions: const ToolbarOptions(
-                                  copy: false,
-                                  cut: false,
-                                  paste: true,
-                                  selectAll: false,
-                                ),
-                                onChanged: (newValue) {
-                                  _address = newValue.trim();
-                                  _updatePreviewButtonState(
-                                    _address,
-                                    _amountToSend,
-                                  );
+                              onChanged: (newValue) {
+                                _address = newValue.trim();
+                                _updatePreviewButtonState(
+                                  _address,
+                                  _amountToSend,
+                                );
 
-                                  setState(() {
-                                    _addressToggleFlag = newValue.isNotEmpty;
-                                  });
-                                },
-                                focusNode: _addressFocusNode,
-                                style: STextStyles.field(context),
-                                decoration:
-                                    standardInputDecoration(
-                                      "Enter ${tokenContract.symbol} address",
-                                      _addressFocusNode,
-                                      context,
-                                    ).copyWith(
-                                      contentPadding: const EdgeInsets.only(
-                                        left: 16,
-                                        top: 6,
-                                        bottom: 8,
-                                        right: 5,
-                                      ),
-                                      suffixIcon: Padding(
-                                        padding: sendToController.text.isEmpty
-                                            ? const EdgeInsets.only(right: 8)
-                                            : const EdgeInsets.only(right: 0),
-                                        child: UnconstrainedBox(
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
-                                            children: [
-                                              _addressToggleFlag
-                                                  ? TextFieldIconButton(
-                                                      key: const Key(
-                                                        "tokenSendViewClearAddressFieldButtonKey",
-                                                      ),
-                                                      onTap: () {
-                                                        sendToController.text =
-                                                            "";
-                                                        _address = "";
-                                                        _updatePreviewButtonState(
-                                                          _address,
-                                                          _amountToSend,
-                                                        );
-                                                        setState(() {
-                                                          _addressToggleFlag =
-                                                              false;
-                                                        });
-                                                      },
-                                                      child: const XIcon(),
-                                                    )
-                                                  : TextFieldIconButton(
-                                                      key: const Key(
-                                                        "tokenSendViewPasteAddressFieldButtonKey",
-                                                      ),
-                                                      onTap:
-                                                          _onTokenSendViewPasteAddressFieldButtonPressed,
-                                                      child:
-                                                          sendToController
-                                                              .text
-                                                              .isEmpty
-                                                          ? const ClipboardIcon()
-                                                          : const XIcon(),
+                                setState(() {
+                                  _addressToggleFlag = newValue.isNotEmpty;
+                                });
+                              },
+                              focusNode: _addressFocusNode,
+                              style: STextStyles.field(context),
+                              decoration:
+                                  standardInputDecoration(
+                                    "Enter ${tokenContract.symbol} address",
+                                    _addressFocusNode,
+                                    context,
+                                  ).copyWith(
+                                    contentPadding: const EdgeInsets.only(
+                                      left: 16,
+                                      top: 6,
+                                      bottom: 8,
+                                      right: 5,
+                                    ),
+                                    suffixIcon: Padding(
+                                      padding: sendToController.text.isEmpty
+                                          ? const EdgeInsets.only(right: 8)
+                                          : const EdgeInsets.only(right: 0),
+                                      child: UnconstrainedBox(
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceAround,
+                                          children: [
+                                            _addressToggleFlag
+                                                ? TextFieldIconButton(
+                                                    key: const Key(
+                                                      "tokenSendViewClearAddressFieldButtonKey",
                                                     ),
-                                              if (sendToController.text.isEmpty)
-                                                TextFieldIconButton(
-                                                  key: const Key(
-                                                    "sendViewAddressBookButtonKey",
+                                                    onTap: () {
+                                                      sendToController.text =
+                                                          "";
+                                                      _address = "";
+                                                      _updatePreviewButtonState(
+                                                        _address,
+                                                        _amountToSend,
+                                                      );
+                                                      setState(() {
+                                                        _addressToggleFlag =
+                                                            false;
+                                                      });
+                                                    },
+                                                    child: const XIcon(),
+                                                  )
+                                                : TextFieldIconButton(
+                                                    key: const Key(
+                                                      "tokenSendViewPasteAddressFieldButtonKey",
+                                                    ),
+                                                    onTap:
+                                                        _onTokenSendViewPasteAddressFieldButtonPressed,
+                                                    child:
+                                                        sendToController
+                                                            .text
+                                                            .isEmpty
+                                                        ? const ClipboardIcon()
+                                                        : const XIcon(),
                                                   ),
-                                                  onTap: () {
-                                                    Navigator.of(
-                                                      context,
-                                                    ).pushNamed(
-                                                      AddressBookView.routeName,
-                                                      arguments: widget.coin,
-                                                    );
-                                                  },
-                                                  child:
-                                                      const AddressBookIcon(),
+                                            if (sendToController.text.isEmpty)
+                                              TextFieldIconButton(
+                                                key: const Key(
+                                                  "sendViewAddressBookButtonKey",
                                                 ),
-                                              if (sendToController.text.isEmpty)
-                                                TextFieldIconButton(
-                                                  key: const Key(
-                                                    "sendViewScanQrButtonKey",
-                                                  ),
-                                                  onTap:
-                                                      _onTokenSendViewScanQrButtonPressed,
-                                                  child: const QrCodeIcon(),
+                                                onTap: () {
+                                                  Navigator.of(
+                                                    context,
+                                                  ).pushNamed(
+                                                    AddressBookView.routeName,
+                                                    arguments: widget.coin,
+                                                  );
+                                                },
+                                                child:
+                                                    const AddressBookIcon(),
+                                              ),
+                                            if (sendToController.text.isEmpty)
+                                              TextFieldIconButton(
+                                                key: const Key(
+                                                  "sendViewScanQrButtonKey",
                                                 ),
-                                            ],
-                                          ),
+                                                onTap:
+                                                    _onTokenSendViewScanQrButtonPressed,
+                                                child: const QrCodeIcon(),
+                                              ),
+                                          ],
                                         ),
                                       ),
                                     ),
-                              ),
+                                  ),
                             ),
                             Builder(
                               builder: (_) {
@@ -1111,49 +1106,44 @@ class _TokenSendViewState extends ConsumerState<TokenSendView> {
                               textAlign: TextAlign.left,
                             ),
                             const SizedBox(height: 8),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(
-                                Constants.size.circularBorderRadius,
-                              ),
-                              child: TextField(
-                                autocorrect: Util.isDesktop ? false : true,
-                                enableSuggestions: Util.isDesktop
-                                    ? false
-                                    : true,
-                                controller: noteController,
-                                focusNode: _noteFocusNode,
-                                style: STextStyles.field(context),
-                                onChanged: (_) => setState(() {}),
-                                decoration:
-                                    standardInputDecoration(
-                                      "Type something...",
-                                      _noteFocusNode,
-                                      context,
-                                    ).copyWith(
-                                      suffixIcon: noteController.text.isNotEmpty
-                                          ? Padding(
-                                              padding: const EdgeInsets.only(
-                                                right: 0,
+                            TextField(
+                              autocorrect: Util.isDesktop ? false : true,
+                              enableSuggestions: Util.isDesktop
+                                  ? false
+                                  : true,
+                              controller: noteController,
+                              focusNode: _noteFocusNode,
+                              style: STextStyles.field(context),
+                              onChanged: (_) => setState(() {}),
+                              decoration:
+                                  standardInputDecoration(
+                                    "Type something...",
+                                    _noteFocusNode,
+                                    context,
+                                  ).copyWith(
+                                    suffixIcon: noteController.text.isNotEmpty
+                                        ? Padding(
+                                            padding: const EdgeInsets.only(
+                                              right: 0,
+                                            ),
+                                            child: UnconstrainedBox(
+                                              child: Row(
+                                                children: [
+                                                  TextFieldIconButton(
+                                                    child: const XIcon(),
+                                                    onTap: () async {
+                                                      setState(() {
+                                                        noteController.text =
+                                                            "";
+                                                      });
+                                                    },
+                                                  ),
+                                                ],
                                               ),
-                                              child: UnconstrainedBox(
-                                                child: Row(
-                                                  children: [
-                                                    TextFieldIconButton(
-                                                      child: const XIcon(),
-                                                      onTap: () async {
-                                                        setState(() {
-                                                          noteController.text =
-                                                              "";
-                                                        });
-                                                      },
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            )
-                                          : null,
-                                    ),
-                              ),
+                                            ),
+                                          )
+                                        : null,
+                                  ),
                             ),
                             const SizedBox(height: 12),
                             Text(

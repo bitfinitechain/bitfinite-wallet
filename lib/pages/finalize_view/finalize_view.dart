@@ -241,87 +241,82 @@ class _FinalizeViewState extends ConsumerState<FinalizeView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(
-              Constants.size.circularBorderRadius,
+          TextField(
+            minLines: 1,
+            maxLines: 5,
+            key: const Key("finalizeSlatepackFieldKey"),
+            controller: _slateController,
+            readOnly: false,
+            autocorrect: false,
+            enableSuggestions: false,
+            toolbarOptions: const ToolbarOptions(
+              copy: false,
+              cut: false,
+              paste: true,
+              selectAll: false,
             ),
-            child: TextField(
-              minLines: 1,
-              maxLines: 5,
-              key: const Key("finalizeSlatepackFieldKey"),
-              controller: _slateController,
-              readOnly: false,
-              autocorrect: false,
-              enableSuggestions: false,
-              toolbarOptions: const ToolbarOptions(
-                copy: false,
-                cut: false,
-                paste: true,
-                selectAll: false,
-              ),
-              onChanged: (newValue) {
-                setState(() {
-                  _slateToggleFlag = newValue.isNotEmpty;
-                });
-              },
-              focusNode: _slateFocusNode,
-              style: STextStyles.field(context),
-              decoration:
-                  standardInputDecoration(
-                    "Enter Final Slatepack Message",
-                    _slateFocusNode,
-                    context,
-                    desktopMed: true,
-                  ).copyWith(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical:
-                          12, // Adjust vertical padding for better alignment
-                    ),
-                    suffixIcon: Padding(
-                      padding: _slateController.text.isEmpty
-                          ? const EdgeInsets.only(right: 8)
-                          : const EdgeInsets.only(right: 0),
-                      child: UnconstrainedBox(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _slateToggleFlag
-                                ? TextFieldIconButton(
-                                    key: const Key(
-                                      "slateFinalizeClearFieldButtonKey",
-                                    ),
-                                    onTap: () {
-                                      _slateController.text = "";
-                                      setState(() {
-                                        _slateToggleFlag = false;
-                                      });
-                                    },
-                                    child: const XIcon(),
-                                  )
-                                : TextFieldIconButton(
-                                    key: const Key(
-                                      "slateFinalizePasteFieldButtonKey",
-                                    ),
-                                    onTap: _pasteSlatepack,
-                                    child: _slateController.text.isEmpty
-                                        ? const ClipboardIcon()
-                                        : const XIcon(),
+            onChanged: (newValue) {
+              setState(() {
+                _slateToggleFlag = newValue.isNotEmpty;
+              });
+            },
+            focusNode: _slateFocusNode,
+            style: STextStyles.field(context),
+            decoration:
+                standardInputDecoration(
+                  "Enter Final Slatepack Message",
+                  _slateFocusNode,
+                  context,
+                  desktopMed: true,
+                ).copyWith(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical:
+                        12, // Adjust vertical padding for better alignment
+                  ),
+                  suffixIcon: Padding(
+                    padding: _slateController.text.isEmpty
+                        ? const EdgeInsets.only(right: 8)
+                        : const EdgeInsets.only(right: 0),
+                    child: UnconstrainedBox(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _slateToggleFlag
+                              ? TextFieldIconButton(
+                                  key: const Key(
+                                    "slateFinalizeClearFieldButtonKey",
                                   ),
-                            if (_slateController.text.isEmpty)
-                              TextFieldIconButton(
-                                semanticsLabel:
-                                    "Scan QR Button. Opens Camera For Scanning QR Code.",
-                                key: const Key("sendViewScanQrButtonKey"),
-                                onTap: _scanQr,
-                                child: const QrCodeIcon(),
-                              ),
-                          ],
-                        ),
+                                  onTap: () {
+                                    _slateController.text = "";
+                                    setState(() {
+                                      _slateToggleFlag = false;
+                                    });
+                                  },
+                                  child: const XIcon(),
+                                )
+                              : TextFieldIconButton(
+                                  key: const Key(
+                                    "slateFinalizePasteFieldButtonKey",
+                                  ),
+                                  onTap: _pasteSlatepack,
+                                  child: _slateController.text.isEmpty
+                                      ? const ClipboardIcon()
+                                      : const XIcon(),
+                                ),
+                          if (_slateController.text.isEmpty)
+                            TextFieldIconButton(
+                              semanticsLabel:
+                                  "Scan QR Button. Opens Camera For Scanning QR Code.",
+                              key: const Key("sendViewScanQrButtonKey"),
+                              onTap: _scanQr,
+                              child: const QrCodeIcon(),
+                            ),
+                        ],
                       ),
                     ),
                   ),
-            ),
+                ),
           ),
           Util.isDesktop ? const SizedBox(height: 24) : const Spacer(),
           PrimaryButton(

@@ -863,161 +863,156 @@ class _DesktopSolTokenSendState extends ConsumerState<DesktopSolTokenSend> {
           textAlign: TextAlign.left,
         ),
         const SizedBox(height: 10),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(
-            Constants.size.circularBorderRadius,
+        TextField(
+          minLines: 1,
+          maxLines: 5,
+          key: const Key("sendViewAddressFieldKey"),
+          controller: sendToController,
+          readOnly: false,
+          autocorrect: false,
+          enableSuggestions: false,
+          // inputFormatters: <TextInputFormatter>[
+          //   FilteringTextInputFormatter.allow(
+          //       RegExp("[a-zA-Z0-9]{34}")),
+          // ],
+          toolbarOptions: const ToolbarOptions(
+            copy: false,
+            cut: false,
+            paste: true,
+            selectAll: false,
           ),
-          child: TextField(
-            minLines: 1,
-            maxLines: 5,
-            key: const Key("sendViewAddressFieldKey"),
-            controller: sendToController,
-            readOnly: false,
-            autocorrect: false,
-            enableSuggestions: false,
-            // inputFormatters: <TextInputFormatter>[
-            //   FilteringTextInputFormatter.allow(
-            //       RegExp("[a-zA-Z0-9]{34}")),
-            // ],
-            toolbarOptions: const ToolbarOptions(
-              copy: false,
-              cut: false,
-              paste: true,
-              selectAll: false,
-            ),
-            onChanged: (newValue) {
-              _address = newValue;
-              _updatePreviewButtonState(_address, _amountToSend);
+          onChanged: (newValue) {
+            _address = newValue;
+            _updatePreviewButtonState(_address, _amountToSend);
 
-              setState(() {
-                _addressToggleFlag = newValue.isNotEmpty;
-              });
-            },
-            focusNode: _addressFocusNode,
-            style: STextStyles.desktopTextExtraSmall(context).copyWith(
-              color: Theme.of(
+            setState(() {
+              _addressToggleFlag = newValue.isNotEmpty;
+            });
+          },
+          focusNode: _addressFocusNode,
+          style: STextStyles.desktopTextExtraSmall(context).copyWith(
+            color: Theme.of(
+              context,
+            ).extension<StackColors>()!.textFieldActiveText,
+            height: 1.8,
+          ),
+          decoration:
+              standardInputDecoration(
+                "Enter Solana address",
+                _addressFocusNode,
                 context,
-              ).extension<StackColors>()!.textFieldActiveText,
-              height: 1.8,
-            ),
-            decoration:
-                standardInputDecoration(
-                  "Enter Solana address",
-                  _addressFocusNode,
-                  context,
-                  desktopMed: true,
-                ).copyWith(
-                  contentPadding: const EdgeInsets.only(
-                    left: 16,
-                    top: 11,
-                    bottom: 12,
-                    right: 5,
-                  ),
-                  suffixIcon: Padding(
-                    padding: sendToController.text.isEmpty
-                        ? const EdgeInsets.only(right: 8)
-                        : const EdgeInsets.only(right: 0),
-                    child: UnconstrainedBox(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          _addressToggleFlag
-                              ? TextFieldIconButton(
-                                  key: const Key(
-                                    "sendTokenViewClearAddressFieldButtonKey",
-                                  ),
-                                  onTap: () {
-                                    sendToController.text = "";
-                                    _address = "";
-                                    _updatePreviewButtonState(
-                                      _address,
-                                      _amountToSend,
-                                    );
-                                    setState(() {
-                                      _addressToggleFlag = false;
-                                    });
-                                  },
-                                  child: const XIcon(),
-                                )
-                              : TextFieldIconButton(
-                                  key: const Key(
-                                    "sendTokenViewPasteAddressFieldButtonKey",
-                                  ),
-                                  onTap: pasteAddress,
-                                  child: sendToController.text.isEmpty
-                                      ? const ClipboardIcon()
-                                      : const XIcon(),
+                desktopMed: true,
+              ).copyWith(
+                contentPadding: const EdgeInsets.only(
+                  left: 16,
+                  top: 11,
+                  bottom: 12,
+                  right: 5,
+                ),
+                suffixIcon: Padding(
+                  padding: sendToController.text.isEmpty
+                      ? const EdgeInsets.only(right: 8)
+                      : const EdgeInsets.only(right: 0),
+                  child: UnconstrainedBox(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _addressToggleFlag
+                            ? TextFieldIconButton(
+                                key: const Key(
+                                  "sendTokenViewClearAddressFieldButtonKey",
                                 ),
-                          if (sendToController.text.isEmpty)
-                            TextFieldIconButton(
-                              key: const Key(
-                                "sendTokenViewAddressBookButtonKey",
-                              ),
-                              onTap: () async {
-                                final entry =
-                                    await showDialog<ContactAddressEntry?>(
-                                      context: context,
-                                      builder: (context) => DesktopDialog(
-                                        maxWidth: 696,
-                                        maxHeight: 600,
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                        left: 32,
-                                                      ),
-                                                  child: Text(
-                                                    "Address book",
-                                                    style:
-                                                        STextStyles.desktopH3(
-                                                          context,
-                                                        ),
-                                                  ),
-                                                ),
-                                                const DesktopDialogCloseButton(),
-                                              ],
-                                            ),
-                                            Expanded(
-                                              child: AddressBookAddressChooser(
-                                                coin: coin,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-
-                                if (entry != null) {
-                                  sendToController.text =
-                                      entry.other ?? entry.label;
-
-                                  _address = entry.address;
-
+                                onTap: () {
+                                  sendToController.text = "";
+                                  _address = "";
                                   _updatePreviewButtonState(
                                     _address,
                                     _amountToSend,
                                   );
-
                                   setState(() {
-                                    _addressToggleFlag = true;
+                                    _addressToggleFlag = false;
                                   });
-                                }
-                              },
-                              child: const AddressBookIcon(),
+                                },
+                                child: const XIcon(),
+                              )
+                            : TextFieldIconButton(
+                                key: const Key(
+                                  "sendTokenViewPasteAddressFieldButtonKey",
+                                ),
+                                onTap: pasteAddress,
+                                child: sendToController.text.isEmpty
+                                    ? const ClipboardIcon()
+                                    : const XIcon(),
+                              ),
+                        if (sendToController.text.isEmpty)
+                          TextFieldIconButton(
+                            key: const Key(
+                              "sendTokenViewAddressBookButtonKey",
                             ),
-                        ],
-                      ),
+                            onTap: () async {
+                              final entry =
+                                  await showDialog<ContactAddressEntry?>(
+                                    context: context,
+                                    builder: (context) => DesktopDialog(
+                                      maxWidth: 696,
+                                      maxHeight: 600,
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment
+                                                    .spaceBetween,
+                                            children: [
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.only(
+                                                      left: 32,
+                                                    ),
+                                                child: Text(
+                                                  "Address book",
+                                                  style:
+                                                      STextStyles.desktopH3(
+                                                        context,
+                                                      ),
+                                                ),
+                                              ),
+                                              const DesktopDialogCloseButton(),
+                                            ],
+                                          ),
+                                          Expanded(
+                                            child: AddressBookAddressChooser(
+                                              coin: coin,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+
+                              if (entry != null) {
+                                sendToController.text =
+                                    entry.other ?? entry.label;
+
+                                _address = entry.address;
+
+                                _updatePreviewButtonState(
+                                  _address,
+                                  _amountToSend,
+                                );
+
+                                setState(() {
+                                  _addressToggleFlag = true;
+                                });
+                              }
+                            },
+                            child: const AddressBookIcon(),
+                          ),
+                      ],
                     ),
                   ),
                 ),
-          ),
+              ),
         ),
         Builder(
           builder: (_) {
@@ -1045,64 +1040,59 @@ class _DesktopSolTokenSendState extends ConsumerState<DesktopSolTokenSend> {
           },
         ),
         const SizedBox(height: 10),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(
-            Constants.size.circularBorderRadius,
+        TextField(
+          maxLength: (coin is Firo) ? 31 : null,
+          minLines: 1,
+          maxLines: 5,
+          key: const Key("sendViewMemoFieldKey"),
+          controller: memoController,
+          readOnly: false,
+          autocorrect: false,
+          enableSuggestions: false,
+          focusNode: _memoFocusNode,
+          onChanged: (_) {
+            setState(() {});
+          },
+          style: STextStyles.desktopTextExtraSmall(context).copyWith(
+            color: Theme.of(
+              context,
+            ).extension<StackColors>()!.textFieldActiveText,
+            height: 1.8,
           ),
-          child: TextField(
-            maxLength: (coin is Firo) ? 31 : null,
-            minLines: 1,
-            maxLines: 5,
-            key: const Key("sendViewMemoFieldKey"),
-            controller: memoController,
-            readOnly: false,
-            autocorrect: false,
-            enableSuggestions: false,
-            focusNode: _memoFocusNode,
-            onChanged: (_) {
-              setState(() {});
-            },
-            style: STextStyles.desktopTextExtraSmall(context).copyWith(
-              color: Theme.of(
+          decoration:
+              standardInputDecoration(
+                "Enter memo (optional)",
+                _memoFocusNode,
                 context,
-              ).extension<StackColors>()!.textFieldActiveText,
-              height: 1.8,
-            ),
-            decoration:
-                standardInputDecoration(
-                  "Enter memo (optional)",
-                  _memoFocusNode,
-                  context,
-                  desktopMed: true,
-                ).copyWith(
-                  counterText: '',
-                  contentPadding: const EdgeInsets.only(
-                    left: 16,
-                    top: 11,
-                    bottom: 12,
-                    right: 5,
-                  ),
-                  suffixIcon: Padding(
-                    padding: memoController.text.isEmpty
-                        ? const EdgeInsets.only(right: 8)
-                        : const EdgeInsets.only(right: 0),
-                    child: UnconstrainedBox(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          TextFieldIconButton(
-                            key: const Key("sendViewPasteMemoButtonKey"),
-                            onTap: pasteMemo,
-                            child: memoController.text.isEmpty
-                                ? const ClipboardIcon()
-                                : const XIcon(),
-                          ),
-                        ],
-                      ),
+                desktopMed: true,
+              ).copyWith(
+                counterText: '',
+                contentPadding: const EdgeInsets.only(
+                  left: 16,
+                  top: 11,
+                  bottom: 12,
+                  right: 5,
+                ),
+                suffixIcon: Padding(
+                  padding: memoController.text.isEmpty
+                      ? const EdgeInsets.only(right: 8)
+                      : const EdgeInsets.only(right: 0),
+                  child: UnconstrainedBox(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        TextFieldIconButton(
+                          key: const Key("sendViewPasteMemoButtonKey"),
+                          onTap: pasteMemo,
+                          child: memoController.text.isEmpty
+                              ? const ClipboardIcon()
+                              : const XIcon(),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-          ),
+              ),
         ),
         const SizedBox(height: 36),
         PrimaryButton(

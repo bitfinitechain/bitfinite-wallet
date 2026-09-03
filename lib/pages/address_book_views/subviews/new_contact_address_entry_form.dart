@@ -357,159 +357,149 @@ class _NewContactAddressEntryFormState
             ),
           ),
         if (!AppConfig.isSingleCoinApp) const SizedBox(height: 8),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(
-            Constants.size.circularBorderRadius,
-          ),
-          child: TextField(
-            autocorrect: Util.isDesktop ? false : true,
-            enableSuggestions: Util.isDesktop ? false : true,
-            focusNode: addressLabelFocusNode,
-            controller: addressLabelController,
-            style: STextStyles.field(context),
-            decoration:
-                standardInputDecoration(
-                  "Enter address label",
-                  addressLabelFocusNode,
-                  context,
-                ).copyWith(
-                  labelStyle: isDesktop
-                      ? STextStyles.fieldLabel(context)
-                      : null,
-                  suffixIcon: addressLabelController.text.isNotEmpty
-                      ? Padding(
-                          padding: const EdgeInsets.only(right: 0),
-                          child: UnconstrainedBox(
-                            child: Row(
-                              children: [
-                                TextFieldIconButton(
-                                  child: const XIcon(),
-                                  onTap: () async {
-                                    setState(() {
-                                      addressLabelController.text = "";
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
+        TextField(
+          autocorrect: Util.isDesktop ? false : true,
+          enableSuggestions: Util.isDesktop ? false : true,
+          focusNode: addressLabelFocusNode,
+          controller: addressLabelController,
+          style: STextStyles.field(context),
+          decoration:
+              standardInputDecoration(
+                "Enter address label",
+                addressLabelFocusNode,
+                context,
+              ).copyWith(
+                labelStyle: isDesktop
+                    ? STextStyles.fieldLabel(context)
+                    : null,
+                suffixIcon: addressLabelController.text.isNotEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.only(right: 0),
+                        child: UnconstrainedBox(
+                          child: Row(
+                            children: [
+                              TextFieldIconButton(
+                                child: const XIcon(),
+                                onTap: () async {
+                                  setState(() {
+                                    addressLabelController.text = "";
+                                  });
+                                },
+                              ),
+                            ],
                           ),
-                        )
-                      : null,
-                ),
-            onChanged: (newValue) {
-              ref.read(addressEntryDataProvider(widget.id)).addressLabel =
-                  newValue;
-              setState(() {});
-            },
-          ),
+                        ),
+                      )
+                    : null,
+              ),
+          onChanged: (newValue) {
+            ref.read(addressEntryDataProvider(widget.id)).addressLabel =
+                newValue;
+            setState(() {});
+          },
         ),
         const SizedBox(height: 8),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(
-            Constants.size.circularBorderRadius,
-          ),
-          child: TextField(
-            enableSuggestions: Util.isDesktop ? false : true,
-            focusNode: addressFocusNode,
-            controller: addressController,
-            style: STextStyles.field(context),
-            decoration:
-                standardInputDecoration(
-                  "Paste address",
-                  addressFocusNode,
-                  context,
-                ).copyWith(
-                  labelStyle: isDesktop
-                      ? STextStyles.fieldLabel(context)
-                      : null,
-                  suffixIcon: UnconstrainedBox(
-                    child: Row(
-                      children: [
-                        if (ref.watch(
-                              addressEntryDataProvider(
-                                widget.id,
-                              ).select((value) => value.address),
-                            ) !=
-                            null)
-                          TextFieldIconButton(
-                            key: const Key(
-                              "addAddressBookClearAddressButtonKey",
-                            ),
-                            onTap: () async {
-                              addressController.text = "";
-                              ref
-                                      .read(addressEntryDataProvider(widget.id))
-                                      .address =
-                                  null;
-                            },
-                            child: const XIcon(),
+        TextField(
+          enableSuggestions: Util.isDesktop ? false : true,
+          focusNode: addressFocusNode,
+          controller: addressController,
+          style: STextStyles.field(context),
+          decoration:
+              standardInputDecoration(
+                "Paste address",
+                addressFocusNode,
+                context,
+              ).copyWith(
+                labelStyle: isDesktop
+                    ? STextStyles.fieldLabel(context)
+                    : null,
+                suffixIcon: UnconstrainedBox(
+                  child: Row(
+                    children: [
+                      if (ref.watch(
+                            addressEntryDataProvider(
+                              widget.id,
+                            ).select((value) => value.address),
+                          ) !=
+                          null)
+                        TextFieldIconButton(
+                          key: const Key(
+                            "addAddressBookClearAddressButtonKey",
                           ),
-                        if (ref.watch(
-                              addressEntryDataProvider(
-                                widget.id,
-                              ).select((value) => value.address),
-                            ) ==
-                            null)
-                          TextFieldIconButton(
-                            key: const Key("addAddressPasteAddressButtonKey"),
-                            onTap: () async {
-                              final ClipboardData? data = await widget.clipboard
-                                  .getData(Clipboard.kTextPlain);
-
-                              if (data?.text != null &&
-                                  data!.text!.isNotEmpty) {
-                                String content = data.text!.trim();
-                                if (content.contains("\n")) {
-                                  content = content.substring(
-                                    0,
-                                    content.indexOf("\n"),
-                                  );
-                                }
-                                addressController.text = content;
-                                ref
+                          onTap: () async {
+                            addressController.text = "";
+                            ref
                                     .read(addressEntryDataProvider(widget.id))
-                                    .address = content.isEmpty
-                                    ? null
-                                    : content;
+                                    .address =
+                                null;
+                          },
+                          child: const XIcon(),
+                        ),
+                      if (ref.watch(
+                            addressEntryDataProvider(
+                              widget.id,
+                            ).select((value) => value.address),
+                          ) ==
+                          null)
+                        TextFieldIconButton(
+                          key: const Key("addAddressPasteAddressButtonKey"),
+                          onTap: () async {
+                            final ClipboardData? data = await widget.clipboard
+                                .getData(Clipboard.kTextPlain);
+
+                            if (data?.text != null &&
+                                data!.text!.isNotEmpty) {
+                              String content = data.text!.trim();
+                              if (content.contains("\n")) {
+                                content = content.substring(
+                                  0,
+                                  content.indexOf("\n"),
+                                );
                               }
-                            },
-                            child: const ClipboardIcon(),
+                              addressController.text = content;
+                              ref
+                                  .read(addressEntryDataProvider(widget.id))
+                                  .address = content.isEmpty
+                                  ? null
+                                  : content;
+                            }
+                          },
+                          child: const ClipboardIcon(),
+                        ),
+                      if (!Util.isDesktop &&
+                          ref.watch(
+                                addressEntryDataProvider(
+                                  widget.id,
+                                ).select((value) => value.address),
+                              ) ==
+                              null)
+                        TextFieldIconButton(
+                          key: const Key(
+                            "addAddressBookEntryScanQrButtonKey",
                           ),
-                        if (!Util.isDesktop &&
-                            ref.watch(
-                                  addressEntryDataProvider(
-                                    widget.id,
-                                  ).select((value) => value.address),
-                                ) ==
-                                null)
-                          TextFieldIconButton(
-                            key: const Key(
-                              "addAddressBookEntryScanQrButtonKey",
-                            ),
-                            onTap: _onQrTapped,
-                            child: const QrCodeIcon(),
-                          ),
-                        const SizedBox(width: 8),
-                      ],
-                    ),
+                          onTap: _onQrTapped,
+                          child: const QrCodeIcon(),
+                        ),
+                      const SizedBox(width: 8),
+                    ],
                   ),
                 ),
-            key: const Key("addAddressBookEntryViewAddressField"),
-            readOnly: false,
-            autocorrect: false,
-            // inputFormatters: <TextInputFormatter>[
-            //   FilteringTextInputFormatter.allow(RegExp("[a-zA-Z0-9]{34}")),
-            // ],
-            toolbarOptions: const ToolbarOptions(
-              copy: false,
-              cut: false,
-              paste: true,
-              selectAll: false,
-            ),
-            onChanged: (newValue) {
-              ref.read(addressEntryDataProvider(widget.id)).address = newValue;
-            },
+              ),
+          key: const Key("addAddressBookEntryViewAddressField"),
+          readOnly: false,
+          autocorrect: false,
+          // inputFormatters: <TextInputFormatter>[
+          //   FilteringTextInputFormatter.allow(RegExp("[a-zA-Z0-9]{34}")),
+          // ],
+          toolbarOptions: const ToolbarOptions(
+            copy: false,
+            cut: false,
+            paste: true,
+            selectAll: false,
           ),
+          onChanged: (newValue) {
+            ref.read(addressEntryDataProvider(widget.id)).address = newValue;
+          },
         ),
         if (!ref.watch(
               addressEntryDataProvider(

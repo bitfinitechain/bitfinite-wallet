@@ -1233,208 +1233,203 @@ class _BuyFormState extends ConsumerState<BuyForm> {
               ],
             ),
             SizedBox(height: isDesktop ? 10 : 4),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(
-                Constants.size.circularBorderRadius,
+            TextField(
+              key: const Key("buyViewReceiveAddressFieldKey"),
+              controller: _receiveAddressController,
+              readOnly: false,
+              autocorrect: false,
+              enableSuggestions: false,
+              // inputFormatters: <TextInputFormatter>[
+              //   FilteringTextInputFormatter.allow(
+              //       RegExp("[a-zA-Z0-9]{34}")),
+              // ],
+              toolbarOptions: const ToolbarOptions(
+                copy: false,
+                cut: false,
+                paste: true,
+                selectAll: false,
               ),
-              child: TextField(
-                key: const Key("buyViewReceiveAddressFieldKey"),
-                controller: _receiveAddressController,
-                readOnly: false,
-                autocorrect: false,
-                enableSuggestions: false,
-                // inputFormatters: <TextInputFormatter>[
-                //   FilteringTextInputFormatter.allow(
-                //       RegExp("[a-zA-Z0-9]{34}")),
-                // ],
-                toolbarOptions: const ToolbarOptions(
-                  copy: false,
-                  cut: false,
-                  paste: true,
-                  selectAll: false,
-                ),
-                onChanged: (newValue) {
-                  _address = newValue;
-                  setState(() {
-                    _addressToggleFlag = newValue.isNotEmpty;
+              onChanged: (newValue) {
+                _address = newValue;
+                setState(() {
+                  _addressToggleFlag = newValue.isNotEmpty;
 
-                    // TODO [prio=low]: Validate address.
-                    if (newValue.startsWith("bc1p")) {
-                      // Display an error message or handle invalid address
-                      _receivingAddressValidationErrorString =
-                          "Taproot addresses are not allowed.";
-                    } else {
-                      _receivingAddressValidationErrorString = "";
-                    }
-                  });
-                },
-                focusNode: _receiveAddressFocusNode,
-                style: STextStyles.field(context),
-                decoration:
-                    standardInputDecoration(
-                      "Enter ${selectedCrypto?.ticker} address",
-                      _receiveAddressFocusNode,
-                      context,
-                    ).copyWith(
-                      contentPadding: const EdgeInsets.only(
-                        left: 13,
-                        top: 6,
-                        bottom: 8,
-                        right: 5,
-                      ),
-                      suffixIcon: Padding(
-                        padding: _receiveAddressController.text.isEmpty
-                            ? const EdgeInsets.only(right: 8)
-                            : const EdgeInsets.only(right: 0),
-                        child: UnconstrainedBox(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              _addressToggleFlag
-                                  ? TextFieldIconButton(
-                                      key: const Key(
-                                        "buyViewClearAddressFieldButtonKey",
-                                      ),
-                                      onTap: () {
-                                        _receiveAddressController.text = "";
-                                        _address = "";
-                                        setState(() {
-                                          _addressToggleFlag = false;
-                                        });
-                                      },
-                                      child: const XIcon(),
-                                    )
-                                  : TextFieldIconButton(
-                                      key: const Key(
-                                        "buyViewPasteAddressFieldButtonKey",
-                                      ),
-                                      onTap: () async {
-                                        final ClipboardData? data =
-                                            await clipboard.getData(
-                                              Clipboard.kTextPlain,
-                                            );
-                                        if (data?.text != null &&
-                                            data!.text!.isNotEmpty) {
-                                          String content = data.text!.trim();
-                                          if (content.contains("\n")) {
-                                            content = content.substring(
-                                              0,
-                                              content.indexOf("\n"),
-                                            );
-                                          }
-
-                                          _receiveAddressController.text =
-                                              content;
-                                          _address = content;
-
-                                          setState(() {
-                                            _addressToggleFlag =
-                                                _receiveAddressController
-                                                    .text
-                                                    .isNotEmpty;
-                                          });
-                                        }
-                                      },
-                                      child:
-                                          _receiveAddressController.text.isEmpty
-                                          ? const ClipboardIcon()
-                                          : const XIcon(),
+                  // TODO [prio=low]: Validate address.
+                  if (newValue.startsWith("bc1p")) {
+                    // Display an error message or handle invalid address
+                    _receivingAddressValidationErrorString =
+                        "Taproot addresses are not allowed.";
+                  } else {
+                    _receivingAddressValidationErrorString = "";
+                  }
+                });
+              },
+              focusNode: _receiveAddressFocusNode,
+              style: STextStyles.field(context),
+              decoration:
+                  standardInputDecoration(
+                    "Enter ${selectedCrypto?.ticker} address",
+                    _receiveAddressFocusNode,
+                    context,
+                  ).copyWith(
+                    contentPadding: const EdgeInsets.only(
+                      left: 13,
+                      top: 6,
+                      bottom: 8,
+                      right: 5,
+                    ),
+                    suffixIcon: Padding(
+                      padding: _receiveAddressController.text.isEmpty
+                          ? const EdgeInsets.only(right: 8)
+                          : const EdgeInsets.only(right: 0),
+                      child: UnconstrainedBox(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            _addressToggleFlag
+                                ? TextFieldIconButton(
+                                    key: const Key(
+                                      "buyViewClearAddressFieldButtonKey",
                                     ),
-                              if (_receiveAddressController.text.isEmpty &&
-                                  AppConfig.isStackCoin(
-                                    selectedCrypto?.ticker,
-                                  ) &&
-                                  isDesktop)
-                                TextFieldIconButton(
-                                  key: const Key("buyViewAddressBookButtonKey"),
-                                  onTap: () async {
-                                    final entry = await showDialog<ContactAddressEntry?>(
-                                      context: context,
-                                      builder: (context) => DesktopDialog(
-                                        maxWidth: 696,
-                                        maxHeight: 600,
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                        left: 32,
-                                                      ),
-                                                  child: Text(
-                                                    "Address book",
-                                                    style:
-                                                        STextStyles.desktopH3(
-                                                          context,
-                                                        ),
-                                                  ),
-                                                ),
-                                                const DesktopDialogCloseButton(),
-                                              ],
-                                            ),
-                                            Expanded(
-                                              child: AddressBookAddressChooser(
-                                                coin: AppConfig.coins
-                                                    .firstWhere(
-                                                      (e) =>
-                                                          e.ticker
-                                                              .toLowerCase() ==
-                                                          selectedCrypto!.ticker
-                                                              .toString()
-                                                              .toLowerCase(),
-                                                    ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-
-                                    if (entry != null) {
-                                      _receiveAddressController.text =
-                                          entry.address;
-                                      _address = entry.address;
-
+                                    onTap: () {
+                                      _receiveAddressController.text = "";
+                                      _address = "";
                                       setState(() {
-                                        _addressToggleFlag = true;
+                                        _addressToggleFlag = false;
                                       });
-                                    }
-                                  },
-                                  child: const AddressBookIcon(),
-                                ),
-                              if (_receiveAddressController.text.isEmpty &&
-                                  AppConfig.isStackCoin(
-                                    selectedCrypto?.ticker,
-                                  ) &&
-                                  !isDesktop)
-                                TextFieldIconButton(
-                                  key: const Key("buyViewAddressBookButtonKey"),
-                                  onTap: () {
-                                    Navigator.of(
-                                      context,
-                                      rootNavigator: isDesktop,
-                                    ).pushNamed(AddressBookView.routeName);
-                                  },
-                                  child: const AddressBookIcon(),
-                                ),
-                              if (_receiveAddressController.text.isEmpty &&
-                                  !isDesktop)
-                                TextFieldIconButton(
-                                  key: const Key("buyViewScanQrButtonKey"),
-                                  onTap: _onQrTapped,
-                                  child: const QrCodeIcon(),
-                                ),
-                            ],
-                          ),
+                                    },
+                                    child: const XIcon(),
+                                  )
+                                : TextFieldIconButton(
+                                    key: const Key(
+                                      "buyViewPasteAddressFieldButtonKey",
+                                    ),
+                                    onTap: () async {
+                                      final ClipboardData? data =
+                                          await clipboard.getData(
+                                            Clipboard.kTextPlain,
+                                          );
+                                      if (data?.text != null &&
+                                          data!.text!.isNotEmpty) {
+                                        String content = data.text!.trim();
+                                        if (content.contains("\n")) {
+                                          content = content.substring(
+                                            0,
+                                            content.indexOf("\n"),
+                                          );
+                                        }
+
+                                        _receiveAddressController.text =
+                                            content;
+                                        _address = content;
+
+                                        setState(() {
+                                          _addressToggleFlag =
+                                              _receiveAddressController
+                                                  .text
+                                                  .isNotEmpty;
+                                        });
+                                      }
+                                    },
+                                    child:
+                                        _receiveAddressController.text.isEmpty
+                                        ? const ClipboardIcon()
+                                        : const XIcon(),
+                                  ),
+                            if (_receiveAddressController.text.isEmpty &&
+                                AppConfig.isStackCoin(
+                                  selectedCrypto?.ticker,
+                                ) &&
+                                isDesktop)
+                              TextFieldIconButton(
+                                key: const Key("buyViewAddressBookButtonKey"),
+                                onTap: () async {
+                                  final entry = await showDialog<ContactAddressEntry?>(
+                                    context: context,
+                                    builder: (context) => DesktopDialog(
+                                      maxWidth: 696,
+                                      maxHeight: 600,
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment
+                                                    .spaceBetween,
+                                            children: [
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.only(
+                                                      left: 32,
+                                                    ),
+                                                child: Text(
+                                                  "Address book",
+                                                  style:
+                                                      STextStyles.desktopH3(
+                                                        context,
+                                                      ),
+                                                ),
+                                              ),
+                                              const DesktopDialogCloseButton(),
+                                            ],
+                                          ),
+                                          Expanded(
+                                            child: AddressBookAddressChooser(
+                                              coin: AppConfig.coins
+                                                  .firstWhere(
+                                                    (e) =>
+                                                        e.ticker
+                                                            .toLowerCase() ==
+                                                        selectedCrypto!.ticker
+                                                            .toString()
+                                                            .toLowerCase(),
+                                                  ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+
+                                  if (entry != null) {
+                                    _receiveAddressController.text =
+                                        entry.address;
+                                    _address = entry.address;
+
+                                    setState(() {
+                                      _addressToggleFlag = true;
+                                    });
+                                  }
+                                },
+                                child: const AddressBookIcon(),
+                              ),
+                            if (_receiveAddressController.text.isEmpty &&
+                                AppConfig.isStackCoin(
+                                  selectedCrypto?.ticker,
+                                ) &&
+                                !isDesktop)
+                              TextFieldIconButton(
+                                key: const Key("buyViewAddressBookButtonKey"),
+                                onTap: () {
+                                  Navigator.of(
+                                    context,
+                                    rootNavigator: isDesktop,
+                                  ).pushNamed(AddressBookView.routeName);
+                                },
+                                child: const AddressBookIcon(),
+                              ),
+                            if (_receiveAddressController.text.isEmpty &&
+                                !isDesktop)
+                              TextFieldIconButton(
+                                key: const Key("buyViewScanQrButtonKey"),
+                                onTap: _onQrTapped,
+                                child: const QrCodeIcon(),
+                              ),
+                          ],
                         ),
                       ),
                     ),
-              ),
+                  ),
             ),
             SizedBox(height: isDesktop ? 10 : 4),
             if (_receivingAddressValidationErrorString.isNotEmpty)

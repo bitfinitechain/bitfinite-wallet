@@ -964,179 +964,206 @@ class _NodeFormState extends ConsumerState<NodeForm> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(
-            Constants.size.circularBorderRadius,
-          ),
-          child: TextField(
-            autocorrect: Util.isDesktop ? false : true,
-            enableSuggestions: Util.isDesktop ? false : true,
-            key: const Key("addCustomNodeNodeNameFieldKey"),
-            readOnly: shouldBeReadOnly,
-            enabled: enableField(_nameController),
-            controller: _nameController,
-            focusNode: _nameFocusNode,
-            style: STextStyles.field(context),
-            decoration:
-                standardInputDecoration(
-                  "Node name",
-                  _nameFocusNode,
-                  context,
-                ).copyWith(
-                  suffixIcon:
-                      !shouldBeReadOnly && _nameController.text.isNotEmpty
-                      ? Padding(
-                          padding: const EdgeInsets.only(right: 0),
-                          child: UnconstrainedBox(
-                            child: Row(
-                              children: [
-                                TextFieldIconButton(
-                                  child: const XIcon(),
-                                  onTap: () async {
-                                    _nameController.text = "";
-                                    _updateState();
-                                  },
-                                ),
-                              ],
-                            ),
+        TextField(
+          autocorrect: Util.isDesktop ? false : true,
+          enableSuggestions: Util.isDesktop ? false : true,
+          key: const Key("addCustomNodeNodeNameFieldKey"),
+          readOnly: shouldBeReadOnly,
+          enabled: enableField(_nameController),
+          controller: _nameController,
+          focusNode: _nameFocusNode,
+          style: STextStyles.field(context),
+          decoration:
+              standardInputDecoration(
+                "Node name",
+                _nameFocusNode,
+                context,
+              ).copyWith(
+                suffixIcon:
+                    !shouldBeReadOnly && _nameController.text.isNotEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.only(right: 0),
+                        child: UnconstrainedBox(
+                          child: Row(
+                            children: [
+                              TextFieldIconButton(
+                                child: const XIcon(),
+                                onTap: () async {
+                                  _nameController.text = "";
+                                  _updateState();
+                                },
+                              ),
+                            ],
                           ),
-                        )
-                      : null,
-                ),
-            onChanged: (newValue) {
-              _updateState();
-              setState(() {});
-            },
-          ),
+                        ),
+                      )
+                    : null,
+              ),
+          onChanged: (newValue) {
+            _updateState();
+            setState(() {});
+          },
         ),
         const SizedBox(height: 8),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(
-            Constants.size.circularBorderRadius,
-          ),
-          child: TextField(
-            autocorrect: Util.isDesktop ? false : true,
-            enableSuggestions: Util.isDesktop ? false : true,
-            key: const Key("addCustomNodeNodeAddressFieldKey"),
-            readOnly: shouldBeReadOnly,
-            enabled: enableField(_hostController),
-            controller: _hostController,
-            focusNode: _hostFocusNode,
-            style: STextStyles.field(context),
-            decoration:
-                standardInputDecoration(
-                  (widget.coin is! CryptonoteCurrency) ? "IP address" : "Url",
-                  _hostFocusNode,
-                  context,
-                ).copyWith(
-                  suffixIcon:
-                      !shouldBeReadOnly && _hostController.text.isNotEmpty
-                      ? Padding(
-                          padding: const EdgeInsets.only(right: 0),
-                          child: UnconstrainedBox(
-                            child: Row(
-                              children: [
-                                TextFieldIconButton(
-                                  child: const XIcon(),
-                                  onTap: () async {
-                                    _hostController.text = "";
-                                    _updateState();
-                                  },
-                                ),
-                              ],
-                            ),
+        TextField(
+          autocorrect: Util.isDesktop ? false : true,
+          enableSuggestions: Util.isDesktop ? false : true,
+          key: const Key("addCustomNodeNodeAddressFieldKey"),
+          readOnly: shouldBeReadOnly,
+          enabled: enableField(_hostController),
+          controller: _hostController,
+          focusNode: _hostFocusNode,
+          style: STextStyles.field(context),
+          decoration:
+              standardInputDecoration(
+                (widget.coin is! CryptonoteCurrency) ? "IP address" : "Url",
+                _hostFocusNode,
+                context,
+              ).copyWith(
+                suffixIcon:
+                    !shouldBeReadOnly && _hostController.text.isNotEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.only(right: 0),
+                        child: UnconstrainedBox(
+                          child: Row(
+                            children: [
+                              TextFieldIconButton(
+                                child: const XIcon(),
+                                onTap: () async {
+                                  _hostController.text = "";
+                                  _updateState();
+                                },
+                              ),
+                            ],
                           ),
-                        )
-                      : null,
-                ),
-            onChanged: (newValue) {
-              // parse port hack
-              try {
-                final uri = Uri.parse(newValue);
-                final port = uri.hasPort ? uri.port : 0;
-                if (port != 0) {
-                  _portController.text = port.toString();
-                  final noPortUri = Uri(
-                    scheme: uri.scheme,
-                    userInfo: uri.userInfo,
-                    host: uri.host,
-                    path: uri.path,
-                    query: uri.hasQuery ? uri.query : null,
-                    fragment: uri.fragment.isNotEmpty ? uri.fragment : null,
-                  );
-                  _hostController.text = noPortUri.toString();
-                }
-              } catch (_) {
-                if (newValue.contains(":")) {
-                  final parts = newValue.split(":");
-                  if (parts.isNotEmpty) {
-                    final maybePort = int.tryParse(parts.last);
-                    if (maybePort != null) {
-                      _portController.text = maybePort.toString();
-                      _hostController.text = newValue.substring(
-                        0,
-                        newValue.lastIndexOf(":"),
-                      );
-                    }
+                        ),
+                      )
+                    : null,
+              ),
+          onChanged: (newValue) {
+            // parse port hack
+            try {
+              final uri = Uri.parse(newValue);
+              final port = uri.hasPort ? uri.port : 0;
+              if (port != 0) {
+                _portController.text = port.toString();
+                final noPortUri = Uri(
+                  scheme: uri.scheme,
+                  userInfo: uri.userInfo,
+                  host: uri.host,
+                  path: uri.path,
+                  query: uri.hasQuery ? uri.query : null,
+                  fragment: uri.fragment.isNotEmpty ? uri.fragment : null,
+                );
+                _hostController.text = noPortUri.toString();
+              }
+            } catch (_) {
+              if (newValue.contains(":")) {
+                final parts = newValue.split(":");
+                if (parts.isNotEmpty) {
+                  final maybePort = int.tryParse(parts.last);
+                  if (maybePort != null) {
+                    _portController.text = maybePort.toString();
+                    _hostController.text = newValue.substring(
+                      0,
+                      newValue.lastIndexOf(":"),
+                    );
                   }
                 }
               }
+            }
 
-              if (widget.coin is Epiccash) {
-                if (newValue.startsWith("https://")) {
-                  _useSSL = true;
-                  enableSSLCheckbox = false;
-                } else if (newValue.startsWith("http://")) {
-                  _useSSL = false;
-                  enableSSLCheckbox = false;
-                } else {
-                  enableSSLCheckbox = true;
-                }
-              } else if (widget.coin is CryptonoteCurrency) {
-                if (newValue.startsWith("https://")) {
-                  _useSSL = true;
-                } else if (newValue.startsWith("http://")) {
-                  _useSSL = false;
-                } else {
-                  _useSSL = true;
-                }
+            if (widget.coin is Epiccash) {
+              if (newValue.startsWith("https://")) {
+                _useSSL = true;
+                enableSSLCheckbox = false;
+              } else if (newValue.startsWith("http://")) {
+                _useSSL = false;
+                enableSSLCheckbox = false;
+              } else {
+                enableSSLCheckbox = true;
               }
-              if (widget.coin is Mimblewimblecoin) {
-                if (newValue.startsWith("https://")) {
-                  _useSSL = true;
-                  enableSSLCheckbox = false;
-                } else if (newValue.startsWith("http://")) {
-                  _useSSL = false;
-                  enableSSLCheckbox = false;
-                } else {
-                  enableSSLCheckbox = true;
-                }
+            } else if (widget.coin is CryptonoteCurrency) {
+              if (newValue.startsWith("https://")) {
+                _useSSL = true;
+              } else if (newValue.startsWith("http://")) {
+                _useSSL = false;
+              } else {
+                _useSSL = true;
               }
-              _updateState();
-              setState(() {});
-            },
-          ),
+            }
+            if (widget.coin is Mimblewimblecoin) {
+              if (newValue.startsWith("https://")) {
+                _useSSL = true;
+                enableSSLCheckbox = false;
+              } else if (newValue.startsWith("http://")) {
+                _useSSL = false;
+                enableSSLCheckbox = false;
+              } else {
+                enableSSLCheckbox = true;
+              }
+            }
+            _updateState();
+            setState(() {});
+          },
         ),
         const SizedBox(height: 8),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(
-            Constants.size.circularBorderRadius,
-          ),
-          child: TextField(
+        TextField(
+          autocorrect: Util.isDesktop ? false : true,
+          enableSuggestions: Util.isDesktop ? false : true,
+          key: const Key("addCustomNodeNodePortFieldKey"),
+          readOnly: shouldBeReadOnly,
+          enabled: enableField(_portController),
+          controller: _portController,
+          focusNode: _portFocusNode,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          keyboardType: TextInputType.number,
+          style: STextStyles.field(context),
+          decoration: standardInputDecoration("Port", _portFocusNode, context)
+              .copyWith(
+                suffixIcon:
+                    !shouldBeReadOnly && _portController.text.isNotEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.only(right: 0),
+                        child: UnconstrainedBox(
+                          child: Row(
+                            children: [
+                              TextFieldIconButton(
+                                child: const XIcon(),
+                                onTap: () async {
+                                  _portController.text = "";
+                                  _updateState();
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : null,
+              ),
+          onChanged: (newValue) {
+            _updateState();
+            setState(() {});
+          },
+        ),
+        const SizedBox(height: 8),
+        if (enableAuthFields)
+          TextField(
             autocorrect: Util.isDesktop ? false : true,
             enableSuggestions: Util.isDesktop ? false : true,
-            key: const Key("addCustomNodeNodePortFieldKey"),
+            controller: _usernameController,
             readOnly: shouldBeReadOnly,
-            enabled: enableField(_portController),
-            controller: _portController,
-            focusNode: _portFocusNode,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            keyboardType: TextInputType.number,
+            enabled: enableField(_usernameController),
+            focusNode: _usernameFocusNode,
             style: STextStyles.field(context),
-            decoration: standardInputDecoration("Port", _portFocusNode, context)
-                .copyWith(
+            decoration:
+                standardInputDecoration(
+                  "Login (optional)",
+                  _usernameFocusNode,
+                  context,
+                ).copyWith(
                   suffixIcon:
-                      !shouldBeReadOnly && _portController.text.isNotEmpty
+                      !shouldBeReadOnly && _usernameController.text.isNotEmpty
                       ? Padding(
                           padding: const EdgeInsets.only(right: 0),
                           child: UnconstrainedBox(
@@ -1145,7 +1172,7 @@ class _NodeFormState extends ConsumerState<NodeForm> {
                                 TextFieldIconButton(
                                   child: const XIcon(),
                                   onTap: () async {
-                                    _portController.text = "";
+                                    _usernameController.text = "";
                                     _updateState();
                                   },
                                 ),
@@ -1160,147 +1187,90 @@ class _NodeFormState extends ConsumerState<NodeForm> {
               setState(() {});
             },
           ),
-        ),
-        const SizedBox(height: 8),
-        if (enableAuthFields)
-          ClipRRect(
-            borderRadius: BorderRadius.circular(
-              Constants.size.circularBorderRadius,
-            ),
-            child: TextField(
-              autocorrect: Util.isDesktop ? false : true,
-              enableSuggestions: Util.isDesktop ? false : true,
-              controller: _usernameController,
-              readOnly: shouldBeReadOnly,
-              enabled: enableField(_usernameController),
-              focusNode: _usernameFocusNode,
-              style: STextStyles.field(context),
-              decoration:
-                  standardInputDecoration(
-                    "Login (optional)",
-                    _usernameFocusNode,
-                    context,
-                  ).copyWith(
-                    suffixIcon:
-                        !shouldBeReadOnly && _usernameController.text.isNotEmpty
-                        ? Padding(
-                            padding: const EdgeInsets.only(right: 0),
-                            child: UnconstrainedBox(
-                              child: Row(
-                                children: [
-                                  TextFieldIconButton(
-                                    child: const XIcon(),
-                                    onTap: () async {
-                                      _usernameController.text = "";
-                                      _updateState();
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                        : null,
-                  ),
-              onChanged: (newValue) {
-                _updateState();
-                setState(() {});
-              },
-            ),
-          ),
         if (enableAuthFields) const SizedBox(height: 8),
         if (enableAuthFields)
-          ClipRRect(
-            borderRadius: BorderRadius.circular(
-              Constants.size.circularBorderRadius,
-            ),
-            child: TextField(
-              autocorrect: Util.isDesktop ? false : true,
-              enableSuggestions: Util.isDesktop ? false : true,
-              controller: _passwordController,
-              readOnly: shouldBeReadOnly,
-              enabled: enableField(_passwordController),
-              obscureText: true,
-              focusNode: _passwordFocusNode,
-              style: STextStyles.field(context),
-              decoration:
-                  standardInputDecoration(
-                    "Password (optional)",
-                    _passwordFocusNode,
-                    context,
-                  ).copyWith(
-                    suffixIcon:
-                        !shouldBeReadOnly && _passwordController.text.isNotEmpty
-                        ? Padding(
-                            padding: const EdgeInsets.only(right: 0),
-                            child: UnconstrainedBox(
-                              child: Row(
-                                children: [
-                                  TextFieldIconButton(
-                                    child: const XIcon(),
-                                    onTap: () async {
-                                      _passwordController.text = "";
-                                      _updateState();
-                                    },
-                                  ),
-                                ],
-                              ),
+          TextField(
+            autocorrect: Util.isDesktop ? false : true,
+            enableSuggestions: Util.isDesktop ? false : true,
+            controller: _passwordController,
+            readOnly: shouldBeReadOnly,
+            enabled: enableField(_passwordController),
+            obscureText: true,
+            focusNode: _passwordFocusNode,
+            style: STextStyles.field(context),
+            decoration:
+                standardInputDecoration(
+                  "Password (optional)",
+                  _passwordFocusNode,
+                  context,
+                ).copyWith(
+                  suffixIcon:
+                      !shouldBeReadOnly && _passwordController.text.isNotEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.only(right: 0),
+                          child: UnconstrainedBox(
+                            child: Row(
+                              children: [
+                                TextFieldIconButton(
+                                  child: const XIcon(),
+                                  onTap: () async {
+                                    _passwordController.text = "";
+                                    _updateState();
+                                  },
+                                ),
+                              ],
                             ),
-                          )
-                        : null,
-                  ),
-              onChanged: (newValue) {
-                _updateState();
-                setState(() {});
-              },
-            ),
+                          ),
+                        )
+                      : null,
+                ),
+            onChanged: (newValue) {
+              _updateState();
+              setState(() {});
+            },
           ),
         if (enableAuthFields) const SizedBox(height: 8),
         if (widget.coin is Mimblewimblecoin)
-          ClipRRect(
-            borderRadius: BorderRadius.circular(
-              Constants.size.circularBorderRadius,
-            ),
-            child: TextField(
-              autocorrect: Util.isDesktop ? false : true,
-              enableSuggestions: Util.isDesktop ? false : true,
-              controller: _apiSecretController,
-              readOnly: shouldBeReadOnly,
-              enabled: enableField(_apiSecretController),
-              obscureText: true,
-              focusNode: _apiSecretFocusNode,
-              style: STextStyles.field(context),
-              decoration:
-                  standardInputDecoration(
-                    "API secret (optional)",
-                    _apiSecretFocusNode,
-                    context,
-                  ).copyWith(
-                    suffixIcon:
-                        !shouldBeReadOnly &&
-                            _apiSecretController.text.isNotEmpty
-                        ? Padding(
-                            padding: const EdgeInsets.only(right: 0),
-                            child: UnconstrainedBox(
-                              child: Row(
-                                children: [
-                                  TextFieldIconButton(
-                                    child: const XIcon(),
-                                    onTap: () async {
-                                      _apiSecretController.text = "";
-                                      _updateState();
-                                    },
-                                  ),
-                                ],
-                              ),
+          TextField(
+            autocorrect: Util.isDesktop ? false : true,
+            enableSuggestions: Util.isDesktop ? false : true,
+            controller: _apiSecretController,
+            readOnly: shouldBeReadOnly,
+            enabled: enableField(_apiSecretController),
+            obscureText: true,
+            focusNode: _apiSecretFocusNode,
+            style: STextStyles.field(context),
+            decoration:
+                standardInputDecoration(
+                  "API secret (optional)",
+                  _apiSecretFocusNode,
+                  context,
+                ).copyWith(
+                  suffixIcon:
+                      !shouldBeReadOnly &&
+                          _apiSecretController.text.isNotEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.only(right: 0),
+                          child: UnconstrainedBox(
+                            child: Row(
+                              children: [
+                                TextFieldIconButton(
+                                  child: const XIcon(),
+                                  onTap: () async {
+                                    _apiSecretController.text = "";
+                                    _updateState();
+                                  },
+                                ),
+                              ],
                             ),
-                          )
-                        : null,
-                  ),
-              onChanged: (newValue) {
-                _updateState();
-                setState(() {});
-              },
-            ),
+                          ),
+                        )
+                      : null,
+                ),
+            onChanged: (newValue) {
+              _updateState();
+              setState(() {});
+            },
           ),
         if (widget.coin is Mimblewimblecoin) const SizedBox(height: 8),
         if (widget.coin is! CryptonoteCurrency)

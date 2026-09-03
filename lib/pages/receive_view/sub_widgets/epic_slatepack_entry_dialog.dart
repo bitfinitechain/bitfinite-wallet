@@ -112,92 +112,87 @@ class _EpicSlatepackEntryDialogState extends ConsumerState<EpicSlatepackEntryDia
             textAlign: TextAlign.left,
           ),
           const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(
-              Constants.size.circularBorderRadius,
+          TextField(
+            minLines: 1,
+            maxLines: 5,
+            key: const Key("receiveViewEpicSlateFieldKey"),
+            controller: _receiveSlateController,
+            readOnly: false,
+            autocorrect: false,
+            enableSuggestions: false,
+            toolbarOptions: const ToolbarOptions(
+              copy: false,
+              cut: false,
+              paste: true,
+              selectAll: false,
             ),
-            child: TextField(
-              minLines: 1,
-              maxLines: 5,
-              key: const Key("receiveViewEpicSlateFieldKey"),
-              controller: _receiveSlateController,
-              readOnly: false,
-              autocorrect: false,
-              enableSuggestions: false,
-              toolbarOptions: const ToolbarOptions(
-                copy: false,
-                cut: false,
-                paste: true,
-                selectAll: false,
-              ),
-              onChanged: (newValue) {
-                setState(() {
-                  _slateToggleFlag = newValue.isNotEmpty;
-                });
-              },
-              focusNode: _slateFocusNode,
-              style: STextStyles.desktopTextExtraSmall(context).copyWith(
-                color: Theme.of(
+            onChanged: (newValue) {
+              setState(() {
+                _slateToggleFlag = newValue.isNotEmpty;
+              });
+            },
+            focusNode: _slateFocusNode,
+            style: STextStyles.desktopTextExtraSmall(context).copyWith(
+              color: Theme.of(
+                context,
+              ).extension<StackColors>()!.textFieldActiveText,
+              height: 1.8,
+            ),
+            decoration:
+                standardInputDecoration(
+                  "Enter Slate JSON",
+                  _slateFocusNode,
                   context,
-                ).extension<StackColors>()!.textFieldActiveText,
-                height: 1.8,
-              ),
-              decoration:
-                  standardInputDecoration(
-                    "Enter Slate JSON",
-                    _slateFocusNode,
-                    context,
-                    desktopMed: true,
-                  ).copyWith(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical:
-                          12, // Adjust vertical padding for better alignment
-                    ),
-                    suffixIcon: Padding(
-                      padding: _receiveSlateController.text.isEmpty
-                          ? const EdgeInsets.only(right: 8)
-                          : const EdgeInsets.only(right: 0),
-                      child: UnconstrainedBox(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _slateToggleFlag
-                                ? TextFieldIconButton(
-                                    key: const Key(
-                                      "receiveViewClearEpicSlateFieldButtonKey",
-                                    ),
-                                    onTap: () {
-                                      _receiveSlateController.text = "";
-                                      setState(() {
-                                        _slateToggleFlag = false;
-                                      });
-                                    },
-                                    child: const XIcon(),
-                                  )
-                                : TextFieldIconButton(
-                                    key: const Key(
-                                      "receiveViewPasteEpicSlateFieldButtonKey",
-                                    ),
-                                    onTap: _pasteSlatepack,
-                                    child: _receiveSlateController.text.isEmpty
-                                        ? const ClipboardIcon()
-                                        : const XIcon(),
+                  desktopMed: true,
+                ).copyWith(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical:
+                        12, // Adjust vertical padding for better alignment
+                  ),
+                  suffixIcon: Padding(
+                    padding: _receiveSlateController.text.isEmpty
+                        ? const EdgeInsets.only(right: 8)
+                        : const EdgeInsets.only(right: 0),
+                    child: UnconstrainedBox(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _slateToggleFlag
+                              ? TextFieldIconButton(
+                                  key: const Key(
+                                    "receiveViewClearEpicSlateFieldButtonKey",
                                   ),
-                            if (_receiveSlateController.text.isEmpty)
-                              TextFieldIconButton(
-                                semanticsLabel:
-                                    "Scan QR Button. Opens Camera For Scanning QR Code.",
-                                key: const Key("sendViewScanQrButtonKey"),
-                                onTap: _scanQr,
-                                child: const QrCodeIcon(),
-                              ),
-                          ],
-                        ),
+                                  onTap: () {
+                                    _receiveSlateController.text = "";
+                                    setState(() {
+                                      _slateToggleFlag = false;
+                                    });
+                                  },
+                                  child: const XIcon(),
+                                )
+                              : TextFieldIconButton(
+                                  key: const Key(
+                                    "receiveViewPasteEpicSlateFieldButtonKey",
+                                  ),
+                                  onTap: _pasteSlatepack,
+                                  child: _receiveSlateController.text.isEmpty
+                                      ? const ClipboardIcon()
+                                      : const XIcon(),
+                                ),
+                          if (_receiveSlateController.text.isEmpty)
+                            TextFieldIconButton(
+                              semanticsLabel:
+                                  "Scan QR Button. Opens Camera For Scanning QR Code.",
+                              key: const Key("sendViewScanQrButtonKey"),
+                              onTap: _scanQr,
+                              child: const QrCodeIcon(),
+                            ),
+                        ],
                       ),
                     ),
                   ),
-            ),
+                ),
           ),
           const SizedBox(height: 16),
           PrimaryButton(

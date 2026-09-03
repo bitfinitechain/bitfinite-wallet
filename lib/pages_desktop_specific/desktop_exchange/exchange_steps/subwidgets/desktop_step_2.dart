@@ -311,110 +311,105 @@ class _DesktopStep2State extends ConsumerState<DesktopStep2> {
           ],
         ),
         const SizedBox(height: 10),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(
-            Constants.size.circularBorderRadius,
+        TextField(
+          onTap: () {},
+          key: const Key("recipientExchangeStep2ViewAddressFieldKey"),
+          controller: _toController,
+          readOnly: false,
+          autocorrect: false,
+          enableSuggestions: false,
+          // inputFormatters: <TextInputFormatter>[
+          //   FilteringTextInputFormatter.allow(RegExp("[a-zA-Z0-9]{34}")),
+          // ],
+          toolbarOptions: const ToolbarOptions(
+            copy: false,
+            cut: false,
+            paste: true,
+            selectAll: false,
           ),
-          child: TextField(
-            onTap: () {},
-            key: const Key("recipientExchangeStep2ViewAddressFieldKey"),
-            controller: _toController,
-            readOnly: false,
-            autocorrect: false,
-            enableSuggestions: false,
-            // inputFormatters: <TextInputFormatter>[
-            //   FilteringTextInputFormatter.allow(RegExp("[a-zA-Z0-9]{34}")),
-            // ],
-            toolbarOptions: const ToolbarOptions(
-              copy: false,
-              cut: false,
-              paste: true,
-              selectAll: false,
-            ),
-            focusNode: _toFocusNode,
-            style: STextStyles.field(context),
-            onChanged: (value) {
-              ref.read(desktopExchangeModelProvider)!.recipientAddress =
-                  _toController.text;
-              widget.enableNextChanged.call(_next());
-            },
-            decoration:
-                standardInputDecoration(
-                  "Enter the ${ref.watch(desktopExchangeModelProvider.select((value) => value!.receiveTicker.toUpperCase()))} payout address",
-                  _toFocusNode,
-                  context,
-                  desktopMed: true,
-                ).copyWith(
-                  contentPadding: const EdgeInsets.only(
-                    left: 16,
-                    top: 6,
-                    bottom: 8,
-                    right: 5,
-                  ),
-                  suffixIcon: Padding(
-                    padding: _toController.text.isEmpty
-                        ? const EdgeInsets.only(right: 8)
-                        : const EdgeInsets.only(right: 0),
-                    child: UnconstrainedBox(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          _toController.text.isNotEmpty
-                              ? TextFieldIconButton(
-                                  key: const Key(
-                                    "sendViewClearAddressFieldButtonKey",
-                                  ),
-                                  onTap: () {
-                                    _toController.text = "";
-                                    ref
-                                            .read(desktopExchangeModelProvider)!
-                                            .recipientAddress =
-                                        _toController.text;
-                                    widget.enableNextChanged.call(_next());
-                                  },
-                                  child: const XIcon(),
-                                )
-                              : TextFieldIconButton(
-                                  key: const Key(
-                                    "sendViewPasteAddressFieldButtonKey",
-                                  ),
-                                  onTap: () async {
-                                    final ClipboardData? data = await clipboard
-                                        .getData(Clipboard.kTextPlain);
-                                    if (data?.text != null &&
-                                        data!.text!.isNotEmpty) {
-                                      final content = data.text!.trim();
-                                      _toController.text = content;
-                                      ref
+          focusNode: _toFocusNode,
+          style: STextStyles.field(context),
+          onChanged: (value) {
+            ref.read(desktopExchangeModelProvider)!.recipientAddress =
+                _toController.text;
+            widget.enableNextChanged.call(_next());
+          },
+          decoration:
+              standardInputDecoration(
+                "Enter the ${ref.watch(desktopExchangeModelProvider.select((value) => value!.receiveTicker.toUpperCase()))} payout address",
+                _toFocusNode,
+                context,
+                desktopMed: true,
+              ).copyWith(
+                contentPadding: const EdgeInsets.only(
+                  left: 16,
+                  top: 6,
+                  bottom: 8,
+                  right: 5,
+                ),
+                suffixIcon: Padding(
+                  padding: _toController.text.isEmpty
+                      ? const EdgeInsets.only(right: 8)
+                      : const EdgeInsets.only(right: 0),
+                  child: UnconstrainedBox(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _toController.text.isNotEmpty
+                            ? TextFieldIconButton(
+                                key: const Key(
+                                  "sendViewClearAddressFieldButtonKey",
+                                ),
+                                onTap: () {
+                                  _toController.text = "";
+                                  ref
                                           .read(desktopExchangeModelProvider)!
-                                          .recipientAddress = _toController
-                                          .text;
-                                      widget.enableNextChanged.call(_next());
-                                    }
-                                  },
-                                  child: _toController.text.isEmpty
-                                      ? const ClipboardIcon()
-                                      : const XIcon(),
+                                          .recipientAddress =
+                                      _toController.text;
+                                  widget.enableNextChanged.call(_next());
+                                },
+                                child: const XIcon(),
+                              )
+                            : TextFieldIconButton(
+                                key: const Key(
+                                  "sendViewPasteAddressFieldButtonKey",
                                 ),
-                          if (_toController.text.isEmpty &&
-                              AppConfig.isStackCoin(
-                                ref.watch(
-                                  desktopExchangeModelProvider.select(
-                                    (value) => value!.receiveTicker,
-                                  ),
+                                onTap: () async {
+                                  final ClipboardData? data = await clipboard
+                                      .getData(Clipboard.kTextPlain);
+                                  if (data?.text != null &&
+                                      data!.text!.isNotEmpty) {
+                                    final content = data.text!.trim();
+                                    _toController.text = content;
+                                    ref
+                                        .read(desktopExchangeModelProvider)!
+                                        .recipientAddress = _toController
+                                        .text;
+                                    widget.enableNextChanged.call(_next());
+                                  }
+                                },
+                                child: _toController.text.isEmpty
+                                    ? const ClipboardIcon()
+                                    : const XIcon(),
+                              ),
+                        if (_toController.text.isEmpty &&
+                            AppConfig.isStackCoin(
+                              ref.watch(
+                                desktopExchangeModelProvider.select(
+                                  (value) => value!.receiveTicker,
                                 ),
-                              ))
-                            TextFieldIconButton(
-                              key: const Key("sendViewAddressBookButtonKey"),
-                              onTap: selectRecipientFromAddressBook,
-                              child: const AddressBookIcon(),
-                            ),
-                        ],
-                      ),
+                              ),
+                            ))
+                          TextFieldIconButton(
+                            key: const Key("sendViewAddressBookButtonKey"),
+                            onTap: selectRecipientFromAddressBook,
+                            child: const AddressBookIcon(),
+                          ),
+                      ],
                     ),
                   ),
                 ),
-          ),
+              ),
         ),
         const SizedBox(height: 10),
         RoundedWhiteContainer(
@@ -452,114 +447,109 @@ class _DesktopStep2State extends ConsumerState<DesktopStep2> {
           ),
         if (doesRefundAddress) const SizedBox(height: 10),
         if (doesRefundAddress)
-          ClipRRect(
-            borderRadius: BorderRadius.circular(
-              Constants.size.circularBorderRadius,
+          TextField(
+            key: const Key("refundExchangeStep2ViewAddressFieldKey"),
+            controller: _refundController,
+            readOnly: false,
+            autocorrect: false,
+            enableSuggestions: false,
+            // inputFormatters: <TextInputFormatter>[
+            //   FilteringTextInputFormatter.allow(RegExp("[a-zA-Z0-9]{34}")),
+            // ],
+            toolbarOptions: const ToolbarOptions(
+              copy: false,
+              cut: false,
+              paste: true,
+              selectAll: false,
             ),
-            child: TextField(
-              key: const Key("refundExchangeStep2ViewAddressFieldKey"),
-              controller: _refundController,
-              readOnly: false,
-              autocorrect: false,
-              enableSuggestions: false,
-              // inputFormatters: <TextInputFormatter>[
-              //   FilteringTextInputFormatter.allow(RegExp("[a-zA-Z0-9]{34}")),
-              // ],
-              toolbarOptions: const ToolbarOptions(
-                copy: false,
-                cut: false,
-                paste: true,
-                selectAll: false,
-              ),
-              focusNode: _refundFocusNode,
-              style: STextStyles.field(context),
-              onChanged: (value) {
-                ref.read(desktopExchangeModelProvider)!.refundAddress =
-                    _refundController.text;
-                widget.enableNextChanged.call(_next());
-              },
-              decoration:
-                  standardInputDecoration(
-                    "Enter ${ref.watch(desktopExchangeModelProvider.select((value) => value!.sendTicker.toUpperCase()))} refund address",
-                    _refundFocusNode,
-                    context,
-                    desktopMed: true,
-                  ).copyWith(
-                    contentPadding: const EdgeInsets.only(
-                      left: 16,
-                      top: 6,
-                      bottom: 8,
-                      right: 5,
-                    ),
-                    suffixIcon: Padding(
-                      padding: _refundController.text.isEmpty
-                          ? const EdgeInsets.only(right: 16)
-                          : const EdgeInsets.only(right: 0),
-                      child: UnconstrainedBox(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _refundController.text.isNotEmpty
-                                ? TextFieldIconButton(
-                                    key: const Key(
-                                      "sendViewClearAddressFieldButtonKey",
-                                    ),
-                                    onTap: () {
-                                      _refundController.text = "";
+            focusNode: _refundFocusNode,
+            style: STextStyles.field(context),
+            onChanged: (value) {
+              ref.read(desktopExchangeModelProvider)!.refundAddress =
+                  _refundController.text;
+              widget.enableNextChanged.call(_next());
+            },
+            decoration:
+                standardInputDecoration(
+                  "Enter ${ref.watch(desktopExchangeModelProvider.select((value) => value!.sendTicker.toUpperCase()))} refund address",
+                  _refundFocusNode,
+                  context,
+                  desktopMed: true,
+                ).copyWith(
+                  contentPadding: const EdgeInsets.only(
+                    left: 16,
+                    top: 6,
+                    bottom: 8,
+                    right: 5,
+                  ),
+                  suffixIcon: Padding(
+                    padding: _refundController.text.isEmpty
+                        ? const EdgeInsets.only(right: 16)
+                        : const EdgeInsets.only(right: 0),
+                    child: UnconstrainedBox(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _refundController.text.isNotEmpty
+                              ? TextFieldIconButton(
+                                  key: const Key(
+                                    "sendViewClearAddressFieldButtonKey",
+                                  ),
+                                  onTap: () {
+                                    _refundController.text = "";
+                                    ref
+                                        .read(desktopExchangeModelProvider)!
+                                        .refundAddress = _refundController
+                                        .text;
+
+                                    widget.enableNextChanged.call(_next());
+                                  },
+                                  child: const XIcon(),
+                                )
+                              : TextFieldIconButton(
+                                  key: const Key(
+                                    "sendViewPasteAddressFieldButtonKey",
+                                  ),
+                                  onTap: () async {
+                                    final ClipboardData? data =
+                                        await clipboard.getData(
+                                          Clipboard.kTextPlain,
+                                        );
+                                    if (data?.text != null &&
+                                        data!.text!.isNotEmpty) {
+                                      final content = data.text!.trim();
+
+                                      _refundController.text = content;
                                       ref
                                           .read(desktopExchangeModelProvider)!
                                           .refundAddress = _refundController
                                           .text;
 
                                       widget.enableNextChanged.call(_next());
-                                    },
-                                    child: const XIcon(),
-                                  )
-                                : TextFieldIconButton(
-                                    key: const Key(
-                                      "sendViewPasteAddressFieldButtonKey",
-                                    ),
-                                    onTap: () async {
-                                      final ClipboardData? data =
-                                          await clipboard.getData(
-                                            Clipboard.kTextPlain,
-                                          );
-                                      if (data?.text != null &&
-                                          data!.text!.isNotEmpty) {
-                                        final content = data.text!.trim();
-
-                                        _refundController.text = content;
-                                        ref
-                                            .read(desktopExchangeModelProvider)!
-                                            .refundAddress = _refundController
-                                            .text;
-
-                                        widget.enableNextChanged.call(_next());
-                                      }
-                                    },
-                                    child: _refundController.text.isEmpty
-                                        ? const ClipboardIcon()
-                                        : const XIcon(),
+                                    }
+                                  },
+                                  child: _refundController.text.isEmpty
+                                      ? const ClipboardIcon()
+                                      : const XIcon(),
+                                ),
+                          if (_refundController.text.isEmpty &&
+                              AppConfig.isStackCoin(
+                                ref.watch(
+                                  desktopExchangeModelProvider.select(
+                                    (value) => value!.sendTicker,
                                   ),
-                            if (_refundController.text.isEmpty &&
-                                AppConfig.isStackCoin(
-                                  ref.watch(
-                                    desktopExchangeModelProvider.select(
-                                      (value) => value!.sendTicker,
-                                    ),
-                                  ),
-                                ))
-                              TextFieldIconButton(
-                                key: const Key("sendViewAddressBookButtonKey"),
-                                onTap: selectRefundFromAddressBook,
-                                child: const AddressBookIcon(),
-                              ),
-                          ],
-                        ),
+                                ),
+                              ))
+                            TextFieldIconButton(
+                              key: const Key("sendViewAddressBookButtonKey"),
+                              onTap: selectRefundFromAddressBook,
+                              child: const AddressBookIcon(),
+                            ),
+                        ],
                       ),
                     ),
                   ),
-            ),
+                ),
           ),
         if (doesRefundAddress) const SizedBox(height: 10),
         if (doesRefundAddress)

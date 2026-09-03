@@ -96,47 +96,42 @@ class _EditNoteViewState extends ConsumerState<EditTradeNoteView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(
-                                Constants.size.circularBorderRadius,
-                              ),
-                              child: TextField(
-                                autocorrect: Util.isDesktop ? false : true,
-                                enableSuggestions:
-                                    Util.isDesktop ? false : true,
-                                controller: _noteController,
-                                style: STextStyles.field(context),
-                                focusNode: noteFieldFocusNode,
-                                onChanged: (_) => setState(() {}),
-                                decoration: standardInputDecoration(
-                                  "Note",
-                                  noteFieldFocusNode,
-                                  context,
-                                ).copyWith(
-                                  suffixIcon:
-                                      _noteController.text.isNotEmpty
-                                          ? Padding(
-                                            padding: const EdgeInsets.only(
-                                              right: 0,
+                            TextField(
+                              autocorrect: Util.isDesktop ? false : true,
+                              enableSuggestions:
+                                  Util.isDesktop ? false : true,
+                              controller: _noteController,
+                              style: STextStyles.field(context),
+                              focusNode: noteFieldFocusNode,
+                              onChanged: (_) => setState(() {}),
+                              decoration: standardInputDecoration(
+                                "Note",
+                                noteFieldFocusNode,
+                                context,
+                              ).copyWith(
+                                suffixIcon:
+                                    _noteController.text.isNotEmpty
+                                        ? Padding(
+                                          padding: const EdgeInsets.only(
+                                            right: 0,
+                                          ),
+                                          child: UnconstrainedBox(
+                                            child: Row(
+                                              children: [
+                                                TextFieldIconButton(
+                                                  child: const XIcon(),
+                                                  onTap: () async {
+                                                    setState(() {
+                                                      _noteController.text =
+                                                          "";
+                                                    });
+                                                  },
+                                                ),
+                                              ],
                                             ),
-                                            child: UnconstrainedBox(
-                                              child: Row(
-                                                children: [
-                                                  TextFieldIconButton(
-                                                    child: const XIcon(),
-                                                    onTap: () async {
-                                                      setState(() {
-                                                        _noteController.text =
-                                                            "";
-                                                      });
-                                                    },
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          )
-                                          : null,
-                                ),
+                                          ),
+                                        )
+                                        : null,
                               ),
                             ),
                             const Spacer(),

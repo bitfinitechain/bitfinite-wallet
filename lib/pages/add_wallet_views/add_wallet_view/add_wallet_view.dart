@@ -260,74 +260,69 @@ class _AddWalletViewState extends ConsumerState<AddWalletView> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(4.0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(
-                            Constants.size.circularBorderRadius,
-                          ),
-                          child: TextField(
-                            autocorrect: Util.isDesktop ? false : true,
-                            enableSuggestions: Util.isDesktop ? false : true,
-                            controller: _searchFieldController,
-                            focusNode: _searchFocusNode,
-                            onChanged: (value) {
-                              setState(() {
-                                _searchTerm = value;
-                              });
-                            },
-                            style: STextStyles.desktopTextMedium(
-                              context,
-                            ).copyWith(height: 2),
-                            decoration: standardInputDecoration(
-                              "Search",
-                              _searchFocusNode,
-                              context,
-                            ).copyWith(
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 10,
-                              ),
-                              prefixIcon: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  // vertical: 20,
-                                ),
-                                child: SvgPicture.asset(
-                                  Assets.svg.search,
-                                  width: 24,
-                                  height: 24,
-                                  color:
-                                      Theme.of(context)
-                                          .extension<StackColors>()!
-                                          .textFieldDefaultSearchIconLeft,
-                                ),
-                              ),
-                              suffixIcon:
-                                  _searchFieldController.text.isNotEmpty
-                                      ? Padding(
-                                        padding: const EdgeInsets.only(
-                                          right: 10,
-                                        ),
-                                        child: UnconstrainedBox(
-                                          child: Row(
-                                            children: [
-                                              TextFieldIconButton(
-                                                child: const XIcon(
-                                                  width: 24,
-                                                  height: 24,
-                                                ),
-                                                onTap: () async {
-                                                  setState(() {
-                                                    _searchFieldController
-                                                        .text = "";
-                                                    _searchTerm = "";
-                                                  });
-                                                },
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      )
-                                      : null,
+                        child: TextField(
+                          autocorrect: Util.isDesktop ? false : true,
+                          enableSuggestions: Util.isDesktop ? false : true,
+                          controller: _searchFieldController,
+                          focusNode: _searchFocusNode,
+                          onChanged: (value) {
+                            setState(() {
+                              _searchTerm = value;
+                            });
+                          },
+                          style: STextStyles.desktopTextMedium(
+                            context,
+                          ).copyWith(height: 2),
+                          decoration: standardInputDecoration(
+                            "Search",
+                            _searchFocusNode,
+                            context,
+                          ).copyWith(
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 10,
                             ),
+                            prefixIcon: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                // vertical: 20,
+                              ),
+                              child: SvgPicture.asset(
+                                Assets.svg.search,
+                                width: 24,
+                                height: 24,
+                                color:
+                                    Theme.of(context)
+                                        .extension<StackColors>()!
+                                        .textFieldDefaultSearchIconLeft,
+                              ),
+                            ),
+                            suffixIcon:
+                                _searchFieldController.text.isNotEmpty
+                                    ? Padding(
+                                      padding: const EdgeInsets.only(
+                                        right: 10,
+                                      ),
+                                      child: UnconstrainedBox(
+                                        child: Row(
+                                          children: [
+                                            TextFieldIconButton(
+                                              child: const XIcon(
+                                                width: 24,
+                                                height: 24,
+                                              ),
+                                              onTap: () async {
+                                                setState(() {
+                                                  _searchFieldController
+                                                      .text = "";
+                                                  _searchTerm = "";
+                                                });
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                    : null,
                           ),
                         ),
                       ),

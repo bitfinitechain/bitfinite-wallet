@@ -137,44 +137,39 @@ class _EthFeeFormState extends State<EthFeeForm> {
       children: [
         Text("Max base fee (GWEI)", style: STextStyles.smallMed12(context)),
         const SizedBox(height: 10),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(
-            Constants.size.circularBorderRadius,
-          ),
-          child: TextField(
-            minLines: 1,
-            maxLines: 1,
-            controller: maxBaseController,
-            readOnly: false,
-            autocorrect: false,
-            enableSuggestions: false,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            focusNode: maxBaseFocus,
-            onChanged: (value) {
-              widget.stateChanged(_current);
-            },
-            style:
-                Util.isDesktop
-                    ? STextStyles.desktopTextExtraSmall(context).copyWith(
-                      color:
-                          Theme.of(
-                            context,
-                          ).extension<StackColors>()!.textFieldActiveText,
-                      height: 1.8,
-                    )
-                    : STextStyles.field(context),
-            decoration: standardInputDecoration(
-              null,
-              maxBaseFocus,
-              context,
-              desktopMed: Util.isDesktop,
-            ).copyWith(
-              contentPadding: EdgeInsets.only(
-                left: 16,
-                top: Util.isDesktop ? 11 : 6,
-                bottom: Util.isDesktop ? 12 : 8,
-                right: 5,
-              ),
+        TextField(
+          minLines: 1,
+          maxLines: 1,
+          controller: maxBaseController,
+          readOnly: false,
+          autocorrect: false,
+          enableSuggestions: false,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          focusNode: maxBaseFocus,
+          onChanged: (value) {
+            widget.stateChanged(_current);
+          },
+          style:
+              Util.isDesktop
+                  ? STextStyles.desktopTextExtraSmall(context).copyWith(
+                    color:
+                        Theme.of(
+                          context,
+                        ).extension<StackColors>()!.textFieldActiveText,
+                    height: 1.8,
+                  )
+                  : STextStyles.field(context),
+          decoration: standardInputDecoration(
+            null,
+            maxBaseFocus,
+            context,
+            desktopMed: Util.isDesktop,
+          ).copyWith(
+            contentPadding: EdgeInsets.only(
+              left: 16,
+              top: Util.isDesktop ? 11 : 6,
+              bottom: Util.isDesktop ? 12 : 8,
+              right: 5,
             ),
           ),
         ),
@@ -195,44 +190,39 @@ class _EthFeeFormState extends State<EthFeeForm> {
         const SizedBox(height: 20),
         Text("Priority fee (GWEI)", style: STextStyles.smallMed12(context)),
         const SizedBox(height: 10),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(
-            Constants.size.circularBorderRadius,
-          ),
-          child: TextField(
-            minLines: 1,
-            maxLines: 1,
-            controller: priorityFeeController,
-            readOnly: false,
-            autocorrect: false,
-            enableSuggestions: false,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            focusNode: priorityFeeFocus,
-            onChanged: (value) {
-              widget.stateChanged(_current);
-            },
-            style:
-                Util.isDesktop
-                    ? STextStyles.desktopTextExtraSmall(context).copyWith(
-                      color:
-                          Theme.of(
-                            context,
-                          ).extension<StackColors>()!.textFieldActiveText,
-                      height: 1.8,
-                    )
-                    : STextStyles.field(context),
-            decoration: standardInputDecoration(
-              null,
-              priorityFeeFocus,
-              context,
-              desktopMed: Util.isDesktop,
-            ).copyWith(
-              contentPadding: EdgeInsets.only(
-                left: 16,
-                top: Util.isDesktop ? 11 : 6,
-                bottom: Util.isDesktop ? 12 : 8,
-                right: 5,
-              ),
+        TextField(
+          minLines: 1,
+          maxLines: 1,
+          controller: priorityFeeController,
+          readOnly: false,
+          autocorrect: false,
+          enableSuggestions: false,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          focusNode: priorityFeeFocus,
+          onChanged: (value) {
+            widget.stateChanged(_current);
+          },
+          style:
+              Util.isDesktop
+                  ? STextStyles.desktopTextExtraSmall(context).copyWith(
+                    color:
+                        Theme.of(
+                          context,
+                        ).extension<StackColors>()!.textFieldActiveText,
+                    height: 1.8,
+                  )
+                  : STextStyles.field(context),
+          decoration: standardInputDecoration(
+            null,
+            priorityFeeFocus,
+            context,
+            desktopMed: Util.isDesktop,
+          ).copyWith(
+            contentPadding: EdgeInsets.only(
+              left: 16,
+              top: Util.isDesktop ? 11 : 6,
+              bottom: Util.isDesktop ? 12 : 8,
+              right: 5,
             ),
           ),
         ),
@@ -253,54 +243,49 @@ class _EthFeeFormState extends State<EthFeeForm> {
         const SizedBox(height: 20),
         Text("Gas limit", style: STextStyles.smallMed12(context)),
         const SizedBox(height: 10),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(
-            Constants.size.circularBorderRadius,
-          ),
-          child: TextField(
-            minLines: 1,
-            maxLines: 1,
-            controller: gasLimitController,
-            readOnly: false,
-            autocorrect: false,
-            enableSuggestions: false,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            focusNode: gasLimitFocus,
-            onChanged: (value) {
-              final intValue = int.tryParse(value);
-              if (intValue == null ||
-                  intValue < widget.minGasLimit ||
-                  intValue > widget.maxGasLimit) {
-                gasLimitController.text = _gasLimitCache.toString();
-                return;
-              }
+        TextField(
+          minLines: 1,
+          maxLines: 1,
+          controller: gasLimitController,
+          readOnly: false,
+          autocorrect: false,
+          enableSuggestions: false,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          focusNode: gasLimitFocus,
+          onChanged: (value) {
+            final intValue = int.tryParse(value);
+            if (intValue == null ||
+                intValue < widget.minGasLimit ||
+                intValue > widget.maxGasLimit) {
+              gasLimitController.text = _gasLimitCache.toString();
+              return;
+            }
 
-              _gasLimitCache = intValue;
+            _gasLimitCache = intValue;
 
-              widget.stateChanged(_current);
-            },
-            style:
-                Util.isDesktop
-                    ? STextStyles.desktopTextExtraSmall(context).copyWith(
-                      color:
-                          Theme.of(
-                            context,
-                          ).extension<StackColors>()!.textFieldActiveText,
-                      height: 1.8,
-                    )
-                    : STextStyles.field(context),
-            decoration: standardInputDecoration(
-              null,
-              gasLimitFocus,
-              context,
-              desktopMed: Util.isDesktop,
-            ).copyWith(
-              contentPadding: EdgeInsets.only(
-                left: 16,
-                top: Util.isDesktop ? 11 : 6,
-                bottom: Util.isDesktop ? 12 : 8,
-                right: 5,
-              ),
+            widget.stateChanged(_current);
+          },
+          style:
+              Util.isDesktop
+                  ? STextStyles.desktopTextExtraSmall(context).copyWith(
+                    color:
+                        Theme.of(
+                          context,
+                        ).extension<StackColors>()!.textFieldActiveText,
+                    height: 1.8,
+                  )
+                  : STextStyles.field(context),
+          decoration: standardInputDecoration(
+            null,
+            gasLimitFocus,
+            context,
+            desktopMed: Util.isDesktop,
+          ).copyWith(
+            contentPadding: EdgeInsets.only(
+              left: 16,
+              top: Util.isDesktop ? 11 : 6,
+              bottom: Util.isDesktop ? 12 : 8,
+              right: 5,
             ),
           ),
         ),

@@ -147,63 +147,58 @@ class _EditAddressLabelViewState extends ConsumerState<EditAddressLabelView> {
                       isDesktop
                           ? const EdgeInsets.symmetric(horizontal: 32)
                           : const EdgeInsets.all(0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(
-                      Constants.size.circularBorderRadius,
-                    ),
-                    child: TextField(
-                      autocorrect: Util.isDesktop ? false : true,
-                      enableSuggestions: Util.isDesktop ? false : true,
-                      controller: _labelFieldController,
-                      style:
+                  child: TextField(
+                    autocorrect: Util.isDesktop ? false : true,
+                    enableSuggestions: Util.isDesktop ? false : true,
+                    controller: _labelFieldController,
+                    style:
+                        isDesktop
+                            ? STextStyles.desktopTextExtraSmall(
+                              context,
+                            ).copyWith(
+                              color:
+                                  Theme.of(context)
+                                      .extension<StackColors>()!
+                                      .textFieldActiveText,
+                              height: 1.8,
+                            )
+                            : STextStyles.field(context),
+                    focusNode: labelFieldFocusNode,
+                    decoration: standardInputDecoration(
+                      "Address label",
+                      labelFieldFocusNode,
+                      context,
+                      desktopMed: isDesktop,
+                    ).copyWith(
+                      contentPadding:
                           isDesktop
-                              ? STextStyles.desktopTextExtraSmall(
-                                context,
-                              ).copyWith(
-                                color:
-                                    Theme.of(context)
-                                        .extension<StackColors>()!
-                                        .textFieldActiveText,
-                                height: 1.8,
+                              ? const EdgeInsets.only(
+                                left: 16,
+                                top: 11,
+                                bottom: 12,
+                                right: 5,
                               )
-                              : STextStyles.field(context),
-                      focusNode: labelFieldFocusNode,
-                      decoration: standardInputDecoration(
-                        "Address label",
-                        labelFieldFocusNode,
-                        context,
-                        desktopMed: isDesktop,
-                      ).copyWith(
-                        contentPadding:
-                            isDesktop
-                                ? const EdgeInsets.only(
-                                  left: 16,
-                                  top: 11,
-                                  bottom: 12,
-                                  right: 5,
-                                )
-                                : null,
-                        suffixIcon:
-                            _labelFieldController.text.isNotEmpty
-                                ? Padding(
-                                  padding: const EdgeInsets.only(right: 0),
-                                  child: UnconstrainedBox(
-                                    child: Row(
-                                      children: [
-                                        TextFieldIconButton(
-                                          child: const XIcon(),
-                                          onTap: () async {
-                                            setState(() {
-                                              _labelFieldController.text = "";
-                                            });
-                                          },
-                                        ),
-                                      ],
-                                    ),
+                              : null,
+                      suffixIcon:
+                          _labelFieldController.text.isNotEmpty
+                              ? Padding(
+                                padding: const EdgeInsets.only(right: 0),
+                                child: UnconstrainedBox(
+                                  child: Row(
+                                    children: [
+                                      TextFieldIconButton(
+                                        child: const XIcon(),
+                                        onTap: () async {
+                                          setState(() {
+                                            _labelFieldController.text = "";
+                                          });
+                                        },
+                                      ),
+                                    ],
                                   ),
-                                )
-                                : null,
-                      ),
+                                ),
+                              )
+                              : null,
                     ),
                   ),
                 ),

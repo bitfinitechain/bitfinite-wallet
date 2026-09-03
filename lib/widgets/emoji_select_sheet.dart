@@ -147,56 +147,51 @@ class _EmojiSelectSheetState extends ConsumerState<EmojiSelectSheet> {
           ),
           Material(
             color: Colors.transparent,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(
-                Constants.size.circularBorderRadius,
-              ),
-              child: TextField(
-                autocorrect: Util.isDesktop ? false : true,
-                enableSuggestions: Util.isDesktop ? false : true,
-                controller: _searchController,
-                focusNode: _searchFocusNode,
-                onChanged: (newString) {
-                  setState(() => _searchTerm = newString);
-                },
-                style: STextStyles.field(context),
-                decoration: standardInputDecoration(
-                  "Search",
-                  _searchFocusNode,
-                  context,
-                ).copyWith(
-                  prefixIcon: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 16,
-                    ),
-                    child: SvgPicture.asset(
-                      Assets.svg.search,
-                      width: 16,
-                      height: 16,
-                    ),
+            child: TextField(
+              autocorrect: Util.isDesktop ? false : true,
+              enableSuggestions: Util.isDesktop ? false : true,
+              controller: _searchController,
+              focusNode: _searchFocusNode,
+              onChanged: (newString) {
+                setState(() => _searchTerm = newString);
+              },
+              style: STextStyles.field(context),
+              decoration: standardInputDecoration(
+                "Search",
+                _searchFocusNode,
+                context,
+              ).copyWith(
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 16,
                   ),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? Padding(
-                          padding: const EdgeInsets.only(right: 0),
-                          child: UnconstrainedBox(
-                            child: Row(
-                              children: [
-                                TextFieldIconButton(
-                                  child: const XIcon(),
-                                  onTap: () async {
-                                    setState(() {
-                                      _searchController.text = "";
-                                      _searchTerm = "";
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      : null,
+                  child: SvgPicture.asset(
+                    Assets.svg.search,
+                    width: 16,
+                    height: 16,
+                  ),
                 ),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.only(right: 0),
+                        child: UnconstrainedBox(
+                          child: Row(
+                            children: [
+                              TextFieldIconButton(
+                                child: const XIcon(),
+                                onTap: () async {
+                                  setState(() {
+                                    _searchController.text = "";
+                                    _searchTerm = "";
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : null,
               ),
             ),
           ),

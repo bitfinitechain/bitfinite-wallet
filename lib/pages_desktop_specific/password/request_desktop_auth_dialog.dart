@@ -147,80 +147,75 @@ class _RequestDesktopAuthDialogState
             padding: const EdgeInsets.symmetric(
               horizontal: 32,
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(
-                Constants.size.circularBorderRadius,
+            child: TextField(
+              key: const Key("enterPasswordUnlockWalletKeysDesktopFieldKey"),
+              focusNode: passwordFocusNode,
+              controller: passwordController,
+              style: STextStyles.desktopTextMedium(context).copyWith(
+                height: 2,
               ),
-              child: TextField(
-                key: const Key("enterPasswordUnlockWalletKeysDesktopFieldKey"),
-                focusNode: passwordFocusNode,
-                controller: passwordController,
-                style: STextStyles.desktopTextMedium(context).copyWith(
-                  height: 2,
-                ),
-                obscureText: hidePassword,
-                enableSuggestions: false,
-                autocorrect: false,
-                autofocus: true,
-                onSubmitted: (_) {
-                  if (continueEnabled) {
-                    _auth();
-                  }
-                },
-                decoration: standardInputDecoration(
-                  "Enter password",
-                  passwordFocusNode,
-                  context,
-                ).copyWith(
-                  suffixIcon: UnconstrainedBox(
-                    child: SizedBox(
-                      height: 70,
-                      child: Row(
-                        children: [
-                          GestureDetector(
-                            key: const Key(
-                              "enterUnlockWalletKeysDesktopFieldShowPasswordButtonKey",
+              obscureText: hidePassword,
+              enableSuggestions: false,
+              autocorrect: false,
+              autofocus: true,
+              onSubmitted: (_) {
+                if (continueEnabled) {
+                  _auth();
+                }
+              },
+              decoration: standardInputDecoration(
+                "Enter password",
+                passwordFocusNode,
+                context,
+              ).copyWith(
+                suffixIcon: UnconstrainedBox(
+                  child: SizedBox(
+                    height: 70,
+                    child: Row(
+                      children: [
+                        GestureDetector(
+                          key: const Key(
+                            "enterUnlockWalletKeysDesktopFieldShowPasswordButtonKey",
+                          ),
+                          onTap: () async {
+                            setState(() {
+                              hidePassword = !hidePassword;
+                            });
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.circular(1000),
                             ),
-                            onTap: () async {
-                              setState(() {
-                                hidePassword = !hidePassword;
-                              });
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.transparent,
-                                borderRadius: BorderRadius.circular(1000),
-                              ),
-                              height: 32,
-                              width: 32,
-                              child: Center(
-                                child: SvgPicture.asset(
-                                  hidePassword
-                                      ? Assets.svg.eye
-                                      : Assets.svg.eyeSlash,
-                                  color: Theme.of(context)
-                                      .extension<StackColors>()!
-                                      .textDark3,
-                                  width: 24,
-                                  height: 19,
-                                ),
+                            height: 32,
+                            width: 32,
+                            child: Center(
+                              child: SvgPicture.asset(
+                                hidePassword
+                                    ? Assets.svg.eye
+                                    : Assets.svg.eyeSlash,
+                                color: Theme.of(context)
+                                    .extension<StackColors>()!
+                                    .textDark3,
+                                width: 24,
+                                height: 19,
                               ),
                             ),
                           ),
-                          const SizedBox(
-                            width: 10,
-                          ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                onChanged: (newValue) {
-                  setState(() {
-                    continueEnabled = newValue.isNotEmpty;
-                  });
-                },
               ),
+              onChanged: (newValue) {
+                setState(() {
+                  continueEnabled = newValue.isNotEmpty;
+                });
+              },
             ),
           ),
           const SizedBox(

@@ -93,66 +93,61 @@ class _DesktopChooseFromStackState
           style: STextStyles.desktopH3(context),
         ),
         const SizedBox(height: 28),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(
-            Constants.size.circularBorderRadius,
+        TextField(
+          autocorrect: false,
+          enableSuggestions: false,
+          controller: _searchController,
+          focusNode: searchFieldFocusNode,
+          onChanged: (value) {
+            setState(() {
+              _searchTerm = value;
+            });
+          },
+          style: STextStyles.desktopTextExtraSmall(context).copyWith(
+            color: Theme.of(
+              context,
+            ).extension<StackColors>()!.textFieldActiveText,
+            height: 1.8,
           ),
-          child: TextField(
-            autocorrect: false,
-            enableSuggestions: false,
-            controller: _searchController,
-            focusNode: searchFieldFocusNode,
-            onChanged: (value) {
-              setState(() {
-                _searchTerm = value;
-              });
-            },
-            style: STextStyles.desktopTextExtraSmall(context).copyWith(
-              color: Theme.of(
+          decoration:
+              standardInputDecoration(
+                "Search",
+                searchFieldFocusNode,
                 context,
-              ).extension<StackColors>()!.textFieldActiveText,
-              height: 1.8,
-            ),
-            decoration:
-                standardInputDecoration(
-                  "Search",
-                  searchFieldFocusNode,
-                  context,
-                  desktopMed: true,
-                ).copyWith(
-                  prefixIcon: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 18,
-                    ),
-                    child: SvgPicture.asset(
-                      Assets.svg.search,
-                      width: 20,
-                      height: 20,
-                    ),
+                desktopMed: true,
+              ).copyWith(
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 18,
                   ),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? Padding(
-                          padding: const EdgeInsets.only(right: 0),
-                          child: UnconstrainedBox(
-                            child: Row(
-                              children: [
-                                TextFieldIconButton(
-                                  child: const XIcon(),
-                                  onTap: () async {
-                                    setState(() {
-                                      _searchController.text = "";
-                                      _searchTerm = "";
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      : null,
+                  child: SvgPicture.asset(
+                    Assets.svg.search,
+                    width: 20,
+                    height: 20,
+                  ),
                 ),
-          ),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.only(right: 0),
+                        child: UnconstrainedBox(
+                          child: Row(
+                            children: [
+                              TextFieldIconButton(
+                                child: const XIcon(),
+                                onTap: () async {
+                                  setState(() {
+                                    _searchController.text = "";
+                                    _searchTerm = "";
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : null,
+              ),
         ),
         const SizedBox(height: 16),
         Flexible(

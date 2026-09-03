@@ -62,15 +62,7 @@ Widget? iosNavIcon(String? label, Color color) {
 /// "More" button that opens the remaining actions in a bottom sheet.
 /// Replaces the old floating bottom dock.
 class WalletNavigationBar extends ConsumerWidget {
-  /// Fill for the primary action. Defaults to the theme's own primary, which
-  /// is what every caller got before this existed. Passing the coin's colour
-  /// makes the dock belong to the wallet you are in — and because pCoinColor
-  /// falls back to that same theme primary for a coin with no brand colour,
-  /// BFX is unchanged and only a coin with published colours differs.
-  final Color? accentColor;
-
   const WalletNavigationBar({
-    this.accentColor,
     super.key,
     required this.items,
     required this.moreItems,
@@ -136,7 +128,6 @@ class WalletNavigationBar extends ConsumerWidget {
         _ActionButton(
           data: items[i],
           floating: floating,
-          accentColor: accentColor,
           // Matched on label, not index: Finalize/Sign appear conditionally
           // between Receive and Send, so positions are not stable.
           highlighted:
@@ -266,10 +257,8 @@ class WalletNavigationBar extends ConsumerWidget {
 }
 
 class _ActionButton extends StatelessWidget {
-  final Color? accentColor;
   const _ActionButton({
     required this.data,
-    this.accentColor,
     this.floating = false,
     this.highlighted = false,
     this.labeled = false,
@@ -299,14 +288,9 @@ class _ActionButton extends StatelessWidget {
         // primary — and because it is blue-600/700 in Light/Dark, those two
         // still follow the Brandkit, which is the rule.
         final filled = highlighted;
-        // The one colour this pill is actually painted in. It used to be
-        // inlined here while the ink below measured itself against
-        // buttonBackPrimary instead — so on a coin whose accent differs from
-        // the theme's primary, the ink was checked against a colour that was
-        // never on screen. Pepecoin's pill got white ink measured against BFX
-        // blue (6.76:1) but painted on green (3.57:1), and the same pill came
-        // out white on the wallet view and dark on the send screen.
-        final fill = accentColor ?? colors.buttonBackPrimary;
+        // The one colour this pill is actually painted in, named so the ink
+        // below measures itself against what is really on screen.
+        final fill = colors.buttonBackPrimary;
         return Material(
           color: filled ? fill : Colors.transparent,
           shape: const StadiumBorder(),

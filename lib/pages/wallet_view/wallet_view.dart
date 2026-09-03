@@ -38,13 +38,11 @@ import '../../services/event_bus/global_event_bus.dart';
 import '../../services/exchange/exchange_data_loading_service.dart';
 import '../../themes/coin_icon_provider.dart';
 import '../../themes/stack_colors.dart';
-import '../../themes/theme_providers.dart';
 import '../../utilities/amount/amount.dart';
 import '../../utilities/assets.dart';
 import '../../utilities/hero_ink.dart';
 import '../../utilities/ios_icon.dart';
 import '../../utilities/clipboard_interface.dart';
-import '../../utilities/coin_accent.dart';
 import '../../utilities/constants.dart';
 import '../../utilities/enums/backup_frequency_type.dart';
 import '../../utilities/enums/sync_type_enum.dart';
@@ -530,7 +528,10 @@ class _WalletViewState extends ConsumerState<WalletView> {
     // translucent discs behind them). Derived from the hero fill for the same
     // reason as the balance block: the hero is the theme's own colour and is a
     // light orange in some themes, where white ink measures 3.00:1.
-    final accent = ref.watch(pCoinColor(coin));
+    // The filled dock action is the hero neutral, the one surface already
+    // licensed to carry white. It used to be the coin colour, which made the
+    // same control a different colour in every wallet.
+    const accent = kHeroSurface;
     // The app bar sits on the PAGE now, not on the hero — the hero became an
     // inset slab below it — so its ink is the theme's, not the hero's white.
     final _barColors = Theme.of(context).extension<StackColors>()!;
@@ -1514,21 +1515,12 @@ class _WalletViewState extends ConsumerState<WalletView> {
                                         ),
                                         CustomTextButton(
                                           text: "See all",
-                                          // Matches the dock: inside a wallet the accents
-                                          // belong to that coin. pCoinColor falls back to
-                                          // the theme for a coin without its own, so BFX
-                                          // is unchanged.
-                                          // Text on the page ground, so the
-                                          // tone-mapped accent rather than the
-                                          // raw coin colour: Bellscoin gold
-                                          // reads 1.64:1 here, which is why
-                                          // this link was the last unreadable
-                                          // thing on the screen.
-                                          color: coinAccent(
-                                            coin,
-                                            ref.watch(pCoinColor(coin)),
-                                            Theme.of(context).brightness,
-                                          ),
+                                          // No colour override: the theme's own
+                                          // link colour. The wallet screen used
+                                          // to tint its accents per coin, which
+                                          // is what made this link unreadable on
+                                          // Bellscoin. Chrome follows the theme
+                                          // now; the coin keeps its icon.
                                           onTap: () {
                                             Navigator.of(context).pushNamed(
                                               ref

@@ -6,12 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../providers/global/wallets_provider.dart';
 import '../../../services/event_bus/events/global/wallet_sync_status_changed_event.dart';
 import '../../../services/event_bus/global_event_bus.dart';
-import '../../../themes/theme_providers.dart';
 import '../../../themes/stack_colors.dart';
 import '../../../utilities/hero_ink.dart';
 import '../../../utilities/text_styles.dart';
-import '../../../widgets/coin_card.dart';
-import '../../../wallets/isar/providers/wallet_info_provider.dart';
 
 /// Live sync-status pill shown on the balance card ("Synced" / "Syncing" /
 /// "Offline"). Tapping it triggers a wallet refresh, replacing the old
@@ -69,7 +66,9 @@ class _WalletSyncChipState extends ConsumerState<WalletSyncChip> {
     // wallet_summary_info), so its ink comes from the hero, not the page.
     // textDark is near-black in the light theme and was unreadable on blue;
     // hardcoded white then failed the other way on the light-orange heroes.
-    final hero = ref.watch(pCoinColor(ref.watch(pWalletCoin(widget.walletId))));
+    // The hero is one neutral for every coin now, so this reads the surface
+    // it actually sits on rather than the coin's colour.
+    const hero = kHeroSurface;
     final favText = heroInk(hero);
 
     final String label = switch (_status) {

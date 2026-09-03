@@ -23,8 +23,13 @@ import '../../../widgets/wallet_navigation_bar/components/wallet_navigation_bar_
 /// deliberately cannot sign, and a control that explains that beats one that
 /// vanished. Tapping it says so instead of doing nothing.
 ///
-/// Colour comes from the enclosing CoinThemed scope: PrimaryButton picks up
-/// the coin's accent with readable ink for free.
+/// Colour comes from the theme, not the coin. Chrome — buttons, links,
+/// switches, the sync chip — is one set of controls that happens to be showing
+/// a coin, so it stays put as you move between wallets; the coin colour is
+/// reserved for the marks that identify the coin itself (its icon and its card
+/// on the home list). Recolouring the accent per coin meant every theme's
+/// contrast pairing had to be re-earned for each coin, which is how a
+/// white-on-gold Save button shipped.
 class WalletActionBar extends StatelessWidget {
   const WalletActionBar({
     super.key,

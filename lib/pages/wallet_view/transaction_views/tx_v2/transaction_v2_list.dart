@@ -33,9 +33,20 @@ import 'fusion_tx_group_card.dart';
 import 'transaction_v2_list_item.dart';
 
 class TransactionsV2List extends ConsumerStatefulWidget {
-  const TransactionsV2List({super.key, required this.walletId});
+  const TransactionsV2List({
+    super.key,
+    required this.walletId,
+    this.asSliver = false,
+  });
 
   final String walletId;
+
+  /// Render as slivers instead of a self-contained scrollable.
+  ///
+  /// The mobile wallet view scrolls the hero and this list as ONE page, so
+  /// the list cannot own a scrollable of its own there. Desktop still uses
+  /// the box form, where the list is the only thing scrolling.
+  final bool asSliver;
 
   @override
   ConsumerState<TransactionsV2List> createState() => _TransactionsV2ListState();
@@ -173,7 +184,7 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
   List<Object> _withTruncationNotice(WalletInfo info) {
     final total = info.otherData[WalletInfoKeys.historyTruncatedTotal] as int?;
     if (total != null && total > _transactions.length) {
-      return [_TruncationNotice(total), ..._txns];
+      return [_TruncationNotice(total, _transactions.length), ..._txns];
     }
     return _txns;
   }
@@ -224,9 +235,49 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
     super.dispose();
   }
 
+  /// One row of [txns]. Shared by the box and sliver paths so the two cannot
+  /// drift apart.
+  Widget _itemAt(List<Object> txns, int index) {
+    BorderRadius? radius;
+    bool shouldWrap = false;
+    if (txns.length == 1) {
+      radius = BorderRadius.circular(Constants.size.circularBorderRadius);
+    } else if (index == txns.length - 1) {
+      radius = _borderRadiusLast;
+      shouldWrap = true;
+    } else if (index == 0) {
+      radius = _borderRadiusFirst;
+    }
+
+    final tx = txns[index];
+    if (tx is String) {
+      return _DateHeader(label: tx);
+    }
+    if (tx is _TruncationNotice) {
+      return _TruncationBanner(total: tx.total, shown: tx.shown);
+    }
+    if (shouldWrap) {
+      return Column(
+        children: [
+          TxListItem(tx: tx, coin: coin, radius: radius),
+          const SizedBox(height: WalletView.navBarHeight + 14),
+        ],
+      );
+    }
+    return TxListItem(tx: tx, coin: coin, radius: radius);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_hasLoaded) {
+      if (widget.asSliver) {
+        return const SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 60),
+            child: Center(child: LoadingIndicator(height: 50, width: 50)),
+          ),
+        );
+      }
       return const Column(
         children: [
           Spacer(),
@@ -236,9 +287,24 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
       );
     }
     if (_txns.isEmpty) {
-      return const NoTransActionsFound();
+      return widget.asSliver
+          ? const SliverToBoxAdapter(child: NoTransActionsFound())
+          : const NoTransActionsFound();
     }
     final txns = _withTruncationNotice(ref.watch(pWalletInfo(widget.walletId)));
+
+    if (widget.asSliver) {
+      // No RefreshIndicator and no physics here: the page that owns this
+      // sliver owns the gesture, so pulling anywhere on the screen refreshes,
+      // including over the hero.
+      return SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) => _itemAt(txns, index),
+          childCount: txns.length,
+        ),
+      );
+    }
+
     return RefreshIndicator(
             onRefresh: () async {
               await ref.read(pWallets).getWallet(widget.walletId).refresh();
@@ -264,39 +330,7 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
                 : ListView.builder(
                     padding: const EdgeInsets.only(bottom: 92),
                     itemCount: txns.length,
-                    itemBuilder: (context, index) {
-                      BorderRadius? radius;
-                      bool shouldWrap = false;
-                      if (txns.length == 1) {
-                        radius = BorderRadius.circular(
-                          Constants.size.circularBorderRadius,
-                        );
-                      } else if (index == txns.length - 1) {
-                        radius = _borderRadiusLast;
-                        shouldWrap = true;
-                      } else if (index == 0) {
-                        radius = _borderRadiusFirst;
-                      }
-                      final tx = txns[index];
-                      if (tx is String) {
-                        return _DateHeader(label: tx);
-                      }
-                      if (tx is _TruncationNotice) {
-                        return _TruncationBanner(total: tx.total);
-                      }
-                      if (shouldWrap) {
-                        return Column(
-                          children: [
-                            TxListItem(tx: tx, coin: coin, radius: radius),
-                            const SizedBox(
-                              height: WalletView.navBarHeight + 14,
-                            ),
-                          ],
-                        );
-                      } else {
-                        return TxListItem(tx: tx, coin: coin, radius: radius);
-                      }
-                    },
+                    itemBuilder: (context, index) => _itemAt(txns, index),
                   ),
           );
   }
@@ -330,8 +364,9 @@ class _DateHeader extends StatelessWidget {
 
 /// Marker for the list: this address has more history than was synced.
 class _TruncationNotice {
-  const _TruncationNotice(this.total);
+  const _TruncationNotice(this.total, this.shown);
   final int total;
+  final int shown;
 }
 
 /// Says plainly that the list below is partial, and that the balance is not.
@@ -341,16 +376,29 @@ class _TruncationNotice {
 /// from unspent outputs rather than from this list, and saying both halves out
 /// loud is the point: a short list with no explanation reads as a wrong list.
 class _TruncationBanner extends StatelessWidget {
-  const _TruncationBanner({required this.total});
+  const _TruncationBanner({required this.total, required this.shown});
 
   final int total;
+  final int shown;
+
+  /// 45308 -> "45,308". Grouping is what makes these two numbers comparable
+  /// at a glance, which is the only reason the banner prints them.
+  static String _grouped(int n) {
+    final s = n.toString();
+    final out = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) out.write(",");
+      out.write(s[i]);
+    }
+    return out.toString();
+  }
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<StackColors>()!;
     return Container(
-      margin: const EdgeInsets.only(top: 8, bottom: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      margin: const EdgeInsets.only(top: 4, bottom: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: colors.popupBG,
         borderRadius: BorderRadius.circular(12),
@@ -365,8 +413,8 @@ class _TruncationBanner extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              "This address has about $total transactions, too many to load "
-              "in full. Showing the most recent. The balance above is exact.",
+              "Showing ${_grouped(shown)} of about ${_grouped(total)} "
+              "transactions. The balance is exact.",
               style: TextStyle(fontSize: 12, color: colors.textSubtitle1),
             ),
           ),

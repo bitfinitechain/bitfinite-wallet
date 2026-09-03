@@ -545,383 +545,355 @@ class _WalletViewState extends ConsumerState<WalletView> {
     // Tokens, …) survives — anything beyond Receive/Send lands in the bar's
     // "more" sheet instead of disappearing.
     final dockItems = <WalletNavigationBarItemData>[
-                    WalletNavigationBarItemData(
-                      label: "Receive",
-                      icon: const ReceiveNavIcon(),
-                      filledIcon: ReceiveNavIcon(onFilled: true, fill: accent),
-                      onTap: () {
-                        if (mounted) {
-                          unawaited(
-                            Navigator.of(context).pushNamed(
-                              ReceiveView.routeName,
-                              arguments: walletId,
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                    if (wallet is MimblewimblecoinWallet)
-                      WalletNavigationBarItemData(
-                        label: "Finalize",
-                        icon: const FinalizeNavIcon(),
-                        onTap: () {
-                          if (mounted) {
-                            unawaited(
-                              Navigator.of(context).pushNamed(
-                                FinalizeView.routeName,
-                                arguments: walletId,
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                    if (wallet is EpiccashWallet)
-                      WalletNavigationBarItemData(
-                        label: "Finalize",
-                        icon: const FinalizeNavIcon(),
-                        onTap: () {
-                          if (mounted) {
-                            unawaited(
-                              Navigator.of(context).pushNamed(
-                                EpicFinalizeView.routeName,
-                                arguments: walletId,
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                    if (ref.watch(pWalletCoin(walletId)) is FrostCurrency)
-                      WalletNavigationBarItemData(
-                        label: "Sign",
-                        icon: const FrostSignNavIcon(),
-                        onTap: () => _onFrostSignPressed(context),
-                      ),
-                    if (!viewOnly)
-                      WalletNavigationBarItemData(
-                        label: "Send",
-                        icon: const SendNavIcon(),
-                        filledIcon: SendNavIcon(onFilled: true, fill: accent),
-                        onTap: () {
-                          // not sure what this is supposed to accomplish?
-                          // switch (ref
-                          //     .read(walletBalanceToggleStateProvider.state)
-                          //     .state) {
-                          //   case WalletBalanceToggleState.full:
-                          //     ref
-                          //         .read(publicPrivateBalanceStateProvider.state)
-                          //         .state = "Public";
-                          //     break;
-                          //   case WalletBalanceToggleState.available:
-                          //     ref
-                          //         .read(publicPrivateBalanceStateProvider.state)
-                          //         .state = "Private";
-                          //     break;
-                          // }
-                          Navigator.of(context).pushNamed(
-                            wallet is BitcoinFrostWallet
-                                ? FrostSendView.routeName
-                                : SendView.routeName,
-                            arguments: (walletId: walletId, coin: coin),
-                          );
-                        },
-                      ),
-                    if (!viewOnly &&
-                        Constants.enableExchange &&
-                        ref.watch(pWalletCoin(walletId)) is! FrostCurrency &&
-                        AppConfig.hasFeature(AppFeature.swap) &&
-                        showExchange)
-                      WalletNavigationBarItemData(
-                        label: "Swap",
-                        icon: const ExchangeNavIcon(),
-                        onTap: () => _onExchangePressed(context),
-                      ),
-                    if (Constants.enableExchange &&
-                        ref.watch(pWalletCoin(walletId)) is! FrostCurrency &&
-                        wallet is! FiroWallet &&
-                        AppConfig.hasFeature(AppFeature.buy) &&
-                        showExchange)
-                      WalletNavigationBarItemData(
-                        label: "Buy",
-                        icon: const BuyNavIcon(),
-                        onTap: () => _onBuyPressed(context),
-                      ),
-                    if (wallet is SparkInterface ||
-                        (viewOnly && wallet.viewOnlyType == .spark))
-                      WalletNavigationBarItemData(
-                        label: "Names",
-                        icon: const PaynymNavIcon(),
-                        onTap: () {
-                          Navigator.of(context).pushNamed(
-                            SparkNamesHomeView.routeName,
-                            arguments: widget.walletId,
-                          );
-                        },
-                      ),
+      WalletNavigationBarItemData(
+        label: "Receive",
+        icon: const ReceiveNavIcon(),
+        filledIcon: ReceiveNavIcon(onFilled: true, fill: accent),
+        onTap: () {
+          if (mounted) {
+            unawaited(
+              Navigator.of(
+                context,
+              ).pushNamed(ReceiveView.routeName, arguments: walletId),
+            );
+          }
+        },
+      ),
+      if (wallet is MimblewimblecoinWallet)
+        WalletNavigationBarItemData(
+          label: "Finalize",
+          icon: const FinalizeNavIcon(),
+          onTap: () {
+            if (mounted) {
+              unawaited(
+                Navigator.of(
+                  context,
+                ).pushNamed(FinalizeView.routeName, arguments: walletId),
+              );
+            }
+          },
+        ),
+      if (wallet is EpiccashWallet)
+        WalletNavigationBarItemData(
+          label: "Finalize",
+          icon: const FinalizeNavIcon(),
+          onTap: () {
+            if (mounted) {
+              unawaited(
+                Navigator.of(
+                  context,
+                ).pushNamed(EpicFinalizeView.routeName, arguments: walletId),
+              );
+            }
+          },
+        ),
+      if (ref.watch(pWalletCoin(walletId)) is FrostCurrency)
+        WalletNavigationBarItemData(
+          label: "Sign",
+          icon: const FrostSignNavIcon(),
+          onTap: () => _onFrostSignPressed(context),
+        ),
+      if (!viewOnly)
+        WalletNavigationBarItemData(
+          label: "Send",
+          icon: const SendNavIcon(),
+          filledIcon: SendNavIcon(onFilled: true, fill: accent),
+          onTap: () {
+            // not sure what this is supposed to accomplish?
+            // switch (ref
+            //     .read(walletBalanceToggleStateProvider.state)
+            //     .state) {
+            //   case WalletBalanceToggleState.full:
+            //     ref
+            //         .read(publicPrivateBalanceStateProvider.state)
+            //         .state = "Public";
+            //     break;
+            //   case WalletBalanceToggleState.available:
+            //     ref
+            //         .read(publicPrivateBalanceStateProvider.state)
+            //         .state = "Private";
+            //     break;
+            // }
+            Navigator.of(context).pushNamed(
+              wallet is BitcoinFrostWallet
+                  ? FrostSendView.routeName
+                  : SendView.routeName,
+              arguments: (walletId: walletId, coin: coin),
+            );
+          },
+        ),
+      if (!viewOnly &&
+          Constants.enableExchange &&
+          ref.watch(pWalletCoin(walletId)) is! FrostCurrency &&
+          AppConfig.hasFeature(AppFeature.swap) &&
+          showExchange)
+        WalletNavigationBarItemData(
+          label: "Swap",
+          icon: const ExchangeNavIcon(),
+          onTap: () => _onExchangePressed(context),
+        ),
+      if (Constants.enableExchange &&
+          ref.watch(pWalletCoin(walletId)) is! FrostCurrency &&
+          wallet is! FiroWallet &&
+          AppConfig.hasFeature(AppFeature.buy) &&
+          showExchange)
+        WalletNavigationBarItemData(
+          label: "Buy",
+          icon: const BuyNavIcon(),
+          onTap: () => _onBuyPressed(context),
+        ),
+      if (wallet is SparkInterface ||
+          (viewOnly && wallet.viewOnlyType == .spark))
+        WalletNavigationBarItemData(
+          label: "Names",
+          icon: const PaynymNavIcon(),
+          onTap: () {
+            Navigator.of(context).pushNamed(
+              SparkNamesHomeView.routeName,
+              arguments: widget.walletId,
+            );
+          },
+        ),
     ];
     final dockMoreItems = <WalletNavigationBarItemData>[
-                    if (ref.watch(
-                      pWallets.select(
-                        (value) => value
-                            .getWallet(widget.walletId)
-                            .cryptoCurrency
-                            .hasTokenSupport,
-                      ),
-                    ))
-                      WalletNavigationBarItemData(
-                        label: "Tokens",
-                        icon: const CoinControlNavIcon(),
-                        onTap: () {
-                          Navigator.of(context).pushNamed(
-                            MyTokensView.routeName,
-                            arguments: walletId,
-                          );
-                        },
-                      ),
-                    if (coin is Banano)
-                      WalletNavigationBarItemData(
-                        icon: SvgPicture.asset(
-                          Assets.svg.monkey,
-                          height: 20,
-                          width: 20,
-                          color: Theme.of(
-                            context,
-                          ).extension<StackColors>()!.bottomNavIconIcon,
-                        ),
-                        label: "MonKey",
-                        onTap: () {
-                          Navigator.of(context).pushNamed(
-                            MonkeyView.routeName,
-                            arguments: widget.walletId,
-                          );
-                        },
-                      ),
-                    if (wallet is SignVerifyInterface && !viewOnly)
-                      WalletNavigationBarItemData(
-                        icon: adaptiveIcon(
-                          Assets.svg.pencil,
-                          CupertinoIcons.pencil,
-                          size: 20,
-                          color: Theme.of(
-                            context,
-                          ).extension<StackColors>()!.bottomNavIconIcon,
-                        ),
-                        label: "Sign/Verify",
-                        onTap: () {
-                          Navigator.of(context).pushNamed(
-                            SigningView.routeName,
-                            arguments: widget.walletId,
-                          );
-                        },
-                      ),
-                    if (wallet is CoinControlInterface &&
-                        wallet is! SalviumWallet &&
-                        ref.watch(
-                          prefsChangeNotifierProvider.select(
-                            (value) => value.enableCoinControl,
-                          ),
-                        ))
-                      WalletNavigationBarItemData(
-                        label: "Coin control",
-                        icon: const CoinControlNavIcon(),
-                        onTap: () {
-                          Navigator.of(context).pushNamed(
-                            CoinControlView.routeName,
-                            arguments: Tuple2(
-                              widget.walletId,
-                              CoinControlViewType.manage,
-                            ),
-                          );
-                        },
-                      ),
-                    if (wallet is FiroWallet &&
-                        ref.watch(
-                          prefsChangeNotifierProvider.select(
-                            (value) => value.advancedFiroFeatures,
-                          ),
-                        ))
-                      WalletNavigationBarItemData(
-                        label: "Spark coins",
-                        icon: const CoinControlNavIcon(),
-                        onTap: () {
-                          Navigator.of(context).pushNamed(
-                            SparkCoinsView.routeName,
-                            arguments: widget.walletId,
-                          );
-                        },
-                      ),
-                    // if (!viewOnly && wallet is FiroWallet)
-                    //   WalletNavigationBarItemData(
-                    //     label: "Masternodes",
-                    //     icon: SvgPicture.asset(
-                    //       Assets.svg.recycle,
-                    //       height: 20,
-                    //       width: 20,
-                    //       colorFilter: ColorFilter.mode(
-                    //         Theme.of(
-                    //           context,
-                    //         ).extension<StackColors>()!.bottomNavIconIcon,
-                    //         BlendMode.srcIn,
-                    //       ),
-                    //     ),
-                    //     onTap: () {
-                    //       Navigator.of(context).pushNamed(
-                    //         MasternodesHomeView.routeName,
-                    //         arguments: widget.walletId,
-                    //       );
-                    //     },
-                    //   ),
-                    if (wallet is NamecoinWallet)
-                      WalletNavigationBarItemData(
-                        label: "Domains",
-                        icon: const PaynymNavIcon(),
-                        onTap: () {
-                          Navigator.of(context).pushNamed(
-                            NamecoinNamesHomeView.routeName,
-                            arguments: widget.walletId,
-                          );
-                        },
-                      ),
-                    if (!viewOnly && wallet is PaynymInterface)
-                      WalletNavigationBarItemData(
-                        label: "PayNym",
-                        icon: const PaynymNavIcon(),
-                        onTap: () async {
-                          unawaited(
-                            showDialog(
-                              context: context,
-                              builder: (context) =>
-                                  const LoadingIndicator(width: 100),
-                            ),
-                          );
+      if (ref.watch(
+        pWallets.select(
+          (value) =>
+              value.getWallet(widget.walletId).cryptoCurrency.hasTokenSupport,
+        ),
+      ))
+        WalletNavigationBarItemData(
+          label: "Tokens",
+          icon: const CoinControlNavIcon(),
+          onTap: () {
+            Navigator.of(
+              context,
+            ).pushNamed(MyTokensView.routeName, arguments: walletId);
+          },
+        ),
+      if (coin is Banano)
+        WalletNavigationBarItemData(
+          icon: SvgPicture.asset(
+            Assets.svg.monkey,
+            height: 20,
+            width: 20,
+            color: Theme.of(
+              context,
+            ).extension<StackColors>()!.bottomNavIconIcon,
+          ),
+          label: "MonKey",
+          onTap: () {
+            Navigator.of(
+              context,
+            ).pushNamed(MonkeyView.routeName, arguments: widget.walletId);
+          },
+        ),
+      if (wallet is SignVerifyInterface && !viewOnly)
+        WalletNavigationBarItemData(
+          icon: adaptiveIcon(
+            Assets.svg.pencil,
+            CupertinoIcons.pencil,
+            size: 20,
+            color: Theme.of(
+              context,
+            ).extension<StackColors>()!.bottomNavIconIcon,
+          ),
+          label: "Sign/Verify",
+          onTap: () {
+            Navigator.of(
+              context,
+            ).pushNamed(SigningView.routeName, arguments: widget.walletId);
+          },
+        ),
+      if (wallet is CoinControlInterface &&
+          wallet is! SalviumWallet &&
+          ref.watch(
+            prefsChangeNotifierProvider.select(
+              (value) => value.enableCoinControl,
+            ),
+          ))
+        WalletNavigationBarItemData(
+          label: "Coin control",
+          icon: const CoinControlNavIcon(),
+          onTap: () {
+            Navigator.of(context).pushNamed(
+              CoinControlView.routeName,
+              arguments: Tuple2(widget.walletId, CoinControlViewType.manage),
+            );
+          },
+        ),
+      if (wallet is FiroWallet &&
+          ref.watch(
+            prefsChangeNotifierProvider.select(
+              (value) => value.advancedFiroFeatures,
+            ),
+          ))
+        WalletNavigationBarItemData(
+          label: "Spark coins",
+          icon: const CoinControlNavIcon(),
+          onTap: () {
+            Navigator.of(
+              context,
+            ).pushNamed(SparkCoinsView.routeName, arguments: widget.walletId);
+          },
+        ),
+      // if (!viewOnly && wallet is FiroWallet)
+      //   WalletNavigationBarItemData(
+      //     label: "Masternodes",
+      //     icon: SvgPicture.asset(
+      //       Assets.svg.recycle,
+      //       height: 20,
+      //       width: 20,
+      //       colorFilter: ColorFilter.mode(
+      //         Theme.of(
+      //           context,
+      //         ).extension<StackColors>()!.bottomNavIconIcon,
+      //         BlendMode.srcIn,
+      //       ),
+      //     ),
+      //     onTap: () {
+      //       Navigator.of(context).pushNamed(
+      //         MasternodesHomeView.routeName,
+      //         arguments: widget.walletId,
+      //       );
+      //     },
+      //   ),
+      if (wallet is NamecoinWallet)
+        WalletNavigationBarItemData(
+          label: "Domains",
+          icon: const PaynymNavIcon(),
+          onTap: () {
+            Navigator.of(context).pushNamed(
+              NamecoinNamesHomeView.routeName,
+              arguments: widget.walletId,
+            );
+          },
+        ),
+      if (!viewOnly && wallet is PaynymInterface)
+        WalletNavigationBarItemData(
+          label: "PayNym",
+          icon: const PaynymNavIcon(),
+          onTap: () async {
+            unawaited(
+              showDialog(
+                context: context,
+                builder: (context) => const LoadingIndicator(width: 100),
+              ),
+            );
 
-                          final wallet = ref
-                              .read(pWallets)
-                              .getWallet(widget.walletId);
+            final wallet = ref.read(pWallets).getWallet(widget.walletId);
 
-                          final paynymInterface = wallet as PaynymInterface;
+            final paynymInterface = wallet as PaynymInterface;
 
-                          final code = await paynymInterface.getPaymentCode(
-                            isSegwit: false,
-                          );
+            final code = await paynymInterface.getPaymentCode(isSegwit: false);
 
-                          final account = await ref
-                              .read(paynymAPIProvider)
-                              .nym(code.toString());
+            final account = await ref
+                .read(paynymAPIProvider)
+                .nym(code.toString());
 
-                          Logging.instance.d("my nym account: $account");
+            Logging.instance.d("my nym account: $account");
 
-                          if (context.mounted) {
-                            Navigator.of(context).pop();
+            if (context.mounted) {
+              Navigator.of(context).pop();
 
-                            // check if account exists and for matching code to see if claimed
-                            if (account.value != null &&
-                                account.value!.nonSegwitPaymentCode.claimed
-                            // &&
-                            // account.value!.segwit
-                            ) {
-                              ref
-                                      .read(myPaynymAccountStateProvider.state)
-                                      .state =
-                                  account.value!;
+              // check if account exists and for matching code to see if claimed
+              if (account.value != null &&
+                  account.value!.nonSegwitPaymentCode.claimed
+              // &&
+              // account.value!.segwit
+              ) {
+                ref.read(myPaynymAccountStateProvider.state).state =
+                    account.value!;
 
-                              await Navigator.of(context).pushNamed(
-                                PaynymHomeView.routeName,
-                                arguments: widget.walletId,
-                              );
-                            } else {
-                              await Navigator.of(context).pushNamed(
-                                PaynymClaimView.routeName,
-                                arguments: widget.walletId,
-                              );
-                            }
-                          }
-                        },
-                      ),
-                    if (ref.watch(
-                      pWallets.select(
-                        (value) =>
-                            value.getWallet(widget.walletId)
-                                is OrdinalsInterface,
-                      ),
-                    ))
-                      WalletNavigationBarItemData(
-                        label: "Ordinals",
-                        icon: const OrdinalsNavIcon(),
-                        onTap: () {
-                          Navigator.of(context).pushNamed(
-                            OrdinalsView.routeName,
-                            arguments: widget.walletId,
-                          );
-                        },
-                      ),
-                    if (AppConfig.hasFeature(AppFeature.tor) &&
-                        wallet is CashFusionInterface &&
-                        !viewOnly)
-                      WalletNavigationBarItemData(
-                        label: "Fusion",
-                        icon: const FusionNavIcon(),
-                        onTap: () {
-                          Navigator.of(context).pushNamed(
-                            CashFusionView.routeName,
-                            arguments: walletId,
-                          );
-                        },
-                      ),
-                    if (wallet is LibSalviumWallet)
-                      WalletNavigationBarItemData(
-                        label: "Staking",
-                        icon: const PaynymNavIcon(),
-                        onTap: () {
-                          Navigator.of(context).pushNamed(
-                            SalviumCreateStakeView.routeName,
-                            arguments: widget.walletId,
-                          );
-                        },
-                      ),
-                    if ((wallet is CryptonoteWallet) && !viewOnly)
-                      WalletNavigationBarItemData(
-                        label: "Churn",
-                        icon: const ChurnNavIcon(),
-                        onTap: () {
-                          Navigator.of(context).pushNamed(
-                            ChurningView.routeName,
-                            arguments: walletId,
-                          );
-                        },
-                      ),
-                    if (!viewOnly && AppConfig.hasFeature(.shopinBit))
-                      WalletNavigationBarItemData(
-                        label: "Services",
-                        icon: SvgPicture.asset(
-                          Assets.svg.solidSliders,
-                          height: 20,
-                          width: 20,
-                          color: Theme.of(
-                            context,
-                          ).extension<StackColors>()!.bottomNavIconIcon,
-                        ),
-                        onTap: () {
-                          Navigator.of(
-                            context,
-                          ).pushNamed(ServicesView.routeName);
-                        },
-                      ),
-                    if (AppConfig.hasFeature(.cakePay))
-                      WalletNavigationBarItemData(
-                        label: "Gift cards",
-                        icon: CreditCardIcon(
-                          height: 20,
-                          width: 20,
-                          color: Theme.of(
-                            context,
-                          ).extension<StackColors>()!.bottomNavIconIcon,
-                        ),
-                        onTap: () {
-                          Navigator.of(
-                            context,
-                          ).pushNamed(GiftCardsView.routeName);
-                        },
-                      ),
+                await Navigator.of(context).pushNamed(
+                  PaynymHomeView.routeName,
+                  arguments: widget.walletId,
+                );
+              } else {
+                await Navigator.of(context).pushNamed(
+                  PaynymClaimView.routeName,
+                  arguments: widget.walletId,
+                );
+              }
+            }
+          },
+        ),
+      if (ref.watch(
+        pWallets.select(
+          (value) => value.getWallet(widget.walletId) is OrdinalsInterface,
+        ),
+      ))
+        WalletNavigationBarItemData(
+          label: "Ordinals",
+          icon: const OrdinalsNavIcon(),
+          onTap: () {
+            Navigator.of(
+              context,
+            ).pushNamed(OrdinalsView.routeName, arguments: widget.walletId);
+          },
+        ),
+      if (AppConfig.hasFeature(AppFeature.tor) &&
+          wallet is CashFusionInterface &&
+          !viewOnly)
+        WalletNavigationBarItemData(
+          label: "Fusion",
+          icon: const FusionNavIcon(),
+          onTap: () {
+            Navigator.of(
+              context,
+            ).pushNamed(CashFusionView.routeName, arguments: walletId);
+          },
+        ),
+      if (wallet is LibSalviumWallet)
+        WalletNavigationBarItemData(
+          label: "Staking",
+          icon: const PaynymNavIcon(),
+          onTap: () {
+            Navigator.of(context).pushNamed(
+              SalviumCreateStakeView.routeName,
+              arguments: widget.walletId,
+            );
+          },
+        ),
+      if ((wallet is CryptonoteWallet) && !viewOnly)
+        WalletNavigationBarItemData(
+          label: "Churn",
+          icon: const ChurnNavIcon(),
+          onTap: () {
+            Navigator.of(
+              context,
+            ).pushNamed(ChurningView.routeName, arguments: walletId);
+          },
+        ),
+      if (!viewOnly && AppConfig.hasFeature(.shopinBit))
+        WalletNavigationBarItemData(
+          label: "Services",
+          icon: SvgPicture.asset(
+            Assets.svg.solidSliders,
+            height: 20,
+            width: 20,
+            color: Theme.of(
+              context,
+            ).extension<StackColors>()!.bottomNavIconIcon,
+          ),
+          onTap: () {
+            Navigator.of(context).pushNamed(ServicesView.routeName);
+          },
+        ),
+      if (AppConfig.hasFeature(.cakePay))
+        WalletNavigationBarItemData(
+          label: "Gift cards",
+          icon: CreditCardIcon(
+            height: 20,
+            width: 20,
+            color: Theme.of(
+              context,
+            ).extension<StackColors>()!.bottomNavIconIcon,
+          ),
+          onTap: () {
+            Navigator.of(context).pushNamed(GiftCardsView.routeName);
+          },
+        ),
     ];
 
     final Widget walletDock = WalletActionBar(
@@ -997,10 +969,16 @@ class _WalletViewState extends ConsumerState<WalletView> {
                 // sitting above it. The body therefore has to start at y=0.
                 extendBodyBehindAppBar: true,
                 appBar: AppBar(
-                  // Transparent so the hero colour shows through. Without
-                  // clearing BOTH elevations the bar paints a surface tint
-                  // over the hero as the list scrolls under it.
-                  backgroundColor: Colors.transparent,
+                  // The hero's own colour, NOT transparent. At rest this is
+                  // invisible, because the bar and the hero beneath it are the
+                  // same colour. It matters once you scroll: the hero now
+                  // scrolls away, and under a transparent bar the transaction
+                  // rows slid up behind the wallet name and became an
+                  // unreadable overlap of two things at once. Opaque, the bar
+                  // is the compact header the rows pass cleanly behind.
+                  // Both elevations stay cleared so Material does not paint a
+                  // surface tint over it on scroll.
+                  backgroundColor: ref.watch(pCoinColor(coin)),
                   elevation: 0,
                   scrolledUnderElevation: 0,
                   // The status bar sits ON the hero (extendBodyBehindAppBar),
@@ -1171,9 +1149,9 @@ class _WalletViewState extends ConsumerState<WalletView> {
                                     width: 8,
                                     height: 8,
                                     decoration: BoxDecoration(
-                                      color: Theme.of(
-                                        context,
-                                      ).extension<StackColors>()!.accentColorRed,
+                                      color: Theme.of(context)
+                                          .extension<StackColors>()!
+                                          .accentColorRed,
                                       shape: BoxShape.circle,
                                       // Ring in the hero colour so the dot reads
                                       // as a badge rather than a smudge on the bell.
@@ -1282,290 +1260,310 @@ class _WalletViewState extends ConsumerState<WalletView> {
                   ],
                 ),
                 body: Stack(
-                children: [
-                  // Blue hero + the rest of the screen. SafeArea sits INSIDE the
-                  // hero container, not around it: the colour must reach the
-                  // physical top edge behind the status bar while the content
-                  // still clears the notch. With SafeArea outside, the block
-                  // starts below the status bar and leaves a dark strip above.
-                  Column(
-                    // Solid, not a gradient — the reference is a flat block of
-                    // brand colour, and a wash reads as a smudge rather than a
-                    // header.
-                    //
-                    // The colour is NOT hardcoded: pCoinColor comes from the
-                    // theme's colors.coin.bitfinite, already the brand blue
-                    // (0xff2f6bff). A theme shipping a different coin colour
-                    // re-tints the hero for free, which is why this is driven
-                    // from the theme rather than by adding a colour key to
-                    // StackColors — that file is 1651 lines of upstream code
-                    // and every added field is permanent merge friction.
-                    // Only the balance goes inside the blue. Wrapping the whole
-                    // Column painted the transaction list blue too and hid the
-                    // rounded foot, because this Column holds the entire screen,
-                    // not just the header.
-                    //
-                    // No mainAxisSize.min here: this Column contains an
-                    // Expanded (the transaction list), which needs a parent
-                    // that takes all available height.
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: ref.watch(pCoinColor(coin)),
-                          // 32px per the redesign spec (0 0 32px 32px), which
-                          // matches the 32px device-frame radius the mockups
-                          // use — the foot echoes the screen corner rather
-                          // than inventing a second curve.
-                          borderRadius: const BorderRadius.only(
-                            bottomLeft: Radius.circular(32),
-                            bottomRight: Radius.circular(32),
-                          ),
-                        ),
-                        child: SafeArea(
-                          // Only the top inset matters; the sheet owns the rest.
-                          bottom: false,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const SizedBox(height: 6),
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            // Cap the card height in landscape so the
-                            // aspect-ratio card can't balloon and overflow the
-                            // column; portrait keeps its natural full-width size.
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxHeight:
-                                    MediaQuery.of(context).orientation ==
-                                        Orientation.landscape
-                                    ? 180.0
-                                    : double.infinity,
-                              ),
-                              child: WalletSummary(
-                                walletId: walletId,
-                                aspectRatio: 1.75,
-                                initialSyncStatus:
-                                    ref
-                                        .watch(pWallets)
-                                        .getWallet(walletId)
-                                        .refreshMutex
-                                        .isLocked
-                                    ? WalletSyncStatus.syncing
-                                    : WalletSyncStatus.synced,
+                  children: [
+                    // Blue hero + the rest of the screen. SafeArea sits INSIDE the
+                    // hero container, not around it: the colour must reach the
+                    // physical top edge behind the status bar while the content
+                    // still clears the notch. With SafeArea outside, the block
+                    // starts below the status bar and leaves a dark strip above.
+                    RefreshIndicator(
+                      onRefresh: () async {
+                        await ref
+                            .read(pWallets)
+                            .getWallet(widget.walletId)
+                            .refresh();
+                      },
+                      // The hero used to be fixed with the list in an Expanded
+                      // underneath, so the hero ate 44% of the screen forever
+                      // and roughly one transaction was readable. Everything
+                      // above the list now scrolls with it, so the list gets the
+                      // whole screen the moment you move. The AppBar is a real
+                      // AppBar and stays put, so the back button, the wallet
+                      // name and the menu never scroll away.
+                      // Fades the last few percent of the page so rows
+                      // dissolve under the floating dock instead of being
+                      // sliced by it. The old layout faded the list box; the
+                      // page is the scrolling thing now, so the mask moved here.
+                      child: ShaderMask(
+                        blendMode: BlendMode.dstOut,
+                        shaderCallback: (Rect bounds) {
+                          return const LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.transparent,
+                              Colors.white,
+                            ],
+                            stops: [0.0, 0.88, 1.0],
+                          ).createShader(bounds);
+                        },
+                        child: CustomScrollView(
+                          // Always scrollable so pull-to-refresh works even when
+                          // the content is shorter than the screen.
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          slivers: [
+                            SliverToBoxAdapter(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Container(
+                                    width: double.infinity,
+                                    decoration: BoxDecoration(
+                                      color: ref.watch(pCoinColor(coin)),
+                                      // 32px per the redesign spec (0 0 32px 32px), which
+                                      // matches the 32px device-frame radius the mockups
+                                      // use — the foot echoes the screen corner rather
+                                      // than inventing a second curve.
+                                      borderRadius: const BorderRadius.only(
+                                        bottomLeft: Radius.circular(32),
+                                        bottomRight: Radius.circular(32),
+                                      ),
+                                    ),
+                                    child: SafeArea(
+                                      // Only the top inset matters; the sheet owns the rest.
+                                      bottom: false,
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const SizedBox(height: 6),
+                                          Center(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 16,
+                                                  ),
+                                              // Cap the card height in landscape so the
+                                              // aspect-ratio card can't balloon and overflow the
+                                              // column; portrait keeps its natural full-width size.
+                                              child: ConstrainedBox(
+                                                constraints: BoxConstraints(
+                                                  maxHeight:
+                                                      MediaQuery.of(
+                                                            context,
+                                                          ).orientation ==
+                                                          Orientation.landscape
+                                                      ? 180.0
+                                                      : double.infinity,
+                                                ),
+                                                child: WalletSummary(
+                                                  walletId: walletId,
+                                                  aspectRatio: 1.75,
+                                                  initialSyncStatus:
+                                                      ref
+                                                          .watch(pWallets)
+                                                          .getWallet(walletId)
+                                                          .refreshMutex
+                                                          .isLocked
+                                                      ? WalletSyncStatus.syncing
+                                                      : WalletSyncStatus.synced,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          // Foot of the blue block. Everything below this
+                                          // point sits on the page background, which is what
+                                          // makes the rounded corners visible at all.
+                                          //
+                                          // 18 as part of the compact-hero pass: the chip
+                                          // still clears the 32px curve, and the reclaimed
+                                          // height goes to the transaction list. At 16 the
+                                          // chip crowded the curve, so this is the floor.
+                                          const SizedBox(height: 18),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+
+                                  if ((isSparkWallet ||
+                                          ref
+                                              .watch(pWalletInfo(walletId))
+                                              .isMwebEnabled) &&
+                                      !viewOnly)
+                                    const SizedBox(height: 10),
+                                  if ((isSparkWallet ||
+                                          ref
+                                              .watch(pWalletInfo(walletId))
+                                              .isMwebEnabled) &&
+                                      !viewOnly)
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: TextButton(
+                                              style: Theme.of(context)
+                                                  .extension<StackColors>()!
+                                                  .getSecondaryEnabledButtonStyle(
+                                                    context,
+                                                  ),
+                                              onPressed: () async {
+                                                await showDialog<void>(
+                                                  context: context,
+                                                  builder: (context) => StackDialog(
+                                                    title: "Attention!",
+                                                    message:
+                                                        "You're about to privatize all of your public funds.",
+                                                    leftButton: TextButton(
+                                                      onPressed: () {
+                                                        Navigator.of(
+                                                          context,
+                                                        ).pop();
+                                                      },
+                                                      child: Text(
+                                                        "Cancel",
+                                                        style:
+                                                            STextStyles.button(
+                                                              context,
+                                                            ).copyWith(
+                                                              color: Theme.of(context)
+                                                                  .extension<
+                                                                    StackColors
+                                                                  >()!
+                                                                  .accentColorDark,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                    rightButton: TextButton(
+                                                      onPressed: () async {
+                                                        Navigator.of(
+                                                          context,
+                                                        ).pop();
+
+                                                        unawaited(
+                                                          attemptAnonymize(),
+                                                        );
+                                                      },
+                                                      style: Theme.of(context)
+                                                          .extension<
+                                                            StackColors
+                                                          >()!
+                                                          .getPrimaryEnabledButtonStyle(
+                                                            context,
+                                                          ),
+                                                      child: Text(
+                                                        "Continue",
+                                                        style:
+                                                            STextStyles.button(
+                                                              context,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                              child: Text(
+                                                "Privatize funds",
+                                                style:
+                                                    STextStyles.button(
+                                                      context,
+                                                    ).copyWith(
+                                                      color: Theme.of(context)
+                                                          .extension<
+                                                            StackColors
+                                                          >()!
+                                                          .buttonTextSecondary,
+                                                    ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  // Renders nothing unless mining has actually paid into
+                                  // this wallet, so an ordinary wallet is unchanged.
+                                  MiningPayoutCard(
+                                    walletId: widget.walletId,
+                                    coin: coin,
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          "Transactions",
+                                          style:
+                                              STextStyles.itemSubtitle(
+                                                context,
+                                              ).copyWith(
+                                                color: Theme.of(context)
+                                                    .extension<StackColors>()!
+                                                    .textDark3,
+                                              ),
+                                        ),
+                                        CustomTextButton(
+                                          text: "See all",
+                                          // Matches the dock: inside a wallet the accents
+                                          // belong to that coin. pCoinColor falls back to
+                                          // the theme for a coin without its own, so BFX
+                                          // is unchanged.
+                                          color: ref.watch(pCoinColor(coin)),
+                                          onTap: () {
+                                            Navigator.of(context).pushNamed(
+                                              ref
+                                                          .read(pWallets)
+                                                          .getWallet(
+                                                            widget.walletId,
+                                                          )
+                                                          .isarTransactionVersion ==
+                                                      2
+                                                  ? AllTransactionsV2View
+                                                        .routeName
+                                                  : AllTransactionsView
+                                                        .routeName,
+                                              arguments: walletId,
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                ],
                               ),
                             ),
-                          ),
-                        ),
-                              // Foot of the blue block. Everything below this
-                              // point sits on the page background, which is what
-                              // makes the rounded corners visible at all.
-                              //
-                              // 18 as part of the compact-hero pass: the chip
-                              // still clears the 32px curve, and the reclaimed
-                              // height goes to the transaction list. At 16 the
-                              // chip crowded the curve, so this is the floor.
-                              const SizedBox(height: 18),
-                            ],
-                          ),
+                            // The list is slivers now, so it shares the page's
+                            // scroll instead of owning a second one. The last row
+                            // already pads itself past the floating dock.
+                            SliverPadding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              sliver:
+                                  ref
+                                          .read(pWallets)
+                                          .getWallet(widget.walletId)
+                                          .isarTransactionVersion ==
+                                      2
+                                  ? TransactionsV2List(
+                                      walletId: widget.walletId,
+                                      asSliver: true,
+                                    )
+                                  // v1 has no sliver form. It keeps its own
+                                  // scrollable, filling what is left of the
+                                  // viewport, which is what it did before.
+                                  : SliverFillRemaining(
+                                      hasScrollBody: true,
+                                      child: TransactionsList(
+                                        walletId: walletId,
+                                      ),
+                                    ),
+                            ),
+                          ],
                         ),
                       ),
-
-                        if ((isSparkWallet ||
-                                ref
-                                    .watch(pWalletInfo(walletId))
-                                    .isMwebEnabled) &&
-                            !viewOnly)
-                          const SizedBox(height: 10),
-                        if ((isSparkWallet ||
-                                ref
-                                    .watch(pWalletInfo(walletId))
-                                    .isMwebEnabled) &&
-                            !viewOnly)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: TextButton(
-                                    style: Theme.of(context)
-                                        .extension<StackColors>()!
-                                        .getSecondaryEnabledButtonStyle(
-                                          context,
-                                        ),
-                                    onPressed: () async {
-                                      await showDialog<void>(
-                                        context: context,
-                                        builder: (context) => StackDialog(
-                                          title: "Attention!",
-                                          message:
-                                              "You're about to privatize all of your public funds.",
-                                          leftButton: TextButton(
-                                            onPressed: () {
-                                              Navigator.of(context).pop();
-                                            },
-                                            child: Text(
-                                              "Cancel",
-                                              style: STextStyles.button(context)
-                                                  .copyWith(
-                                                    color: Theme.of(context)
-                                                        .extension<
-                                                          StackColors
-                                                        >()!
-                                                        .accentColorDark,
-                                                  ),
-                                            ),
-                                          ),
-                                          rightButton: TextButton(
-                                            onPressed: () async {
-                                              Navigator.of(context).pop();
-
-                                              unawaited(attemptAnonymize());
-                                            },
-                                            style: Theme.of(context)
-                                                .extension<StackColors>()!
-                                                .getPrimaryEnabledButtonStyle(
-                                                  context,
-                                                ),
-                                            child: Text(
-                                              "Continue",
-                                              style: STextStyles.button(
-                                                context,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    child: Text(
-                                      "Privatize funds",
-                                      style: STextStyles.button(context)
-                                          .copyWith(
-                                            color: Theme.of(context)
-                                                .extension<StackColors>()!
-                                                .buttonTextSecondary,
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        // Renders nothing unless mining has actually paid into
-                        // this wallet, so an ordinary wallet is unchanged.
-                        MiningPayoutCard(
-                          walletId: widget.walletId,
-                          coin: coin,
-                        ),
-                        const SizedBox(height: 20),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Transactions",
-                                style: STextStyles.itemSubtitle(context)
-                                    .copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).extension<StackColors>()!.textDark3,
-                                    ),
-                              ),
-                              CustomTextButton(
-                                text: "See all",
-                                // Matches the dock: inside a wallet the accents
-                                // belong to that coin. pCoinColor falls back to
-                                // the theme for a coin without its own, so BFX
-                                // is unchanged.
-                                color: ref.watch(pCoinColor(coin)),
-                                onTap: () {
-                                  Navigator.of(context).pushNamed(
-                                    ref
-                                                .read(pWallets)
-                                                .getWallet(widget.walletId)
-                                                .isarTransactionVersion ==
-                                            2
-                                        ? AllTransactionsV2View.routeName
-                                        : AllTransactionsView.routeName,
-                                    arguments: walletId,
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(
-                                  Constants.size.circularBorderRadius,
-                                ),
-                                bottom: Radius.circular(
-                                  // WalletView.navBarHeight / 2.0,
-                                  Constants.size.circularBorderRadius,
-                                ),
-                              ),
-                              child: ShaderMask(
-                                blendMode: BlendMode.dstOut,
-                                shaderCallback: (Rect bounds) {
-                                  return const LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [
-                                      Colors.transparent,
-                                      Colors.transparent,
-                                      Colors.white,
-                                    ],
-                                    stops: [0.0, 0.8, 1.0],
-                                  ).createShader(bounds);
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.transparent,
-                                    borderRadius: BorderRadius.circular(
-                                      Constants.size.circularBorderRadius,
-                                    ),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: [
-                                      Expanded(
-                                        child:
-                                            ref
-                                                    .read(pWallets)
-                                                    .getWallet(widget.walletId)
-                                                    .isarTransactionVersion ==
-                                                2
-                                            ? TransactionsV2List(
-                                                walletId: widget.walletId,
-                                              )
-                                            : TransactionsList(
-                                                walletId: walletId,
-                                              ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
                     ),
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: walletDock,
-                  ),
-                ],
-              ),
+                    Positioned(left: 0, right: 0, bottom: 0, child: walletDock),
+                  ],
+                ),
               ),
             ],
           ),

@@ -113,59 +113,53 @@ class _MiningPayoutCardState extends ConsumerState<MiningPayoutCard> {
     final last = summary.last;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
         decoration: BoxDecoration(
           color: colors.popupBG,
           borderRadius: BorderRadius.circular(12),
         ),
-        // Two rows rather than one. The total carries eight decimals, which
-        // is wide enough that sharing a row with the label squeezed both into
-        // a three-line wrap. Giving the sentence the full width keeps it one
-        // line at any sensible size.
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
+        // One row, not a two line card. This sits between the hero and the
+        // transaction list, and every pixel it takes is a pixel of list the
+        // reader does not get. The facts fit on a line: how many, how recent,
+        // how much.
+        child: Row(
           children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.hardware_outlined,
-                  size: 18,
-                  color: colors.textDark3,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  "Mining payouts",
-                  style: STextStyles.w600_14(
-                    context,
-                  ).copyWith(color: colors.textDark),
-                ),
-                const Spacer(),
-                Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      formatter.format(summary.total),
-                      maxLines: 1,
-                      style: STextStyles.w600_14(
-                        context,
-                      ).copyWith(color: colors.textDark),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
+            Icon(Icons.hardware_outlined, size: 16, color: colors.textDark3),
+            const SizedBox(width: 8),
             Text(
-              last == null
-                  ? countLabel
-                  : "Last one ${describeAge(last)} · $countLabel",
-              style: STextStyles.w500_12(
+              "Payouts",
+              style: STextStyles.w600_14(
                 context,
-              ).copyWith(color: colors.textSubtitle1),
+              ).copyWith(color: colors.textDark),
+            ),
+            const SizedBox(width: 8),
+            // Ellipsises before the total does, because the total is the
+            // number someone came here to read.
+            Flexible(
+              child: Text(
+                last == null
+                    ? countLabel
+                    : "$countLabel · last ${describeAge(last)}",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: STextStyles.w500_12(
+                  context,
+                ).copyWith(color: colors.textSubtitle1),
+              ),
+            ),
+            const SizedBox(width: 8),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Text(
+                formatter.format(summary.total),
+                maxLines: 1,
+                style: STextStyles.w600_14(
+                  context,
+                ).copyWith(color: colors.textDark),
+              ),
             ),
           ],
         ),

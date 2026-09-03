@@ -283,93 +283,113 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
                       withUnitName: false,
                     );
 
-                return Row(
-                  children: [
-                    TxIcon(
-                      transaction: _transaction,
-                      coin: coin,
-                      currentHeight: currentHeight,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ConditionalParent(
-                            condition:
-                                coin is Firo &&
-                                _transaction.isInstantLock &&
-                                !_transaction.isConfirmed(
-                                  currentHeight,
-                                  coin.minConfirms,
-                                  coin.minCoinbaseConfirms,
-                                ),
-                            builder: (child) => Row(
-                              children: [
-                                child,
-                                const SizedBox(width: 10),
-                                const CoinTickerTag(ticker: "INSTANT"),
-                              ],
-                            ),
-                            child: Text(
-                              _titleLabel(),
-                              style: STextStyles.itemSubtitle12(
-                                context,
-                              ).copyWith(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                color: Theme.of(
-                                  context,
-                                ).extension<StackColors>()!.textDark,
+                // The amount column used to be unconstrained, so it took
+                // whatever width it wanted and the label beside it got the
+                // remainder. On Pepecoin, where a single figure runs to twenty
+                // digits, that crushed "Received" down to "Rece…". Capping the
+                // number's share keeps the words readable, and past the cap the
+                // number scales down instead of eating them.
+                return LayoutBuilder(
+                  builder: (context, rowConstraints) => Row(
+                    children: [
+                      TxIcon(
+                        transaction: _transaction,
+                        coin: coin,
+                        currentHeight: currentHeight,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ConditionalParent(
+                              condition:
+                                  coin is Firo &&
+                                  _transaction.isInstantLock &&
+                                  !_transaction.isConfirmed(
+                                    currentHeight,
+                                    coin.minConfirms,
+                                    coin.minCoinbaseConfirms,
+                                  ),
+                              builder: (child) => Row(
+                                children: [
+                                  child,
+                                  const SizedBox(width: 10),
+                                  const CoinTickerTag(ticker: "INSTANT"),
+                                ],
                               ),
+                              child: Text(
+                                _titleLabel(),
+                                style: STextStyles.itemSubtitle12(context)
+                                    .copyWith(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                      color: Theme.of(
+                                        context,
+                                      ).extension<StackColors>()!.textDark,
+                                    ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              _subtitle(currentHeight, note),
+                              style: STextStyles.label(context),
                               overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            _subtitle(currentHeight, note),
-                            style: STextStyles.label(context),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          // Privacy mode masks per-row amounts too: hiding
-                          // the balance while listing every transaction
-                          // underneath it is not privacy.
-                          privacyMode ? "••••" : "$prefix$formattedAmount",
-                          style: STextStyles.itemSubtitle12(context).copyWith(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            fontFeatures: const [
-                              FontFeature.tabularFigures(),
-                            ],
-                            color:
-                                _transaction.type == TransactionType.incoming
-                                ? Theme.of(
-                                    context,
-                                  ).extension<StackColors>()!.accentColorGreen
-                                : Theme.of(
-                                    context,
-                                  ).extension<StackColors>()!.textDark,
-                          ),
+                          ],
                         ),
-                        if (price != null) const SizedBox(height: 2),
-                        if (price != null)
-                          Text(
-                            privacyMode
-                                ? "•••• $baseCurrency"
-                                : "$prefix${(amount.decimal * price!).toAmount(fractionDigits: 2).fiatString(locale: locale)} $baseCurrency",
-                            style: STextStyles.label(context),
-                          ),
-                      ],
-                    ),
-                  ],
+                      ),
+                      const SizedBox(width: 10),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: rowConstraints.maxWidth * 0.52,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerRight,
+                              child: Text(
+                                // Privacy mode masks per-row amounts too: hiding
+                                // the balance while listing every transaction
+                                // underneath it is not privacy.
+                                privacyMode
+                                    ? "••••"
+                                    : "$prefix$formattedAmount",
+                                style: STextStyles.itemSubtitle12(context)
+                                    .copyWith(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      fontFeatures: const [
+                                        FontFeature.tabularFigures(),
+                                      ],
+                                      color:
+                                          _transaction.type ==
+                                              TransactionType.incoming
+                                          ? Theme.of(context)
+                                                .extension<StackColors>()!
+                                                .accentColorGreen
+                                          : Theme.of(context)
+                                                .extension<StackColors>()!
+                                                .textDark,
+                                    ),
+                              ),
+                            ),
+                            if (price != null) const SizedBox(height: 2),
+                            if (price != null)
+                              Text(
+                                privacyMode
+                                    ? "•••• $baseCurrency"
+                                    : "$prefix${(amount.decimal * price!).toAmount(fractionDigits: 2).fiatString(locale: locale)} $baseCurrency",
+                                style: STextStyles.label(context),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 );
               },
             ),

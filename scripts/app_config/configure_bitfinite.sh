@@ -95,6 +95,15 @@ final List<CryptoCurrency> _supportedCoins = List.unmodifiable([
   // Bellscoin has no Electrum server anywhere (the chain is ~365 GB); it
   // rides Nintondo's esplora HTTP API through EsploraElectrumXClient.
   Bellscoin(CryptoCurrencyNetwork.main),
+  // Bitcoin and Dogecoin, so the wallet holds what people already own rather
+  // than only what we issue. Both are inherited from upstream and needed no
+  // new wallet code — only their default nodes moved, off Cypher Stack's
+  // servers and onto public ones (see bitcoin.dart / dogecoin.dart).
+  //
+  // Neither is swappable or buyable in-app: those are separate features, and
+  // both are still off.
+  Bitcoin(CryptoCurrencyNetwork.main),
+  Dogecoin(CryptoCurrencyNetwork.main),
 ]);
 
 // BFX is not on exchanges; swap defaults are unused but the field is required.

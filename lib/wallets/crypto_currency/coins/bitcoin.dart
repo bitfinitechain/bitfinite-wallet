@@ -224,13 +224,77 @@ class Bitcoin extends Bip39HDCurrency
     }
   }
 
+  /// Blockstream direct, for anyone who can reach it.
+  ///
+  /// It is the same upstream the primary relays to, so this is a failover
+  /// against our relay being down rather than against blockstream being
+  /// down. Users whose ISP does not hijack the name get a direct connection
+  /// out of it, with nothing of theirs passing through our box.
+  ///
+  /// Nothing else is listed, and that is not an oversight. Bitaroo, qtornado,
+  /// emzy, lu.ke and electroncash.dk were all trialled and all removed: every
+  /// one presents a self-signed certificate, so with verification on they
+  /// cannot connect at all and would only add a timeout. bluewallet's chain
+  /// is CA-signed but its certificate does not match its own hostname — which
+  /// a chain-only check (openssl without -verify_hostname) calls fine and the
+  /// client correctly rejects. Of the public Bitcoin Electrum servers
+  /// checked, blockstream is the only one that passes.
+  @override
+  List<NodeModel> get additionalDefaultNodes => network ==
+          CryptoCurrencyNetwork.main
+      ? [
+          NodeModel(
+            host: "electrum.blockstream.info",
+            port: 50002,
+            name: "Blockstream",
+            id: "${DefaultNodes.defaultNodeIdPrefix}${identifier}_blockstream",
+            useSSL: true,
+            enabled: true,
+            coinName: identifier,
+            isFailover: true,
+            isDown: false,
+            torEnabled: true,
+            clearnetEnabled: true,
+            isPrimary: false,
+          ),
+        ]
+      : const [];
+
   @override
   NodeModel defaultNode({required bool isPrimary}) {
     switch (network) {
       case CryptoCurrencyNetwork.main:
         return NodeModel(
-          host: "bitcoin.stackwallet.com",
-          port: 50002,
+          // NOT bitcoin.stackwallet.com, which is what upstream ships. That
+          // host belongs to Cypher Stack: we do not run it, do not pay for
+          // it, and cannot promise our users it will answer tomorrow. Every
+          // default here is a public server whose operator publishes it for
+          // general use.
+          //
+          // Our TLS relay, not a public server, and not upstream's
+          // bitcoin.stackwallet.com either.
+          //
+          // It exists because the two requirements collide. The client
+          // verifies certificates strictly, and blockstream is the only
+          // public Bitcoin Electrum server that passes — but some ISPs
+          // DNS-hijack that name, so a phone there resolves it to the
+          // an ISP block page and the wallet sits Offline with an
+          // empty balance. There is no third option to fall back on.
+          //
+          // The relay resolves it because the censorship is on the user's
+          // ISP, not on ours: the phone talks to our hostname with our real
+          // certificate, and this box fetches from blockstream over verified
+          // TLS from a datacentre where nothing is blocked. It also means we
+          // can repoint the upstream without shipping an app update.
+          //
+          // The cost is honest: address queries pass through our box, so we
+          // could see them. Blockstream direct is kept as a failover so
+          // anyone who can reach it is not forced through us.
+          //
+          // Port 50022 rather than the usual 50002 — that one is already
+          // pep-electrumx on the same host.
+          host: "bitcoin.bitfinitechain.org",
+          port: 50022,
           name: DefaultNodes.defaultName,
           id: DefaultNodes.buildId(this),
           useSSL: true,

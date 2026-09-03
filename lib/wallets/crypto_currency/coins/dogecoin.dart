@@ -170,13 +170,62 @@ class Dogecoin extends Bip39HDCurrency with ElectrumXCurrencyInterface {
     }
   }
 
+  /// Dogecoin needs no relay, unlike Bitcoin.
+  ///
+  /// Both cipig hosts present certificates that pass full verification, and
+  /// both resolve normally on the connections where blockstream is hijacked,
+  /// so the wallet talks to them directly and nothing of the user's passes
+  /// through us. They were checked against each other first — same height,
+  /// byte-identical header.
+  ///
+  /// Public Dogecoin Electrum infrastructure is thin, though: these two are
+  /// all of it, since the third published cipig host refuses connections. So
+  /// our relay sits last as insurance against both going down at once, not
+  /// because anything is wrong with them.
+  @override
+  List<NodeModel> get additionalDefaultNodes => network ==
+          CryptoCurrencyNetwork.main
+      ? [
+          NodeModel(
+            host: "electrum2.cipig.net",
+            port: 20060,
+            name: "cipig 2",
+            id: "${DefaultNodes.defaultNodeIdPrefix}${identifier}_cipig2",
+            useSSL: true,
+            enabled: true,
+            coinName: identifier,
+            isFailover: true,
+            isDown: false,
+            torEnabled: true,
+            clearnetEnabled: true,
+            isPrimary: false,
+          ),
+          NodeModel(
+            host: "doge.bitfinitechain.org",
+            port: 50032,
+            name: "BitFinite Dogecoin Backup",
+            id: "${DefaultNodes.defaultNodeIdPrefix}${identifier}_relay",
+            useSSL: true,
+            enabled: true,
+            coinName: identifier,
+            isFailover: true,
+            isDown: false,
+            torEnabled: true,
+            clearnetEnabled: true,
+            isPrimary: false,
+          ),
+        ]
+      : const [];
+
   @override
   NodeModel defaultNode({required bool isPrimary}) {
     switch (network) {
       case CryptoCurrencyNetwork.main:
         return NodeModel(
-          host: "dogecoin.stackwallet.com",
-          port: 50022,
+          // NOT dogecoin.stackwallet.com — see the note in bitcoin.dart. That
+          // host is Cypher Stack's, not ours to depend on.
+          host: "electrum1.cipig.net",
+          port: 20060,
           name: DefaultNodes.defaultName,
           id: DefaultNodes.buildId(this),
           useSSL: true,

@@ -90,6 +90,7 @@ abstract class CryptoCurrency {
   /// default; a coin can override to ship additional failover servers.
   List<NodeModel> get additionalDefaultNodes => const [];
 
+
   int get defaultSeedPhraseLength;
   int get fractionDigits;
   bool get hasBuySupport;

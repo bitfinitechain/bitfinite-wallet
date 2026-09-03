@@ -339,6 +339,18 @@ class ElectrumXClient {
         port: usePort,
         connectionTimeout: connectionTimeoutForSpecialCaseJsonRPCClients,
         aliveTimerDuration: connectionTimeoutForSpecialCaseJsonRPCClients,
+        // Stays false. Most of the public Electrum network runs on
+        // self-signed certificates, so this is tempting to flip the first
+        // time a third-party server fails the handshake — the symptom is a
+        // wallet stuck Offline with an empty balance and only
+        // CERTIFICATE_VERIFY_FAILED in the log.
+        //
+        // Flipping it would not expose keys (signing is local, broadcasts are
+        // already signed), but it would let a man-in-the-middle lie about
+        // history: a wrong balance, a hidden or invented transaction, a stale
+        // fee estimate. Every default this app ships was chosen to pass
+        // verification instead, and a server that cannot should be put behind
+        // our own TLS relay rather than admitted by turning this off.
         acceptUnverified: false,
         useSSL: useUseSSL,
         proxyInfo: proxyInfo,

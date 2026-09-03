@@ -14,6 +14,7 @@ import '../intermediate/bip39_hd_wallet.dart';
 import '../wallet_mixin_interfaces/coin_control_interface.dart';
 import '../wallet_mixin_interfaces/electrumx_interface.dart';
 import '../wallet_mixin_interfaces/extended_keys_interface.dart';
+import '../../isar/models/wallet_info.dart';
 
 class DogecoinWallet<T extends ElectrumXCurrencyInterface>
     extends Bip39HDWallet<T>
@@ -74,8 +75,28 @@ class DogecoinWallet<T extends ElectrumXCurrencyInterface>
     final allAddressesSet = {...receivingAddresses, ...changeAddresses};
 
     // Fetch history from ElectrumX.
-    final List<Map<String, dynamic>> allTxHashes = await fetchHistory(
+    final List<Map<String, dynamic>> fullHistory = await fetchHistory(
       allAddressesSet,
+    );
+
+    // See the note in paynym_interface: an address with tens of thousands of
+    // transactions cannot be walked in one sync, and trying freezes the app.
+    // The balance comes from UTXOs and is unaffected.
+    final allTxHashes = capHistory(fullHistory);
+    final truncated = fullHistory.length > allTxHashes.length;
+    if (truncated) {
+      Logging.instance.w(
+        "${info.name}: address history is ${fullHistory.length} txs, "
+        "walking the most recent ${allTxHashes.length}. Balance is unaffected.",
+      );
+    }
+    await info.updateOtherData(
+      newEntries: {
+        WalletInfoKeys.historyTruncatedTotal: truncated
+            ? fullHistory.length
+            : null,
+      },
+      isar: mainDB.isar,
     );
 
     // Only parse new txs (not in db yet).

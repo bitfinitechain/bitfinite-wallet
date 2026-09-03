@@ -31,6 +31,7 @@ import '../../crypto_currency/interfaces/paynym_currency_interface.dart';
 import '../../models/tx_data.dart';
 import '../intermediate/bip39_hd_wallet.dart';
 import 'electrumx_interface.dart';
+import '../../isar/models/wallet_info.dart';
 
 const String kPCodeKeyPrefix = "pCode_key_";
 
@@ -1685,8 +1686,31 @@ mixin PaynymInterface<T extends PaynymCurrencyInterface>
     final allAddressesSet = {...receivingAddresses, ...changeAddresses};
 
     // Fetch history from ElectrumX.
-    final List<Map<String, dynamic>> allTxHashes = await fetchHistory(
+    final List<Map<String, dynamic>> fullHistory = await fetchHistory(
       allAddressesSet,
+    );
+
+    // Capped, for the same reason Pepecoin and BitFinite cap: an address with
+    // tens of thousands of transactions cannot be walked in one sync. Without
+    // this a Bitcoin wallet watching a busy address — an exchange, a donation
+    // address — walks every transaction it has ever had on the main isolate
+    // and Android kills the app for not responding. The balance is unaffected
+    // because it comes from UTXOs, not from this walk.
+    final allTxHashes = capHistory(fullHistory);
+    final truncated = fullHistory.length > allTxHashes.length;
+    if (truncated) {
+      Logging.instance.w(
+        "${info.name}: address history is ${fullHistory.length} txs, "
+        "walking the most recent ${allTxHashes.length}. Balance is unaffected.",
+      );
+    }
+    await info.updateOtherData(
+      newEntries: {
+        WalletInfoKeys.historyTruncatedTotal: truncated
+            ? fullHistory.length
+            : null,
+      },
+      isar: mainDB.isar,
     );
 
     final unconfirmedTxs = await mainDB.isar.transactionV2s

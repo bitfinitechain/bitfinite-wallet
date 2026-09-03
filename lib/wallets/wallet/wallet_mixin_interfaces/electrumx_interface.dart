@@ -1560,6 +1560,7 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
   ) async {
     try {
       final List<Map<String, dynamic>> allTxHashes = [];
+      final Set<String> seen = {};
 
       if (await serverCanBatch) {
         final Map<int, List<List<dynamic>>> batches = {};
@@ -1608,7 +1609,16 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
 
           for (int j = 0; j < response.length; j++) {
             response[j]["address"] = addressString;
-            if (!allTxHashes.contains(response[j])) {
+            // Keyed on the txid, not List.contains on the whole map. contains
+            // is a linear scan that deep-compares every Map already collected,
+            // so this was quadratic: an address with 40,000 transactions cost
+            // on the order of a billion map comparisons on the main isolate,
+            // which Android ends as a not-responding kill rather than a slow
+            // sync. The txid plus its height is what identity means here.
+            final key =
+                "${response[j]["tx_hash"]}:${response[j]["height"]}"
+                ":$addressString";
+            if (seen.add(key)) {
               allTxHashes.add(response[j]);
             }
           }

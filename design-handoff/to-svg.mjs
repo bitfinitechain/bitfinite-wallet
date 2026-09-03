@@ -39,6 +39,10 @@ addSw('surface/page/dark', T.surface.page.dark.$value, 'theme');
 addSw('surface/card/light', T.surface.card.light.$value, 'theme');
 addSw('surface/card/dark', T.surface.card.dark.$value, 'theme');
 addSw('ink/onHero', T.ink.onHero.$value, '17.72:1 on hero');
+for (const [k, v] of Object.entries(T.signal)) {
+  if (k.startsWith('$')) continue;
+  addSw(`signal/${k}`, v.$value, 'from the active theme');
+}
 for (const [coin, entry] of Object.entries(T.coin)) {
   if (coin.startsWith('$')) continue;
   for (const [k, v] of Object.entries(entry)) {

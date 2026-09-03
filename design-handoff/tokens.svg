@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="1200" viewBox="0 0 1240 1200">
-<rect width="1240" height="1200" fill="#FFFFFF"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="1332" viewBox="0 0 1240 1332">
+<rect width="1240" height="1332" fill="#FFFFFF"/>
 <text x="48" y="52" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="30" font-weight="700" fill="#09090B">BitFinite Wallet — design tokens</text>
 <text x="48" y="56" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="26" font-weight="700" fill="#09090B">Colour</text>
 <text x="48" y="78" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="13" fill="#6B6B74">Layer names match the token paths. Select a swatch to make a style from it.</text>
@@ -39,93 +39,131 @@
     <text x="328" y="316" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">ink/onHero</text>
     <text x="328" y="332" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B6B74">17.72:1 on hero</text>
   </g>
+<g id="signal/up">
+    <rect x="608" y="232" width="252" height="64" rx="10" fill="#4CC749" stroke="#D4D4D8"/>
+    <text x="620" y="270" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="12" fill="#FFFFFF">#4CC749</text>
+    <text x="608" y="316" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">signal/up</text>
+    <text x="608" y="332" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B6B74">from the active theme</text>
+  </g>
+<g id="signal/down">
+    <rect x="888" y="232" width="252" height="64" rx="10" fill="#F44336" stroke="#D4D4D8"/>
+    <text x="900" y="270" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="12" fill="#FFFFFF">#F44336</text>
+    <text x="888" y="316" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">signal/down</text>
+    <text x="888" y="332" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B6B74">from the active theme</text>
+  </g>
+<g id="signal/busy">
+    <rect x="48" y="364" width="252" height="64" rx="10" fill="#F4C542" stroke="#D4D4D8"/>
+    <text x="60" y="402" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="12" fill="#09090B">#F4C542</text>
+    <text x="48" y="448" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">signal/busy</text>
+    <text x="48" y="464" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B6B74">from the active theme</text>
+  </g>
 <g id="coin/bitfinite/brand">
-    <rect x="608" y="232" width="252" height="64" rx="10" fill="#2258E6" stroke="#D4D4D8"/>
-    <text x="620" y="270" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="12" fill="#FFFFFF">#2258E6</text>
-    <text x="608" y="316" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">coin/bitfinite/brand</text>
+    <rect x="328" y="364" width="252" height="64" rx="10" fill="#2258E6" stroke="#D4D4D8"/>
+    <text x="340" y="402" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="12" fill="#FFFFFF">#2258E6</text>
+    <text x="328" y="448" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">coin/bitfinite/brand</text>
     
   </g>
 <g id="coin/bitfinite/themeFill">
-    <rect x="888" y="232" width="252" height="64" rx="10" fill="#245BF3" stroke="#D4D4D8"/>
-    <text x="900" y="270" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="12" fill="#FFFFFF">#245BF3</text>
-    <text x="888" y="316" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">coin/bitfinite/themeFill</text>
-    <text x="888" y="332" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B6B74">DRIFT vs declared</text>
+    <rect x="608" y="364" width="252" height="64" rx="10" fill="#245BF3" stroke="#D4D4D8"/>
+    <text x="620" y="402" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="12" fill="#FFFFFF">#245BF3</text>
+    <text x="608" y="448" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">coin/bitfinite/themeFill</text>
+    <text x="608" y="464" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="10" fill="#6B6B74">DRIFT vs declared</text>
   </g>
 <g id="coin/pepecoin/brand">
-    <rect x="48" y="364" width="252" height="64" rx="10" fill="#269B4D" stroke="#D4D4D8"/>
-    <text x="60" y="402" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="12" fill="#FFFFFF">#269B4D</text>
-    <text x="48" y="448" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">coin/pepecoin/brand</text>
+    <rect x="888" y="364" width="252" height="64" rx="10" fill="#269B4D" stroke="#D4D4D8"/>
+    <text x="900" y="402" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="12" fill="#FFFFFF">#269B4D</text>
+    <text x="888" y="448" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">coin/pepecoin/brand</text>
     
   </g>
 <g id="coin/bellscoin/brand">
-    <rect x="328" y="364" width="252" height="64" rx="10" fill="#F3C532" stroke="#D4D4D8"/>
-    <text x="340" y="402" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="12" fill="#09090B">#F3C532</text>
-    <text x="328" y="448" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">coin/bellscoin/brand</text>
+    <rect x="48" y="496" width="252" height="64" rx="10" fill="#F3C532" stroke="#D4D4D8"/>
+    <text x="60" y="534" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="12" fill="#09090B">#F3C532</text>
+    <text x="48" y="580" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">coin/bellscoin/brand</text>
     
   </g>
-<text x="48" y="572" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="26" font-weight="700" fill="#09090B">Type</text>
-<text x="48" y="594" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="13" fill="#6B6B74">Rendered at the shipped sizes. Sample is a real Pepecoin balance.</text>
+<text x="48" y="704" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="26" font-weight="700" fill="#09090B">Type</text>
+<text x="48" y="726" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="13" fill="#6B6B74">Rendered at the shipped sizes. Sample is a real Pepecoin balance.</text>
 <g id="type/balance">
-    <text x="48" y="662" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">balance · 30px/700</text>
-    <text x="260" y="662" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="30" font-weight="700" fill="#09090B">4,946,461,530</text>
+    <text x="48" y="794" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">balance · 30px/700</text>
+    <text x="260" y="794" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="30" font-weight="700" fill="#09090B">4,946,461,530</text>
   </g>
 <g id="type/balanceDust">
-    <text x="48" y="693" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">balanceDust · 15px/700</text>
-    <text x="260" y="693" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#09090B">4,946,461,530</text>
+    <text x="48" y="825" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">balanceDust · 15px/700</text>
+    <text x="260" y="825" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#09090B">4,946,461,530</text>
   </g>
 <g id="type/balanceUnit">
-    <text x="48" y="723" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">balanceUnit · 14px/700</text>
-    <text x="260" y="723" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#09090B">4,946,461,530</text>
+    <text x="48" y="855" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">balanceUnit · 14px/700</text>
+    <text x="260" y="855" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#09090B">4,946,461,530</text>
   </g>
 <g id="type/heroFiat">
-    <text x="48" y="753" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">heroFiat · 13px/400</text>
-    <text x="260" y="753" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#09090B">4,946,461,530</text>
+    <text x="48" y="885" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">heroFiat · 13px/400</text>
+    <text x="260" y="885" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#09090B">4,946,461,530</text>
   </g>
 <g id="type/heroLabel">
-    <text x="48" y="783" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">heroLabel · 12px/500</text>
-    <text x="260" y="783" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="12" font-weight="500" fill="#09090B">4,946,461,530</text>
+    <text x="48" y="915" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">heroLabel · 12px/500</text>
+    <text x="260" y="915" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="12" font-weight="500" fill="#09090B">4,946,461,530</text>
   </g>
 <g id="type/rowTitle">
-    <text x="48" y="814" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">rowTitle · 15px/600</text>
-    <text x="260" y="814" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="15" font-weight="600" fill="#09090B">4,946,461,530</text>
+    <text x="48" y="946" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">rowTitle · 15px/600</text>
+    <text x="260" y="946" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="15" font-weight="600" fill="#09090B">4,946,461,530</text>
   </g>
 <g id="type/rowAmount">
-    <text x="48" y="844" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">rowAmount · 14px/600</text>
-    <text x="260" y="844" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#09090B">4,946,461,530</text>
+    <text x="48" y="976" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">rowAmount · 14px/600</text>
+    <text x="260" y="976" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#09090B">4,946,461,530</text>
   </g>
 <g id="type/rowSubtitle">
-    <text x="48" y="874" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">rowSubtitle · 12px/400</text>
-    <text x="260" y="874" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#09090B">4,946,461,530</text>
+    <text x="48" y="1006" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">rowSubtitle · 12px/400</text>
+    <text x="260" y="1006" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#09090B">4,946,461,530</text>
   </g>
 <g id="type/sectionLabel">
-    <text x="48" y="904" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">sectionLabel · 12px/500</text>
-    <text x="260" y="904" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="12" font-weight="500" fill="#09090B">4,946,461,530</text>
+    <text x="48" y="1036" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">sectionLabel · 12px/500</text>
+    <text x="260" y="1036" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="12" font-weight="500" fill="#09090B">4,946,461,530</text>
   </g>
-<text x="48" y="986" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="26" font-weight="700" fill="#09090B">Dimension</text>
-<text x="48" y="1008" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="13" fill="#6B6B74">Radius, dock height and gutter, drawn to scale.</text>
+<text x="48" y="1118" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="26" font-weight="700" fill="#09090B">Dimension</text>
+<text x="48" y="1140" font-family="IBM Plex Sans, Inter, Helvetica, Arial, sans-serif" font-size="13" fill="#6B6B74">Radius, dock height and gutter, drawn to scale.</text>
 <g id="size/radius">
-    <rect x="48" y="1030" width="24" height="64" rx="12" fill="#F4F4F5" stroke="#D4D4D8"/>
-    <text x="48" y="1116" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">size/radius</text>
-    <text x="48" y="1132" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">12px</text>
+    <rect x="48" y="1162" width="24" height="64" rx="12" fill="#F4F4F5" stroke="#D4D4D8"/>
+    <text x="48" y="1248" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">size/radius</text>
+    <text x="48" y="1264" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">12px</text>
   </g>
 <g id="size/heroFootRadius">
-    <rect x="248" y="1030" width="64" height="64" rx="32" fill="#F4F4F5" stroke="#D4D4D8"/>
-    <text x="248" y="1116" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">size/heroFootRadius</text>
-    <text x="248" y="1132" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">32px</text>
+    <rect x="248" y="1162" width="48" height="64" rx="24" fill="#F4F4F5" stroke="#D4D4D8"/>
+    <text x="248" y="1248" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">size/heroFootRadius</text>
+    <text x="248" y="1264" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">24px</text>
   </g>
 <g id="size/dockHeight">
-    <rect x="448" y="1030" width="130" height="64" rx="4" fill="#F4F4F5" stroke="#D4D4D8"/>
-    <text x="448" y="1116" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">size/dockHeight</text>
-    <text x="448" y="1132" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">65px</text>
+    <rect x="448" y="1162" width="130" height="64" rx="4" fill="#F4F4F5" stroke="#D4D4D8"/>
+    <text x="448" y="1248" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">size/dockHeight</text>
+    <text x="448" y="1264" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">65px</text>
   </g>
 <g id="size/gutter">
-    <rect x="648" y="1030" width="32" height="64" rx="4" fill="#F4F4F5" stroke="#D4D4D8"/>
-    <text x="648" y="1116" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">size/gutter</text>
-    <text x="648" y="1132" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">16px</text>
+    <rect x="648" y="1162" width="32" height="64" rx="4" fill="#F4F4F5" stroke="#D4D4D8"/>
+    <text x="648" y="1248" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">size/gutter</text>
+    <text x="648" y="1264" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">16px</text>
   </g>
 <g id="size/sparkline">
-    <rect x="848" y="1030" width="72" height="64" rx="4" fill="#F4F4F5" stroke="#D4D4D8"/>
-    <text x="848" y="1116" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">size/sparkline</text>
-    <text x="848" y="1132" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">36px</text>
+    <rect x="848" y="1162" width="64" height="64" rx="4" fill="#F4F4F5" stroke="#D4D4D8"/>
+    <text x="848" y="1248" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">size/sparkline</text>
+    <text x="848" y="1264" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">32px</text>
+  </g>
+<g id="size/listRadius">
+    <rect x="1048" y="1162" width="40" height="64" rx="4" fill="#F4F4F5" stroke="#D4D4D8"/>
+    <text x="1048" y="1248" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">size/listRadius</text>
+    <text x="1048" y="1264" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">20px</text>
+  </g>
+<g id="size/sparklineCaption">
+    <rect x="1248" y="1162" width="30" height="64" rx="4" fill="#F4F4F5" stroke="#D4D4D8"/>
+    <text x="1248" y="1248" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">size/sparklineCaption</text>
+    <text x="1248" y="1264" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">15px</text>
+  </g>
+<g id="size/dockFade">
+    <rect x="1448" y="1162" width="56" height="64" rx="4" fill="#F4F4F5" stroke="#D4D4D8"/>
+    <text x="1448" y="1248" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">size/dockFade</text>
+    <text x="1448" y="1264" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">28px</text>
+  </g>
+<g id="size/dockClearance">
+    <rect x="1648" y="1162" width="180" height="64" rx="4" fill="#F4F4F5" stroke="#D4D4D8"/>
+    <text x="1648" y="1248" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#09090B">size/dockClearance</text>
+    <text x="1648" y="1264" font-family="IBM Plex Mono, SFMono-Regular, Menlo, monospace" font-size="11" fill="#6B6B74">96px</text>
   </g>
 </svg>

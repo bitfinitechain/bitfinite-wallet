@@ -14,6 +14,9 @@ line(D, 'surface-page', T.surface.page.dark.$value);
 line(L, 'surface-card', T.surface.card.light.$value);
 line(D, 'surface-card', T.surface.card.dark.$value);
 line(N, 'ink-on-hero', T.ink.onHero.$value);
+for (const [k, v] of Object.entries(T.signal)) {
+  if (!k.startsWith('$')) line(N, `signal-${k}`, v.$value, v.$description);
+}
 for (const [coin, e] of Object.entries(T.coin)) {
   if (coin.startsWith('$')) continue;
   for (const [k, v] of Object.entries(e)) {

@@ -47,6 +47,23 @@
         }
       }
     },
+    "signal": {
+      "up": {
+        "value": "#4CC749",
+        "type": "color",
+        "description": "A rise, and a received amount."
+      },
+      "down": {
+        "value": "#F44336",
+        "type": "color",
+        "description": "A fall, and a sent amount."
+      },
+      "busy": {
+        "value": "#F4C542",
+        "type": "color",
+        "description": "Syncing."
+      }
+    },
     "opacity": {
       "heroLabel": {
         "value": "0.8",
@@ -236,9 +253,9 @@
         "description": "Constants.size.circularBorderRadius. Cards, chips, the payouts row."
       },
       "heroFootRadius": {
-        "value": "32",
+        "value": "24",
         "type": "sizing",
-        "description": "The hero's bottom corners, echoing the device frame rather than inventing a second curve."
+        "description": "All four corners of the hero card. It was 32 while the hero was a full-bleed slab with only its foot rounded; it is an inset card now."
       },
       "dockHeight": {
         "value": "65",
@@ -251,9 +268,29 @@
         "description": "Page side padding for the list and section headers."
       },
       "sparkline": {
-        "value": "36",
+        "value": "32",
         "type": "sizing",
-        "description": "The price chart's drawn height. Its card is ~219px — mostly padding, price row and range pills."
+        "description": "The LINE only. PriceSparkline reserves a further 15px caption row above it for the drag read-out, so the block occupies 47px."
+      },
+      "listRadius": {
+        "value": "20",
+        "type": "sizing",
+        "description": "The one card behind the whole transaction list."
+      },
+      "sparklineCaption": {
+        "value": "15",
+        "type": "sizing",
+        "description": "Reserved above the line whether or not anything is being read, so the line does not move under your finger."
+      },
+      "dockFade": {
+        "value": "28",
+        "type": "sizing",
+        "description": "Gradient above the dock bar, page colour fading to nothing, so a row dissolves into the bar instead of sliding under a hard edge."
+      },
+      "dockClearance": {
+        "value": "96",
+        "type": "sizing",
+        "description": "Bottom padding on the transaction list: the dock bar height, so the last row can be scrolled clear of it."
       }
     },
     "layout": {
@@ -263,9 +300,9 @@
         "description": "Share of the transaction row the amount may take. Past it the number scales down instead of eating the Sent/Received label."
       },
       "payoutTotalMaxWidth": {
-        "value": "0.45",
+        "value": "0.42",
         "type": "number",
-        "description": "Same idea on the payouts row, so the freshness and count survive."
+        "description": "Share of the payout card row the total may take. 0.45 truncated the count to \"997 payouts sin...\"."
       }
     },
     "behaviour": {

@@ -48,6 +48,12 @@ for (const [coin, entry] of Object.entries(T.coin)) {
   }
 }
 
+// --- signal: direction colours, reference values from the light theme --------
+for (const [k, v] of Object.entries(T.signal)) {
+  if (k.startsWith('$')) continue;
+  put(core, `signal.${k}`, v.$value, 'color', v.$description);
+}
+
 // --- opacity: Figma variables want a number, so 0.80 stays 0.80 --------------
 for (const [k, v] of Object.entries(T.opacity)) {
   if (k.startsWith('$')) continue;

@@ -263,14 +263,34 @@ class _EditCoinUnitsViewState extends ConsumerState<EditCoinUnitsView> {
                 ],
               ),
             SizedBox(
-              height: Util.isDesktop ? 24 : 8,
+              height: Util.isDesktop ? 24 : 16,
             ),
-            // No ClipRRect around this field. An OutlineInputBorder floats its
-            // label ONTO the top border, so half the text sits above the
-            // field's own box — and a clip cuts exactly that half off, which
-            // is why "Maximum precision" rendered as a sliced grey smear over
-            // the field's top edge. The border already draws the rounded
-            // shape, so the clip was only ever cropping the label.
+            // A real label on its own line, not the field's floating one.
+            //
+            // An OutlineInputBorder floats its label ONTO the top border, so
+            // half the text sits above the field's own box by design. That
+            // needs room above the field and a background to sit against, and
+            // this screen gives it neither: wrapped in a ClipRRect it was cut
+            // in half, and unwrapped it escaped into the 8px gap and collided
+            // with the unit selector above.
+            //
+            // Two controls stacked this tightly have nowhere to float a label
+            // into, so the label stops floating. It also stops depending on
+            // the field's state — the old one only appeared once the field had
+            // content, which is backwards for the one word that says what the
+            // number means.
+            // Aligned explicitly: this Column centres its children by default,
+            // and the two fields only look left-aligned because they stretch
+            // the full width. A bare Text does not, so it centred itself over
+            // the field it labels.
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(
+                "Maximum precision",
+                style: STextStyles.fieldLabel(context),
+              ),
+            ),
+            const SizedBox(height: 6),
             TextField(
                 autocorrect: Util.isDesktop ? false : true,
                 enableSuggestions: Util.isDesktop ? false : true,
@@ -283,12 +303,10 @@ class _EditCoinUnitsViewState extends ConsumerState<EditCoinUnitsView> {
                 ),
                 style: STextStyles.field(context),
                 decoration: standardInputDecoration(
-                  "Maximum precision",
+                  null,
                   _decimalsFocusNode,
                   context,
                 ).copyWith(
-                  labelStyle:
-                      Util.isDesktop ? STextStyles.fieldLabel(context) : null,
                   suffixIcon: _decimalsController.text.isNotEmpty
                       ? Padding(
                           padding: const EdgeInsets.only(right: 0),

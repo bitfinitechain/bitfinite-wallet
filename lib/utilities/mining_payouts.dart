@@ -82,6 +82,7 @@ class MiningPayoutSummary {
     required this.count,
     required this.total,
     required this.last,
+    required this.first,
   });
 
   /// How many payouts are in the transactions we hold.
@@ -92,6 +93,13 @@ class MiningPayoutSummary {
 
   /// When the most recent one landed, or null if there are none.
   final DateTime? last;
+
+  /// When the oldest one we hold landed, or null if there are none.
+  ///
+  /// "Since" rather than "first ever": on a wallet whose history was truncated
+  /// this is the oldest payout still in the database, which is exactly what
+  /// the count beside it is counting.
+  final DateTime? first;
 
   bool get isEmpty => count == 0;
 }
@@ -110,6 +118,7 @@ MiningPayoutSummary summariseMiningPayouts(
   var count = 0;
   var totalSats = BigInt.zero;
   int? newest;
+  int? oldest;
 
   for (final tx in transactions) {
     if (!isMiningPayout(tx, coin)) continue;
@@ -120,6 +129,9 @@ MiningPayoutSummary summariseMiningPayouts(
     if (newest == null || tx.timestamp > newest) {
       newest = tx.timestamp;
     }
+    if (oldest == null || tx.timestamp < oldest) {
+      oldest = tx.timestamp;
+    }
   }
 
   return MiningPayoutSummary(
@@ -128,6 +140,9 @@ MiningPayoutSummary summariseMiningPayouts(
     last: newest == null
         ? null
         : DateTime.fromMillisecondsSinceEpoch(newest * 1000),
+    first: oldest == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch(oldest * 1000),
   );
 }
 
@@ -143,4 +158,33 @@ String describeAgeShort(DateTime when, {DateTime? now}) {
   if (diff.inMinutes < 60) return "${diff.inMinutes}m ago";
   if (diff.inHours < 24) return "${diff.inHours}h ago";
   return "${diff.inDays}d ago";
+}
+
+/// "just now", "14 minutes ago", "3 hours ago", "42 days ago".
+///
+/// The long form, for the payout card's headline. That line is the card's
+/// title and has the width to itself, so it says the thing in words instead of
+/// the compressed "14m ago" the old single-row layout had to use.
+String describeAge(DateTime when, {DateTime? now}) {
+  final diff = (now ?? DateTime.now()).difference(when);
+  String plural(int n, String unit) => "$n $unit${n == 1 ? "" : "s"} ago";
+  if (diff.inSeconds < 90) return "just now";
+  if (diff.inMinutes < 60) return plural(diff.inMinutes, "minute");
+  if (diff.inHours < 24) return plural(diff.inHours, "hour");
+  return plural(diff.inDays, "day");
+}
+
+/// "3 Jun", or "3 Jun 2025" once the date is in an earlier year.
+///
+/// Dropping the year inside the current year keeps the subtitle short, which
+/// is where it usually sits; showing it otherwise stops "since 3 Jun" quietly
+/// meaning eighteen months ago.
+String describeShortDate(DateTime when, {DateTime? now}) {
+  const months = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  ];
+  final today = now ?? DateTime.now();
+  final stem = "${when.day} ${months[when.month - 1]}";
+  return when.year == today.year ? stem : "$stem ${when.year}";
 }

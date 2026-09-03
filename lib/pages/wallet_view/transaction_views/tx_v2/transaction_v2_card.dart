@@ -70,7 +70,7 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
         // earnings apart from someone paying them. Naming it is the whole
         // difference.
         if (isMiningPayout(_transaction, coin)) {
-          return "Payout";
+          return "Mining payout";
         }
         return "Received";
       case TransactionType.sentToSelf:

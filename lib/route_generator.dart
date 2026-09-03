@@ -2048,6 +2048,16 @@ class RouteGenerator {
             settings: settings,
           );
         }
+        if (args is ({String walletId, bool payoutsOnly})) {
+          return getRoute(
+            shouldUseMaterialRoute: useMaterialPageRoute,
+            builder: (_) => AllTransactionsV2View(
+              walletId: args.walletId,
+              payoutsOnly: args.payoutsOnly,
+            ),
+            settings: settings,
+          );
+        }
         return _routeError("${settings.name} invalid args: ${args.toString()}");
 
       case TransactionSearchFilterView.routeName:

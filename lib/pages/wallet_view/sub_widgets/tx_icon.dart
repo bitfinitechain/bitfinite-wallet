@@ -10,7 +10,7 @@
 
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -18,8 +18,10 @@ import '../../../models/isar/models/blockchain_data/v2/transaction_v2.dart';
 import '../../../models/isar/models/isar_models.dart';
 import '../../../models/isar/stack_theme.dart';
 import '../../../providers/global/wallets_provider.dart';
+import '../../../themes/stack_colors.dart';
 import '../../../themes/theme_providers.dart';
 import '../../../utilities/assets.dart';
+import '../../../utilities/mining_payouts.dart';
 import '../../../wallets/crypto_currency/crypto_currency.dart';
 
 class TxIcon extends ConsumerWidget {
@@ -83,6 +85,30 @@ class TxIcon extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final bool txIsReceived;
     final String assetName;
+
+    // A mining payout gets its own mark rather than the received arrow, so a
+    // miner can pick earnings out of a column of incoming rows at a glance —
+    // the same reason the row is titled "Mining payout" and not "Received".
+    //
+    // Drawn here rather than added as a themed SVG: the direction arrows come
+    // from the active theme's asset bundle, so a new asset would have to ship
+    // in all seven themes (and in any theme downloaded later) before it could
+    // be used. The glyph matches the payout card above the list.
+    if (transaction is TransactionV2 &&
+        isMiningPayout(transaction as TransactionV2, coin)) {
+      final green = Theme.of(context).extension<StackColors>()!.accentColorGreen;
+      return SizedBox(
+        width: size.width,
+        height: size.height,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: green.withOpacity(0.18),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(Icons.inventory_2_outlined, size: 17, color: green),
+        ),
+      );
+    }
 
     if (transaction is Transaction) {
       final tx = transaction as Transaction;

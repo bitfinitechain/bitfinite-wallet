@@ -33,6 +33,7 @@ import '../../../../utilities/assets.dart';
 import '../../../../utilities/ios_icon.dart';
 import '../../../../utilities/constants.dart';
 import '../../../../utilities/format.dart';
+import '../../../../utilities/mining_payouts.dart';
 import '../../../../utilities/text_styles.dart';
 import '../../../../utilities/util.dart';
 import '../../../../wallets/crypto_currency/coins/ethereum.dart';
@@ -67,12 +68,22 @@ class AllTransactionsV2View extends ConsumerStatefulWidget {
     super.key,
     required this.walletId,
     this.contractAddress,
+    this.payoutsOnly = false,
   });
 
   static const String routeName = "/allTransactionsV2";
 
   final String walletId;
   final String? contractAddress;
+
+  /// Show only mining payouts, and say so in the title.
+  ///
+  /// The payout card's chevron lands here. A miner auditing what the pool
+  /// actually paid should not have to pick the payouts back out of their own
+  /// sends, and the existing search box cannot express "is a coinbase or came
+  /// from a pool address" — that is a property of the inputs, not of any text
+  /// on the row.
+  final bool payoutsOnly;
 
   @override
   ConsumerState<AllTransactionsV2View> createState() =>
@@ -128,6 +139,9 @@ class _AllTransactionsV2ViewState extends ConsumerState<AllTransactionsV2View> {
     searchFieldFocusNode.dispose();
     super.dispose();
   }
+
+  String get _title =>
+      widget.payoutsOnly ? "Mining payouts" : "Transactions";
 
   // TODO: optimise search+filter
   List<TransactionV2> filter({
@@ -314,7 +328,7 @@ class _AllTransactionsV2ViewState extends ConsumerState<AllTransactionsV2View> {
                     onPressed: Navigator.of(context).pop,
                   ),
                   const SizedBox(width: 12),
-                  Text("Transactions", style: STextStyles.desktopH3(context)),
+                  Text(_title, style: STextStyles.desktopH3(context)),
                 ],
               ),
             )
@@ -336,7 +350,7 @@ class _AllTransactionsV2ViewState extends ConsumerState<AllTransactionsV2View> {
                 },
               ),
               title: Text(
-                "Transactions",
+                _title,
                 style: STextStyles.navBarTitle(context),
               ),
               actions: [
@@ -516,8 +530,21 @@ class _AllTransactionsV2ViewState extends ConsumerState<AllTransactionsV2View> {
                     builder: (_, AsyncSnapshot<List<TransactionV2>> snapshot) {
                       if (snapshot.connectionState == ConnectionState.done &&
                           snapshot.hasData) {
+                        // Applied before the user's own filter and search, so
+                        // both still work inside the payout set.
+                        final source = widget.payoutsOnly
+                            ? snapshot.data!
+                                  .where(
+                                    (tx) => isMiningPayout(
+                                      tx,
+                                      ref.read(pWalletCoin(walletId)),
+                                    ),
+                                  )
+                                  .toList()
+                            : snapshot.data!;
+
                         final filtered = filter(
-                          transactions: snapshot.data!,
+                          transactions: source,
                           filter: criteria,
                         );
 

@@ -167,15 +167,17 @@ class WalletSummaryInfo extends ConsumerWidget {
         fullStr.startsWith(numStr)
             ? fullStr.substring(numStr.length).trim()
             : coin.ticker;
+    // The break is AT the decimal separator, so the headline is the whole
+    // coins and everything under one coin is the quiet part — 87,432 then
+    // .19045008. It used to keep the first two decimals at full size, which
+    // read as a currency's cents on a coin that has eight decimal places and
+    // no cents, and left the separator stranded in the large text.
     String mainPart = numStr;
     String dustPart = "";
     final sepIdx = numStr.lastIndexOf(RegExp(r"[.,]"));
-    if (sepIdx > 0) {
-      final decimals = numStr.substring(sepIdx + 1);
-      if (decimals.length > 2) {
-        mainPart = numStr.substring(0, sepIdx + 3);
-        dustPart = decimals.substring(2);
-      }
+    if (sepIdx > 0 && numStr.length - sepIdx - 1 > 3) {
+      mainPart = numStr.substring(0, sepIdx);
+      dustPart = numStr.substring(sepIdx);
     }
 
     // Past a million, show the magnitude rather than every satoshi. The
@@ -581,74 +583,135 @@ class _HeroChartCard extends ConsumerWidget {
       changeStr = "$sign${pct.abs().toStringAsFixed(2)}%";
     }
 
-    // One 44px row, not a 219px card. The card spent six pixels of chrome for
-    // every pixel of chart: its own well, its padding, the price row and the
-    // pills all stacked above a 28px line. Flattening it returns about 170px,
-    // which is what puts the first transaction above the fold on every coin.
     final bool down = changeStr != null && changeStr.startsWith("-");
     final Color deltaColor = down
         ? const Color(0xFFFF8A8A)
         : const Color(0xFF5FD08A);
 
+    // Two rows, not one. Squeezing price, line and pills onto a single 44px
+    // row left the sparkline about a third of the hero's width, which is not
+    // enough for a reader to see a shape in it — the one thing a sparkline is
+    // for. Splitting the row gives the line the full width for 24px more
+    // height, and it still costs a third of the 219px card this replaced.
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: SizedBox(
-        height: 44,
-        child: Row(
-          children: [
-            // Price over delta, sized to its content so the line gets the rest.
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "${_formatPrice(price.value)} $baseCurrency",
-                  maxLines: 1,
-                  style: STextStyles.subtitle500(context).copyWith(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    height: 1.15,
-                    color: favText.withOpacity(heroEmphasis(favText, 0.92)),
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
-                ),
-                if (changeStr != null)
-                  Text(
-                    changeStr,
-                    maxLines: 1,
-                    // Green up, red down. The old rule here was hero ink only,
-                    // because a coloured delta on an arbitrary coin fill could
-                    // not promise contrast. The hero is a fixed neutral now, so
-                    // that objection is gone: both stops clear AA on it.
-                    style: STextStyles.subtitle500(context).copyWith(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      height: 1.15,
-                      color: deltaColor,
-                      fontFeatures: const [FontFeature.tabularFigures()],
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Row one: what the price is, and which range you are reading.
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "${_formatPrice(price.value)} $baseCurrency",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: STextStyles.subtitle500(context).copyWith(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        height: 1.15,
+                        color: favText.withOpacity(heroEmphasis(favText, 0.92)),
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
                     ),
-                  ),
-              ],
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: series != null
-                  ? PriceSparkline(
-                      series: series,
-                      color: deltaColor,
-                      height: 28,
-                      spanHours: days * 24.0,
-                      // The pills already say what the chart spans.
-                      idleLabel: "",
-                      // The same formatter as the fiat figure under the
-                      // balance, so a price read off the chart and the value
-                      // printed below it cannot disagree about how to write a
-                      // number under a cent.
-                      format: (v) =>
-                          "${Decimal.parse(v.toString()).toAmount(fractionDigits: 8).fiatString(locale: locale)} $baseCurrency",
-                    )
-                  : Center(
+                    if (changeStr != null)
+                      Text(
+                        changeStr,
+                        maxLines: 1,
+                        // Green up, red down. The old rule here was hero ink
+                        // only, because a coloured delta on an arbitrary coin
+                        // fill could not promise contrast. The hero is a fixed
+                        // neutral now, so that objection is gone: both stops
+                        // clear AA on it.
+                        style: STextStyles.subtitle500(context).copyWith(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          height: 1.15,
+                          color: deltaColor,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              // The pills carry the well now that the card is gone, so the row
+              // still has one grouped control rather than three loose words.
+              Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: favText.withOpacity(0.10),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (final r in _ranges)
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => ref
+                            .read(_chartRangeDaysProvider(walletId).notifier)
+                            .state = r.days,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: r.days == days ? favText : null,
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                          child: Text(
+                            r.label,
+                            style: STextStyles.subtitle500(context).copyWith(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: r.days == days
+                                  ? heroFill
+                                  : favText.withOpacity(0.6),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Row two: the line, edge to edge of the hero.
+          //
+          // No height on this box. PriceSparkline's `height` is the LINE, and
+          // it reserves a caption row above that for the read-out — so a box
+          // of the same number is short by exactly the caption and overflows.
+          // Letting it size itself is right whatever that caption becomes.
+          SizedBox(
+            width: double.infinity,
+            child: series != null
+                ? PriceSparkline(
+                    series: series,
+                    color: deltaColor,
+                    height: 32,
+                    spanHours: days * 24.0,
+                    // The pills already say what the chart spans.
+                    idleLabel: "",
+                    // The same formatter as the fiat figure under the balance,
+                    // so a price read off the chart and the value printed
+                    // below it cannot disagree about how to write a number
+                    // under a cent.
+                    format: (v) =>
+                        "${Decimal.parse(v.toString()).toAmount(fractionDigits: 8).fiatString(locale: locale)} $baseCurrency",
+                  )
+                // Matches the sparkline's own height (line plus caption), so
+                // the hero does not jump when the series arrives.
+                : SizedBox(
+                    height: 47,
+                    child: Center(
                       child: SizedBox(
                         height: 14,
                         width: 14,
@@ -658,51 +721,9 @@ class _HeroChartCard extends ConsumerWidget {
                         ),
                       ),
                     ),
-            ),
-            const SizedBox(width: 14),
-            // The pills carry the well now that the card is gone, so the row
-            // still has one grouped control rather than three loose words.
-            Container(
-              padding: const EdgeInsets.all(3),
-              decoration: BoxDecoration(
-                color: favText.withOpacity(0.10),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (final r in _ranges)
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () => ref
-                          .read(_chartRangeDaysProvider(walletId).notifier)
-                          .state = r.days,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 7,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: r.days == days ? favText : null,
-                          borderRadius: BorderRadius.circular(9),
-                        ),
-                        child: Text(
-                          r.label,
-                          style: STextStyles.subtitle500(context).copyWith(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: r.days == days
-                                ? heroFill
-                                : favText.withOpacity(0.6),
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
+                  ),
+          ),
+        ],
       ),
     );
   }

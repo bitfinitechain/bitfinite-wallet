@@ -52,7 +52,14 @@ class AmountFormatter {
     String? overrideUnit,
     Contract? tokenContract,
     bool withUnitName = true,
-    bool indicatePrecisionLoss = true,
+    // Off by default. This prefixed a "~" whenever the displayed decimals
+    // hid a non-zero digit, which put a tilde in front of most balances on a
+    // coin with eight decimals. The user chooses how many decimals to show
+    // (Settings > Advanced > Manage coin units), so annotating their own
+    // choice as imprecise tells them nothing and reads as noise on the one
+    // number they came to look at. The two token send screens that genuinely
+    // mean "approximately this much" pass true explicitly.
+    bool indicatePrecisionLoss = false,
   }) {
     return unit.displayAmount(
       amount: amount,

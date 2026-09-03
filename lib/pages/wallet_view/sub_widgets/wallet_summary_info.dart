@@ -214,16 +214,17 @@ class WalletSummaryInfo extends ConsumerWidget {
     // -1.04, so the previous -1.2 was slightly tighter than intended; w800 was
     // also heavier than the design, which relies on size rather than weight to
     // carry the balance.
-    // 36, down again from 44 (which was down from the spec's 52): the user
-    // asked for a compact hero that stops crowding the transaction list. 36
-    // still outranks everything under it by a wide margin — the fiat line is
-    // 13 — and hierarchy comes from the gap, not the absolute size. The
-    // -0.02em tracking follows the size: -0.02 x 36.
+    // 30, down again from 36 (which was down from 44, and 52 in the spec).
+    // The hero scrolls away now, so it no longer has to earn its height by
+    // being the only thing on screen, and the balance still outranks
+    // everything under it by more than double — the fiat line is 13.
+    // Hierarchy here comes from the gap and the weight, not the absolute
+    // size. The -0.02em tracking follows the size: -0.02 x 30.
     final heroStyle = STextStyles.pageTitleH1(context).copyWith(
-      fontSize: 36,
+      fontSize: 30,
       fontWeight: FontWeight.w700,
       height: 1.05,
-      letterSpacing: -0.72,
+      letterSpacing: -0.6,
       color: favText,
       fontFeatures: const [FontFeature.tabularFigures()],
     );
@@ -366,7 +367,7 @@ class WalletSummaryInfo extends ConsumerWidget {
                       TextSpan(
                         text: dustPart,
                         style: heroStyle.copyWith(
-                          fontSize: 18,
+                          fontSize: 15,
                           fontWeight: FontWeight.w700,
                           // 0.4 measured 2.21:1 on blue-600 — under even the
                           // 3:1 large-text floor, and these are real satoshi
@@ -379,7 +380,7 @@ class WalletSummaryInfo extends ConsumerWidget {
                     TextSpan(
                       text: " $unitStr",
                       style: heroStyle.copyWith(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: favText.withOpacity(heroEmphasis(favText, 0.85)),
                       ),

@@ -1,0 +1,63 @@
+/* BitFinite Wallet design tokens.
+   Generated from tokens.json by to-css.mjs — do not hand-edit.
+   Every value is read from the Flutter source or measured on a device. */
+
+:root {
+  /* one neutral for every coin; white sits on it at 17.72:1 */
+  --wallet-surface-hero: #18181B;
+  --wallet-ink-on-hero: #FFFFFF;
+  --wallet-coin-bitfinite: #2258E6;
+  /* DRIFT: theme paints this, code declares the brand above */
+  --wallet-coin-bitfinite-theme-fill: #245BF3;
+  --wallet-coin-pepecoin: #269B4D;
+  --wallet-coin-bellscoin: #F3C532;
+  --wallet-opacity-hero-label: 0.8;
+  --wallet-opacity-hero-fiat: 0.78;
+  --wallet-opacity-hero-dust: 0.62;
+  --wallet-opacity-hero-unit: 0.85;
+  --wallet-opacity-hero-address: 0.92;
+  --wallet-opacity-hero-scrim: 0.14;
+  --wallet-text-balance-size: 30px;
+  --wallet-text-balance-weight: 700;
+  --wallet-text-balance-dust-size: 15px;
+  --wallet-text-balance-dust-weight: 700;
+  --wallet-text-balance-unit-size: 14px;
+  --wallet-text-balance-unit-weight: 700;
+  --wallet-text-hero-fiat-size: 13px;
+  --wallet-text-hero-fiat-weight: 400;
+  --wallet-text-hero-label-size: 12px;
+  --wallet-text-hero-label-weight: 500;
+  --wallet-text-row-title-size: 15px;
+  --wallet-text-row-title-weight: 600;
+  --wallet-text-row-amount-size: 14px;
+  --wallet-text-row-amount-weight: 600;
+  --wallet-text-row-subtitle-size: 12px;
+  --wallet-text-row-subtitle-weight: 400;
+  --wallet-text-section-label-size: 12px;
+  --wallet-text-section-label-weight: 500;
+  /* Constants.size.circularBorderRadius. Cards, chips, the payouts row. */
+  --wallet-size-radius: 12px;
+  /* The hero's bottom corners, echoing the device frame rather than inventing a second curve. */
+  --wallet-size-hero-foot-radius: 32px;
+  /* WalletView.navBarHeight. The last list row pads itself past this. */
+  --wallet-size-dock-height: 65px;
+  /* Page side padding for the list and section headers. */
+  --wallet-size-gutter: 16px;
+  /* The price chart's drawn height. Its card is ~219px — mostly padding, price row and range pills. */
+  --wallet-size-sparkline: 36px;
+  /* Share of the transaction row the amount may take. Past it the number scales down instead of eating the Sent/Received label. */
+  --wallet-layout-row-amount-max-width: 0.52;
+  /* Same idea on the payouts row, so the freshness and count survive. */
+  --wallet-layout-payout-total-max-width: 0.45;
+
+  /* light theme */
+  --wallet-surface-page: #F4F6FA;
+  --wallet-surface-card: #FFFFFF;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --wallet-surface-page: #12151C;
+    --wallet-surface-card: #1A2130;
+  }
+}

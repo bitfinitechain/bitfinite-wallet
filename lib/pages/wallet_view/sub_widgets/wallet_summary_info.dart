@@ -208,7 +208,7 @@ class WalletSummaryInfo extends ConsumerWidget {
     // orange in some themes where white measures 3.00:1. heroInk derives it
     // from the fill. Every label here is built from favText, so this one value
     // carries the whole block.
-    final favText = heroInk(ref.watch(pCoinColor(coin)));
+    final favText = heroInk(kHeroSurface);
     final receivingAddress = ref.watch(pWalletReceivingAddress(walletId));
     // Spec: 52px / 700 / letter-spacing -0.02em, tabular. -0.02em at 52px is
     // -1.04, so the previous -1.2 was slightly tighter than intended; w800 was
@@ -253,7 +253,7 @@ class WalletSummaryInfo extends ConsumerWidget {
             _HeroChartCard(
               walletId: walletId,
               favText: favText,
-              heroFill: ref.watch(pCoinColor(coin)),
+              heroFill: kHeroSurface,
               price: price,
               locale: locale,
               baseCurrency: baseCurrency,

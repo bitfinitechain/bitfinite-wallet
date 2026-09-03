@@ -9,51 +9,44 @@
 
 import 'package:flutter/material.dart';
 
-/// Ink for content sitting on the wallet hero — adaptive since 2026-09-01.
+/// The wallet hero is ONE neutral surface for every coin, with white ink.
 ///
-/// History, because the old rule is in session notes as "do not fix": this
-/// was **always white by design direction** when the hero only ever wore the
-/// theme's own colour. Multi-coin heroes broke that premise — Bellscoin's
-/// official Bell Bag Gold #F3C532 puts white ink at 1.64:1, and the first
-/// "fix" (darkening the surface) traded away the brand colour. The user then
-/// asked for a rule that works for ANY coin colour, which is this:
+/// The coin's colour has not gone anywhere — it still paints the coin icon,
+/// its card on the home screen, and the accents. It just stopped being the
+/// wall the balance sits on.
 ///
-/// **White when white passes AA (>= 4.5:1); otherwise whichever of white and
-/// near-black ink carries more contrast.** BFX blue keeps white ink
-/// unchanged; Bells gold and Doge-like golds take dark ink; Pepecoin's
-/// mid-green — where white had been quietly failing at 3.57:1 — flips to
-/// dark ink and finally passes. The 4.5 gate (rather than a pure max) keeps
-/// white, the product's signature look, wherever it is legitimate.
+/// Two earlier rules are in the session notes, and both failed on the same
+/// coin. The hero began as the coin's own colour with white ink, which put
+/// white on Bellscoin's Bell Bag Gold #F3C532 at 1.64:1 — near invisible.
+/// The fix after that adapted the INK per coin, which was always legible but
+/// flipped between white and near-black from coin to coin, so three coins read
+/// as three products. Deepening the fills to earn white was tried and pulled:
+/// it stopped matching Bellscoin's brand kit.
 ///
-/// Everything on the hero must derive from this one value (and scale its
-/// de-emphasis through [heroEmphasis]) — never from the page theme.
-Color heroInk(Color hero) {
-  final white = _contrast(Colors.white, hero);
-  if (white >= 4.5) return Colors.white;
-  return _contrast(kInkDark, hero) > white ? kInkDark : Colors.white;
-}
+/// Measured, which is what ruled the alternatives out:
+///
+///     BitFinite  #245BF3   white 5.43:1   near-black 3.48:1
+///     Pepecoin   #269B4D   white 3.57:1   near-black 5.07:1
+///     Bellscoin  #F3C532   white 1.64:1   near-black 11.08:1
+///
+/// White cannot be used on that gold at all, so no single ink was reachable
+/// while the surface stayed the coin's colour. Moving the surface instead
+/// settles it once: white lands at 17.72:1 on every coin, and it keeps
+/// working for a fourth coin whatever colour that turns out to be, which
+/// neither of the other rules did.
+const Color kHeroSurface = Color(0xFF18181B);
 
-/// Maps a white-ink de-emphasis opacity to the dark-ink equivalent.
+/// Always white now. Kept as a function because every hero label calls it, and
+/// a single definition is what stops the ink drifting apart again.
+Color heroInk(Color hero) => Colors.white;
+
+/// Hero de-emphasis opacities, passed through unchanged.
 ///
-/// The shipped opacities (0.80 labels, 0.78 fiat, 0.62 dust, 0.85 unit,
-/// 0.92 address) were measured against white-on-blue. Dark ink on a
-/// mid-luminance fill has less headroom — on Pepecoin green, dark ink at
-/// 0.80 lands at 3.91:1 — so each step rides higher. Measured on the two
-/// worst supported fills (Pepecoin #269B4D, Bells gold #F3C532):
-/// labels 0.90 -> 4.54/9.05, fiat 0.88 -> 4.41 (the Forest precedent)/8.65,
-/// dust 0.75 -> 3.64/6.09 (large-text floor), unit 0.92 -> 4.6+/9.5,
-/// address 0.95 -> 4.80/10.1. Scrim/fill opacities (<= 0.25) pass through
-/// untouched: they are surfaces, not text.
-double heroEmphasis(Color ink, double whiteTunedOpacity) {
-  if (ink == Colors.white) return whiteTunedOpacity;
-  // Not a const map: double keys are const_map_key_not_primitive_equality.
-  if (whiteTunedOpacity == 0.8) return 0.9;
-  if (whiteTunedOpacity == 0.78) return 0.88;
-  if (whiteTunedOpacity == 0.62) return 0.75;
-  if (whiteTunedOpacity == 0.85) return 0.92;
-  if (whiteTunedOpacity == 0.92) return 0.95;
-  return whiteTunedOpacity;
-}
+/// This used to map each white-tuned opacity onto a higher dark-ink one,
+/// because dark ink on a mid-luminance fill had less headroom. There is no
+/// dark ink on the hero any more, and every step clears AA against
+/// [kHeroSurface] by a wide margin, so the shipped values stand as measured.
+double heroEmphasis(Color ink, double whiteTunedOpacity) => whiteTunedOpacity;
 
 /// Ink for content on any *other* filled surface — dock pills, the dock itself.
 ///

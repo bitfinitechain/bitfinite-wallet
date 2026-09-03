@@ -27,12 +27,21 @@ class TxListItem extends ConsumerWidget {
     super.key,
     required this.tx,
     this.radius,
+    this.grouped = false,
     required this.coin,
   }) : assert(tx is TransactionV2 || tx is FusionTxGroup);
 
   final Object tx;
   final BorderRadius? radius;
   final CryptoCurrency coin;
+
+  /// Rendered inside one grouped card rather than as its own card.
+  ///
+  /// The list used to be a stack of separate cards, each with its own fill,
+  /// radius and hairline. The design groups a day's rows into a single card,
+  /// so each row drops its own chrome — otherwise it is a card inside a card,
+  /// and the doubled edges read as a rendering fault.
+  final bool grouped;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -57,18 +66,22 @@ class TxListItem extends ConsumerWidget {
         // trade is still one item in the list and must not read as a
         // different kind of thing.
         return Container(
-          margin: const EdgeInsets.only(bottom: 4),
-          decoration: BoxDecoration(
-            color: Theme.of(context).extension<StackColors>()!.popupBG,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Theme.of(
-                context,
-              ).extension<StackColors>()!.textSubtitle1.withOpacity(0.1),
-              width: 1,
-            ),
-          ),
-          clipBehavior: Clip.antiAlias,
+          margin: grouped
+              ? EdgeInsets.zero
+              : const EdgeInsets.only(bottom: 4),
+          decoration: grouped
+              ? null
+              : BoxDecoration(
+                  color: Theme.of(context).extension<StackColors>()!.popupBG,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Theme.of(
+                      context,
+                    ).extension<StackColors>()!.textSubtitle1.withOpacity(0.1),
+                    width: 1,
+                  ),
+                ),
+          clipBehavior: grouped ? Clip.none : Clip.antiAlias,
           child: Breathing(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -165,20 +178,24 @@ class TxListItem extends ConsumerWidget {
         // token — #FFFFFF in the light theme, #1A2130 in dark — so the card
         // reads correctly in both without hardcoding the design's #FFFFFF.
         return Container(
-          margin: const EdgeInsets.only(bottom: 4),
-          decoration: BoxDecoration(
-            color: Theme.of(context).extension<StackColors>()!.popupBG,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Theme.of(
-                context,
-              ).extension<StackColors>()!.textSubtitle1.withOpacity(0.1),
-              width: 1,
-            ),
-          ),
+          margin: grouped
+              ? EdgeInsets.zero
+              : const EdgeInsets.only(bottom: 4),
+          decoration: grouped
+              ? null
+              : BoxDecoration(
+                  color: Theme.of(context).extension<StackColors>()!.popupBG,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Theme.of(
+                      context,
+                    ).extension<StackColors>()!.textSubtitle1.withOpacity(0.1),
+                    width: 1,
+                  ),
+                ),
           // The card clips its child so the row's own ink/splash cannot paint
           // over the rounded corners when tapped.
-          clipBehavior: Clip.antiAlias,
+          clipBehavior: grouped ? Clip.none : Clip.antiAlias,
           child: Breathing(
             child: TransactionCardV2(
               // this may mess with combined firo transactions
@@ -193,10 +210,12 @@ class TxListItem extends ConsumerWidget {
     final group = tx as FusionTxGroup;
 
     return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).extension<StackColors>()!.popupBG,
-        borderRadius: radius,
-      ),
+      decoration: grouped
+          ? null
+          : BoxDecoration(
+              color: Theme.of(context).extension<StackColors>()!.popupBG,
+              borderRadius: radius,
+            ),
       child: Breathing(
         child: FusionTxGroupCard(key: ObjectKey(group), group: group),
       ),

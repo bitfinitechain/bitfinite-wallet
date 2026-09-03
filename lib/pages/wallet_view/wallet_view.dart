@@ -531,7 +531,10 @@ class _WalletViewState extends ConsumerState<WalletView> {
     // reason as the balance block: the hero is the theme's own colour and is a
     // light orange in some themes, where white ink measures 3.00:1.
     final accent = ref.watch(pCoinColor(coin));
-    final onHero = heroInk(accent);
+    // The app bar sits on the PAGE now, not on the hero — the hero became an
+    // inset slab below it — so its ink is the theme's, not the hero's white.
+    final _barColors = Theme.of(context).extension<StackColors>()!;
+    final barInk = _barColors.textDark;
 
     final prefs = ref.watch(prefsChangeNotifierProvider);
     final showExchange = prefs.enableExchange;
@@ -965,10 +968,12 @@ class _WalletViewState extends ConsumerState<WalletView> {
                 backgroundColor: Theme.of(
                   context,
                 ).extension<StackColors>()!.background,
-                // Blue hero runs to the very top edge, behind the status bar,
-                // so the bar is part of the hero rather than a dark strip
-                // sitting above it. The body therefore has to start at y=0.
-                extendBodyBehindAppBar: true,
+                // FALSE now. It was true while the hero ran to the top edge
+                // and the bar was a transparent part of it. The hero is an
+                // inset slab under a real, page-coloured bar today, so a body
+                // starting at y=0 just slides the top of the slab underneath
+                // the bar — which is exactly what it did.
+                extendBodyBehindAppBar: false,
                 appBar: AppBar(
                   // The hero's own colour, NOT transparent. At rest this is
                   // invisible, because the bar and the hero beneath it are the
@@ -979,7 +984,7 @@ class _WalletViewState extends ConsumerState<WalletView> {
                   // is the compact header the rows pass cleanly behind.
                   // Both elevations stay cleared so Material does not paint a
                   // surface tint over it on scroll.
-                  backgroundColor: kHeroSurface,
+                  backgroundColor: _barColors.background,
                   elevation: 0,
                   scrolledUnderElevation: 0,
                   // The status bar sits ON the hero (extendBodyBehindAppBar),
@@ -988,10 +993,13 @@ class _WalletViewState extends ConsumerState<WalletView> {
                   // in dark mode were as invisible as white text was.
                   systemOverlayStyle: SystemUiOverlayStyle(
                     statusBarColor: Colors.transparent,
-                    statusBarIconBrightness: onHero == Colors.white
+                    // The page decides now. A light page needs dark glyphs.
+                    statusBarIconBrightness:
+                        Theme.of(context).brightness == Brightness.dark
                         ? Brightness.light
                         : Brightness.dark,
-                    statusBarBrightness: onHero == Colors.white
+                    statusBarBrightness:
+                        Theme.of(context).brightness == Brightness.dark
                         ? Brightness.dark
                         : Brightness.light,
                   ),
@@ -999,8 +1007,8 @@ class _WalletViewState extends ConsumerState<WalletView> {
                     // Matches the other hero buttons: without this it falls
                     // back to the page background and reads as a solid white
                     // disc on the blue.
-                    color: onHero.withOpacity(0.14),
-                    iconColor: onHero,
+                    color: _barColors.popupBG,
+                    iconColor: barInk,
                     onPressed: () {
                       _logout();
                       Navigator.of(context).pop();
@@ -1028,7 +1036,7 @@ class _WalletViewState extends ConsumerState<WalletView> {
                               // ink comes from the hero.
                               style: STextStyles.navBarTitle(
                                 context,
-                              ).copyWith(color: onHero, height: 1.1),
+                              ).copyWith(color: barInk, height: 1.1),
                               overflow: TextOverflow.ellipsis,
                             ),
                             // Redesign: the account type labels the wallet in
@@ -1041,8 +1049,8 @@ class _WalletViewState extends ConsumerState<WalletView> {
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 1.1,
                                 height: 1.2,
-                                color: onHero.withOpacity(
-                                  heroEmphasis(onHero, 0.78),
+                                color: barInk.withOpacity(
+                                  heroEmphasis(barInk, 0.78),
                                 ),
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -1079,8 +1087,8 @@ class _WalletViewState extends ConsumerState<WalletView> {
                           // painted them as solid white discs floating on the
                           // blue. Same rule as the address chip: on the hero,
                           // derive from the hero.
-                          color: onHero.withOpacity(0.14),
-                          icon: _buildNetworkIcon(_currentSyncStatus, onHero),
+                          color: _barColors.popupBG,
+                          icon: _buildNetworkIcon(_currentSyncStatus, barInk),
                           onPressed: () {
                             Navigator.of(context).pushNamed(
                               WalletNetworkSettingsView.routeName,
@@ -1114,7 +1122,7 @@ class _WalletViewState extends ConsumerState<WalletView> {
                           // painted them as solid white discs floating on the
                           // blue. Same rule as the address chip: on the hero,
                           // derive from the hero.
-                          color: onHero.withOpacity(0.14),
+                          color: _barColors.popupBG,
                           // White bell plus a separate red dot, as the design
                           // does. Previously the UNREAD state was signalled by
                           // dropping the colour override so the theme's bellNew
@@ -1129,13 +1137,13 @@ class _WalletViewState extends ConsumerState<WalletView> {
                                   ? Icon(
                                       CupertinoIcons.bell,
                                       size: 20,
-                                      color: onHero,
+                                      color: barInk,
                                     )
                                   : SvgPicture.asset(
                                       Assets.svg.bell,
                                       width: 20,
                                       height: 20,
-                                      color: onHero,
+                                      color: barInk,
                                     ),
                               if (ref.watch(
                                 notificationsProvider.select(
@@ -1233,14 +1241,14 @@ class _WalletViewState extends ConsumerState<WalletView> {
                           // painted them as solid white discs floating on the
                           // blue. Same rule as the address chip: on the hero,
                           // derive from the hero.
-                          color: onHero.withOpacity(0.14),
+                          color: _barColors.popupBG,
                           icon: adaptiveIcon(
                             Assets.svg.bars,
                             CupertinoIcons.line_horizontal_3,
                             size: 20,
                             // accentColorDark is a page colour; on the hero the
                             // glyph is white like every other control there.
-                            color: onHero,
+                            color: barInk,
                           ),
                           onPressed: () {
                             //todo: check if print needed
@@ -1311,20 +1319,24 @@ class _WalletViewState extends ConsumerState<WalletView> {
                                 children: [
                                   Container(
                                     width: double.infinity,
+                                    // An inset slab, not a full-bleed block.
+                                    // The hero used to run edge to edge and
+                                    // carry the status bar; it is a card on the
+                                    // page now, so it takes side margins and
+                                    // all four corners, and the app bar above
+                                    // owns the top inset.
+                                    margin: const EdgeInsets.fromLTRB(
+                                      14,
+                                      2,
+                                      14,
+                                      0,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: kHeroSurface,
-                                      // 32px per the redesign spec (0 0 32px 32px), which
-                                      // matches the 32px device-frame radius the mockups
-                                      // use — the foot echoes the screen corner rather
-                                      // than inventing a second curve.
-                                      borderRadius: const BorderRadius.only(
-                                        bottomLeft: Radius.circular(32),
-                                        bottomRight: Radius.circular(32),
-                                      ),
+                                      borderRadius: BorderRadius.circular(24),
                                     ),
-                                    child: SafeArea(
-                                      // Only the top inset matters; the sheet owns the rest.
-                                      bottom: false,
+                                    child: Padding(
+                                      padding: EdgeInsets.zero,
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
@@ -1546,27 +1558,38 @@ class _WalletViewState extends ConsumerState<WalletView> {
                             // already pads itself past the floating dock.
                             SliverPadding(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
+                                horizontal: 14,
                               ),
-                              sliver:
-                                  ref
-                                          .read(pWallets)
-                                          .getWallet(widget.walletId)
-                                          .isarTransactionVersion ==
-                                      2
-                                  ? TransactionsV2List(
-                                      walletId: widget.walletId,
-                                      asSliver: true,
-                                    )
-                                  // v1 has no sliver form. It keeps its own
-                                  // scrollable, filling what is left of the
-                                  // viewport, which is what it did before.
-                                  : SliverFillRemaining(
-                                      hasScrollBody: true,
-                                      child: TransactionsList(
-                                        walletId: walletId,
+                              // One grouped card for the whole history rather
+                              // than a stack of separate ones. DecoratedSliver
+                              // paints behind the sliver itself, so the card
+                              // grows with the list instead of needing a box
+                              // of known height.
+                              sliver: DecoratedSliver(
+                                decoration: BoxDecoration(
+                                  color: _barColors.popupBG,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                sliver:
+                                    ref
+                                            .read(pWallets)
+                                            .getWallet(widget.walletId)
+                                            .isarTransactionVersion ==
+                                        2
+                                    ? TransactionsV2List(
+                                        walletId: widget.walletId,
+                                        asSliver: true,
+                                      )
+                                    // v1 has no sliver form. It keeps its own
+                                    // scrollable, filling what is left of the
+                                    // viewport, which is what it did before.
+                                    : SliverFillRemaining(
+                                        hasScrollBody: true,
+                                        child: TransactionsList(
+                                          walletId: walletId,
+                                        ),
                                       ),
-                                    ),
+                              ),
                             ),
                           ],
                         ),

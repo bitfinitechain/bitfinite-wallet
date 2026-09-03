@@ -256,15 +256,28 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
     if (tx is _TruncationNotice) {
       return _TruncationBanner(total: tx.total, shown: tx.shown);
     }
+    // In sliver mode the whole list lives inside one grouped card, so a row
+    // must not draw its own fill or corners.
+    final grouped = widget.asSliver;
     if (shouldWrap) {
       return Column(
         children: [
-          TxListItem(tx: tx, coin: coin, radius: radius),
+          TxListItem(
+            tx: tx,
+            coin: coin,
+            radius: grouped ? null : radius,
+            grouped: grouped,
+          ),
           const SizedBox(height: WalletView.navBarHeight + 14),
         ],
       );
     }
-    return TxListItem(tx: tx, coin: coin, radius: radius);
+    return TxListItem(
+      tx: tx,
+      coin: coin,
+      radius: grouped ? null : radius,
+      grouped: grouped,
+    );
   }
 
   @override

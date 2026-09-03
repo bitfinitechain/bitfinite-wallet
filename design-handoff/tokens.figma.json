@@ -1,0 +1,361 @@
+{
+  "core": {
+    "surface": {
+      "hero": {
+        "value": "#18181B",
+        "type": "color",
+        "description": "The balance block, identical for every coin. Fixed in code as kHeroSurface, NOT theme-provided and NOT the coin colour. Chosen because white lands at 17.72:1 on it: the coin colours could not carry one shared ink, since white on Bellscoin gold measures 1.64:1."
+      }
+    },
+    "ink": {
+      "onHero": {
+        "value": "#FFFFFF",
+        "type": "color",
+        "description": "Every label on the hero. Always white since the surface became neutral — heroInk() returns white unconditionally. 17.72:1 on the hero."
+      },
+      "onHeroDisabled": {
+        "value": "#14161A",
+        "type": "color",
+        "description": "kInkDark. No longer used on the hero; kept for other filled surfaces where a theme's own ink fails against its background."
+      }
+    },
+    "coin": {
+      "bitfinite": {
+        "brand": {
+          "value": "#2258E6",
+          "type": "color",
+          "description": "Declared in code as brandColorValue. Equals Brandkit --bfx-blue-700."
+        },
+        "themeFill": {
+          "value": "#245BF3",
+          "type": "color",
+          "description": "DRIFT: what the theme actually paints, measured on device. Matches neither brandColorValue nor any Brandkit stop. Worth reconciling."
+        }
+      },
+      "pepecoin": {
+        "brand": {
+          "value": "#269B4D",
+          "type": "color",
+          "description": "Declared and rendered agree."
+        }
+      },
+      "bellscoin": {
+        "brand": {
+          "value": "#F3C532",
+          "type": "color",
+          "description": "Bell Bag Gold, official. Declared and rendered agree. White is unusable on it at 1.64:1 — this is why the hero is neutral."
+        }
+      }
+    },
+    "opacity": {
+      "heroLabel": {
+        "value": "0.8",
+        "type": "opacity",
+        "description": "FULL BALANCE, status pill"
+      },
+      "heroFiat": {
+        "value": "0.78",
+        "type": "opacity",
+        "description": "fiat line under the balance"
+      },
+      "heroDust": {
+        "value": "0.62",
+        "type": "opacity",
+        "description": "the sub-coin decimal digits inside the balance"
+      },
+      "heroUnit": {
+        "value": "0.85",
+        "type": "opacity",
+        "description": "the ticker after the balance"
+      },
+      "heroAddress": {
+        "value": "0.92",
+        "type": "opacity",
+        "description": "the address chip"
+      },
+      "heroScrim": {
+        "value": "0.14",
+        "type": "opacity",
+        "description": "the circular icon buttons in the app bar"
+      }
+    },
+    "typography": {
+      "balance": {
+        "value": {
+          "fontSize": "30",
+          "fontWeight": "700",
+          "lineHeight": "1.05",
+          "letterSpacing": "-0.6px"
+        },
+        "type": "typography"
+      },
+      "balanceDust": {
+        "value": {
+          "fontSize": "15",
+          "fontWeight": "700"
+        },
+        "type": "typography",
+        "description": "trailing sub-coin digits, de-emphasised via opacity.heroDust"
+      },
+      "balanceUnit": {
+        "value": {
+          "fontSize": "14",
+          "fontWeight": "700"
+        },
+        "type": "typography",
+        "description": "the ticker"
+      },
+      "heroFiat": {
+        "value": {
+          "fontSize": "13",
+          "fontWeight": "400"
+        },
+        "type": "typography"
+      },
+      "heroLabel": {
+        "value": {
+          "fontSize": "12",
+          "fontWeight": "500"
+        },
+        "type": "typography",
+        "description": "FULL BALANCE, uppercase"
+      },
+      "rowTitle": {
+        "value": {
+          "fontSize": "15",
+          "fontWeight": "600"
+        },
+        "type": "typography",
+        "description": "Sent / Received / Payout"
+      },
+      "rowAmount": {
+        "value": {
+          "fontSize": "14",
+          "fontWeight": "600"
+        },
+        "type": "typography",
+        "description": "tabular figures"
+      },
+      "rowSubtitle": {
+        "value": {
+          "fontSize": "12",
+          "fontWeight": "400"
+        },
+        "type": "typography",
+        "description": "time, confirmations, note"
+      },
+      "sectionLabel": {
+        "value": {
+          "fontSize": "12",
+          "fontWeight": "500"
+        },
+        "type": "typography",
+        "description": "Transactions, day headers"
+      }
+    },
+    "fontSize": {
+      "balance": {
+        "value": "30",
+        "type": "fontSizes"
+      },
+      "balanceDust": {
+        "value": "15",
+        "type": "fontSizes"
+      },
+      "balanceUnit": {
+        "value": "14",
+        "type": "fontSizes"
+      },
+      "heroFiat": {
+        "value": "13",
+        "type": "fontSizes"
+      },
+      "heroLabel": {
+        "value": "12",
+        "type": "fontSizes"
+      },
+      "rowTitle": {
+        "value": "15",
+        "type": "fontSizes"
+      },
+      "rowAmount": {
+        "value": "14",
+        "type": "fontSizes"
+      },
+      "rowSubtitle": {
+        "value": "12",
+        "type": "fontSizes"
+      },
+      "sectionLabel": {
+        "value": "12",
+        "type": "fontSizes"
+      }
+    },
+    "fontWeight": {
+      "balance": {
+        "value": "700",
+        "type": "fontWeights"
+      },
+      "balanceDust": {
+        "value": "700",
+        "type": "fontWeights"
+      },
+      "balanceUnit": {
+        "value": "700",
+        "type": "fontWeights"
+      },
+      "heroFiat": {
+        "value": "400",
+        "type": "fontWeights"
+      },
+      "heroLabel": {
+        "value": "500",
+        "type": "fontWeights"
+      },
+      "rowTitle": {
+        "value": "600",
+        "type": "fontWeights"
+      },
+      "rowAmount": {
+        "value": "600",
+        "type": "fontWeights"
+      },
+      "rowSubtitle": {
+        "value": "400",
+        "type": "fontWeights"
+      },
+      "sectionLabel": {
+        "value": "500",
+        "type": "fontWeights"
+      }
+    },
+    "size": {
+      "radius": {
+        "value": "12",
+        "type": "sizing",
+        "description": "Constants.size.circularBorderRadius. Cards, chips, the payouts row."
+      },
+      "heroFootRadius": {
+        "value": "32",
+        "type": "sizing",
+        "description": "The hero's bottom corners, echoing the device frame rather than inventing a second curve."
+      },
+      "dockHeight": {
+        "value": "65",
+        "type": "sizing",
+        "description": "WalletView.navBarHeight. The last list row pads itself past this."
+      },
+      "gutter": {
+        "value": "16",
+        "type": "sizing",
+        "description": "Page side padding for the list and section headers."
+      },
+      "sparkline": {
+        "value": "36",
+        "type": "sizing",
+        "description": "The price chart's drawn height. Its card is ~219px — mostly padding, price row and range pills."
+      }
+    },
+    "layout": {
+      "rowAmountMaxWidth": {
+        "value": "0.52",
+        "type": "number",
+        "description": "Share of the transaction row the amount may take. Past it the number scales down instead of eating the Sent/Received label."
+      },
+      "payoutTotalMaxWidth": {
+        "value": "0.45",
+        "type": "number",
+        "description": "Same idea on the payouts row, so the freshness and count survive."
+      }
+    },
+    "behaviour": {
+      "historyWalkCap": {
+        "value": "1000",
+        "type": "number",
+        "description": "Transactions loaded per sync. A pool address holds 45,000+, so the list is explicitly partial and says so."
+      },
+      "balanceCompactDigits": {
+        "value": "8",
+        "type": "number",
+        "description": "At eight or more whole digits the balance drops its sub-coin decimals: 4,946,461,530.06954205 renders as 4,946,461,530. Magnitude is never abbreviated."
+      }
+    },
+    "contrast": {
+      "whiteOnHero": {
+        "value": "17.72",
+        "type": "number"
+      },
+      "whiteOnBitfinite": {
+        "value": "5.43",
+        "type": "number"
+      },
+      "whiteOnPepecoin": {
+        "value": "3.57",
+        "type": "number"
+      },
+      "whiteOnBellscoin": {
+        "value": "1.64",
+        "type": "number",
+        "description": "FAILS. Below even the 3:1 large-text floor."
+      },
+      "bellscoinOnPageLight": {
+        "value": "1.64",
+        "type": "number",
+        "description": "FAILS. The See all link and dock accents on the light page. Open issue."
+      },
+      "bellscoinOnPageDark": {
+        "value": "10.84",
+        "type": "number"
+      }
+    }
+  },
+  "light": {
+    "surface": {
+      "page": {
+        "value": "#F4F6FA",
+        "type": "color"
+      },
+      "card": {
+        "value": "#FFFFFF",
+        "type": "color"
+      }
+    }
+  },
+  "dark": {
+    "surface": {
+      "page": {
+        "value": "#12151C",
+        "type": "color"
+      },
+      "card": {
+        "value": "#1A2130",
+        "type": "color"
+      }
+    }
+  },
+  "$themes": [
+    {
+      "id": "light",
+      "name": "Light",
+      "selectedTokenSets": {
+        "core": "source",
+        "light": "enabled"
+      }
+    },
+    {
+      "id": "dark",
+      "name": "Dark",
+      "selectedTokenSets": {
+        "core": "source",
+        "dark": "enabled"
+      }
+    }
+  ],
+  "$metadata": {
+    "tokenSetOrder": [
+      "core",
+      "light",
+      "dark"
+    ]
+  }
+}

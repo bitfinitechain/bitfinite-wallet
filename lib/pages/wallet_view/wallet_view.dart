@@ -978,7 +978,7 @@ class _WalletViewState extends ConsumerState<WalletView> {
                   // is the compact header the rows pass cleanly behind.
                   // Both elevations stay cleared so Material does not paint a
                   // surface tint over it on scroll.
-                  backgroundColor: heroFill(ref.watch(pCoinColor(coin))),
+                  backgroundColor: ref.watch(pCoinColor(coin)),
                   elevation: 0,
                   scrolledUnderElevation: 0,
                   // The status bar sits ON the hero (extendBodyBehindAppBar),
@@ -1156,9 +1156,7 @@ class _WalletViewState extends ConsumerState<WalletView> {
                                       // Ring in the hero colour so the dot reads
                                       // as a badge rather than a smudge on the bell.
                                       border: Border.all(
-                                        color: heroFill(
-                                          ref.watch(pCoinColor(coin)),
-                                        ),
+                                        color: ref.watch(pCoinColor(coin)),
                                         width: 1.5,
                                       ),
                                     ),
@@ -1313,9 +1311,7 @@ class _WalletViewState extends ConsumerState<WalletView> {
                                   Container(
                                     width: double.infinity,
                                     decoration: BoxDecoration(
-                                      color: heroFill(
-                                        ref.watch(pCoinColor(coin)),
-                                      ),
+                                      color: ref.watch(pCoinColor(coin)),
                                       // 32px per the redesign spec (0 0 32px 32px), which
                                       // matches the 32px device-frame radius the mockups
                                       // use — the foot echoes the screen corner rather

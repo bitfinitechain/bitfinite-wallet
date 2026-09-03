@@ -265,11 +265,13 @@ class _EditCoinUnitsViewState extends ConsumerState<EditCoinUnitsView> {
             SizedBox(
               height: Util.isDesktop ? 24 : 8,
             ),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(
-                Constants.size.circularBorderRadius,
-              ),
-              child: TextField(
+            // No ClipRRect around this field. An OutlineInputBorder floats its
+            // label ONTO the top border, so half the text sits above the
+            // field's own box — and a clip cuts exactly that half off, which
+            // is why "Maximum precision" rendered as a sliced grey smear over
+            // the field's top edge. The border already draws the rounded
+            // shape, so the clip was only ever cropping the label.
+            TextField(
                 autocorrect: Util.isDesktop ? false : true,
                 enableSuggestions: Util.isDesktop ? false : true,
                 key: const Key("addCustomNodeNodeNameFieldKey"),
@@ -306,7 +308,6 @@ class _EditCoinUnitsViewState extends ConsumerState<EditCoinUnitsView> {
                         )
                       : null,
                 ),
-              ),
             ),
             const SizedBox(
               height: 24,

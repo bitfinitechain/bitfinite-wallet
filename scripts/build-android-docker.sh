@@ -163,10 +163,15 @@ sdk.dir=/opt/android-sdk
 flutter.sdk=/opt/flutter
 EOF
 
+    # VERSION/BUILD_NUM reach build_app.sh above, but the APK takes its version
+    # from pubspec unless told otherwise — so every build stamped version code
+    # 1 and Android refused the next install as a downgrade.
     if [ "$MODE" = "release" ]; then
-      flutter build apk --split-per-abi --release
+      flutter build apk --split-per-abi --release \
+        --build-name "$VERSION" --build-number "$BUILD_NUM"
     else
-      flutter build apk --debug
+      flutter build apk --debug \
+        --build-name "$VERSION" --build-number "$BUILD_NUM"
     fi
 
     chown -R "$HOST_UID:$HOST_GID" build android/app .dart_tool 2>/dev/null || true

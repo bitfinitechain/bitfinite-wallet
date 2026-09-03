@@ -28,6 +28,7 @@ import '../../../themes/theme_providers.dart';
 import '../../../utilities/hero_ink.dart';
 import '../../../utilities/amount/amount.dart';
 import '../../../utilities/amount/amount_formatter.dart';
+import '../../../utilities/compact_amount.dart';
 import '../../../utilities/assets.dart';
 import '../../../utilities/enums/wallet_balance_toggle_state.dart';
 import '../../../utilities/extensions/extensions.dart';
@@ -175,6 +176,17 @@ class WalletSummaryInfo extends ConsumerWidget {
         mainPart = numStr.substring(0, sepIdx + 3);
         dustPart = decimals.substring(2);
       }
+    }
+
+    // Past a million, show the magnitude rather than every satoshi. The
+    // FittedBox below does not clip an over-long balance, it shrinks it, so
+    // Pepecoin's ten digit figures were quietly demoting the headline number
+    // to something smaller than the line under it. Anything that fits is
+    // still shown in full.
+    final withoutDust = withoutDustDecimals(numStr);
+    if (withoutDust != null) {
+      mainPart = withoutDust;
+      dustPart = "";
     }
 
     // Privacy mode: replace the digits entirely rather than blurring or
@@ -382,8 +394,11 @@ class WalletSummaryInfo extends ConsumerWidget {
           // chip between them made the second read as a third number. Quieter
           // than the balance — it restates it rather than adding a fact.
           //
-          // "≈" because it genuinely is approximate: a cached market price
-          // against a balance, not an amount anyone will receive.
+          // No "≈" in front. It was there because the figure genuinely is
+          // approximate, being a cached market price against a balance, but a
+          // symbol most people never type is a poor way to say so, and it
+          // sits where the eye lands first. The word "today" beside it and
+          // the moving price above already read as an estimate.
           if (price != null && price.value > Decimal.zero)
             Padding(
               padding: const EdgeInsets.only(top: 4, bottom: 2),
@@ -391,7 +406,7 @@ class WalletSummaryInfo extends ConsumerWidget {
                 builder: (context) {
                   final fiatNow = price!.value * balanceToShow.decimal;
                   final fiatStr =
-                      "≈ ${fiatNow.toAmount(fractionDigits: 8).fiatString(locale: locale)} $baseCurrency";
+                      "${fiatNow.toAmount(fractionDigits: 8).fiatString(locale: locale)} $baseCurrency";
 
                   // "today" = the 24h change of the HOLDING's fiat value:
                   // balance x (price_now - price_24h_ago), derived from the

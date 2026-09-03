@@ -131,21 +131,16 @@ MiningPayoutSummary summariseMiningPayouts(
   );
 }
 
-/// "just now", "14 minutes ago", "3 hours ago", "2 days ago".
+/// "now", "14m ago", "2h ago", "42d ago".
 ///
-/// A miner reads this to answer one question, which is whether the payouts
-/// have stopped, so the useful precision is coarse and the wording is plain.
-String describeAge(DateTime when, {DateTime? now}) {
+/// The card this feeds is one line beside a total, so the long form pushed
+/// the freshness off the end into an ellipsis. Freshness is the whole
+/// question a miner opens the wallet to answer, so it gets the short form and
+/// goes first, and the payout count truncates instead.
+String describeAgeShort(DateTime when, {DateTime? now}) {
   final diff = (now ?? DateTime.now()).difference(when);
-  if (diff.inSeconds < 90) return "just now";
-  if (diff.inMinutes < 60) {
-    final m = diff.inMinutes;
-    return "$m ${m == 1 ? "minute" : "minutes"} ago";
-  }
-  if (diff.inHours < 24) {
-    final h = diff.inHours;
-    return "$h ${h == 1 ? "hour" : "hours"} ago";
-  }
-  final d = diff.inDays;
-  return "$d ${d == 1 ? "day" : "days"} ago";
+  if (diff.inSeconds < 90) return "now";
+  if (diff.inMinutes < 60) return "${diff.inMinutes}m ago";
+  if (diff.inHours < 24) return "${diff.inHours}h ago";
+  return "${diff.inDays}d ago";
 }

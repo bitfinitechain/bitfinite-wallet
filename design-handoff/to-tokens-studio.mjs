@@ -101,3 +101,13 @@ writeFileSync(join(here, 'tokens.figma.json'), JSON.stringify(out, null, 2) + '\
 const count = (o) => Object.values(o).reduce(
   (n, v) => n + (v && typeof v === 'object' && 'value' in v ? 1 : (v && typeof v === 'object' ? count(v) : 0)), 0);
 console.log(`wrote tokens.figma.json — core ${count(core)}, light ${count(light)}, dark ${count(dark)}`);
+
+// --- lowest-common-denominator variant --------------------------------------
+// Some Tokens Studio versions reject a multi-set file on single-file import
+// ("Unsupported file format") because they expect ONE token set at the top
+// level, with no $themes/$metadata. This variant is that: light resolved in,
+// nothing else. If the multi-set file is refused, load this one instead.
+const single = structuredClone(core);
+single.surface = { ...single.surface, ...light.surface };
+writeFileSync(join(here, 'tokens.figma.single.json'), JSON.stringify(single, null, 2) + '\n');
+console.log(`wrote tokens.figma.single.json — one set, ${count(single)} tokens, light resolved`);

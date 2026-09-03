@@ -44,6 +44,7 @@ import '../../utilities/assets.dart';
 import '../../utilities/hero_ink.dart';
 import '../../utilities/ios_icon.dart';
 import '../../utilities/clipboard_interface.dart';
+import '../../utilities/coin_accent.dart';
 import '../../utilities/constants.dart';
 import '../../utilities/enums/backup_frequency_type.dart';
 import '../../utilities/enums/sync_type_enum.dart';
@@ -1505,7 +1506,17 @@ class _WalletViewState extends ConsumerState<WalletView> {
                                           // belong to that coin. pCoinColor falls back to
                                           // the theme for a coin without its own, so BFX
                                           // is unchanged.
-                                          color: ref.watch(pCoinColor(coin)),
+                                          // Text on the page ground, so the
+                                          // tone-mapped accent rather than the
+                                          // raw coin colour: Bellscoin gold
+                                          // reads 1.64:1 here, which is why
+                                          // this link was the last unreadable
+                                          // thing on the screen.
+                                          color: coinAccent(
+                                            coin,
+                                            ref.watch(pCoinColor(coin)),
+                                            Theme.of(context).brightness,
+                                          ),
                                           onTap: () {
                                             Navigator.of(context).pushNamed(
                                               ref

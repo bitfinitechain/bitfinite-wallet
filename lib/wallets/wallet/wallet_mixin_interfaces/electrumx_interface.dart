@@ -2348,6 +2348,50 @@ mixin ElectrumXInterface<T extends ElectrumXCurrencyInterface>
         );
       }
 
+      // Nothing came back, and this wallet had coins a moment ago.
+      //
+      // updateUTXOs deletes the wallet's outputs and then writes the new set
+      // only if it is non-empty, so an empty result here does not leave the
+      // old balance alone: it zeroes it. That is correct for a wallet that has
+      // just spent everything, and identical on the wire to a server that
+      // answered listunspent with an empty array instead of an error.
+      //
+      // So confirm it with a different method before believing it.
+      // get_balance is one call per address that actually held something,
+      // which is a small set, and it only runs on the has-coins to has-nothing
+      // transition. If the server still says there is a balance, the empty
+      // listunspent was wrong and the stored outputs are left untouched.
+      if (outputArray.isEmpty) {
+        final stored = await mainDB.getUTXOs(walletId).findAll();
+        if (stored.isNotEmpty) {
+          final addresses = stored
+              .map((e) => e.address)
+              .whereType<String>()
+              .where((e) => e.isNotEmpty)
+              .toSet();
+
+          BigInt reported = BigInt.zero;
+          for (final address in addresses) {
+            final balance = await electrumXClient.getBalance(
+              scripthash: cryptoCurrency.addressToScriptHash(address: address),
+            );
+            reported +=
+                BigInt.from((balance["confirmed"] as int?) ?? 0) +
+                BigInt.from((balance["unconfirmed"] as int?) ?? 0);
+          }
+
+          if (reported > BigInt.zero) {
+            Logging.instance.w(
+              "${info.name}: listunspent returned nothing for "
+              "${addresses.length} address(es) that get_balance still reports "
+              "$reported sats on. Keeping the stored outputs rather than "
+              "zeroing the balance on one inconsistent response.",
+            );
+            return false;
+          }
+        }
+      }
+
       return await mainDB.updateUTXOs(walletId, outputArray);
     } catch (e, s) {
       Logging.instance.e(

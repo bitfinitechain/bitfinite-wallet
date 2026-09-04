@@ -281,6 +281,11 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
                       amount,
                       tokenContract: tokenContract,
                       withUnitName: false,
+                      // The row is a label beside a number, and the number was
+                      // winning on width alone: +10,000.00000000 is sixteen
+                      // characters of which eight say nothing, and it squeezed
+                      // "Mining payout" down to "Mining p...".
+                      trimTrailingZeros: true,
                     );
 
                 // The amount column used to be unconstrained, so it took

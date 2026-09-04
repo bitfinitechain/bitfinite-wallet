@@ -329,11 +329,20 @@ extension AmountUnitExt on AmountUnit {
         }
       }
 
-      // get decimal separator based on locale
-      final String separator = numberSymbols?.DECIMAL_SEP ?? ".";
-
-      // append separator and fractional amount
-      returnValue += "$separator$remainder";
+      // append separator and fractional amount — but only when there is a
+      // fraction to append.
+      //
+      // `places` is the coin's own precision, not the caller's, so this branch
+      // runs even when maxDecimalPlaces is 0. actualDecimalPlaces is then 0,
+      // remainder trims to "", and the separator went on alone: 50 rendered as
+      // "50." with a stranded decimal point. Reachable from the units editor
+      // by setting a coin's precision to 0, as well as by any caller asking
+      // for a whole-number format.
+      if (actualDecimalPlaces > 0) {
+        // get decimal separator based on locale
+        final String separator = numberSymbols?.DECIMAL_SEP ?? ".";
+        returnValue += "$separator$remainder";
+      }
     }
 
     if (!withUnitName && !indicatePrecisionLoss) {

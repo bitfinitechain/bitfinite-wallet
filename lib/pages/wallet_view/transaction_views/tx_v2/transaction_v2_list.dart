@@ -31,6 +31,7 @@ import '../../sub_widgets/no_transactions_found.dart';
 import '../../wallet_view.dart';
 import 'fusion_tx_group_card.dart';
 import 'transaction_v2_list_item.dart';
+import 'tx_list_metrics.dart';
 
 class TransactionsV2List extends ConsumerStatefulWidget {
   const TransactionsV2List({
@@ -330,7 +331,7 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
           if (notice != null)
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.only(bottom: kTxNoticeGapBelow),
                 child: _TruncationBanner(
                   total: notice.total,
                   shown: notice.shown,
@@ -397,7 +398,16 @@ class _DateHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 4, top: 10, bottom: 6),
+      // Left inset matches the rows this header labels. It used to be 4
+      // against their 16, so the date hung out to the left of the column it
+      // belongs to. Top gap larger than the bottom one, so the header binds to
+      // the rows below rather than reading as a footer for the day above.
+      padding: const EdgeInsets.only(
+        left: kTxCardInset,
+        right: kTxCardInset,
+        top: kTxHeaderGapAbove,
+        bottom: kTxHeaderGapBelow,
+      ),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
@@ -452,7 +462,10 @@ class _TruncationBanner extends StatelessWidget {
     // owns the gap to the transaction card below. It keeps the hairline so it
     // still reads as a note rather than as the first row of that list.
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(
+        horizontal: kTxCardInset,
+        vertical: 12,
+      ),
       decoration: BoxDecoration(
         color: colors.popupBG,
         borderRadius: BorderRadius.circular(12),

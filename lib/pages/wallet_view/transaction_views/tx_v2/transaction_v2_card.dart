@@ -28,6 +28,7 @@ import '../../../../widgets/conditional_parent.dart';
 import '../../../../widgets/desktop/desktop_dialog.dart';
 import '../../sub_widgets/tx_icon.dart';
 import 'transaction_v2_details_view.dart' as tvd;
+import 'tx_list_metrics.dart';
 
 class TransactionCardV2 extends ConsumerStatefulWidget {
   const TransactionCardV2({super.key, required this.transaction});
@@ -229,7 +230,9 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(6),
+        // Outer gap: the space BETWEEN cards when rows are not grouped. Inside
+        // the grouped card it is simply part of kTxCardInset.
+        padding: const EdgeInsets.all(kTxRowOuterGap),
         child: RawMaterialButton(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(
@@ -260,7 +263,9 @@ class _TransactionCardStateV2 extends ConsumerState<TransactionCardV2> {
             }
           },
           child: Padding(
-            padding: const EdgeInsets.all(10),
+            // Together with the outer gap this makes kTxCardInset, which the
+            // day headers and the truncation notice also use.
+            padding: const EdgeInsets.all(kTxRowInnerPad),
             child: Builder(
               builder: (context) {
                 // Redesign row: [icon] [Sent / time·context] ... [amount /

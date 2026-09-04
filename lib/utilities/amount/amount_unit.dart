@@ -253,7 +253,13 @@ extension AmountUnitExt on AmountUnit {
     String? overrideUnit,
     Contract? tokenContract,
   }) {
-    assert(maxDecimalPlaces >= 0);
+    // Clamped, not asserted. The assert alone was compiled out of release
+    // builds, and a negative reaches `remainder.substring(0, ...)` below and
+    // throws RangeError on every amount the app tries to draw. The value comes
+    // from a text field the user types into, and a stored bad one would keep
+    // crashing long after the typing, so it is corrected here as well as at
+    // the editor.
+    maxDecimalPlaces = maxDecimalPlaces < 0 ? 0 : maxDecimalPlaces;
 
     // ensure we don't shift past minimum atomic value
     final realShift = math.min(shift, amount.fractionDigits);

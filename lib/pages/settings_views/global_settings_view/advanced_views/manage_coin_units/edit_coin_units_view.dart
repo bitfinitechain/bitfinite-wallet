@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'choose_unit_sheet.dart';
+import '../../../../../notifications/show_flush_bar.dart';
 import '../../../../../providers/global/prefs_provider.dart';
 import '../../../../../themes/stack_colors.dart';
 import '../../../../../utilities/amount/amount_formatter.dart';
@@ -43,12 +44,37 @@ class _EditCoinUnitsViewState extends ConsumerState<EditCoinUnitsView> {
 
   late AmountUnit _currentUnit;
 
-  void onSave() {
-    final maxDecimals = int.tryParse(_decimalsController.text);
+  /// The most decimals this coin can meaningfully show.
+  ///
+  /// Its own precision. Asking for more than the chain has does not reveal
+  /// another digit, it just pads zeros, and [AmountUnit.displayAmount] already
+  /// caps at this internally — so anything above it was a setting that did
+  /// nothing while looking like it had worked.
+  int get _maxAllowed => widget.coin.fractionDigits;
 
-    if (maxDecimals == null) {
-      // TODO show dialog error thing
+  void onSave() {
+    final entered = int.tryParse(_decimalsController.text.trim());
+
+    // Refuse rather than silently discard. This used to return on a null and
+    // leave the screen open with a Save that appeared to do nothing.
+    if (entered == null) {
+      showFloatingFlushBar(
+        type: FlushBarType.warning,
+        message: "Enter a number between 0 and $_maxAllowed.",
+        context: context,
+      );
       return;
+    }
+
+    // Clamped, not rejected: the intent of "12" on an 8 decimal coin is
+    // plainly "as many as possible", and of a negative "none".
+    //
+    // The lower bound is the one that matters. A negative reaches a substring
+    // inside displayAmount and throws on every amount the app draws — the
+    // assert that was supposed to catch it is compiled out of release builds.
+    final maxDecimals = entered.clamp(0, _maxAllowed);
+    if (maxDecimals != entered) {
+      _decimalsController.text = maxDecimals.toString();
     }
 
     ref.read(prefsChangeNotifierProvider).updateAmountUnit(
@@ -285,8 +311,11 @@ class _EditCoinUnitsViewState extends ConsumerState<EditCoinUnitsView> {
             // the field it labels.
             Align(
               alignment: AlignmentDirectional.centerStart,
+              // The range is in the label because it is a hard limit, not a
+              // suggestion, and a field that silently corrects what you typed
+              // is worse than one that told you the rule first.
               child: Text(
-                "Maximum precision",
+                "Maximum precision (0 to $_maxAllowed)",
                 style: STextStyles.fieldLabel(context),
               ),
             ),

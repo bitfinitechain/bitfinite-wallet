@@ -21,6 +21,19 @@ your device.
 - **Send / receive / QR**, transaction history, address book, and custom nodes.
 - **Open source. No ads. No tracking.**
 
+## Watch-only limits
+
+Watch-only wallets work, including on a mining pool payout address. The balance
+is always exact, but history is capped at the most recent 1,000 transactions per
+sync and a very large address can take minutes to produce its first balance.
+Some addresses cannot be read at all, because public Electrum servers refuse to
+enumerate very large unspent-output sets.
+
+This is a personal wallet, not a treasury monitoring tool. It is not recommended
+for exchange vaults, custodial hot wallets, or large institutional addresses.
+See [docs/watch-only-limits.md](docs/watch-only-limits.md) for the measurements
+behind each of those statements.
+
 ## Building
 
 BitFinite Wallet builds with a Dockerized toolchain (no host SDK required):

@@ -89,12 +89,36 @@ class WalletInfoRowBalance extends ConsumerWidget {
       }
     }
 
+    // A wallet whose balance has never been computed says so, instead of
+    // showing a zero it does not know to be true.
+    //
+    // cachedBalanceString is null until a sync has actually summed the UTXOs,
+    // and cachedBalance turns that null into Balance.zeroFor(). On this row
+    // that became a confident "0.00 PEP", indistinguishable from an empty
+    // wallet. A pool address with 45,376 transactions takes minutes to reach
+    // its first balance, and the detail screen shows a Syncing chip through
+    // it while this row quietly claimed the wallet was empty.
+    //
+    // Only the never-computed case. A real zero stays a zero, and a stale
+    // balance keeps showing while a later sync runs, because a number from
+    // ten minutes ago is worth more than a spinner.
+    if (contractAddress == null && info.cachedBalanceString == null) {
+      return Text(
+        "Syncing…",
+        style: Util.isDesktop
+            ? STextStyles.desktopTextExtraSmall(context).copyWith(
+                color: Theme.of(context).extension<StackColors>()!.textSubtitle1,
+              )
+            : STextStyles.itemSubtitle(context),
+      );
+    }
+
     // Every other balance surface in the app protects itself from a long
     // number and this one did not: a bare Text in a fixed-height row, so at
     // maximum precision 4,946,671,530.20654321 PEP wrapped to a second line
     // the row had no room for and came out clipped. Same treatment as the
-    // hero — drop the sub-coin dust past eight whole digits, keeping the
-    // magnitude exact — with scale-down as the backstop for whatever the
+    // hero, dropping the sub-coin dust past eight whole digits and keeping
+    // the magnitude exact, with scale-down as the backstop for whatever the
     // rule still lets through.
     final formatter = ref.watch(pAmountFormatter(info.coin));
     final numStr = formatter.format(

@@ -181,12 +181,19 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
   /// there, the very first sync of a big address showed a short list with no
   /// explanation, which is the exact thing this notice exists to prevent.
   /// [pWalletInfo] watches the record, so it lands as soon as it is written.
-  List<Object> _withTruncationNotice(WalletInfo info) {
+  _TruncationNotice? _truncationNotice(WalletInfo info) {
     final total = info.otherData[WalletInfoKeys.historyTruncatedTotal] as int?;
     if (total != null && total > _transactions.length) {
-      return [_TruncationNotice(total, _transactions.length), ..._txns];
+      return _TruncationNotice(total, _transactions.length);
     }
-    return _txns;
+    return null;
+  }
+
+  /// The non-sliver (desktop) list, which still carries the notice inline
+  /// because there is no grouped card there for it to sit outside of.
+  List<Object> _withTruncationNotice(WalletInfo info) {
+    final notice = _truncationNotice(info);
+    return notice == null ? _txns : [notice, ..._txns];
   }
 
   @override
@@ -304,19 +311,51 @@ class _TransactionsV2ListState extends ConsumerState<TransactionsV2List> {
           ? const SliverToBoxAdapter(child: NoTransActionsFound())
           : const NoTransActionsFound();
     }
-    final txns = _withTruncationNotice(ref.watch(pWalletInfo(widget.walletId)));
+    final info = ref.watch(pWalletInfo(widget.walletId));
 
     if (widget.asSliver) {
+      // The notice is its own card ABOVE the list's card, not the list's first
+      // row. As a row it rendered inside the grouped card and drew its own box
+      // there, so the two read as one card stacked on another. It is also not
+      // a transaction, and the card below is a list of transactions.
+      //
       // No RefreshIndicator and no physics here: the page that owns this
       // sliver owns the gesture, so pulling anywhere on the screen refreshes,
       // including over the hero.
-      return SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) => _itemAt(txns, index),
-          childCount: txns.length,
-        ),
+      final notice = _truncationNotice(info);
+      final colors = Theme.of(context).extension<StackColors>()!;
+
+      return SliverMainAxisGroup(
+        slivers: [
+          if (notice != null)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _TruncationBanner(
+                  total: notice.total,
+                  shown: notice.shown,
+                ),
+              ),
+            ),
+          // The list owns its card now. It used to be decorated by the wallet
+          // view, which is why the notice could not be lifted out of it.
+          DecoratedSliver(
+            decoration: BoxDecoration(
+              color: colors.popupBG,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => _itemAt(_txns, index),
+                childCount: _txns.length,
+              ),
+            ),
+          ),
+        ],
       );
     }
+
+    final txns = _withTruncationNotice(info);
 
     return RefreshIndicator(
             onRefresh: () async {
@@ -409,9 +448,11 @@ class _TruncationBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<StackColors>()!;
+    // No margin: this is a card in its own right now, and whoever places it
+    // owns the gap to the transaction card below. It keeps the hairline so it
+    // still reads as a note rather than as the first row of that list.
     return Container(
-      margin: const EdgeInsets.only(top: 4, bottom: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: colors.popupBG,
         borderRadius: BorderRadius.circular(12),

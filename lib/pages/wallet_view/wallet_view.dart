@@ -1544,36 +1544,37 @@ class _WalletViewState extends ConsumerState<WalletView> {
                               // DecoratedSliver, so it is space under the card
                               // rather than space inside it.
                               padding: const EdgeInsets.fromLTRB(14, 0, 14, 96),
-                              // One grouped card for the whole history rather
-                              // than a stack of separate ones. DecoratedSliver
-                              // paints behind the sliver itself, so the card
-                              // grows with the list instead of needing a box
-                              // of known height.
-                              sliver: DecoratedSliver(
-                                decoration: BoxDecoration(
-                                  color: _barColors.popupBG,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                sliver:
-                                    ref
-                                            .read(pWallets)
-                                            .getWallet(widget.walletId)
-                                            .isarTransactionVersion ==
-                                        2
-                                    ? TransactionsV2List(
-                                        walletId: widget.walletId,
-                                        asSliver: true,
-                                      )
-                                    // v1 has no sliver form. It keeps its own
-                                    // scrollable, filling what is left of the
-                                    // viewport, which is what it did before.
-                                    : SliverFillRemaining(
+                              sliver:
+                                  ref
+                                          .read(pWallets)
+                                          .getWallet(widget.walletId)
+                                          .isarTransactionVersion ==
+                                      2
+                                  // The v2 list paints its own grouped card.
+                                  // It has to: the truncation notice is a
+                                  // separate card ABOVE that one, and a
+                                  // decoration applied out here wrapped both,
+                                  // which is what made them look stacked.
+                                  ? TransactionsV2List(
+                                      walletId: widget.walletId,
+                                      asSliver: true,
+                                    )
+                                  // v1 has no sliver form. It keeps its own
+                                  // scrollable, filling what is left of the
+                                  // viewport, which is what it did before, and
+                                  // still needs the card drawn for it.
+                                  : DecoratedSliver(
+                                      decoration: BoxDecoration(
+                                        color: _barColors.popupBG,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      sliver: SliverFillRemaining(
                                         hasScrollBody: true,
                                         child: TransactionsList(
                                           walletId: walletId,
                                         ),
                                       ),
-                              ),
+                                    ),
                             ),
                           ],
                         ),

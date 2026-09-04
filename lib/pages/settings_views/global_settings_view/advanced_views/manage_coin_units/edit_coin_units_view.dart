@@ -46,11 +46,24 @@ class _EditCoinUnitsViewState extends ConsumerState<EditCoinUnitsView> {
 
   /// The most decimals this coin can meaningfully show.
   ///
-  /// Its own precision. Asking for more than the chain has does not reveal
-  /// another digit, it just pads zeros, and [AmountUnit.displayAmount] already
-  /// caps at this internally — so anything above it was a setting that did
-  /// nothing while looking like it had worked.
-  int get _maxAllowed => widget.coin.fractionDigits;
+  /// The coin's own precision, since asking for more than the chain has does
+  /// not reveal another digit — it just pads zeros, and
+  /// [AmountUnit.displayAmount] caps at this internally anyway, so anything
+  /// above it was a setting that did nothing while looking like it worked.
+  ///
+  /// Then 18, which is not a number picked here. Prefs._setMaxDecimals caps
+  /// the DEFAULT the same way, commented "use some sane max rather than up to
+  /// 30 that nano uses" — Nano really does declare 30 fraction digits and
+  /// Banano 29. Upstream bounded what it chose for you and left what you type
+  /// unbounded; this is the same ceiling applied to both, so the field cannot
+  /// be set to something the app would never have defaulted to.
+  ///
+  /// Identical to fractionDigits for every coin we currently ship, all of
+  /// which are 8. It matters the day Nano or Banano is switched on.
+  static const _saneMaxDecimals = 18;
+  int get _maxAllowed => widget.coin.fractionDigits > _saneMaxDecimals
+      ? _saneMaxDecimals
+      : widget.coin.fractionDigits;
 
   void onSave() {
     final entered = int.tryParse(_decimalsController.text.trim());

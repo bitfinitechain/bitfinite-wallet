@@ -226,10 +226,10 @@ class Bitcoin extends Bip39HDCurrency
 
   /// Our TLS relay, as insurance rather than as the main road.
   ///
-  /// The primary is reachable today on a censored connection, so
-  /// nothing of the user's needs to pass through us and by default nothing
-  /// does. But that is one operator's DNS entry away from changing, and it is
-  /// what happened to blockstream. The relay terminates our own certificate
+  /// The primary is reachable today on the networks we tested, including ones
+  /// that filter DNS, so nothing of the user's needs to pass through us and by
+  /// default nothing does. But that is one operator's DNS entry away from
+  /// changing, and it is what happened to blockstream. The relay terminates our own certificate
   /// on our own hostname and fetches upstream over verified TLS from a box
   /// nothing blocks, so if the primary is hijacked or goes down we can
   /// repoint it server-side without shipping an app update.
@@ -282,8 +282,8 @@ class Bitcoin extends Bip39HDCurrency
           //
           //   verifiable  its certificate must match its own hostname. Most
           //               public Electrum servers are self-signed.
-          //   reachable   some ISPs DNS-hijack blockstream to a block
-          //               page, so a phone there never connects.
+          //   reachable   some ISPs DNS-hijack blockstream to a block page,
+          //               so a phone on those networks never connects.
           //   ElectrumX   electrs rejects verbose transaction.get, which this
           //               wallet needs to read a transaction at all.
           //

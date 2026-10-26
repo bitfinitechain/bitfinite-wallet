@@ -207,9 +207,13 @@ class _TransactionV2DetailsViewState
 
     if (_transaction.type
         case TransactionType.sentToSelf || TransactionType.outgoing) {
+      // Only payments this wallet keeps its own copy of. The copy shown here
+      // came from the server, and boosting from it is how a malicious server
+      // gets a payment to itself signed. See OwnSentTx.
       supportsRbf =
           _transaction.subType == TransactionSubType.none &&
-          wallet is RbfInterface;
+          wallet is RbfInterface &&
+          wallet.ownSentTx(_transaction.txid) != null;
     } else {
       supportsRbf = false;
     }

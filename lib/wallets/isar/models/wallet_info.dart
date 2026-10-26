@@ -590,4 +590,9 @@ abstract class WalletInfoKeys {
   /// The transaction list reads this to say so out loud rather than showing a
   /// truncated list as if it were complete.
   static const String historyTruncatedTotal = "historyTruncatedTotalKey";
+
+  /// This wallet's own copies of the transactions it broadcast, keyed by
+  /// txid. Boost rebuilds only from these, never from the server. See
+  /// OwnSentTx.
+  static const String rbfOwnSentTxs = "rbfOwnSentTxsKey";
 }
